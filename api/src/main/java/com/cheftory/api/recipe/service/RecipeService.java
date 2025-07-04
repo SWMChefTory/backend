@@ -6,7 +6,6 @@ import com.cheftory.api.recipe.info.CreateRecipeInfoService;
 import com.cheftory.api.recipe.info.FindRecipeInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponents;
 
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ public class RecipeService {
     private final AsyncRecipeCreationRequester asyncRecipeCreationRequester;
     private final FindRecipeInfoService findRecipeInfoService;
     public PreCreationRecipeResponse CreateRecipe(RecipeCreateRequest recipeCreateRequest) {
-        UUID recipeInfoId = recipeInfoService.create(recipeCreateRequest.getVideoUrl());
+        UUID recipeInfoId = recipeInfoService.create(recipeCreateRequest.getVideoUriComponents());
 
         asyncRecipeCreationRequester.request(
                 recipeInfoId
