@@ -1,9 +1,8 @@
 package com.cheftory.api.recipe.ingredients;
 import com.cheftory.api.recipe.ingredients.client.RecipeIngredientsClient;
-import com.cheftory.api.recipe.ingredients.entity.RequiredIngredients;
+import com.cheftory.api.recipe.ingredients.entity.Ingredients;
 import com.cheftory.api.recipe.ingredients.repository.RecipeIngredientsRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -16,11 +15,11 @@ public class CreateRecipeIngredientsService {
 
     public UUID create(UUID recipeInfoId, String videoId) {
         String content = recipeIngredientsClient.fetchRecipeIngredients(videoId);
-        RequiredIngredients requiredIngredients = RequiredIngredients.from(
+        Ingredients ingredients = Ingredients.from(
                 content, recipeInfoId
         );
         return repository
-                .save(requiredIngredients)
+                .save(ingredients)
                 .getId();
     }
 }

@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.ingredients.entity;
 
-import com.cheftory.api.recipe.info.entity.RecipeInfo;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -12,7 +11,7 @@ import java.util.UUID;
 @Builder(access=AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Getter
-public class RequiredIngredients{
+public class Ingredients {
     @Id
     @UuidGenerator
     private UUID id;
@@ -21,8 +20,8 @@ public class RequiredIngredients{
 
     private UUID recipeInfoId;
 
-    public static RequiredIngredients from(String content, UUID recipeInfoId) {
-        return RequiredIngredients.builder()
+    public static Ingredients from(String content, UUID recipeInfoId) {
+        return Ingredients.builder()
                 .content(content)
                 .recipeInfoId(recipeInfoId)
                 .build();
