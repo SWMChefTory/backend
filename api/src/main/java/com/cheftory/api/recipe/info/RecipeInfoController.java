@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@RestController("/recipeinfo")
+@RestController("/recipeinfos")
 @RequiredArgsConstructor
 public class RecipeInfoController {
     private final FindRecipeInfoService findRecipeInfoService;

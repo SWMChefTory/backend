@@ -16,7 +16,7 @@ import java.util.UUID;
 public class RecipeStepController {
     private final FindRecipeStepService findRecipeStepService;
 
-    @GetMapping("/{recipeInfoId}/step/")
+    @GetMapping("/{recipeInfoId}/steps/")
     public List<RecipeStepFindResponse> findRecipeSteps(
             @PathVariable UUID recipeInfoId
     ) {
