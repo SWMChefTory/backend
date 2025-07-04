@@ -16,7 +16,7 @@ public class Ingredients {
     @UuidGenerator
     private UUID id;
     @Column(columnDefinition = "json")
-    private String content;
+    private String content; //ingredients/id -> ingredient
 
     private UUID recipeInfoId;
 
