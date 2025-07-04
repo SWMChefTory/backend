@@ -12,12 +12,13 @@ public class RecipeStepClient {
     }
     private final WebClient webClient;
 
-    public ClientStepsResponse fetchRecipeSteps(String videoId){
+    public ClientStepsResponse fetchRecipeSteps(String videoId,String segments){
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/step")
                         .queryParam("videoId", videoId)
                         .build())
+                .bodyValue(segments)
                 .retrieve()
                 .bodyToMono(ClientStepsResponse.class)
                 .block();

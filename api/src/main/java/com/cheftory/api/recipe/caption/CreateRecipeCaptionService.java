@@ -2,7 +2,7 @@ package com.cheftory.api.recipe.caption;
 
 import com.cheftory.api.recipe.caption.client.CaptionClient;
 import com.cheftory.api.recipe.caption.entity.RecipeCaption;
-import com.cheftory.api.recipe.caption.repository.RecipeSubtitleRepository;
+import com.cheftory.api.recipe.caption.repository.RecipeCaptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class CreateRecipeCaptionService {
-    private final RecipeSubtitleRepository recipeSubtitleRepository;
+    private final RecipeCaptionRepository recipeCaptionRepository;
     private final CaptionClient captionClient;
 
     public UUID create(String videoId, UUID recipeId) {
@@ -20,7 +20,7 @@ public class CreateRecipeCaptionService {
                 clientCaptionResponse
                 ,recipeId
         );
-        return recipeSubtitleRepository
+        return recipeCaptionRepository
                 .save(recipeCaption)
                 .getId();
     }

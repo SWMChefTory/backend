@@ -18,10 +18,9 @@ import java.util.UUID;
 public class CreateRecipeStepService {
     private RecipeStepClient recipeStepClient;
     private RecipeStepRepository recipeStepRepository;
-    public List<UUID> createAll(
-            String videoId,UUID recipeId) {
+    public List<UUID> createAll(String videoId,UUID recipeId,String segments) {
         List<ClientStepResponse> clientStepResponses = recipeStepClient
-                .fetchRecipeSteps(videoId)
+                .fetchRecipeSteps(videoId,segments)
                 .getSteps();
 
         List<RecipeStep> recipeSteps = generateRecipeSteps(clientStepResponses,recipeId);

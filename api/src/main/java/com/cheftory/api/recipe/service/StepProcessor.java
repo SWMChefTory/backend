@@ -17,8 +17,8 @@ public class StepProcessor {
     private final CreateRecipeStepService createRecipeStepService;
 
     @Transactional
-    public List<UUID> process(UUID recipeId, String videoId) {
+    public List<UUID> process(UUID recipeId, String videoId,String segments) {
         updateRecipeInfoService.updateState(recipeId, RecipeStatus.CREATING_STEPS);
-        return createRecipeStepService.createAll(videoId,recipeId);
+        return createRecipeStepService.createAll(videoId,recipeId,segments);
     }
 }

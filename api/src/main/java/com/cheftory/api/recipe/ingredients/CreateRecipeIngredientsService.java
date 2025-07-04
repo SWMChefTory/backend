@@ -13,8 +13,8 @@ public class CreateRecipeIngredientsService {
     private final RecipeIngredientsRepository repository;
     private final RecipeIngredientsClient recipeIngredientsClient;
 
-    public UUID create(UUID recipeInfoId, String videoId) {
-        String content = recipeIngredientsClient.fetchRecipeIngredients(videoId);
+    public UUID create(UUID recipeInfoId, String videoId, String captionContent) {
+        String content = recipeIngredientsClient.fetchRecipeIngredients(videoId,captionContent);
         Ingredients ingredients = Ingredients.from(
                 content, recipeInfoId
         );

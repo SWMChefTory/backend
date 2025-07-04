@@ -1,5 +1,7 @@
 package com.cheftory.api.recipe.service;
 
+import com.cheftory.api.recipe.caption.FindRecipeCaptionService;
+import com.cheftory.api.recipe.caption.dto.CaptionFindResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import java.util.UUID;
 @Service
 public class AsyncRecipeCreationRequester {
     private final CaptionProcessor captionProcessor;
+    private final FindRecipeCaptionService findRecipeCaptionService;
     private final IngredientsProcessor ingredientsProcessor;
     private final StepProcessor stepProcessor;
 
@@ -18,7 +21,10 @@ public class AsyncRecipeCreationRequester {
     @Async
     public void request(UUID recipeInfoId,String videoId){
         captionProcessor.process(recipeInfoId,videoId);
-        ingredientsProcessor.process(recipeInfoId,videoId);
-        stepProcessor.process(recipeInfoId,videoId);
+        CaptionFindResponse captionFindResponse = findRecipeCaptionService
+                .findRecipeCaption(recipeInfoId);
+        String segments = captionFindResponse.getSegments();
+        ingredientsProcessor.process(recipeInfoId,videoId,segments);
+        stepProcessor.process(recipeInfoId,videoId,segments);
     }
 }

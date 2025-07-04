@@ -16,8 +16,8 @@ public class IngredientsProcessor {
     private final CreateRecipeIngredientsService recipeIngredientsService;
 
     @Transactional
-    public UUID process(UUID recipeId, String videoId) {
+    public UUID process(UUID recipeId, String videoId, String captionContent) {
         updateRecipeInfoService.updateState(recipeId, RecipeStatus.CREATING_INGREDIENTS);
-        return recipeIngredientsService.create(recipeId, videoId);
+        return recipeIngredientsService.create(recipeId, videoId, captionContent);
     }
 }
