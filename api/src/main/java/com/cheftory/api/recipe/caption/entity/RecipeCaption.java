@@ -16,6 +16,7 @@ public class RecipeCaption {//caption
     @UuidGenerator
     private UUID id;
 
+    @Column(length=1000)
     private String segments;
     private String langCode;
 

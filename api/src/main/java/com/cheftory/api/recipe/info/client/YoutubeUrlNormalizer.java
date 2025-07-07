@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.info.service;
+package com.cheftory.api.recipe.info.client;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -16,7 +16,8 @@ public class YoutubeUrlNormalizer {
         Objects.requireNonNull(url, "url must not be null");
 
         String id;
-        if(url.getHost().equals("www.youtube.com/watch")){
+        System.out.println(url.getHost()+url.getPath()+"!!");
+        if((url.getHost()+url.getPath()).equals("www.youtube.com/watch")){
             id= tryGetIdFromUrl(url);
         }
         else if(url.getHost().equals("www.youtu.be")){

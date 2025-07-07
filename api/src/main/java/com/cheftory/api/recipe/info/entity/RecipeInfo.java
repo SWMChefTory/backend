@@ -50,7 +50,7 @@ public class RecipeInfo {
                 .fromUri(url)
                 .build()
                 .getQueryParams()
-                .get("videoId")
+                .get("v")
                 .toString();
     }
 

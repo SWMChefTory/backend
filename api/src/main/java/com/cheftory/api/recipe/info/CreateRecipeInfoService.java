@@ -1,9 +1,9 @@
 package com.cheftory.api.recipe.info;
 
-import com.cheftory.api.recipe.info.service.YoutubeUrlNormalizer;
+import com.cheftory.api.recipe.info.client.YoutubeUrlNormalizer;
 import com.cheftory.api.recipe.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.info.repository.RecipeInfoRepository;
-import com.cheftory.api.recipe.info.service.RecipeInfoClient;
+import com.cheftory.api.recipe.info.client.RecipeInfoClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;

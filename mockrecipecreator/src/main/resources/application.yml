@@ -1,0 +1,7 @@
+server:
+  port: 1000
+
+logging:
+  level:
+    com.cheftory: DEBUG
+    org.springframework.web: DEBUG

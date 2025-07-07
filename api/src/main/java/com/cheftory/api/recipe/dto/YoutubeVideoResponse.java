@@ -2,10 +2,12 @@ package com.cheftory.api.recipe.dto;
 
 import com.cheftory.api.common.converter.Iso8601DurationToSecondConverter;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 
 @Data
+@ToString
 public class YoutubeVideoResponse {
     private List<Item> items;
 
