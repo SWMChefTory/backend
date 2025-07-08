@@ -37,7 +37,7 @@ public class RecipeStep {
         return RecipeStep.builder()
                 .stepOrder(stepOrder)
                 .subtitle(stepResponses.getSubtitle())
-                .details(stepResponses.getDetails())
+                .details(stepResponses.getDescriptions())
                 .start(stepResponses.getStart())
                 .end(stepResponses.getEnd())
                 .recipeId(recipeId)

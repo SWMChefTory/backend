@@ -20,6 +20,7 @@ public class RecipeCaptionFinder {
                 .orElseThrow(()->new CaptionNotFoundException("id에 해당하는 caption이 존재하지 않습니다."));
     }
 
+
     public List<Segment> findSegmentsById(UUID captionId) {
         return findById(captionId)
                 .getSegments();

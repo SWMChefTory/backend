@@ -1,4 +1,4 @@
-package com.cheftory.api.temp;
+package com.cheftory.api.recipe.service;
 
 import com.cheftory.api.recipe.caption.RecipeCaptionService;
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class AsyncRecipeCreationRequester {
+public class AsyncRecipeCreationService {
     private final RecipeUpdator recipeUpdator;
     private final RecipeCaptionService recipeCaptionService;
     private final RecipeIngredientsService recipeIngredientsService;
@@ -30,7 +30,7 @@ public class AsyncRecipeCreationRequester {
     //어짜피 이거는 RecipeService에서만 쓰고 있는 recipeId만 보내줄건데 recipeId가 있는지 체크할 필요가 있을까?
     //중간에 AI 서버에서 실패했을 때 대응하는 방법이 필요해 보임.
     @Async
-    public void request(UUID recipeId){
+    public void create(UUID recipeId){
         UUID captionId = recipeCaptionService.create(recipeId);
         recipeUpdator.updateCaptionCreatedAt(recipeId, LocalDateTime.now());
 
@@ -44,5 +44,11 @@ public class AsyncRecipeCreationRequester {
         recipeUpdator.updateStepCreatedAt(recipeId, LocalDateTime.now());
 
         recipeUpdator.updateState(recipeId, RecipeStatus.COMPLETED);
+    }
+
+    private UUID createCaption(UUID recipeId){
+        UUID captionId = recipeCaptionService.create(recipeId);
+        recipeUpdator.updateCaptionCreatedAt(recipeId, LocalDateTime.now());
+        return captionId;
     }
 }

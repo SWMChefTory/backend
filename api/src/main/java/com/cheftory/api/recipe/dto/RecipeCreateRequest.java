@@ -13,7 +13,7 @@ import java.net.URI;
 public class RecipeCreateRequest {
     private URI videoUrl;
     @Schema(hidden = true)
-    public UriComponents getVideoUriComponents() {
+    public UriComponents toUrl() {
         log.trace(videoUrl.toString());
         return UriComponentsBuilder
                 .fromUri(videoUrl)

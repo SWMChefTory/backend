@@ -18,7 +18,8 @@ public class RecipeController {
 
     @PostMapping("")
     public RecipeCreateResponse createRecipe(@RequestBody RecipeCreateRequest recipeCreateRequest) {
-        return recipeService.checkRecipeAndCreate(recipeCreateRequest);
+        UUID recipeId = recipeService.create(recipeCreateRequest.toUrl());
+        return RecipeCreateResponse.successFrom(recipeId);
     }
 
     @GetMapping("/{recipeId}")

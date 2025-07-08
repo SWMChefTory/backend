@@ -5,7 +5,7 @@ import java.util.List;
 @Getter
 public class ClientRecipeStepResponse {
     private String subtitle;
-    private List<String> details;
+    private List<String> descriptions;
     private Double start;
     private Double end;
 }

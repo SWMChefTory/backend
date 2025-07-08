@@ -17,24 +17,11 @@ import java.util.UUID;
 public class RecipeFinder {
     private final RecipeRepository repository;
     public Recipe findByUri(URI videoUrl) {
-        Recipe recipe = repository
+        return repository
                 .findByVideoUri(videoUrl)
                 .orElseThrow(()-> new RecipeNotFoundException("Recipe not found"));
-
-        if(recipe.getStatus().equals(RecipeStatus.PRE_COMPLETED)){
-            return recipe;
-        }
-
-        if(recipe.getStatus().equals(RecipeStatus.FAILED)){
-            return recipe;
-        }
-
-        if(recipe.getStatus().equals(RecipeStatus.COMPLETED)){
-            return recipe;
-        }
-
-        throw new RecipeBanException(recipe.getStatus());
     }
+
 
     public Recipe findById(UUID recipeId) {
         return repository

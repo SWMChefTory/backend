@@ -21,7 +21,7 @@ public class VideoInfoClient {
     @Value("${youtube.api-token}")
     private String YOUTUBE_KEY;
 
-    public VideoInfo fetchRecipeInfo(UriComponents url) {
+    public VideoInfo fetchVideoInfo(UriComponents url) {
         String videoId = url
                 .getQueryParams()
                 .getFirst("v");

@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.entity;
 
+import com.cheftory.api.recipe.CannotCreateException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -39,6 +40,12 @@ public class Recipe {
                 .count(0)
                 .createdAt(LocalDateTime.now())
                 .build();
+    }
+
+    public void isBanned() {
+        if(status == RecipeStatus.NOT_COOK_URL){
+            throw new CannotCreateException("Recipe not in cook url");
+        }
     }
 
     public String getVideoId(){

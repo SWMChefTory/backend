@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.caption.client;
 
+import com.cheftory.api.recipe.caption.client.dto.ClientCaptionRequest;
 import com.cheftory.api.recipe.caption.client.dto.ClientCaptionResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -13,12 +14,13 @@ public class CaptionClient {
     private final WebClient webClient;
 
     public ClientCaptionResponse fetchCaption(String videoId){
+        ClientCaptionRequest request = ClientCaptionRequest
+                .from(videoId,"youtube");
         return webClient.post().uri(uriBuilder -> uriBuilder
-                .path("/caption")
-                .queryParam("videoId",videoId)
-                .queryParam("type","yotube")
+                .path("/captions")
                 .build()
-        ).retrieve()
+        ).bodyValue(request)
+                .retrieve()
                 .bodyToMono(ClientCaptionResponse.class)
                 .block();
     }

@@ -34,6 +34,7 @@ public class RecipeStepService {
                 .fetchRecipeSteps(videoId,captionInfo,ingredients);
 
         List<ClientRecipeStepResponse> responses = clientRecipeStepsResponse
+                .getSummary()
                 .getSteps();
 
         List<RecipeStep> recipeSteps = IntStream.range(0, responses.size())

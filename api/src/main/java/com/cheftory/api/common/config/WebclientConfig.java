@@ -10,7 +10,7 @@ public class WebclientConfig {
     @Bean
     @Qualifier("recipeCreateClient")
     public WebClient webClientForRecipeServer(){
-        String recipeServerUrl = "http://localhost:1000";
+        String recipeServerUrl = "http://localhost:8000";
         return WebClient.builder()
                 .baseUrl(recipeServerUrl)
                 .build();

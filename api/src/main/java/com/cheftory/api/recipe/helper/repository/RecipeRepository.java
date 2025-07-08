@@ -37,4 +37,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     @Modifying
     @Query("update Recipe r set r.stepCreatedAt = :stepCreatedAt")
     int updateStepCreatedAt(UUID id,LocalDateTime stepCreatedAt);
+
+    boolean existsByVideoInfo_VideoUri(URI videoUrl);
 }

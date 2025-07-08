@@ -6,5 +6,10 @@ import java.util.List;
 
 @Getter
 public class ClientRecipeStepsResponse {
-    List<ClientRecipeStepResponse> steps;
+    private CookingProcessSummary summary;
+    @Getter
+    public static class CookingProcessSummary{
+        private String description;
+        private List<ClientRecipeStepResponse> steps;
+    }
 }

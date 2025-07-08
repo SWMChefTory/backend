@@ -3,6 +3,7 @@ package com.cheftory.api.recipe.caption;
 import com.cheftory.api.recipe.caption.client.CaptionClient;
 import com.cheftory.api.recipe.caption.client.dto.ClientCaptionResponse;
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
+import com.cheftory.api.recipe.caption.entity.LangCodeType;
 import com.cheftory.api.recipe.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.caption.entity.Segment;
 import com.cheftory.api.recipe.caption.helper.RecipeCaptionCreator;
@@ -31,7 +32,7 @@ public class RecipeCaptionService {
                 .fetchCaption(videoId);
 
         RecipeCaption recipeCaption = RecipeCaption.from(
-                clientCaptionResponse.getSegments()
+                clientCaptionResponse.getCaptions()
                 ,clientCaptionResponse.getLangCodeType()
                 ,recipeId
         );
@@ -40,8 +41,8 @@ public class RecipeCaptionService {
     }
 
     public CaptionInfo getCaptionInfo(UUID captionId) {
-        List<Segment> segments = recipeCaptionFinder.findSegmentsById(captionId);
-        return CaptionInfo.from(segments);
+        RecipeCaption recipeCaption = recipeCaptionFinder.findById(captionId);
+        return CaptionInfo.from(recipeCaption.getLangCode(),recipeCaption.getSegments());
     }
 
 }
