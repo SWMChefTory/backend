@@ -5,6 +5,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,10 +15,13 @@ public class RecipeController {
 
     @PostMapping("/caption")
     public ResponseEntity<ClientCaptionResponse> getCaption(@RequestParam String videoId,
-                                                            @RequestParam(required = false) String type) {
+                                                            @RequestParam(required = false) String type) throws InterruptedException {
+
+        Thread.sleep(5000);
         // Mock 응답 생성
         ClientCaptionResponse response = new ClientCaptionResponse();
         response.setLangCode("ko");
+
 
         List<Segment> segments = Arrays.asList(
                 new Segment(0.0, 5.0, "안녕하세요, 오늘은 맛있는 요리를 만들어보겠습니다."),
@@ -31,11 +35,12 @@ public class RecipeController {
     }
 
     @PostMapping(value = "/ingredients")
-    public ResponseEntity<ClientIngredientsResponse> getIngredients(@RequestParam String videoId) {
+    public ResponseEntity<ClientIngredientsResponse> getIngredients(@RequestParam String videoId) throws InterruptedException {
         // Mock 응답 생성 (captionContent를 기반으로 재료 추출했다고 가정)
         System.out.println("VideoId: " + videoId);
         System.out.println("Caption Content: " );
 
+        Thread.sleep(5000);
         ClientIngredientsResponse response = new ClientIngredientsResponse();
 
         // captionContent에 따라 다른 재료를 반환할 수도 있음
@@ -54,7 +59,8 @@ public class RecipeController {
 
     @PostMapping("/step")
     public ResponseEntity<ClientStepsResponse> getSteps(@RequestParam String videoId,
-                                                        @RequestBody String segments) {
+                                                        @RequestBody String segments) throws InterruptedException {
+        Thread.sleep(5000);
         // Mock 응답 생성 (segments를 기반으로 단계 추출했다고 가정)
         System.out.println("VideoId: " + videoId);
         System.out.println("!!!!!!!!!!!!!!!!!");

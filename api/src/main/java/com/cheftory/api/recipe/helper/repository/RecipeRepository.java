@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,4 +25,16 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     @Modifying
     @Query("update Recipe r set r.count = r.count + 1 where r.id = :id")
     int increaseCount(UUID id);
+
+    @Modifying
+    @Query("update Recipe r set r.captionCreatedAt = :captionCreatedAt where r.id = :id")
+    int updateCaptionCreatedAt(UUID id, LocalDateTime captionCreatedAt);
+
+    @Modifying
+    @Query("update Recipe r set r.ingredientsCreatedAt = :ingredientsCreatedAt")
+    int updateIngredientsCreatedAt(UUID id, LocalDateTime ingredientsCreatedAt);
+
+    @Modifying
+    @Query("update Recipe r set r.stepCreatedAt = :stepCreatedAt")
+    int updateStepCreatedAt(UUID id,LocalDateTime stepCreatedAt);
 }

@@ -17,14 +17,20 @@ public class Recipe {
     private UUID id;
 
     @Embedded
+    @Column(nullable = false)
     private VideoInfo videoInfo;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private RecipeStatus status;
 
     private String description;
     private Integer count;
     private LocalDateTime createdAt;
+
+    private LocalDateTime captionCreatedAt;
+    private LocalDateTime ingredientsCreatedAt;
+    private LocalDateTime stepCreatedAt;
 
     public static Recipe preCompletedOf(VideoInfo videoInfo) {
         return Recipe.builder()

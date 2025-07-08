@@ -18,7 +18,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -62,12 +64,35 @@ public class RecipeService {
 
     public RecipeFindResponse findTotalRecipeInfo(UUID recipeId) {
         VideoInfo videoInfo = recipeFinder.findVideoInfo(recipeId);
+
+        ensureRecipeFullyCreated(recipeId);
+        
         List<RecipeStepInfo> recipeInfos = recipeStepService
                 .getRecipeStepInfos(recipeId);
         IngredientsInfo ingredientsInfo = recipeIngredientsService
                 .getIngredientsInfoOfRecipe(recipeId);
+
         recipeUpdator.increseCount(recipeId);
         return RecipeFindResponse.of(RecipeStatus.COMPLETED,videoInfo,ingredientsInfo,recipeInfos);
+    }
+
+
+    private void ensureRecipeFullyCreated(UUID recipeId) {
+        LocalDateTime captionCreatedAt = recipeFinder.findCaptionCreatedAt(recipeId);
+        LocalDateTime ingredientsCreatedAt = recipeFinder.findIngredientsCreatedAt(recipeId);
+        LocalDateTime stepCreatedAt = recipeFinder.findStepCreatedAt(recipeId);
+
+        if(Objects.isNull(captionCreatedAt)){
+            throw new RecipeCreationPendingException(RecipeCreationState.EXTRACTING_CAPTION);
+        }
+        
+        if(Objects.isNull(ingredientsCreatedAt)){
+            throw new RecipeCreationPendingException(RecipeCreationState.CREATING_INGREDIENTS);
+        }
+        
+        if(Objects.isNull(stepCreatedAt)){
+            throw new RecipeCreationPendingException(RecipeCreationState.CREATING_STEPS);
+        }
     }
 
 
