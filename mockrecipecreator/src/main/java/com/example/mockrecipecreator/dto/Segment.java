@@ -12,8 +12,6 @@ public class Segment {
     private Double end;
     private String text;
 
-    public Segment() {}
-
     public Segment(Double start, Double end, String text) {
         this.start = start;
         this.end = end;

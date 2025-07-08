@@ -10,10 +10,11 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 public class RecipeCreateResponse {
-    private UUID recipeInfoId;
-    public static RecipeCreateResponse from(UUID recipeInfoId) {
+    private UUID recipeId;
+    public static RecipeCreateResponse successFrom(UUID recipeId) {
         return  RecipeCreateResponse.builder()
-                .recipeInfoId(recipeInfoId)
+                .recipeId(recipeId)
                 .build();
     }
+
 }

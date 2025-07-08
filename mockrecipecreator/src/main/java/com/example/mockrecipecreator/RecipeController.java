@@ -1,6 +1,7 @@
 package com.example.mockrecipecreator;
 
 import com.example.mockrecipecreator.dto.*;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,12 +30,11 @@ public class RecipeController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/ingredients")
-    public ResponseEntity<ClientIngredientsResponse> getIngredients(@RequestParam String videoId,
-                                                                    @RequestBody String captionContent) {
+    @PostMapping(value = "/ingredients")
+    public ResponseEntity<ClientIngredientsResponse> getIngredients(@RequestParam String videoId) {
         // Mock 응답 생성 (captionContent를 기반으로 재료 추출했다고 가정)
         System.out.println("VideoId: " + videoId);
-        System.out.println("Caption Content: " + captionContent);
+        System.out.println("Caption Content: " );
 
         ClientIngredientsResponse response = new ClientIngredientsResponse();
 

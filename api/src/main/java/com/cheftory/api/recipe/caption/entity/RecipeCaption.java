@@ -1,9 +1,11 @@
 package com.cheftory.api.recipe.caption.entity;
 
+import com.cheftory.api.recipe.caption.converter.SegmentListJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -16,15 +18,19 @@ public class RecipeCaption {//caption
     @UuidGenerator
     private UUID id;
 
-    @Column(length=1000)
-    private String segments;
-    private String langCode;
+    @Convert(converter = SegmentListJsonConverter.class)
+    @Column(columnDefinition = "json")
+    private List<Segment> segments;
+
+    @Enumerated(EnumType.STRING)
+    private LangCodeType langCode;
 
     private UUID recipeInfoId; //id
 
-    public static RecipeCaption from(String segments, UUID recipeInfoId){
+    public static RecipeCaption from(List<Segment> segments,LangCodeType langCodeType ,UUID recipeInfoId){
         return RecipeCaption.builder()
                 .segments(segments)
+                .langCode(langCodeType)
                 .recipeInfoId(recipeInfoId)
                 .build();
     }

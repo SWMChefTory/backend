@@ -1,10 +1,13 @@
 package com.cheftory.api.recipe.step.entity;
 
 
+import com.cheftory.api.common.converter.StringListJsonConverter;
+import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -16,28 +19,28 @@ public class RecipeStep {
     @UuidGenerator
     @Id
     private UUID id;
-    private Integer order;
+
+    private Integer stepOrder;
+
     private String subtitle;
-    private String details;
+
+    @Column(columnDefinition = "json")
+    @Convert(converter = StringListJsonConverter.class)
+    private List<String> details;
     private Double start;
     private Double end;
 
-    private UUID recipeInfoId;
+    private UUID recipeId;
 
-    public static RecipeStep from(
-            String subtitle
-            ,Integer order
-            , String details
-            , Double start
-            , Double end
-            , UUID recipeInfoId) {
+
+    public static RecipeStep from(Integer stepOrder, ClientRecipeStepResponse stepResponses, UUID recipeId){
         return RecipeStep.builder()
-                .subtitle(subtitle)
-                .order(order)
-                .details(details)
-                .start(start)
-                .end(end)
-                .recipeInfoId(recipeInfoId)
+                .stepOrder(stepOrder)
+                .subtitle(stepResponses.getSubtitle())
+                .details(stepResponses.getDetails())
+                .start(stepResponses.getStart())
+                .end(stepResponses.getEnd())
+                .recipeId(recipeId)
                 .build();
     }
 }

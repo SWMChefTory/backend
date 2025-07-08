@@ -1,0 +1,58 @@
+package com.cheftory.api.recipe.helper;
+
+import com.cheftory.api.recipe.entity.Recipe;
+import com.cheftory.api.recipe.entity.RecipeStatus;
+import com.cheftory.api.recipe.entity.VideoInfo;
+import com.cheftory.api.recipe.helper.repository.RecipeNotFoundException;
+import com.cheftory.api.recipe.helper.repository.RecipeRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.net.URI;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class RecipeFinder {
+    private final RecipeRepository repository;
+    public Recipe findByUri(URI videoUrl) {
+        Recipe recipe = repository
+                .findByVideoUri(videoUrl)
+                .orElseThrow(()-> new RecipeNotFoundException("Recipe not found"));
+
+        if(recipe.getStatus().equals(RecipeStatus.PRE_COMPLETED)){
+            return recipe;
+        }
+
+        if(recipe.getStatus().equals(RecipeStatus.FAILED)){
+            return recipe;
+        }
+
+        if(recipe.getStatus().equals(RecipeStatus.COMPLETED)){
+            return recipe;
+        }
+
+        throw new RecipeBanException(recipe.getStatus());
+    }
+
+    public Recipe findById(UUID recipeId) {
+        return repository
+                .findById(recipeId)
+                .orElseThrow(()->new RecipeNotFoundException("Recipe not found"));
+    }
+
+    public VideoInfo findVideoInfo(UUID recipeId) {
+        return findById(recipeId)
+                .getVideoInfo();
+
+    }
+
+    public String findVideoId(UUID recipeId) {
+        return findVideoInfo(recipeId)
+                .getVideoId();
+    }
+
+    public List<Recipe> findAllRecipes(){
+        return repository.findAll();
+    }
+}

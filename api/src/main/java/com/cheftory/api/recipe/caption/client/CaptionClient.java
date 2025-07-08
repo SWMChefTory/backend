@@ -12,7 +12,7 @@ public class CaptionClient {
     }
     private final WebClient webClient;
 
-    public String fetchCaption(String videoId){
+    public ClientCaptionResponse fetchCaption(String videoId){
         return webClient.post().uri(uriBuilder -> uriBuilder
                 .path("/caption")
                 .queryParam("videoId",videoId)
@@ -20,6 +20,6 @@ public class CaptionClient {
                 .build()
         ).retrieve()
                 .bodyToMono(ClientCaptionResponse.class)
-                .block().toString();
+                .block();
     }
 }
