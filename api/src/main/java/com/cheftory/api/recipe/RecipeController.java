@@ -2,12 +2,15 @@ package com.cheftory.api.recipe;
 
 import com.cheftory.api.recipe.dto.*;
 import com.cheftory.api.recipe.exception.RecipeCreationPendingException;
+import com.cheftory.api.recipe.helper.repository.RecipeNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -35,13 +38,10 @@ public class RecipeController {
                 .findRecipeOverviewsResponse();
     }
 
-    @ExceptionHandler(RecipeCreationPendingException.class)
-    public ResponseEntity<RecipeFindPendingResponse> handle(RecipeCreationPendingException exception) {
-        log.info("Recipe creation pending exception: {}", exception.getMessage());
-        RecipeFindPendingResponse body = RecipeFindPendingResponse
-                .from(exception.getState());
-        return ResponseEntity
-                .status(HttpStatus.ACCEPTED) // 202 응답
-                .body(body);
+    @ExceptionHandler(RecipeNotFoundException.class)
+    public ResponseEntity<RecipeNotFoundResponse> handle(RecipeNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(RecipeNotFoundResponse
+                        .from(exception.getMessage()));
     }
 }

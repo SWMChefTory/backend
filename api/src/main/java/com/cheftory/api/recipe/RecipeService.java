@@ -5,7 +5,6 @@ import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
 import com.cheftory.api.recipe.service.YoutubeUrlNormalizer;
-import com.cheftory.api.recipe.exception.RecipeCreationPendingException;
 import com.cheftory.api.recipe.helper.RecipeCreator;
 import com.cheftory.api.recipe.helper.RecipeFinder;
 import com.cheftory.api.recipe.helper.RecipeUpdator;
@@ -23,7 +22,6 @@ import org.springframework.web.util.UriComponents;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -63,7 +61,11 @@ public class RecipeService {
     public RecipeFindResponse findTotalRecipeInfo(UUID recipeId) {
         VideoInfo videoInfo = recipeFinder.findVideoInfo(recipeId);
 
-        ensureRecipeFullyCreated(recipeId);
+        RecipeSubContentCreatedAt recipeSubContentCreatedAt = findSubContentCreatedAt(recipeId);
+
+        if(!recipeSubContentCreatedAt.isAllCreated()){
+            return RecipeFindResponse.preCompletedFrom(RecipeStatus.PRE_COMPLETED, recipeSubContentCreatedAt);
+        }
         
         List<RecipeStepInfo> recipeInfos = recipeStepService
                 .getRecipeStepInfos(recipeId);
@@ -71,7 +73,11 @@ public class RecipeService {
                 .getIngredientsInfoOfRecipe(recipeId);
 
         recipeUpdator.increseCount(recipeId);
-        return RecipeFindResponse.of(RecipeStatus.COMPLETED,videoInfo,ingredientsInfo,recipeInfos);
+        return RecipeFindResponse.completedFrom(
+                RecipeStatus.COMPLETED
+                , recipeSubContentCreatedAt
+                , videoInfo
+                , ingredientsInfo,recipeInfos);
     }
 
     public RecipeOverviewsResponse findRecipeOverviewsResponse() {
@@ -80,22 +86,13 @@ public class RecipeService {
     }
 
 
-    private void ensureRecipeFullyCreated(UUID recipeId) {
+    private RecipeSubContentCreatedAt findSubContentCreatedAt(UUID recipeId) {
         LocalDateTime captionCreatedAt = recipeFinder.findCaptionCreatedAt(recipeId);
         LocalDateTime ingredientsCreatedAt = recipeFinder.findIngredientsCreatedAt(recipeId);
         LocalDateTime stepCreatedAt = recipeFinder.findStepCreatedAt(recipeId);
 
-        if(Objects.isNull(captionCreatedAt)){
-            throw new RecipeCreationPendingException(RecipeCreationState.EXTRACTING_CAPTION);
-        }
-        
-        if(Objects.isNull(ingredientsCreatedAt)){
-            throw new RecipeCreationPendingException(RecipeCreationState.CREATING_INGREDIENTS);
-        }
-        
-        if(Objects.isNull(stepCreatedAt)){
-            throw new RecipeCreationPendingException(RecipeCreationState.CREATING_STEPS);
-        }
+        return RecipeSubContentCreatedAt
+                .from(captionCreatedAt,ingredientsCreatedAt,stepCreatedAt);
     }
 
 

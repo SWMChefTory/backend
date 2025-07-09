@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebclientConfig {
     @Bean
     @Qualifier("recipeCreateClient")
-    public WebClient webClientForRecipeServer(){
+    public WebClient webClientForRecipeServer() {
         String recipeServerUrl = "http://localhost:8000";
         return WebClient.builder()
                 .baseUrl(recipeServerUrl)
@@ -18,7 +18,7 @@ public class WebclientConfig {
 
     @Bean
     @Qualifier("youtubeClient")
-    public WebClient webClientForGoogle(){
+    public WebClient webClientForGoogle() {
         return WebClient
                 .builder()
                 .baseUrl("https://www.googleapis.com/youtube/v3")

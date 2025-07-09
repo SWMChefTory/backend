@@ -12,16 +12,32 @@ import java.util.List;
 @Getter
 public class RecipeFindResponse {
     private RecipeStatus recipeStatus;
+    private RecipeSubContentCreatedAt recipeSubContentCreatedAt;
     private VideoInfo videoInfo;
     private IngredientsInfo ingredientsInfo;
     private List<RecipeStepInfo> recipeStepInfos;
 
-    public static RecipeFindResponse of(RecipeStatus recipeStatus, VideoInfo videoInfo,IngredientsInfo ingredientsInfo, List<RecipeStepInfo> recipeStepInfos) {
+    public static RecipeFindResponse completedFrom(
+            RecipeStatus recipeStatus
+            ,RecipeSubContentCreatedAt recipeSubContentCreatedAt
+            , VideoInfo videoInfo
+            , IngredientsInfo ingredientsInfo
+            , List<RecipeStepInfo> recipeStepInfos) {
         return RecipeFindResponse.builder()
+                .recipeSubContentCreatedAt(recipeSubContentCreatedAt)
                 .recipeStatus(recipeStatus)
                 .videoInfo(videoInfo)
                 .ingredientsInfo(ingredientsInfo)
                 .recipeStepInfos(recipeStepInfos)
+                .build();
+    }
+
+    public static RecipeFindResponse preCompletedFrom(
+            RecipeStatus recipeStatus
+            , RecipeSubContentCreatedAt recipeSubContentCreatedAt) {
+        return RecipeFindResponse.builder()
+                .recipeStatus(recipeStatus)
+                .recipeSubContentCreatedAt(recipeSubContentCreatedAt)
                 .build();
     }
 }

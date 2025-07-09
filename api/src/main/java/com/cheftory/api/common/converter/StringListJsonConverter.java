@@ -26,7 +26,8 @@ public class StringListJsonConverter implements AttributeConverter<List<String>,
     public List<String> convertToEntityAttribute(String dbData) {
         if (dbData == null || dbData.isBlank()) return null;
         try {
-            return objectMapper.readValue(dbData, new TypeReference<List<String>>() {});
+            return objectMapper.readValue(dbData, new TypeReference<List<String>>() {
+            });
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to deserialize JSON to list of strings", e);
         }
