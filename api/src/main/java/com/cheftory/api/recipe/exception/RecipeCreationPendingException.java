@@ -1,5 +1,6 @@
-package com.cheftory.api.recipe;
+package com.cheftory.api.recipe.exception;
 
+import com.cheftory.api.recipe.RecipeCreationState;
 import lombok.Getter;
 
 @Getter

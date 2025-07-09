@@ -14,10 +14,13 @@ import java.net.URI;
 @Builder(access = AccessLevel.PRIVATE)
 @Embeddable
 public class VideoInfo {
-    @Column(length=512, unique=true)
+    @Column(length=255, unique=true)
     private URI videoUri;
+    @Column(length=255)
     private String title;
+    @Column(length=255)
     private URI thumbnailUrl;
+
     private Integer videoSeconds;
 
     public static VideoInfo from(UriComponents uriComponents, String title, URI thumbnailUrl, Integer videoSeconds) {

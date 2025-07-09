@@ -1,6 +1,6 @@
 package com.cheftory.api.recipe.entity;
 
-import com.cheftory.api.recipe.CannotCreateException;
+import com.cheftory.api.recipe.exception.CannotCreateException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;

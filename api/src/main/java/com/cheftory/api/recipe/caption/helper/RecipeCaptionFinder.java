@@ -1,6 +1,6 @@
 package com.cheftory.api.recipe.caption.helper;
 
-import com.cheftory.api.recipe.caption.CaptionNotFoundException;
+import com.cheftory.api.recipe.caption.exception.CaptionNotFoundException;
 import com.cheftory.api.recipe.caption.entity.Segment;
 import com.cheftory.api.recipe.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.caption.helper.repository.RecipeCaptionRepository;

@@ -1,6 +1,4 @@
-package com.cheftory.api.recipe.step.helper;
-
-import java.util.UUID;
+package com.cheftory.api.recipe.step.helper.exception;
 
 public class RecipeStepNotFoundException extends RuntimeException{
     public RecipeStepNotFoundException(String message) {

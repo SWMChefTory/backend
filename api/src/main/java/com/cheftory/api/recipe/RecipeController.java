@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe;
 
 import com.cheftory.api.recipe.dto.*;
+import com.cheftory.api.recipe.exception.RecipeCreationPendingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

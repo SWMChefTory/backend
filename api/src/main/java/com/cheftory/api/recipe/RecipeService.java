@@ -4,6 +4,8 @@ import com.cheftory.api.recipe.dto.*;
 import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
+import com.cheftory.api.recipe.service.YoutubeUrlNormalizer;
+import com.cheftory.api.recipe.exception.RecipeCreationPendingException;
 import com.cheftory.api.recipe.helper.RecipeCreator;
 import com.cheftory.api.recipe.helper.RecipeFinder;
 import com.cheftory.api.recipe.helper.RecipeUpdator;
@@ -36,10 +38,11 @@ public class RecipeService {
     private final RecipeIngredientsService recipeIngredientsService;
     private final RecipeUpdator recipeUpdator;
     private final RecipeChecker recipeChecker;
-
+    private final YoutubeUrlNormalizer youtubeUrlNormalizer;
 
     public UUID create(UriComponents uri) {
-        if(recipeChecker.checkAlreadyCreated(uri.toUri())){
+        UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uri);
+        if(recipeChecker.checkAlreadyCreated(urlNormalized.toUri())){
             Recipe recipe = recipeFinder.findByUri(uri.toUri());
             recipe.isBanned();
             return recipe.getId();
@@ -63,6 +66,11 @@ public class RecipeService {
 
         recipeUpdator.increseCount(recipeId);
         return RecipeFindResponse.of(RecipeStatus.COMPLETED,videoInfo,ingredientsInfo,recipeInfos);
+    }
+
+    public RecipeOverviewsResponse findRecipeOverviewsResponse() {
+        return RecipeOverviewsResponse
+                .of(findAllOverviewRecipes());
     }
 
 
@@ -90,10 +98,5 @@ public class RecipeService {
         return recipes.stream()
                 .map(RecipeOverview::of)
                 .toList();
-    }
-
-    public RecipeOverviewsResponse findRecipeOverviewsResponse() {
-        return RecipeOverviewsResponse
-                .of(findAllOverviewRecipes());
     }
 }

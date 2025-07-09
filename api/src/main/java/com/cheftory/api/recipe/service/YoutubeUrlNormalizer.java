@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.entity;
+package com.cheftory.api.recipe.service;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
