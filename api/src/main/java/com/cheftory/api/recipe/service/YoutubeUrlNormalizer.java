@@ -11,21 +11,14 @@ import java.util.Objects;
 
 @Component
 public class YoutubeUrlNormalizer {
+    private final String notExpectedHostMessage = "기대하는 호스트가 아닙니다.";
+    private final String notExpectedQueryParameter = "기대하는 쿼리 파라미터가 아닙니다.";
 
+    private final String nullUrlErrorMessage = "url이 비어있습니다.";
+    private final String nullHostErrorMessage = "호스트가 비어있습니다.";
+    private final String nullPathErrorMessage = "호스트가 비어있습니다.";
     public UriComponents normalize(UriComponents url){
-        Objects.requireNonNull(url, "url must not be null");
-
-        String id;
-        System.out.println(url.getHost()+url.getPath()+"!!");
-        if((url.getHost()+url.getPath()).equals("www.youtube.com/watch")){
-            id= tryGetIdFromUrl(url);
-        }
-        else if(url.getHost().equals("www.youtu.be")){
-            id = tryGetIdFromUrl(url);
-        }
-        else{
-            throw new IllegalStateException("유튜브 url이 아닙니다.");
-        }
+        String id = extractId(url);
 
         return UriComponentsBuilder
                 .fromUriString("https://youtube.com/watch")
@@ -33,20 +26,54 @@ public class YoutubeUrlNormalizer {
                 .build();
     }
 
-    private String tryGetIdFromSharedUrl(UriComponents url){
-        List<String> pathSegments = url.getPathSegments();
+    private String extractId(UriComponents url){
+        Assert.notNull(url, nullUrlErrorMessage);
 
-        Assert.isTrue(pathSegments.size()==1,"공유하기 url 형식이 아닙니다.");
+        String id = extractIdFromGeneralUrl(url);
+        if(!Objects.isNull(id)){
+            return id;
+        }
 
-        return pathSegments.getFirst();
+        id = extractIdFromSharedUrl(url);
+        if(!Objects.isNull(id)){
+            return id;
+        }
+
+        throw new IllegalArgumentException(notExpectedHostMessage);
     }
 
-    private String tryGetIdFromUrl(UriComponents url){
-        List<String> firstQueryValue = url.getQueryParams().get("v");
+    private String extractIdFromSharedUrl(UriComponents url){
+        String host = url.getHost();
+        Assert.notNull(host, nullHostErrorMessage);
 
-        Assert.notNull(firstQueryValue, "유튜브 영상 id가 존재하지 않습니다.");
-        Assert.noNullElements(firstQueryValue,"유튜브 영상 id에 값이 존재하지 않습니다.");
+        if(!host.equals("www.youtu.be")){
+            return null;
+        }
+        return url.getPathSegments().getFirst();
+    }
 
-        return firstQueryValue.getFirst();
+    private String extractIdFromGeneralUrl(UriComponents url){
+        String host = url.getHost();
+        Assert.notNull(host, nullHostErrorMessage);
+
+        if(!host.equals("www.youtube.com")){
+            return null;
+        }
+
+        String path = url.getPath();
+        Assert.notNull(path, nullPathErrorMessage);
+        if(!path.equals("/watch")){
+            return null;
+        }
+
+        List<String> firstQueryValue = url
+                .getQueryParams()
+                .get("v");
+
+        Assert.notNull(firstQueryValue, notExpectedQueryParameter);
+        Assert.noNullElements(firstQueryValue,notExpectedQueryParameter);
+
+        return firstQueryValue
+                .getFirst();
     }
 }

@@ -47,6 +47,7 @@ public class RecipeService {
 
     public UUID create(UriComponents uri) {
         UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uri);
+
         if(recipeChecker.checkAlreadyCreated(urlNormalized.toUri())){
             Recipe recipe = recipeFinder.findByUri(urlNormalized.toUri());
             recipe.isBanned();
