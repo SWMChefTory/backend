@@ -31,13 +31,18 @@ import java.util.UUID;
 @Slf4j
 public class RecipeService {
     private final VideoInfoClient videoInfoClient;
+
+    private final AsyncRecipeCreationService asyncRecipeCreationService;
+
     private final RecipeFinder recipeFinder;
     private final RecipeCreator recipeCreator;
-    private final AsyncRecipeCreationService asyncRecipeCreationService;
-    private final RecipeStepService recipeStepService;
-    private final RecipeIngredientsService recipeIngredientsService;
     private final RecipeUpdator recipeUpdator;
     private final RecipeChecker recipeChecker;
+
+    private final RecipeStepService recipeStepService;
+
+    private final RecipeIngredientsService recipeIngredientsService;
+
     private final YoutubeUrlNormalizer youtubeUrlNormalizer;
 
     public UUID create(UriComponents uri) {
