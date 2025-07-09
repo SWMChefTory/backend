@@ -11,7 +11,7 @@ import java.util.List;
 public class YoutubeVideoResponse {
     private List<Item> items;
 
-    public String getThumbnailUri(){
+    public String getThumbnailUri() {
         return items.getFirst()
                 .getSnippet()
                 .getThumbnails()
@@ -19,12 +19,12 @@ public class YoutubeVideoResponse {
                 .getUrl();
     }
 
-    public String getTitle(){
+    public String getTitle() {
         return items.getFirst()
                 .getSnippet().getTitle();
     }
 
-    public Long getSecondsDuration(){
+    public Long getSecondsDuration() {
         return Iso8601DurationToSecondConverter
                 .convert(items
                         .getFirst()

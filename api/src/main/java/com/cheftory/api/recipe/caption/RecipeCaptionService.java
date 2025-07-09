@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -33,8 +32,8 @@ public class RecipeCaptionService {
 
         RecipeCaption recipeCaption = RecipeCaption.from(
                 clientCaptionResponse.getCaptions()
-                ,clientCaptionResponse.getLangCodeType()
-                ,recipeId
+                , clientCaptionResponse.getLangCodeType()
+                , recipeId
         );
 
         return recipeCaptionCreator.create(recipeCaption);
@@ -42,7 +41,7 @@ public class RecipeCaptionService {
 
     public CaptionInfo getCaptionInfo(UUID captionId) {
         RecipeCaption recipeCaption = recipeCaptionFinder.findById(captionId);
-        return CaptionInfo.from(recipeCaption.getLangCode(),recipeCaption.getSegments());
+        return CaptionInfo.from(recipeCaption.getLangCode(), recipeCaption.getSegments());
     }
 
 }

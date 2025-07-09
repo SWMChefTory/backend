@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
 import java.util.UUID;
 
 @Getter
@@ -11,8 +12,9 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 public class RecipeCreateResponse {
     private UUID recipeId;
+
     public static RecipeCreateResponse successFrom(UUID recipeId) {
-        return  RecipeCreateResponse.builder()
+        return RecipeCreateResponse.builder()
                 .recipeId(recipeId)
                 .build();
     }

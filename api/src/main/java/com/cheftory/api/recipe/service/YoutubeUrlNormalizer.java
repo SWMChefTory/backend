@@ -18,7 +18,7 @@ public class YoutubeUrlNormalizer {
     private final String nullHostErrorMessage = "호스트가 비어있습니다.";
     private final String nullPathErrorMessage = "경로가 비어있습니다.";
 
-    public UriComponents normalize(UriComponents url){
+    public UriComponents normalize(UriComponents url) {
         String id = extractId(url);
 
         String normalizedPath = "https://youtube.com/watch";
@@ -30,43 +30,43 @@ public class YoutubeUrlNormalizer {
                 .build();
     }
 
-    private String extractId(UriComponents url){
+    private String extractId(UriComponents url) {
         Assert.notNull(url, nullUrlErrorMessage);
 
         String id = extractIdFromGeneralUrl(url);
-        if(!Objects.isNull(id)){
+        if (!Objects.isNull(id)) {
             return id;
         }
 
         id = extractIdFromSharedUrl(url);
-        if(!Objects.isNull(id)){
+        if (!Objects.isNull(id)) {
             return id;
         }
 
         throw new IllegalArgumentException(notExpectedHostMessage);
     }
 
-    private String extractIdFromSharedUrl(UriComponents url){
+    private String extractIdFromSharedUrl(UriComponents url) {
         String host = url.getHost();
         Assert.notNull(host, nullHostErrorMessage);
 
-        if(!host.equals("www.youtu.be")){
+        if (!host.equals("www.youtu.be")) {
             return null;
         }
         return url.getPathSegments().getFirst();
     }
 
-    private String extractIdFromGeneralUrl(UriComponents url){
+    private String extractIdFromGeneralUrl(UriComponents url) {
         String host = url.getHost();
         Assert.notNull(host, nullHostErrorMessage);
 
-        if(!host.equals("www.youtube.com")){
+        if (!host.equals("www.youtube.com")) {
             return null;
         }
 
         String path = url.getPath();
         Assert.notNull(path, nullPathErrorMessage);
-        if(!path.equals("/watch")){
+        if (!path.equals("/watch")) {
             return null;
         }
 
@@ -75,7 +75,7 @@ public class YoutubeUrlNormalizer {
                 .get("v");
 
         Assert.notNull(firstQueryValue, notExpectedQueryParameter);
-        Assert.noNullElements(firstQueryValue,notExpectedQueryParameter);
+        Assert.noNullElements(firstQueryValue, notExpectedQueryParameter);
 
         return firstQueryValue
                 .getFirst();

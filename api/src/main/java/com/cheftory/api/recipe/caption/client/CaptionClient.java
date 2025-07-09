@@ -8,18 +8,19 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 public class CaptionClient {
-    public CaptionClient(@Qualifier("recipeCreateClient") WebClient webClient){
+    public CaptionClient(@Qualifier("recipeCreateClient") WebClient webClient) {
         this.webClient = webClient;
     }
+
     private final WebClient webClient;
 
-    public ClientCaptionResponse fetchCaption(String videoId){
+    public ClientCaptionResponse fetchCaption(String videoId) {
         ClientCaptionRequest request = ClientCaptionRequest
-                .from(videoId,"youtube");
+                .from(videoId, "youtube");
         return webClient.post().uri(uriBuilder -> uriBuilder
-                .path("/captions")
-                .build()
-        ).bodyValue(request)
+                        .path("/captions")
+                        .build()
+                ).bodyValue(request)
                 .retrieve()
                 .bodyToMono(ClientCaptionResponse.class)
                 .block();

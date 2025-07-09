@@ -33,7 +33,7 @@ public class RecipeStep {
     private UUID recipeId;
 
 
-    public static RecipeStep from(Integer stepOrder, ClientRecipeStepResponse stepResponses, UUID recipeId){
+    public static RecipeStep from(Integer stepOrder, ClientRecipeStepResponse stepResponses, UUID recipeId) {
         return RecipeStep.builder()
                 .stepOrder(stepOrder)
                 .subtitle(stepResponses.getSubtitle())

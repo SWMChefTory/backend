@@ -27,7 +27,8 @@ public class IngredientListJsonConverter implements AttributeConverter<List<Ingr
     public List<Ingredient> convertToEntityAttribute(String dbData) {
         if (dbData == null || dbData.isBlank()) return null;
         try {
-            return objectMapper.readValue(dbData, new TypeReference<List<Ingredient>>() {});
+            return objectMapper.readValue(dbData, new TypeReference<List<Ingredient>>() {
+            });
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to convert JSON to ingredients", e);
         }

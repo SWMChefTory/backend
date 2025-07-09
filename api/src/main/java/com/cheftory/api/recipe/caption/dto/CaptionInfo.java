@@ -18,6 +18,7 @@ public class CaptionInfo {
     LangCodeType langCodeType;
     @JsonProperty("captions")
     List<Segment> captions;
+
     public static CaptionInfo from(LangCodeType langCodeType, List<Segment> captions) {
         return CaptionInfo
                 .builder()

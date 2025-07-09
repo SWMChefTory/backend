@@ -25,20 +25,20 @@ public class RecipeUpdator {
         return recipeRepository.increaseCount(recipeId);
     }
 
-    public Integer updateCaptionCreatedAt(UUID recipeId,LocalDateTime captionCreatedAt) {
+    public Integer updateCaptionCreatedAt(UUID recipeId, LocalDateTime captionCreatedAt) {
         return recipeRepository
-                .updateCaptionCreatedAt(recipeId,captionCreatedAt);
+                .updateCaptionCreatedAt(recipeId, captionCreatedAt);
     }
 
-    public Integer updateIngredientsCreatedAt(UUID recipeId,LocalDateTime ingredientsCreatedAt) {
+    public Integer updateIngredientsCreatedAt(UUID recipeId, LocalDateTime ingredientsCreatedAt) {
         log.info("updateIngredientsCreatedAt");
         return recipeRepository
-                .updateIngredientsCreatedAt(recipeId,ingredientsCreatedAt);
+                .updateIngredientsCreatedAt(recipeId, ingredientsCreatedAt);
     }
 
-    public Integer updateStepCreatedAt(UUID recipeId,LocalDateTime stepCreatedAt) {
+    public Integer updateStepCreatedAt(UUID recipeId, LocalDateTime stepCreatedAt) {
         log.info("updateStepCreatedAt");
         return recipeRepository
-                .updateStepCreatedAt(recipeId,stepCreatedAt);
+                .updateStepCreatedAt(recipeId, stepCreatedAt);
     }
 }

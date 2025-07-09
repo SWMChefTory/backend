@@ -12,9 +12,10 @@ import java.util.List;
 
 @Component
 public class RecipeStepClient {
-    public RecipeStepClient(@Qualifier("recipeCreateClient") WebClient webClient){
+    public RecipeStepClient(@Qualifier("recipeCreateClient") WebClient webClient) {
         this.webClient = webClient;
     }
+
     private final WebClient webClient;
 
     public ClientRecipeStepsResponse fetchRecipeSteps(String videoId, CaptionInfo captionInfo, List<Ingredient> ingredients) {

@@ -17,7 +17,7 @@ public class RecipeStepFinder {
     public List<RecipeStep> findRecipeSteps(UUID recipeId) {
         List<RecipeStep> recipeSteps = recipeStepRepository
                 .findAllByRecipeId(recipeId);
-        if(recipeSteps.isEmpty()) {
+        if (recipeSteps.isEmpty()) {
             throw new RecipeNotFoundException("레시피 단계들이 존재하지 않습니다.");
         }
         return recipeSteps;

@@ -31,7 +31,7 @@ public class RecipeStepService {
     public List<UUID> create(UUID recipeId, CaptionInfo captionInfo, List<Ingredient> ingredients) {
         String videoId = recipeFinder.findVideoId(recipeId);
         ClientRecipeStepsResponse clientRecipeStepsResponse = recipeStepClient
-                .fetchRecipeSteps(videoId,captionInfo,ingredients);
+                .fetchRecipeSteps(videoId, captionInfo, ingredients);
 
         List<ClientRecipeStepResponse> responses = clientRecipeStepsResponse
                 .getSummary()

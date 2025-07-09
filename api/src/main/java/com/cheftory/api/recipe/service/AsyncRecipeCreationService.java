@@ -36,13 +36,13 @@ public class AsyncRecipeCreationService {
     //어짜피 이거는 RecipeService에서만 쓰고 있는 recipeId만 보내줄건데 recipeId가 있는지 체크할 필요가 있을까?
     //중간에 AI 서버에서 실패했을 때 대응하는 방법이 필요해 보임.
     @Async
-    public void create(UUID recipeId){
-        try{
+    public void create(UUID recipeId) {
+        try {
             CaptionInfo captionInfo = handleCaption(recipeId);
             List<Ingredient> ingredientsContent = handleIngredients(recipeId, captionInfo);
             handleSteps(recipeId, captionInfo, ingredientsContent);
             completeRecipe(recipeId);
-        }catch(Exception e){
+        } catch (Exception e) {
             log.error("레시피 생성 실패하여 초기화 합니다.");
             recipeCleanUpService.cleanUp(recipeId);
         }

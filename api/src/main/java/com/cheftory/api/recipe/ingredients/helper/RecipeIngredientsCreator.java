@@ -12,6 +12,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RecipeIngredientsCreator {
     private final RecipeIngredientsRepository recipeIngredientsRepository;
+
     public UUID create(RecipeIngredients recipeIngredients) {
         return recipeIngredientsRepository.save(recipeIngredients).getId();
     }

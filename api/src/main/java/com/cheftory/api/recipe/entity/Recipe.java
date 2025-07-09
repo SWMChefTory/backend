@@ -4,6 +4,7 @@ import com.cheftory.api.recipe.exception.CannotCreateException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -43,12 +44,12 @@ public class Recipe {
     }
 
     public void isBanned() {
-        if(status == RecipeStatus.NOT_COOK_URL){
+        if (status == RecipeStatus.NOT_COOK_URL) {
             throw new CannotCreateException("Recipe not in cook url");
         }
     }
 
-    public String getVideoId(){
+    public String getVideoId() {
         return null;
     }
 }

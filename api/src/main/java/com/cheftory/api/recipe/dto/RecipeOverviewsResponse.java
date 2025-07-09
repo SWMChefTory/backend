@@ -7,11 +7,12 @@ import lombok.Getter;
 
 import java.util.List;
 
-@Builder(access= AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeOverviewsResponse {
     private List<RecipeOverview> recipeOverviews;
+
     public static RecipeOverviewsResponse of(List<RecipeOverview> recipeOverviews) {
         return RecipeOverviewsResponse
                 .builder()

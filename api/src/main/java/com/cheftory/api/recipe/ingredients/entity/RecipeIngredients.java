@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@AllArgsConstructor(access= AccessLevel.PRIVATE)
-@Builder(access=AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Getter
 public class RecipeIngredients {

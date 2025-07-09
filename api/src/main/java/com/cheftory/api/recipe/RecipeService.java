@@ -46,7 +46,7 @@ public class RecipeService {
     public UUID create(UriComponents uri) {
         UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uri);
 
-        if(recipeChecker.checkAlreadyCreated(urlNormalized.toUri())){
+        if (recipeChecker.checkAlreadyCreated(urlNormalized.toUri())) {
             Recipe recipe = recipeFinder.findByUri(urlNormalized.toUri());
             recipe.isBanned();
             return recipe.getId();
@@ -63,10 +63,10 @@ public class RecipeService {
 
         RecipeSubContentCreatedAt recipeSubContentCreatedAt = findSubContentCreatedAt(recipeId);
 
-        if(!recipeSubContentCreatedAt.isAllCreated()){
+        if (!recipeSubContentCreatedAt.isAllCreated()) {
             return RecipeFindResponse.preCompletedFrom(RecipeStatus.PRE_COMPLETED, recipeSubContentCreatedAt);
         }
-        
+
         List<RecipeStepInfo> recipeInfos = recipeStepService
                 .getRecipeStepInfos(recipeId);
         IngredientsInfo ingredientsInfo = recipeIngredientsService
@@ -77,7 +77,7 @@ public class RecipeService {
                 RecipeStatus.COMPLETED
                 , recipeSubContentCreatedAt
                 , videoInfo
-                , ingredientsInfo,recipeInfos);
+                , ingredientsInfo, recipeInfos);
     }
 
     public RecipeOverviewsResponse findRecipeOverviewsResponse() {
@@ -92,7 +92,7 @@ public class RecipeService {
         LocalDateTime stepCreatedAt = recipeFinder.findStepCreatedAt(recipeId);
 
         return RecipeSubContentCreatedAt
-                .from(captionCreatedAt,ingredientsCreatedAt,stepCreatedAt);
+                .from(captionCreatedAt, ingredientsCreatedAt, stepCreatedAt);
     }
 
 

@@ -10,6 +10,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RecipeCaptionRemover {
     private final RecipeCaptionRepository recipeCaptionRepository;
+
     public void removeByRecipeId(UUID recipeId) {
         recipeCaptionRepository.deleteById(recipeId);
     }

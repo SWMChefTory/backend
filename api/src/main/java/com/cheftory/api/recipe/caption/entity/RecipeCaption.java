@@ -4,6 +4,7 @@ import com.cheftory.api.recipe.caption.converter.SegmentListJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class RecipeCaption {
 
     private UUID recipeId;
 
-    public static RecipeCaption from(List<Segment> segments,LangCodeType langCodeType ,UUID recipeId){
+    public static RecipeCaption from(List<Segment> segments, LangCodeType langCodeType, UUID recipeId) {
         return RecipeCaption.builder()
                 .segments(segments)
                 .langCode(langCodeType)

@@ -28,7 +28,7 @@ public class RecipeIngredientsService {
     public UUID create(UUID recipeId, CaptionInfo captionInfo) {
         String videoId = recipeFinder.findVideoId(recipeId);
         List<Ingredient> ingredients = recipeIngredientsClient
-                .fetchRecipeIngredients(videoId,captionInfo);
+                .fetchRecipeIngredients(videoId, captionInfo);
         RecipeIngredients recipeIngredients = RecipeIngredients.from(ingredients, recipeId);
         recipeIngredientsCreator.create(recipeIngredients);
         return recipeIngredients.getId();

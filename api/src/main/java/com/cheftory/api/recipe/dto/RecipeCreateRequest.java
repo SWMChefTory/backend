@@ -12,6 +12,7 @@ import java.net.URI;
 @Slf4j
 public class RecipeCreateRequest {
     private URI videoUrl;
+
     @Schema(hidden = true)
     public UriComponents toUrl() {
         log.trace(videoUrl.toString());

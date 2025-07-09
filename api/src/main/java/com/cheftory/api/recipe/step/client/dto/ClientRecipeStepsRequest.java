@@ -22,7 +22,7 @@ public class ClientRecipeStepsRequest {
     private CaptionInfo captionInfo;
     private List<Ingredient> ingredients;
 
-    public static ClientRecipeStepsRequest from(String videoId, String videoType, CaptionInfo captionInfo, List<Ingredient> ingredients){
+    public static ClientRecipeStepsRequest from(String videoId, String videoType, CaptionInfo captionInfo, List<Ingredient> ingredients) {
         return ClientRecipeStepsRequest.builder()
                 .videoId(videoId)
                 .videoType(videoType)

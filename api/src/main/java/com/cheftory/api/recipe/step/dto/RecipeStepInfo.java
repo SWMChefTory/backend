@@ -12,7 +12,7 @@ import lombok.Getter;
 import java.util.List;
 import java.util.UUID;
 
-@AllArgsConstructor(access= AccessLevel.PACKAGE)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Builder(access = AccessLevel.PACKAGE)
 @Getter
 public class RecipeStepInfo {

@@ -14,11 +14,11 @@ import java.net.URI;
 @Builder(access = AccessLevel.PRIVATE)
 @Embeddable
 public class VideoInfo {
-    @Column(length=255, unique=true)
+    @Column(length = 255, unique = true)
     private URI videoUri;
-    @Column(length=255)
+    @Column(length = 255)
     private String title;
-    @Column(length=255)
+    @Column(length = 255)
     private URI thumbnailUrl;
 
     private Integer videoSeconds;
@@ -31,7 +31,7 @@ public class VideoInfo {
                 .videoSeconds(videoSeconds).build();
     }
 
-    public String getVideoId(){
+    public String getVideoId() {
         return UriComponentsBuilder
                 .fromUri(videoUri)
                 .build()

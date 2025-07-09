@@ -14,13 +14,14 @@ import java.util.List;
 
 @Service
 public class RecipeIngredientsClient {
-    public RecipeIngredientsClient(@Qualifier("recipeCreateClient") WebClient webClient){
+    public RecipeIngredientsClient(@Qualifier("recipeCreateClient") WebClient webClient) {
         this.webClient = webClient;
     }
+
     private final WebClient webClient;
 
     public List<Ingredient> fetchRecipeIngredients(String videoId, CaptionInfo captionInfo) {
-        ClientIngredientsRequest request = ClientIngredientsRequest.from(videoId,"youtube",captionInfo);
+        ClientIngredientsRequest request = ClientIngredientsRequest.from(videoId, "youtube", captionInfo);
 
         ClientIngredientsResponse response = webClient.post().uri(uriBuilder -> uriBuilder
                         .path("/ingredients")

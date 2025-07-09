@@ -17,7 +17,7 @@ public class RecipeIngredientsFinder {
     public RecipeIngredients findById(UUID recipeIngredientsId) {
         return recipeIngredientsRepository
                 .findById(recipeIngredientsId)
-                .orElseThrow(()->new RecipeIngredientsNotFoundException("id에 해당하는 재료가 존재하지 않습니다."));
+                .orElseThrow(() -> new RecipeIngredientsNotFoundException("id에 해당하는 재료가 존재하지 않습니다."));
     }
 
     public List<Ingredient> findIngredientsContent(UUID recipeIngredientsId) {
@@ -25,7 +25,7 @@ public class RecipeIngredientsFinder {
                 .getIngredients();
     }
 
-    public RecipeIngredients findByRecipeId(UUID recipeId){
+    public RecipeIngredients findByRecipeId(UUID recipeId) {
         return recipeIngredientsRepository
                 .findByRecipeId(recipeId);
     }

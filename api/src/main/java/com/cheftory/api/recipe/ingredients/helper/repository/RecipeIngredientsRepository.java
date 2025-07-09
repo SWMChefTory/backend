@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface RecipeIngredientsRepository extends JpaRepository<RecipeIngredients, UUID> {
     RecipeIngredients findByRecipeId(UUID recipeId);
+
     void deleteByRecipeId(UUID recipeId);
 }

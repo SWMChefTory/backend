@@ -6,12 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-@AllArgsConstructor(access= AccessLevel.PRIVATE)
-@Builder(access=AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeFindPendingResponse {
     private final RecipeCreationState recipeCreationState;
-    public static RecipeFindPendingResponse from(RecipeCreationState recipeCreationState){
+
+    public static RecipeFindPendingResponse from(RecipeCreationState recipeCreationState) {
         return RecipeFindPendingResponse.builder()
                 .recipeCreationState(recipeCreationState)
                 .build();

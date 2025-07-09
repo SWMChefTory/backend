@@ -7,6 +7,7 @@ import com.cheftory.api.recipe.helper.repository.RecipeNotFoundException;
 import com.cheftory.api.recipe.helper.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,17 +17,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RecipeFinder {
     private final RecipeRepository repository;
+
     public Recipe findByUri(URI videoUrl) {
         return repository
                 .findByVideoUri(videoUrl)
-                .orElseThrow(()-> new RecipeNotFoundException("Recipe not found"));
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found"));
     }
 
 
     public Recipe findById(UUID recipeId) {
         return repository
                 .findById(recipeId)
-                .orElseThrow(()->new RecipeNotFoundException("Recipe not found"));
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found"));
     }
 
     public VideoInfo findVideoInfo(UUID recipeId) {
@@ -55,7 +57,7 @@ public class RecipeFinder {
                 .getStepCreatedAt();
     }
 
-    public List<Recipe> findAllRecipes(){
+    public List<Recipe> findAllRecipes() {
         return repository.findAll();
     }
 }

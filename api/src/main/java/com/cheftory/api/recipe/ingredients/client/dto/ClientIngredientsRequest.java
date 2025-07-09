@@ -7,8 +7,8 @@ import com.cheftory.api.recipe.ingredients.dto.ClientIngredientsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-@AllArgsConstructor(access= AccessLevel.PRIVATE)
-@Builder(access=AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @Getter
 public class ClientIngredientsRequest {
     @JsonProperty("video_id")

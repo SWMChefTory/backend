@@ -7,12 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-@AllArgsConstructor(access= AccessLevel.PRIVATE)
-@Builder(access=AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeOverview {
     private VideoInfo videoInfo;
     private Integer count;
+
     public static RecipeOverview of(Recipe recipe) {
         return RecipeOverview.builder()
                 .videoInfo(recipe.getVideoInfo())

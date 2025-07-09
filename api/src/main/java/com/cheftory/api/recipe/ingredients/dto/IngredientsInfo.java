@@ -10,7 +10,7 @@ import lombok.Getter;
 import java.util.List;
 import java.util.UUID;
 
-@AllArgsConstructor(access= AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 public class IngredientsInfo {

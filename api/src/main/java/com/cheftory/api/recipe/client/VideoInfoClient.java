@@ -13,9 +13,10 @@ import java.util.Objects;
 
 @Component
 public class VideoInfoClient {
-    public VideoInfoClient(@Qualifier("youtubeClient")WebClient webClient){
+    public VideoInfoClient(@Qualifier("youtubeClient") WebClient webClient) {
         this.webClient = webClient;
     }
+
     private final WebClient webClient;
 
     @Value("${youtube.api-token}")
@@ -29,21 +30,21 @@ public class VideoInfoClient {
         YoutubeVideoResponse youtubeVideoResponse = webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/videos")
-                        .queryParam("id",videoId)
-                        .queryParam("key",YOUTUBE_KEY)
+                        .queryParam("id", videoId)
+                        .queryParam("key", YOUTUBE_KEY)
                         .queryParam("part", "snippet,contentDetails")
                         .build())
                 .retrieve()
                 .bodyToMono(YoutubeVideoResponse.class)
                 .block(); //recipeMetaClient
 
-        Objects.requireNonNull(youtubeVideoResponse,"비디오 응답이 null 입니다.");
+        Objects.requireNonNull(youtubeVideoResponse, "비디오 응답이 null 입니다.");
 
         //검증로직 필요하겠는데... 그리고 여기서 바로 객체 뱉는거 별로같은데
         return VideoInfo.from(
                 url
-                ,youtubeVideoResponse.getTitle()
-                ,URI.create(youtubeVideoResponse.getThumbnailUri())
-                ,youtubeVideoResponse.getSecondsDuration().intValue());
+                , youtubeVideoResponse.getTitle()
+                , URI.create(youtubeVideoResponse.getThumbnailUri())
+                , youtubeVideoResponse.getSecondsDuration().intValue());
     }
 }

@@ -19,7 +19,7 @@ public class RecipeCreator {
         log.trace("recipe create.");
         Recipe recipe = recipeRepository
                 .save(Recipe.preCompletedOf(videoInfo));
-        log.trace("recipe id : "+recipe.getId());
+        log.trace("recipe id : " + recipe.getId());
         return recipe.getId();
     }
 }

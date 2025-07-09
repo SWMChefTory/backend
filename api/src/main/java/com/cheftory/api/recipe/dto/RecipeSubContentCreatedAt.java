@@ -29,7 +29,7 @@ public class RecipeSubContentCreatedAt {
     }
 
     @JsonIgnore
-    public boolean isAllCreated(){
+    public boolean isAllCreated() {
         return !ObjectUtils.isEmpty(captionCreatedAt)
                 && !ObjectUtils.isEmpty(ingredientsCreatedAt)
                 && !ObjectUtils.isEmpty(stepsCreatedAt);
