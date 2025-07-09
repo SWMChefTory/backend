@@ -14,15 +14,19 @@ public class YoutubeUrlNormalizer {
     private final String notExpectedHostMessage = "기대하는 호스트가 아닙니다.";
     private final String notExpectedQueryParameter = "기대하는 쿼리 파라미터가 아닙니다.";
 
-    private final String nullUrlErrorMessage = "url이 비어있습니다.";
+    private final String nullUrlErrorMessage = "URL이 비어있습니다.";
     private final String nullHostErrorMessage = "호스트가 비어있습니다.";
-    private final String nullPathErrorMessage = "호스트가 비어있습니다.";
+    private final String nullPathErrorMessage = "경로가 비어있습니다.";
+
     public UriComponents normalize(UriComponents url){
         String id = extractId(url);
 
+        String normalizedPath = "https://youtube.com/watch";
+        String normalizedQueryKey = "v";
+
         return UriComponentsBuilder
-                .fromUriString("https://youtube.com/watch")
-                .queryParam("v",id)
+                .fromUriString(normalizedPath)
+                .queryParam(normalizedQueryKey, id)
                 .build();
     }
 
