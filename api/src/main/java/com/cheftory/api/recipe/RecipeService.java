@@ -48,12 +48,12 @@ public class RecipeService {
     public UUID create(UriComponents uri) {
         UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uri);
         if(recipeChecker.checkAlreadyCreated(urlNormalized.toUri())){
-            Recipe recipe = recipeFinder.findByUri(uri.toUri());
+            Recipe recipe = recipeFinder.findByUri(urlNormalized.toUri());
             recipe.isBanned();
             return recipe.getId();
         }
 
-        VideoInfo videoInfo = videoInfoClient.fetchVideoInfo(uri);
+        VideoInfo videoInfo = videoInfoClient.fetchVideoInfo(urlNormalized);
         UUID recipeId = recipeCreator.create(videoInfo);
         asyncRecipeCreationService.create(recipeId);
         return recipeId;
