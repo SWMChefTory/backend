@@ -1,16 +1,12 @@
 package com.cheftory.api.recipe;
 
 import com.cheftory.api.recipe.dto.*;
-import com.cheftory.api.recipe.exception.RecipeCreationPendingException;
 import com.cheftory.api.recipe.helper.repository.RecipeNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,7 +29,7 @@ public class RecipeController {
     }
 
     @GetMapping("")
-    public RecipeOverviewsResponse getRecipeOverviewsResponse(UUID recipeId) {
+    public RecipeOverviewsResponse getRecipeOverviewsResponse() {
         return recipeService
                 .findRecipeOverviewsResponse();
     }

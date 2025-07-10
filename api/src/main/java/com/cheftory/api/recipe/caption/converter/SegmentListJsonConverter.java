@@ -27,7 +27,7 @@ public class SegmentListJsonConverter implements AttributeConverter<List<Segment
     public List<Segment> convertToEntityAttribute(String dbData) {
         if (dbData == null || dbData.isBlank()) return null;
         try {
-            return objectMapper.readValue(dbData, new TypeReference<List<Segment>>() {
+            return objectMapper.readValue(dbData, new TypeReference<>() {
             });
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to deserialize JSON to segments", e);

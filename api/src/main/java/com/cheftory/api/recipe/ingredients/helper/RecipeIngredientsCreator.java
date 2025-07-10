@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.ingredients.helper;
 
-import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;
 import com.cheftory.api.recipe.ingredients.helper.repository.RecipeIngredientsRepository;
 import lombok.RequiredArgsConstructor;

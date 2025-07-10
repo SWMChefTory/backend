@@ -8,7 +8,6 @@ import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.ingredients.helper.RecipeIngredientsFinder;
 import com.cheftory.api.recipe.helper.RecipeUpdator;
 import com.cheftory.api.recipe.step.RecipeStepService;
-import com.cheftory.api.recipe.step.entity.RecipeStep;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;

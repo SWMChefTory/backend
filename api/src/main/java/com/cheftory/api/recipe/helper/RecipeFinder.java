@@ -1,7 +1,6 @@
 package com.cheftory.api.recipe.helper;
 
 import com.cheftory.api.recipe.entity.Recipe;
-import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
 import com.cheftory.api.recipe.helper.repository.RecipeNotFoundException;
 import com.cheftory.api.recipe.helper.repository.RecipeRepository;

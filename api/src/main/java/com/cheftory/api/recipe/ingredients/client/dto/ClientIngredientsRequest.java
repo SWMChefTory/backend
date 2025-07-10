@@ -1,9 +1,6 @@
 package com.cheftory.api.recipe.ingredients.client.dto;
 
-import com.cheftory.api.recipe.caption.client.dto.ClientCaptionResponse;
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
-import com.cheftory.api.recipe.caption.entity.LangCodeType;
-import com.cheftory.api.recipe.ingredients.dto.ClientIngredientsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 

@@ -1,7 +1,6 @@
 package com.cheftory.api.recipe.step;
 
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
-import com.cheftory.api.recipe.caption.entity.Segment;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.helper.RecipeFinder;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;

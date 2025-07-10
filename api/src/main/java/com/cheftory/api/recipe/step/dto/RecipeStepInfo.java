@@ -1,9 +1,6 @@
 package com.cheftory.api.recipe.step.dto;
 
-import com.cheftory.api.common.converter.StringListJsonConverter;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

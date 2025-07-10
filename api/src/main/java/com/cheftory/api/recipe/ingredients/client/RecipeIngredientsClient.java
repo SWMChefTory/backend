@@ -1,12 +1,10 @@
 package com.cheftory.api.recipe.ingredients.client;
 
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
-import com.cheftory.api.recipe.caption.entity.Segment;
 import com.cheftory.api.recipe.ingredients.client.dto.ClientIngredientsRequest;
 import com.cheftory.api.recipe.ingredients.dto.ClientIngredientsResponse;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 

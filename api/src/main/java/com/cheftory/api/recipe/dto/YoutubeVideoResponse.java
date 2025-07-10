@@ -55,10 +55,6 @@ public class YoutubeVideoResponse {
         public void setDefault(ThumbnailInfo defaultThumbnail) {
             this.defaultThumbnail = defaultThumbnail;
         }
-
-        public ThumbnailInfo getDefault() {
-            return defaultThumbnail;
-        }
     }
 
     @Data
