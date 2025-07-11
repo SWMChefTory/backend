@@ -3,9 +3,9 @@ name: Java CI with Gradle
 # 동작 조건 설정 : main 브랜치에 push 혹은 pull request가 발생할 경우 동작한다.
 on:
   push:
-    branches: [ "CHEF-90-spring-server-docker-git-action-배포" ]
+    branches: [ "dev" ]
   pull_request:
-    branches: [ "CHEF-90-spring-server-docker-git-action-배포" ]
+    branches: [ "dev" ]
 
 permissions:
   contents: read
