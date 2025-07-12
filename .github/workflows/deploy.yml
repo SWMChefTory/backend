@@ -113,6 +113,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd cheftory-proxy-server
+            # 현재 로그인 아이디 확인
+            echo "username"
+            echo ${{secrets.DOCKER_HUB_USERNAME}}
 
             # Docker Hub에 로그인
             echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | sudo docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
@@ -120,9 +123,6 @@ jobs:
             # 현재 docker-compose.yml 확인
             echo "=== Before modification ==="
             cat docker-compose.yml
-
-            # 현재 로그인 아이디 확인
-            echo ${{secrets.DOCKER_HUB_USERNAME}}
 
             # docker-compose.yml에서 이미지 이름 수정
             sed -i "s|image: cheftory-proxy-server-dev:latest|image: ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-proxy-server-dev:latest|g" docker-compose.yml
