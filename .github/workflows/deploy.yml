@@ -88,7 +88,7 @@ jobs:
             DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
             AI_RECIPE_SUMMARY_HOST=${{ secrets.AI_RECIPE_SUMMARY_HOST }}
             AI_RECIPE_SUMMARY_PORT=${{ secrets.AI_RECIPE_SUMMARY_PORT }}
-            YOUTUBE_AI_KEY=${{secrets.YOUTUBE_API_KEY}}
+            YOUTUBE_API_KEY=${{secrets.YOUTUBE_API_KEY}}
             EOF
 
 
