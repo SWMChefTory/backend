@@ -121,6 +121,9 @@ jobs:
             echo "=== Before modification ==="
             cat docker-compose.yml
 
+            # 현재 로그인 아이디 확인
+            echo ${{secrets.DOCKER_HUB_USERNAME}}
+
             # docker-compose.yml에서 이미지 이름 수정
             sed -i "s|image: cheftory-proxy-server-dev:latest|image: ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-proxy-server-dev:latest|g" docker-compose.yml
 
