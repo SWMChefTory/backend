@@ -2,6 +2,7 @@ package com.cheftory.api.user;
 
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
+import com.cheftory.api.user.entity.Status;
 import com.cheftory.api.user.entity.User;
 import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.user.exception.UserException;
@@ -19,6 +20,7 @@ public class UserService {
 
     public UUID getUserIdByEmail(String email) {
         return userRepository.findByEmail(email)
+                .filter(u -> u.getStatus() != Status.DELETED)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND))
                 .getId();
     }
@@ -30,5 +32,13 @@ public class UserService {
 
         User user = User.create(email, nickname, provider, gender);
         return userRepository.save(user).getId();
+    }
+
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        user.changeStatus(Status.DELETED);
+        userRepository.save(user);
     }
 }

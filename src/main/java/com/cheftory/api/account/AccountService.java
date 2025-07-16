@@ -50,4 +50,10 @@ public class AccountService {
         UUID userId = authService.extractUserIdFromRefreshToken(refreshToken);
         authService.deleteRefreshToken(userId, refreshToken);
     }
+
+    public void delete(String refreshToken) {
+        UUID userId = authService.extractUserIdFromRefreshToken(refreshToken);
+        authService.deleteRefreshToken(userId, refreshToken);
+        userService.deleteUser(userId);
+    }
 }

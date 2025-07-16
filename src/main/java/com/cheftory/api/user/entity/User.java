@@ -70,4 +70,9 @@ public class User {
                 .gender(gender)
                 .build();
     }
+
+    public void changeStatus(Status status) {
+        this.status = status;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

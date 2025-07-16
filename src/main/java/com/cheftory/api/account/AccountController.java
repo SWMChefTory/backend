@@ -39,4 +39,10 @@ public class AccountController {
         accountService.logout(request.getRefreshToken());
         return ResponseEntity.ok("Successfully logged out");
     }
+
+    @PostMapping("/delete")
+    public ResponseEntity<String> delete(@RequestBody LogoutRequest request) {
+        accountService.delete(request.getRefreshToken());
+        return ResponseEntity.ok("Successfully deleted account");
+    }
 }
