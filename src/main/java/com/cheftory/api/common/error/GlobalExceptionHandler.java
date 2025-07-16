@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleAuthException(AuthException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("message", ex.getErrorCode().getMessage());
-        response.put("status", ex.getErrorCode().name());
+        response.put("error", ex.getErrorCode().name());
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(response);
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of(
                         "message", e.errorCode.getMessage(),
-                        "status", e.errorCode.name()
+                        "error", e.errorCode.name()
                 ));
     }
 }
