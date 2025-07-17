@@ -1,4 +1,4 @@
-package com.cheftory.api.account.auth.oauth;
+package com.cheftory.api.account.auth.verifier;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

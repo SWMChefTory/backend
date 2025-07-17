@@ -1,12 +1,12 @@
-package com.cheftory.api.auth;
+package com.cheftory.api.account.auth;
 
-import com.cheftory.api.auth.exception.AuthErrorCode;
-import com.cheftory.api.auth.exception.AuthException;
-import com.cheftory.api.auth.model.AuthToken;
-import com.cheftory.api.auth.entity.LoggedIn;
-import com.cheftory.api.auth.oauth.GoogleTokenVerifier;
-import com.cheftory.api.auth.jwt.TokenProvider;
-import com.cheftory.api.auth.repository.LoggedInRepository;
+import com.cheftory.api.account.auth.exception.AuthErrorCode;
+import com.cheftory.api.account.auth.exception.AuthException;
+import com.cheftory.api.account.auth.model.AuthToken;
+import com.cheftory.api.account.auth.entity.LoggedIn;
+import com.cheftory.api.account.auth.verifier.GoogleTokenVerifier;
+import com.cheftory.api.account.auth.jwt.TokenProvider;
+import com.cheftory.api.account.auth.repository.LoggedInRepository;
 import com.cheftory.api.user.entity.Provider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

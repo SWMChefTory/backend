@@ -1,4 +1,4 @@
-package com.cheftory.api.auth.entity;
+package com.cheftory.api.account.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

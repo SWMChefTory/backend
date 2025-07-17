@@ -1,6 +1,6 @@
-package com.cheftory.api.auth.repository;
+package com.cheftory.api.account.auth.repository;
 
-import com.cheftory.api.auth.entity.LoggedIn;
+import com.cheftory.api.account.auth.entity.LoggedIn;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

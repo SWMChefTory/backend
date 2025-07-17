@@ -1,4 +1,4 @@
-package com.cheftory.api.auth.exception;
+package com.cheftory.api.account.auth.exception;
 
 import lombok.Getter;
 

@@ -1,7 +1,7 @@
 package com.cheftory.api.account;
 
 import com.cheftory.api.account.dto.*;
-import com.cheftory.api.auth.model.AuthToken;
+import com.cheftory.api.account.auth.model.AuthToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
