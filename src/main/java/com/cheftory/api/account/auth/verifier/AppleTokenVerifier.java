@@ -1,4 +1,4 @@
-package com.cheftory.api.auth.oauth;
+package com.cheftory.api.account.auth.oauth;
 
 import org.springframework.stereotype.Component;
 

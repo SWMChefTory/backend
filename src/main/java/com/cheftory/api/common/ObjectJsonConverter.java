@@ -4,31 +4,36 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-
-import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 @Converter
-public class StringListJsonConverter implements AttributeConverter<List<String>, String> {
+public class ObjectJsonConverter implements AttributeConverter<Object, String> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public String convertToDatabaseColumn(List<String> attribute) {
-        if (attribute == null) return null;
+    public String convertToDatabaseColumn(Object attribute) {
+        if (attribute == null) {
+            return null;
+        }
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (Exception e) {
+            // 문구 바꾸기
             throw new IllegalArgumentException("Failed to serialize list of strings", e);
         }
     }
 
     @Override
-    public List<String> convertToEntityAttribute(String dbData) {
-        if (dbData == null || dbData.isBlank()) return null;
+    public Object convertToEntityAttribute(String dbData) {
+        if (StringUtils.isBlank(dbData)) {
+            return null;
+        }
         try {
-            return objectMapper.readValue(dbData, new TypeReference<List<String>>() {
+            return objectMapper.readValue(dbData, new TypeReference<>() {
             });
         } catch (Exception e) {
+            // 문구 바꾸기
             throw new IllegalArgumentException("Failed to deserialize JSON to list of strings", e);
         }
     }

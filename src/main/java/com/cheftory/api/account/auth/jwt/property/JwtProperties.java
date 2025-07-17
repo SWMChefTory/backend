@@ -1,4 +1,4 @@
-package com.cheftory.api.auth.config;
+package com.cheftory.api.auth.jwt.property;
 
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;

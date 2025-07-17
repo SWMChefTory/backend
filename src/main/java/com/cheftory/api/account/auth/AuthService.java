@@ -26,7 +26,9 @@ public class AuthService {
         return switch (provider) {
             case GOOGLE -> {
                 String email = googleVerifier.getEmailFromToken(token);
-                if (email == null) throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+                if (email == null) {
+                    throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+                }
                 yield email;
             }
             default -> throw new UnsupportedOperationException("Unsupported provider: " + provider);
