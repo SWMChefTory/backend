@@ -1,6 +1,6 @@
-package com.cheftory.api.common.error;
+package com.cheftory.api.exception;
 
-import com.cheftory.api.auth.exception.AuthException;
+import com.cheftory.api.account.auth.exception.AuthException;
 import com.cheftory.api.user.exception.UserException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

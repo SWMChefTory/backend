@@ -1,7 +1,7 @@
 package com.cheftory.api.account;
 
-import com.cheftory.api.auth.model.AuthToken;
-import com.cheftory.api.auth.AuthService;
+import com.cheftory.api.account.auth.model.AuthToken;
+import com.cheftory.api.account.auth.AuthService;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.UserService;
 import com.cheftory.api.user.entity.Provider;

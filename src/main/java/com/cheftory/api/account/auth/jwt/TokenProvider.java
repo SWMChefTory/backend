@@ -1,8 +1,8 @@
-package com.cheftory.api.auth.jwt;
+package com.cheftory.api.account.auth.jwt;
 
-import com.cheftory.api.auth.exception.AuthErrorCode;
-import com.cheftory.api.auth.exception.AuthException;
-import com.cheftory.api.auth.jwt.property.JwtProperties;
+import com.cheftory.api.account.auth.exception.AuthErrorCode;
+import com.cheftory.api.account.auth.exception.AuthException;
+import com.cheftory.api.account.auth.jwt.property.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

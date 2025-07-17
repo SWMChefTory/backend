@@ -1,4 +1,4 @@
-package com.cheftory.api.auth.model;
+package com.cheftory.api.account.auth.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

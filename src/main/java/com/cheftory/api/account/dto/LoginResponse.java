@@ -1,6 +1,6 @@
 package com.cheftory.api.account.dto;
 
-import com.cheftory.api.auth.model.AuthToken;
+import com.cheftory.api.account.auth.model.AuthToken;
 import lombok.Getter;
 
 @Getter
