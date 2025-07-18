@@ -1,7 +1,10 @@
 package com.cheftory.api.recipe.caption;
 
-public class CaptionNotFoundException extends RuntimeException {
-    public CaptionNotFoundException(String message) {
-        super(message);
+import com.cheftory.api.exception.CheftoryException;
+import com.cheftory.api.exception.MessageError;
+
+public class CaptionNotFoundException extends CheftoryException {
+    public CaptionNotFoundException (MessageError messageError) {
+        super(messageError);
     }
 }

@@ -1,5 +1,6 @@
 package com.cheftory.api.exception;
 
+import com.cheftory.api._common.reponse.ErrorResponse;
 import com.cheftory.api.account.auth.exception.AuthException;
 import com.cheftory.api.user.exception.UserException;
 import org.springframework.http.HttpStatus;
@@ -14,10 +15,8 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "Bad Request");
-        response.put("message", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorResponse response = ErrorResponse.of(ex.getMessage(),"Bad request");
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
