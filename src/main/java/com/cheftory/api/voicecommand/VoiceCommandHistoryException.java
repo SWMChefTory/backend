@@ -1,12 +1,10 @@
 package com.cheftory.api.voicecommand;
 
-import com.cheftory.api.user.exception.UserErrorCode;
+import com.cheftory.api.exception.CheftoryException;
 
-
-public class VoiceCommandHistoryException extends RuntimeException {
-  public final VoiceCommandErrorCode errorCode;
-
+public class VoiceCommandHistoryException extends CheftoryException {
   public VoiceCommandHistoryException(VoiceCommandErrorCode errorCode) {
-    this.errorCode = errorCode;
+    super(errorCode);
   }
+
 }

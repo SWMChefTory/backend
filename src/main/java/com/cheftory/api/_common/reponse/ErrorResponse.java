@@ -1,6 +1,7 @@
 package com.cheftory.api._common.reponse;
 
 import com.cheftory.api.exception.CheftoryException;
+import com.cheftory.api.exception.ErrorMessage;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,19 +13,19 @@ import lombok.Getter;
 public class ErrorResponse {
 
   private String message;
-  private String error;
+  private String errorCode;
 
-  public static ErrorResponse of(String message,String error) {
+  public static ErrorResponse of(ErrorMessage errorMessage) {
     return ErrorResponse.builder()
-        .message(message)
-        .error(error)
+        .message(errorMessage.getMessage())
+        .errorCode(errorMessage.getErrorCode())
         .build();
   }
 
   public static ErrorResponse from(CheftoryException exception) {
     return ErrorResponse.builder()
-        .message(exception.getErrorMessage().getErrorCode())
-        .error(exception.getErrorMessage().getMessage())
+        .message(exception.getErrorMessage().getMessage())
+        .errorCode(exception.getErrorMessage().getErrorCode())
         .build();
   }
 }

@@ -1,10 +1,18 @@
 package com.cheftory.api.exception;
 
+import static com.cheftory.api.exception.ErrorMessage.resolveErrorCode;
+
 import com.cheftory.api._common.reponse.ErrorResponse;
+
 import com.cheftory.api.account.auth.exception.AuthException;
 import com.cheftory.api.user.exception.UserException;
+import com.cheftory.api.voicecommand.VoiceCommandHistoryException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -16,7 +24,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
-        ErrorResponse response = ErrorResponse.of(ex.getMessage(),"Bad request");
+        ErrorResponse response = ErrorResponse.of(GlobalErrorCode.UNKNOWN_ERROR);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
@@ -54,6 +62,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse.of("알 수 없는 오류가 발생했습니다.","UNKNOWN_ERROR"));
+            .body(ErrorResponse.of(GlobalErrorCode.UNKNOWN_ERROR));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        String codeName = Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage();
+
+        ErrorMessage errorMessage = resolveErrorCode(codeName);
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse.of(errorMessage));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse.of(GlobalErrorCode.FIELD_REQUIRED));
     }
 }

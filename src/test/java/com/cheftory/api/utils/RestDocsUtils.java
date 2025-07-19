@@ -1,9 +1,7 @@
 package com.cheftory.api.utils;
 
 
-import com.cheftory.api.exception.ErrorCode;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import com.cheftory.api.exception.ErrorMessage;
 import org.springframework.restdocs.headers.HeaderDocumentation;
 import org.springframework.restdocs.headers.RequestHeadersSnippet;
 import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
@@ -31,10 +29,10 @@ public class RestDocsUtils {
         );
     }
 
-    public static ResponseFieldsSnippet responseErrorFields(ErrorCode errorCode) {
+    public static ResponseFieldsSnippet responseErrorFields(ErrorMessage errorMessage) {
         return PayloadDocumentation.responseFields(
-                PayloadDocumentation.fieldWithPath("error").description(errorCode.getCode()),
-                PayloadDocumentation.fieldWithPath("message").description(errorCode.getMessage())
+                PayloadDocumentation.fieldWithPath("errorCode").description(errorMessage.getErrorCode()),
+                PayloadDocumentation.fieldWithPath("message").description(errorMessage.getMessage())
         );
     }
 
