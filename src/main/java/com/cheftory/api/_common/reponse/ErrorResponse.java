@@ -23,8 +23,8 @@ public class ErrorResponse {
 
   public static ErrorResponse from(CheftoryException exception) {
     return ErrorResponse.builder()
-        .message(exception.getMessage())
-        .error(exception.getError())
+        .message(exception.getErrorMessage().getErrorCode())
+        .error(exception.getErrorMessage().getMessage())
         .build();
   }
 }

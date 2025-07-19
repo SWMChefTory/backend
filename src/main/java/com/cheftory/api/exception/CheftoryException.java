@@ -1,14 +1,16 @@
 package com.cheftory.api.exception;
 
-public class CheftoryException extends RuntimeException {
-  private final String error;
+import com.cheftory.api.recipe.caption.errorcode.CaptionErrorCode;
 
-  public CheftoryException(MessageError messageError) {
-    super(messageError.getMessage());
-    this.error = messageError.getError();
+public class CheftoryException extends RuntimeException {
+  private final ErrorMessage errorMessage;
+
+
+  public CheftoryException(ErrorMessage errorMessage) {
+      this.errorMessage = errorMessage;
   }
 
-  public String getError(){
-    return error;
+  public ErrorMessage getErrorMessage() {
+    return errorMessage;
   }
 }

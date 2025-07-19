@@ -1,6 +1,6 @@
 package com.cheftory.api.exception;
 
-public interface MessageError {
+public interface ErrorMessage {
+  String getErrorCode();
   String getMessage();
-  String getError();
 }

@@ -41,4 +41,19 @@ public class GlobalExceptionHandler {
                         "error", e.errorCode.name()
                 ));
     }
+
+    @ExceptionHandler(CheftoryException.class)
+    public ResponseEntity<ErrorResponse> handleCheftoryException(CheftoryException e) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.from(e));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse.of("알 수 없는 오류가 발생했습니다.","UNKNOWN_ERROR"));
+    }
 }
