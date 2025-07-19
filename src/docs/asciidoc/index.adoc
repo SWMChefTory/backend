@@ -1,0 +1,59 @@
+= API Document
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+
+== 소개
+
+API 문서입니다.
+
+== 공통 사항
+API 문서에서 공통으로 사용되는 내용을 정의합니다.
+
+=== Domain
+
+== 공통 응답 구조
+
+=== 성공 응답
+[source,json]
+----
+{
+
+}
+----
+* `status`: HTTP 상태 코드
+* `data`: 실제 응답 데이터
+
+=== 실패 응답
+[source,json]
+----
+{
+
+"errorCode": "COMMON_2",
+  "message": "요청 변수가 잘못되었습니다."
+
+}
+----
+* `status`: HTTP 상태 코드
+* `errorCode`: 에러 코드
+* `message`: 에러 메시지
+
+== 상태 코드
+
+|===
+| 상태 코드 | 의미 | 설명
+| 200       | OK   | 요청이 성공적으로 처리됨
+| 401       | Unauthorized | 인증 실패 (잘못된 토큰 등)
+| 500       | Internal Server Error | 서버 내부 오류
+|===
+
+=== Authorization
+* `Authorization`: Bearer 액세스 토큰 (필수)
+* 형식: `Bearer {token}`
+* 인증이 필요한 API 호출 시 반드시 포함
+
+
+include::VoiceCommand-API.adoc[]
