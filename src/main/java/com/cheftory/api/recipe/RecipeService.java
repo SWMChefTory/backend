@@ -75,8 +75,13 @@ public class RecipeService {
 
     List<RecipeStepInfo> recipeInfos = recipeStepService
         .getRecipeStepInfos(recipeId);
+    if(recipeInfos.isEmpty()) {
+      recipeInfos = null;
+    }
+
     IngredientsInfo ingredientsInfo = recipeIngredientsService
         .findIngredientsInfoOfRecipe(recipeId);
+
 
     if (!recipeInfos.isEmpty() && Objects.nonNull(ingredientsInfo)) {
       recipeRepository.increaseCount(recipeId);
@@ -89,7 +94,8 @@ public class RecipeService {
   }
 
   public List<RecipeOverview> findOverviewRecipes(List<UUID> recipeIds) {
-    return recipeRepository.findRecipesById(recipeIds).stream()
+    return recipeRepository.findRecipesById(recipeIds)
+        .stream()
         .filter(Recipe::isCompleted)
         .map(RecipeOverview::from)
         .toList();

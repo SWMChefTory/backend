@@ -14,14 +14,16 @@ import lombok.Getter;
 public class SimpleAccessInfo {
   private LocalDateTime viewedAt;
   private LocalDateTime createdAt;
+  private Integer lastPlaySeconds;
   private RecipeOverview recipeOverview;
   public static SimpleAccessInfo of(
       ViewStateInfo viewStateInfo,
       RecipeOverview recipeOverview
   ) {
-    return com.cheftory.api.recipeaccess.dto.SimpleAccessInfo.builder()
+    return SimpleAccessInfo.builder()
         .viewedAt(viewStateInfo.getViewedAt())
         .createdAt(viewStateInfo.getCreatedAt())
+        .lastPlaySeconds(viewStateInfo.getLastPlaySeconds())
         .recipeOverview(recipeOverview)
         .build();
   }

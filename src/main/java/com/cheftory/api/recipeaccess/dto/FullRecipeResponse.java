@@ -13,6 +13,8 @@ public class FullRecipeResponse {
   private FullRecipeInfo fullRecipeInfo;
 
   public static FullRecipeResponse of(FullRecipeInfo fullRecipeInfo) {
-    return FullRecipeResponse.of(fullRecipeInfo);
+    return FullRecipeResponse.builder()
+        .fullRecipeInfo(fullRecipeInfo)
+        .build();
   }
 }
