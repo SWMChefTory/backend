@@ -1,7 +1,5 @@
 package com.cheftory.api.recipe.entity;
 
-import com.cheftory.api.recipe.exception.RecipeErrorCode;
-import com.cheftory.api.recipe.exception.RecipeException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -38,16 +36,23 @@ public class Recipe {
     public static Recipe preCompletedOf(VideoInfo videoInfo) {
         return Recipe.builder()
                 .videoInfo(videoInfo)
-                .status(RecipeStatus.PRE_COMPLETED)
+                .status(RecipeStatus.READY)
                 .count(0)
                 .createdAt(LocalDateTime.now())
                 .build();
     }
 
-    public void isBanned() {
-        if (status == RecipeStatus.NOT_COOK_URL) {
-            throw new RecipeException(RecipeErrorCode.RECIPE_BANNED);
-        }
+    public Boolean isCompleted() {
+        return RecipeStatus.COMPLETED.equals(status);
+    }
+
+    public Boolean isReady(){
+        return RecipeStatus.READY.equals(status);
+    }
+
+
+    public Boolean isBanned(){
+        return RecipeStatus.NOT_COOK_URL.equals(status);
     }
 
     public String getVideoId() {

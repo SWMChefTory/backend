@@ -4,9 +4,9 @@ import com.cheftory.api.recipe.caption.client.CaptionClient;
 import com.cheftory.api.recipe.caption.client.dto.ClientCaptionResponse;
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
 import com.cheftory.api.recipe.caption.entity.RecipeCaption;
-import com.cheftory.api.recipe.caption.helper.RecipeCaptionCreator;
-import com.cheftory.api.recipe.caption.helper.RecipeCaptionFinder;
-import com.cheftory.api.recipe.helper.RecipeFinder;
+import com.cheftory.api.recipe.caption.exception.CaptionErrorCode;
+import com.cheftory.api.recipe.caption.exception.RecipeCaptionException;
+import com.cheftory.api.recipe.caption.repository.RecipeCaptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,15 +16,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class RecipeCaptionService {
-    private final RecipeFinder recipeFinder;
     private final CaptionClient captionClient;
-    private final RecipeCaptionCreator recipeCaptionCreator;
-    private final RecipeCaptionFinder recipeCaptionFinder;
+    private final RecipeCaptionRepository recipeCaptionRepository;
 
     @Transactional
-    public UUID create(UUID recipeId) {
-        String videoId = recipeFinder.findVideoId(recipeId);
-
+    public UUID create(String videoId, UUID recipeId) {
         ClientCaptionResponse clientCaptionResponse = captionClient
                 .fetchCaption(videoId);
 
@@ -34,12 +30,13 @@ public class RecipeCaptionService {
                 , recipeId
         );
 
-        return recipeCaptionCreator.create(recipeCaption);
+        return recipeCaptionRepository.save(recipeCaption).getId();
     }
 
-    public CaptionInfo getCaptionInfo(UUID captionId) {
-        RecipeCaption recipeCaption = recipeCaptionFinder.findById(captionId);
-        return CaptionInfo.from(recipeCaption.getLangCode(), recipeCaption.getSegments());
+    public CaptionInfo findCaptionInfo(UUID captionId) {
+        RecipeCaption caption = recipeCaptionRepository.findById(captionId).orElseThrow(()->new RecipeCaptionException(
+            CaptionErrorCode.CAPTION_NOT_FOUND));
+        return CaptionInfo.from(caption);
     }
 
 }

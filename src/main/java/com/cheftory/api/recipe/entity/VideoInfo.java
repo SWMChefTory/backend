@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 import org.springframework.web.util.UriComponents;
@@ -14,11 +13,8 @@ import java.net.URI;
 @Builder(access = AccessLevel.PRIVATE)
 @Embeddable
 public class VideoInfo {
-    @Column(length = 255, unique = true)
     private URI videoUri;
-    @Column(length = 255)
     private String title;
-    @Column(length = 255)
     private URI thumbnailUrl;
 
     private Integer videoSeconds;

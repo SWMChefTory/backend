@@ -1,6 +1,6 @@
 package com.cheftory.api.recipe.dto;
 
-import com.cheftory.api.common.converter.Iso8601DurationToSecondConverter;
+import com.cheftory.api.recipe.util.Iso8601DurationToSecondConverter;
 import lombok.Data;
 import lombok.ToString;
 

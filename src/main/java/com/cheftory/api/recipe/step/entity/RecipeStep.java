@@ -1,8 +1,7 @@
 package com.cheftory.api.recipe.step.entity;
 
-import com.cheftory.api.common.ObjectJsonConverter;
+import com.cheftory.api._common.ObjectJsonConverter;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;
-import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -42,10 +41,5 @@ public class RecipeStep {
                 .end(stepResponses.getEnd())
                 .recipeId(recipeId)
                 .build();
-    }
-
-    public RecipeStepInfo toRecipeStepInfo() {
-        return RecipeStepInfo.from(
-                this);
     }
 }

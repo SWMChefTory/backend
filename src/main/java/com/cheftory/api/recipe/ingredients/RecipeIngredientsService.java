@@ -4,10 +4,10 @@ import com.cheftory.api.recipe.caption.dto.CaptionInfo;
 import com.cheftory.api.recipe.ingredients.client.RecipeIngredientsClient;
 import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
 import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;
-import com.cheftory.api.recipe.helper.RecipeFinder;
-import com.cheftory.api.recipe.ingredients.helper.RecipeIngredientsCreator;
-import com.cheftory.api.recipe.ingredients.helper.RecipeIngredientsFinder;
+import com.cheftory.api.recipe.ingredients.exception.RecipeIngredientsErrorCode;
+import com.cheftory.api.recipe.ingredients.exception.RecipeIngredientsException;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
+import com.cheftory.api.recipe.ingredients.repository.RecipeIngredientsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,23 +18,28 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class RecipeIngredientsService {
-    private final RecipeFinder recipeFinder;
     private final RecipeIngredientsClient recipeIngredientsClient;
-    private final RecipeIngredientsCreator recipeIngredientsCreator;
-    private final RecipeIngredientsFinder recipeIngredientsFinder;
+    private final RecipeIngredientsRepository recipeIngredientsRepository;
 
     @Transactional
-    public UUID create(UUID recipeId, CaptionInfo captionInfo) {
-        String videoId = recipeFinder.findVideoId(recipeId);
+    public UUID create(UUID recipeId, String videoId, CaptionInfo captionInfo) {
         List<Ingredient> ingredients = recipeIngredientsClient
                 .fetchRecipeIngredients(videoId, captionInfo);
         RecipeIngredients recipeIngredients = RecipeIngredients.from(ingredients, recipeId);
-        recipeIngredientsCreator.create(recipeIngredients);
+        recipeIngredientsRepository.save(recipeIngredients);
         return recipeIngredients.getId();
     }
 
-    public IngredientsInfo getIngredientsInfoOfRecipe(UUID recipeId) {
-        RecipeIngredients recipeIngredients = recipeIngredientsFinder.findByRecipeId(recipeId);
+    public IngredientsInfo findIngredientsInfoOfRecipe(UUID recipeId) {
+        RecipeIngredients recipeIngredients = recipeIngredientsRepository
+            .findById(recipeId)
+            .orElseThrow(()->new RecipeIngredientsException(
+                RecipeIngredientsErrorCode.RECIPE_INGREDIENTS_NOT_FOUND));
+        return IngredientsInfo.from(recipeIngredients);
+    }
+
+    public IngredientsInfo findIngredientsInfo(UUID ingredientId) {
+        RecipeIngredients recipeIngredients = recipeIngredientsRepository.findByRecipeId(ingredientId);
         return IngredientsInfo.from(recipeIngredients);
     }
 }

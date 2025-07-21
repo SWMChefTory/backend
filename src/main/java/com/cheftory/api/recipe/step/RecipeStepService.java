@@ -2,14 +2,12 @@ package com.cheftory.api.recipe.step;
 
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
-import com.cheftory.api.recipe.helper.RecipeFinder;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepsResponse;
 import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
-import com.cheftory.api.recipe.step.helper.RecipeStepCreator;
 import com.cheftory.api.recipe.step.client.RecipeStepClient;
-import com.cheftory.api.recipe.step.helper.RecipeStepFinder;
+import com.cheftory.api.recipe.step.repository.RecipeStepRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +20,10 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class RecipeStepService {
     private final RecipeStepClient recipeStepClient;
-    private final RecipeFinder recipeFinder;
-    private final RecipeStepCreator recipeStepCreator;
-    private final RecipeStepFinder recipeStepFinder;
+    private final RecipeStepRepository recipeStepRepository;
 
     @Transactional
-    public List<UUID> create(UUID recipeId, CaptionInfo captionInfo, List<Ingredient> ingredients) {
-        String videoId = recipeFinder.findVideoId(recipeId);
+    public List<UUID> create(String videoId, UUID recipeId, CaptionInfo captionInfo, List<Ingredient> ingredients) {
         ClientRecipeStepsResponse clientRecipeStepsResponse = recipeStepClient
                 .fetchRecipeSteps(videoId, captionInfo, ingredients);
 
@@ -41,12 +36,14 @@ public class RecipeStepService {
                         RecipeStep.from(i + 1, responses.get(i), recipeId))
                 .toList();
 
-        return recipeStepCreator.createAll(recipeSteps);
+        return recipeStepRepository.saveAll(recipeSteps).stream()
+            .map(RecipeStep::getId)
+            .toList();
     }
 
     public List<RecipeStepInfo> getRecipeStepInfos(UUID recipeId) {
-        return recipeStepFinder
-                .findRecipeSteps(recipeId)
+        return recipeStepRepository
+                .findAllByRecipeId(recipeId)
                 .stream()
                 .map(RecipeStepInfo::from)
                 .toList();
