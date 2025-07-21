@@ -6,6 +6,7 @@ import com.cheftory.api.account.auth.jwt.property.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,11 +22,13 @@ public class TokenProvider {
     private final JwtProperties jwtProperties;
 
     public String createAccessToken(UUID userId) {
-        return createToken(userId, jwtProperties.getAccessTokenExpiration());
+        String token = createToken(userId, jwtProperties.getAccessTokenExpiration());
+        return makeBearerPrefix(token);
     }
 
     public String createRefreshToken(UUID userId) {
-        return createToken(userId, jwtProperties.getRefreshTokenExpiration());
+        String token = createToken(userId, jwtProperties.getRefreshTokenExpiration());
+        return makeBearerPrefix(token);
     }
 
     private String createToken(UUID userId, long expirySeconds) {
@@ -40,12 +43,27 @@ public class TokenProvider {
                 .compact();
     }
 
+    private String removeBearerPrefix(String originalToken) {
+        if (originalToken == null || !originalToken.startsWith("Bearer ")) {
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+        }
+        return originalToken.substring(7);
+    }
+
+    private String makeBearerPrefix(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+        }
+        return "Bearer " + token;
+    }
+
     public UUID getUserIdFromToken(String token) {
+        String cleanedToken = removeBearerPrefix(token);
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(jwtProperties.getSecretKey())
                     .build()
-                    .parseClaimsJws(token)
+                    .parseClaimsJws(cleanedToken)
                     .getBody();
 
             if (claims.getExpiration().before(new Date())) {

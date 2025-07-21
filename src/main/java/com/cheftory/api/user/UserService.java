@@ -41,4 +41,8 @@ public class UserService {
         user.changeStatus(Status.DELETED);
         userRepository.save(user);
     }
+
+    public boolean exists(UUID userId) {
+        return userRepository.existsById(userId);
+    }
 }

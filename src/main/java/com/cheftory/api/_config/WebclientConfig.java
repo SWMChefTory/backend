@@ -1,4 +1,4 @@
-package com.cheftory.api.common.config;
+package com.cheftory.api._config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

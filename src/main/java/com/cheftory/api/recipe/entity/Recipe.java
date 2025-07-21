@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.entity;
 
-import com.cheftory.api.recipe.exception.CannotCreateException;
+import com.cheftory.api.recipe.exception.RecipeErrorCode;
+import com.cheftory.api.recipe.exception.RecipeException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -45,7 +46,7 @@ public class Recipe {
 
     public void isBanned() {
         if (status == RecipeStatus.NOT_COOK_URL) {
-            throw new CannotCreateException("Recipe not in cook url");
+            throw new RecipeException(RecipeErrorCode.RECIPE_BANNED);
         }
     }
 

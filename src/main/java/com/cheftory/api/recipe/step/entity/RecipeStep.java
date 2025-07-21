@@ -1,6 +1,6 @@
 package com.cheftory.api.recipe.step.entity;
 
-import com.cheftory.api.common.converter.ObjectJsonConverter;
+import com.cheftory.api.common.ObjectJsonConverter;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;
 import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
 import jakarta.persistence.*;

@@ -1,4 +1,4 @@
-package com.cheftory.api.common.converter;
+package com.cheftory.api.common;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

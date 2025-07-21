@@ -26,3 +26,8 @@ youtube:
 
 ai-recipe-summary:
   url: http://${AI_RECIPE_SUMMARY_HOST}:${AI_RECIPE_SUMMARY_PORT}
+
+jwt:
+  secret: ${JWT_SECRET}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
