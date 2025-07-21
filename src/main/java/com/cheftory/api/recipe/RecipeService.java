@@ -75,8 +75,13 @@ public class RecipeService {
 
     List<RecipeStepInfo> recipeInfos = recipeStepService
         .getRecipeStepInfos(recipeId);
+    if(recipeInfos.isEmpty()) {
+      recipeInfos = null;
+    }
+
     IngredientsInfo ingredientsInfo = recipeIngredientsService
         .findIngredientsInfoOfRecipe(recipeId);
+
 
     if (!recipeInfos.isEmpty() && Objects.nonNull(ingredientsInfo)) {
       recipeRepository.increaseCount(recipeId);
