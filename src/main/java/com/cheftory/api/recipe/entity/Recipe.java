@@ -50,9 +50,6 @@ public class Recipe {
         return RecipeStatus.READY.equals(status);
     }
 
-    public Boolean isFailed(){
-        return RecipeStatus.FAILED.equals(status);
-    }
 
     public Boolean isBanned(){
         return RecipeStatus.NOT_COOK_URL.equals(status);
