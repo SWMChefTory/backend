@@ -87,8 +87,11 @@ jobs:
             AI_RECIPE_SUMMARY_HOST=${{ secrets.AI_RECIPE_SUMMARY_HOST }}
             AI_RECIPE_SUMMARY_PORT=${{ secrets.AI_RECIPE_SUMMARY_PORT }}
             YOUTUBE_API_KEY=${{secrets.YOUTUBE_API_KEY}}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_REFRESH_TOKEN_EXPIRATION=${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION }}
+            JWT_ACCESS_TOKEN_EXPIRATION=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION }}
             EOF
-
+            
 
       - name: Copy docker-compose.yml to EC2
         uses: appleboy/scp-action@v0.1.7
