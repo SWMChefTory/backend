@@ -1,9 +1,10 @@
 package com.cheftory.api.user.exception;
 
-public class UserException extends RuntimeException {
-    public final UserErrorCode errorCode;
+import com.cheftory.api.exception.CheftoryException;
+
+public class UserException extends CheftoryException {
 
     public UserException(UserErrorCode errorCode) {
-        this.errorCode = errorCode;
+        super(errorCode);
     }
 }

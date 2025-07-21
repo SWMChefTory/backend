@@ -1,12 +1,12 @@
 package com.cheftory.api.account.auth.exception;
 
+import com.cheftory.api.exception.CheftoryException;
 import lombok.Getter;
 
 @Getter
-public class AuthException extends RuntimeException {
-    public final AuthErrorCode errorCode;
+public class AuthException extends CheftoryException {
 
     public AuthException(AuthErrorCode errorCode) {
-        this.errorCode = errorCode;
+      super(errorCode);
     }
 }

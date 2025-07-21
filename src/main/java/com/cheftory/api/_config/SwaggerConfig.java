@@ -1,4 +1,4 @@
-package com.cheftory.api.common.config;
+package com.cheftory.api._config;
 
 import io.swagger.v3.oas.models.info.Info;
 import org.springdoc.core.models.GroupedOpenApi;

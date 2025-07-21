@@ -656,11 +656,11 @@ Content-Length: 167
 Host: test.host
 
 {
-  "sttModel" : "VITO",
   "intentModel" : "gpt-4",
-  "userId" : "ec1f9880-c6a9-467d-b418-a661ca25e88c",
+  "userId" : "e2fdcfc0-6eec-4794-872b-4865a722af18",
   "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "sttModel" : "VITO"
 }</code></pre>
 </div>
 </div>
@@ -670,11 +670,11 @@ Host: test.host
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "sttModel" : "VITO",
   "intentModel" : "gpt-4",
-  "userId" : "ec1f9880-c6a9-467d-b418-a661ca25e88c",
+  "userId" : "e2fdcfc0-6eec-4794-872b-4865a722af18",
   "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "sttModel" : "VITO"
 }</code></pre>
 </div>
 </div>
@@ -713,12 +713,12 @@ Host: test.host
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>sttModel</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">STT 모델(VITO)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">음성 인식에 사용되는 모델. 사용 가능한 값: <code>VITO</code></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>intentModel</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">의도 모델(GPT4.1, REGEX)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">의도 분류에 사용되는 모델. 사용 가능한 값: <code>GPT4.1</code>, <code>REGEX</code></p></td>
 </tr>
 </tbody>
 </table>
@@ -784,11 +784,11 @@ Content-Length: 167
 Host: test.host
 
 {
-  "sttModel" : "VITO",
   "intentModel" : "gpt-4",
-  "userId" : "c505f4b4-c098-43dd-a963-5b37c16a0b7c",
+  "userId" : "187a3081-1729-4fef-b655-17e148734f65",
   "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "sttModel" : "VITO"
 }</code></pre>
 </div>
 </div>
@@ -861,7 +861,7 @@ Content-Length: 90
 Host: test.host
 
 {
-  "userId" : "280c4c24-7a60-4b19-bd69-1bf314dc5ba2",
+  "userId" : "8dc9359c-05f8-46e4-a6cc-99f6d10d7f32",
   "baseIntent" : "testBaseIntent"
 }</code></pre>
 </div>
@@ -873,11 +873,11 @@ Host: test.host
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 400 Bad Request
 Content-Type: application/json
-Content-Length: 80
+Content-Length: 92
 
 {
-  "message" : "회원을 찾을 수 없습니다.",
-  "errorCode" : "USER_1"
+  "message" : "알 수 없는 오류가 발생했습니다.",
+  "errorCode" : "GLOBAL_2"
 }</code></pre>
 </div>
 </div>
@@ -887,8 +887,8 @@ Content-Length: 80
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "message" : "회원을 찾을 수 없습니다.",
-  "errorCode" : "USER_1"
+  "message" : "알 수 없는 오류가 발생했습니다.",
+  "errorCode" : "GLOBAL_2"
 }</code></pre>
 </div>
 </div>
@@ -935,11 +935,11 @@ Content-Length: 174
 Host: test.host
 
 {
-  "sttModel" : "INVALID_STT",
   "intentModel" : "gpt-4",
-  "userId" : "6cc56267-3cc6-4b11-b187-ac71691d187b",
+  "userId" : "9b995718-81ba-4d9a-9d27-d06a53ed6c75",
   "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "sttModel" : "INVALID_STT"
 }</code></pre>
 </div>
 </div>
@@ -1012,11 +1012,11 @@ Content-Length: 176
 Host: test.host
 
 {
-  "sttModel" : "VITO",
   "intentModel" : "INVALID_INTENT",
-  "userId" : "7d09f24d-d672-4412-89c4-ea63c824bca4",
+  "userId" : "e7dd63b5-833a-4bb9-a633-38c5ad2963e4",
   "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "sttModel" : "VITO"
 }</code></pre>
 </div>
 </div>

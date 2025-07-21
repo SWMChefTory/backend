@@ -5,7 +5,9 @@ import com.cheftory.api.user.UserService;
 import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Nested;
 import java.util.UUID;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.http.HttpStatus;
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
@@ -112,8 +115,8 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                                 fieldWithPath("baseIntent").description("기본 의도"),
                                 fieldWithPath("intent").description("의도"),
                                 fieldWithPath("userId").description("유저 ID"),
-                                fieldWithPath("sttModel").description("STT 모델(VITO)"),
-                                fieldWithPath("intentModel").description("의도 모델(GPT4.1, REGEX)")
+                                sttModelField(),
+                                intentModelField()
                             ),
                             responseSuccessFields()
                         )
@@ -329,5 +332,19 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
 
     private UUID generateUserId() {
         return UUID.randomUUID();
+    }
+
+    private FieldDescriptor intentModelField() {
+        String formattedEnumValues = Arrays.stream(IntentModel.values())
+            .map(type -> String.format("`%s`", type.getValue()))
+            .collect(Collectors.joining(", "));
+        return fieldWithPath("intentModel").description("의도 분류에 사용되는 모델. 사용 가능한 값: " + formattedEnumValues);
+    }
+
+    private FieldDescriptor sttModelField() {
+        String formattedEnumValues = Arrays.stream(STTModel.values())
+            .map(type -> String.format("`%s`", type.getValue()))
+            .collect(Collectors.joining(", "));
+        return fieldWithPath("sttModel").description("음성 인식에 사용되는 모델. 사용 가능한 값: " + formattedEnumValues);
     }
 }

@@ -1,18 +1,24 @@
 package com.cheftory.api.voicecommand;
 
+import java.util.Arrays;
 import lombok.Getter;
 
+@Getter
 public enum IntentModel {
-  GPT4_1,
-  REGEX;
+  GPT4_1("GPT4.1"),
+  REGEX("REGEX");
+
+  private final String value;
+
+  IntentModel(String value) {
+    this.value = value;
+  }
 
   public static IntentModel fromValue(String value) {
-    return switch (value) {
-      case "GPT4.1" -> GPT4_1;
-      case "REGEX" -> REGEX;
-      default -> throw new VoiceCommandHistoryException(
-          VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL
-      );
-    };
+    return Arrays.stream(values())
+        .filter(model -> model.value.equals(value))
+        .findFirst()
+        .orElseThrow(() -> new VoiceCommandHistoryException(
+            VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL));
   }
 }

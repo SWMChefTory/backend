@@ -7,16 +7,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/sample")
-public class SampleController {
+@RequestMapping("")
+public class SecurityController {
 
-  @GetMapping("/me")
-  public ResponseEntity<String> me(@UserPrincipal UUID userId) {
-    return ResponseEntity.ok("USER:" + userId);
+  @GetMapping("/api/security/failed")
+  public ResponseEntity<String> failedPublicPrincipal(@UserPrincipal UUID userId) {
+    return ResponseEntity.ok("success");
   }
 
-  @GetMapping("/public")
-  public ResponseEntity<String> publicApi() {
-    return ResponseEntity.ok("PUBLIC");
+  @GetMapping("/api/security/success")
+  public ResponseEntity<String> successPublicPrincipal(@UserPrincipal UUID userId) {
+    return ResponseEntity.ok(userId.toString());
+  }
+
+  @GetMapping("/papi/v1/security/success")
+  public ResponseEntity<String> truePrivatePrincipal() {
+    return ResponseEntity.ok("success");
+  }
+
+  @GetMapping("/api/v1/account/security/success")
+  public ResponseEntity<String> successAccountSecurity() {
+    return ResponseEntity.ok("success");
   }
 }
