@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
