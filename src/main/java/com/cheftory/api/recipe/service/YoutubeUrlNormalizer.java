@@ -1,5 +1,7 @@
 package com.cheftory.api.recipe.service;
 
+import com.cheftory.api.recipe.exception.RecipeErrorCode;
+import com.cheftory.api.recipe.exception.RecipeException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponents;
@@ -11,12 +13,6 @@ import java.util.Objects;
 
 @Component
 public class YoutubeUrlNormalizer {
-    private final String notExpectedHostMessage = "기대하는 호스트가 아닙니다.";
-    private final String notExpectedQueryParameter = "기대하는 쿼리 파라미터가 아닙니다.";
-
-    private final String nullUrlErrorMessage = "URL이 비어있습니다.";
-    private final String nullHostErrorMessage = "호스트가 비어있습니다.";
-    private final String nullPathErrorMessage = "경로가 비어있습니다.";
 
     public UriComponents normalize(UriComponents url) {
         String id = extractId(url);
@@ -31,9 +27,13 @@ public class YoutubeUrlNormalizer {
     }
 
     private String extractId(UriComponents url) {
-        Assert.notNull(url, nullUrlErrorMessage);
+        if(Objects.isNull(url.getQuery())) {
+            throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_NULL);
+        }
         String host = url.getHost();
-        Assert.notNull(host, nullHostErrorMessage);
+        if(Objects.isNull(host)) {
+            throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_HOST_NULL);
+        }
         if(host.equals("www.youtu.be")){
             return extractIdFromSharedUrl(url);
         }
@@ -42,7 +42,7 @@ public class YoutubeUrlNormalizer {
             return extractIdFromGeneralUrl(url);
         }
 
-        throw new IllegalArgumentException(notExpectedHostMessage);
+        throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_HOST_INVALID);
     }
 
     private String extractIdFromSharedUrl(UriComponents url) {
@@ -51,7 +51,9 @@ public class YoutubeUrlNormalizer {
 
     private String extractIdFromGeneralUrl(UriComponents url) {
         String path = url.getPath();
-        Assert.notNull(path, nullPathErrorMessage);
+        if(Objects.isNull(path)) {
+            throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_PATH_NULL);
+        }
         if (!path.equals("/watch")) {
             throw new IllegalArgumentException("잘못된 Path입니다.");
         }
@@ -60,8 +62,13 @@ public class YoutubeUrlNormalizer {
                 .getQueryParams()
                 .get("v");
 
-        Assert.notNull(firstQueryValue, notExpectedQueryParameter);
-        Assert.noNullElements(firstQueryValue, notExpectedQueryParameter);
+        if(Objects.isNull(firstQueryValue)) {
+            throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_PATH_NULL);
+        }
+
+        if(firstQueryValue.isEmpty()){
+            throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID);
+        }
 
         return firstQueryValue
                 .getFirst();

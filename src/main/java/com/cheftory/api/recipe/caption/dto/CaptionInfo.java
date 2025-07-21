@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.caption.dto;
 
 import com.cheftory.api.recipe.caption.entity.LangCodeType;
+import com.cheftory.api.recipe.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.caption.entity.Segment;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
@@ -19,11 +20,11 @@ public class CaptionInfo {
     @JsonProperty("captions")
     List<Segment> captions;
 
-    public static CaptionInfo from(LangCodeType langCodeType, List<Segment> captions) {
+    public static CaptionInfo from(RecipeCaption caption) {
         return CaptionInfo
                 .builder()
-                .langCodeType(langCodeType)
-                .captions(captions)
+                .langCodeType(caption.getLangCode())
+                .captions(caption.getSegments())
                 .build();
     }
 }

@@ -6,7 +6,8 @@ import lombok.ToString;
 @Getter
 @ToString
 public class Segment {
-    private Double start;
-    private Double end;
-    private String text;
+
+  private Double start;
+  private Double end;
+  private String text;
 }

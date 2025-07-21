@@ -11,15 +11,15 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class SimpleAccessInfo {
+public class ViewStateInfo {
   private UUID id;
   private LocalDateTime viewedAt;
   private LocalDateTime createdAt;
   private UUID userId;
   private UUID recipeId;
 
-  public static SimpleAccessInfo from(RecipeViewState recipeViewState) {
-    return SimpleAccessInfo.builder()
+  public static ViewStateInfo from(RecipeViewState recipeViewState) {
+    return ViewStateInfo.builder()
         .id(recipeViewState.getId())
         .viewedAt(recipeViewState.getViewedAt())
         .createdAt(recipeViewState.getCreatedAt())

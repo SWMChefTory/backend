@@ -1,8 +1,6 @@
 package com.cheftory.api.recipe.ingredients.entity;
 
-import com.cheftory.api.recipe.entity.Recipe;
-import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
-import com.cheftory.api.recipe.ingredients.entity.converter.IngredientListJsonConverter;
+import com.cheftory.api._common.ObjectJsonConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -25,7 +23,7 @@ public class RecipeIngredients {
 
     //converter로 달아줘야 함.
     @Column(columnDefinition = "json")
-    @Convert(converter = IngredientListJsonConverter.class)
+    @Convert(converter = ObjectJsonConverter.class)
     private List<Ingredient> ingredients;
 
     private UUID recipeId;

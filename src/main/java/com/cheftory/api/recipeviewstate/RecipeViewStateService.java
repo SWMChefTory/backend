@@ -1,7 +1,7 @@
 package com.cheftory.api.recipeviewstate;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeviewstate.dto.SimpleAccessInfo;
+import com.cheftory.api.recipeviewstate.dto.ViewStateInfo;
 import com.cheftory.api.recipeviewstate.entity.RecipeViewState;
 import com.cheftory.api.recipeviewstate.exception.RecipeViewStateErrorCode;
 import com.cheftory.api.recipeviewstate.exception.RecipeViewStateException;
@@ -22,16 +22,16 @@ public class RecipeViewStateService {
     return recipeViewStateRepository.save(recipeViewState).getRecipeId();
   }
 
-  public SimpleAccessInfo findRecipeViewState(UUID recipeViewStateId) {
+  public ViewStateInfo findRecipeViewState(UUID recipeViewStateId) {
     RecipeViewState recipeViewState =  recipeViewStateRepository
         .findById(recipeViewStateId)
         .orElseThrow(()-> new RecipeViewStateException(
             RecipeViewStateErrorCode.RECIPE_VIEW_STATE_NOT_FOUND));
 
-    return SimpleAccessInfo.from(recipeViewState);
+    return ViewStateInfo.from(recipeViewState);
   }
 
-  public List<SimpleAccessInfo> find(UUID userId) {
+  public List<ViewStateInfo> find(UUID userId) {
     return recipeViewStateRepository.findByUserId(userId);
   }
 }

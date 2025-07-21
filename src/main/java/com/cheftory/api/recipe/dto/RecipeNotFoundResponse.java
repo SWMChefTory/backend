@@ -1,7 +1,5 @@
 package com.cheftory.api.recipe.dto;
 
-import com.cheftory.api.recipe.entity.Recipe;
-import com.cheftory.api.recipe.helper.repository.RecipeNotFoundException;
 import lombok.*;
 
 @Getter

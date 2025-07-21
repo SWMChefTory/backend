@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeaccess.dto;
 
 import com.cheftory.api.recipe.dto.RecipeOverview;
+import com.cheftory.api.recipeviewstate.dto.ViewStateInfo;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,12 +16,12 @@ public class SimpleAccessInfo {
   private LocalDateTime createdAt;
   private RecipeOverview recipeOverview;
   public static SimpleAccessInfo of(
-      com.cheftory.api.recipeviewstate.dto.SimpleAccessInfo simpleAccessInfo,
+      ViewStateInfo viewStateInfo,
       RecipeOverview recipeOverview
   ) {
     return com.cheftory.api.recipeaccess.dto.SimpleAccessInfo.builder()
-        .viewedAt(simpleAccessInfo.getViewedAt())
-        .createdAt(simpleAccessInfo.getCreatedAt())
+        .viewedAt(viewStateInfo.getViewedAt())
+        .createdAt(viewStateInfo.getCreatedAt())
         .recipeOverview(recipeOverview)
         .build();
   }

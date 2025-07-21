@@ -5,9 +5,10 @@ import com.cheftory.api.recipe.dto.FullRecipeInfo;
 import com.cheftory.api.recipe.dto.RecipeOverview;
 import com.cheftory.api.recipeaccess.dto.FullRecipeResponse;
 import com.cheftory.api.recipeaccess.dto.RecipeAccessResponse;
+import com.cheftory.api.recipeaccess.dto.SimpleAccessInfo;
 import com.cheftory.api.recipeaccess.dto.SimpleAccessInfosResponse;
 import com.cheftory.api.recipeviewstate.RecipeViewStateService;
-import com.cheftory.api.recipeviewstate.dto.SimpleAccessInfo;
+import com.cheftory.api.recipeviewstate.dto.ViewStateInfo;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,35 +35,35 @@ public class RecipeAccessService {
   }
 
   public FullRecipeResponse accessFullRecipe(UUID recipeViewStateId) {
-    SimpleAccessInfo simpleAccessInfo = recipeViewStateService.findRecipeViewState(recipeViewStateId);
-    FullRecipeInfo fullRecipeInfo = recipeService.findFullRecipeInfo(simpleAccessInfo.getId());
+    ViewStateInfo viewStateInfo = recipeViewStateService.findRecipeViewState(recipeViewStateId);
+    FullRecipeInfo fullRecipeInfo = recipeService.findFullRecipeInfo(viewStateInfo.getId());
     return FullRecipeResponse.of(fullRecipeInfo);
   }
 
   public SimpleAccessInfosResponse accessByRecentOrder(UUID userId) {
-    List<SimpleAccessInfo> recipeSimpleAccessInfos = recipeViewStateService.find(userId);
+    List<ViewStateInfo> recipeViewStateInfos = recipeViewStateService.find(userId);
 
     List<RecipeOverview> recipes = recipeService.findOverviewRecipes(
-        recipeSimpleAccessInfos
+        recipeViewStateInfos
             .stream()
-            .map(SimpleAccessInfo::getId)
+            .map(ViewStateInfo::getId)
             .toList()
     );
 
-    Map<UUID, SimpleAccessInfo> recipeViewStateInfoMap =
-        recipeSimpleAccessInfos.stream()
+    Map<UUID, ViewStateInfo> recipeViewStateInfoMap =
+        recipeViewStateInfos.stream()
             .collect(Collectors.toMap(
-                SimpleAccessInfo::getId,
+                ViewStateInfo::getId,
                 Function.identity(),
                 (a, b) -> b,
                 HashMap::new
             ));
 
-    List<com.cheftory.api.recipeaccess.dto.SimpleAccessInfo> simpleAccessInfos = new ArrayList<>();
+    List<SimpleAccessInfo> simpleAccessInfos = new ArrayList<>();
 
     for(RecipeOverview recipe : recipes) {
       simpleAccessInfos.add(
-          com.cheftory.api.recipeaccess.dto.SimpleAccessInfo.of(
+          SimpleAccessInfo.of(
               recipeViewStateInfoMap.get(recipe.getId())
               ,recipe
           )

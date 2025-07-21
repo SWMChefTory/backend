@@ -17,7 +17,7 @@ public class RecipeOverview {
     private VideoInfo videoInfo;
     private Integer count;
 
-    public static RecipeOverview of(Recipe recipe) {
+    public static RecipeOverview from(Recipe recipe) {
         return RecipeOverview.builder()
                 .id(recipe.getId())
                 .videoInfo(recipe.getVideoInfo())
