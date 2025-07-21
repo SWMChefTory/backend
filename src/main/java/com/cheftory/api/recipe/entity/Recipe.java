@@ -29,10 +29,6 @@ public class Recipe {
     private Integer count;
     private LocalDateTime createdAt;
 
-    private LocalDateTime captionCreatedAt;
-    private LocalDateTime ingredientsCreatedAt;
-    private LocalDateTime stepCreatedAt;
-
     public static Recipe preCompletedOf(VideoInfo videoInfo) {
         return Recipe.builder()
                 .videoInfo(videoInfo)
@@ -50,12 +46,11 @@ public class Recipe {
         return RecipeStatus.READY.equals(status);
     }
 
-
     public Boolean isBanned(){
         return RecipeStatus.NOT_COOK_URL.equals(status);
     }
 
     public String getVideoId() {
-        return null;
+        return videoInfo.getVideoId();
     }
 }

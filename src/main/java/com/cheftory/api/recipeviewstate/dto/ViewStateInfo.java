@@ -17,6 +17,7 @@ public class ViewStateInfo {
   private LocalDateTime createdAt;
   private UUID userId;
   private UUID recipeId;
+  private Integer lastPlaySeconds;
 
   public static ViewStateInfo from(RecipeViewState recipeViewState) {
     return ViewStateInfo.builder()
@@ -25,6 +26,7 @@ public class ViewStateInfo {
         .createdAt(recipeViewState.getCreatedAt())
         .userId(recipeViewState.getUserId())
         .recipeId(recipeViewState.getRecipeId())
+        .lastPlaySeconds(recipeViewState.getLastPlaySeconds())
         .build();
   }
 }

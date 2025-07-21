@@ -30,8 +30,8 @@ public class RecipeAccessController {
     return recipeAccessService.accessFullRecipe(recipeId);
   }
 
-  @GetMapping("/")
-  public SimpleAccessInfosResponse getSimpleAccessInfosResponse(UUID recipeId) {
-    return recipeAccessService.accessByRecentOrder(recipeId);
+  @GetMapping("")
+  public SimpleAccessInfosResponse getSimpleAccessInfosResponse(@AuthenticationPrincipal UUID userId) {
+    return recipeAccessService.accessByRecentOrder(userId);
   }
 }

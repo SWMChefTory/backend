@@ -26,19 +26,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     @Query("update Recipe r set r.count = r.count + 1 where r.id = :id")
     int increaseCount(UUID id);
 
-    @Modifying
-    @Query("update Recipe r set r.captionCreatedAt = :captionCreatedAt where r.id = :id")
-    int updateCaptionCreatedAt(UUID id, LocalDateTime captionCreatedAt);
-
-    @Modifying
-    @Query("update Recipe r set r.ingredientsCreatedAt = :ingredientsCreatedAt")
-    int updateIngredientsCreatedAt(UUID id, LocalDateTime ingredientsCreatedAt);
-
-    @Modifying
-    @Query("update Recipe r set r.stepCreatedAt = :stepCreatedAt")
-    int updateStepCreatedAt(UUID id,LocalDateTime stepCreatedAt);
-
-    boolean existsByVideoInfo_VideoUri(URI videoUrl);
 
     @Query("select r from Recipe r where r.id in :recipeIds")
     List<Recipe> findRecipesById(List<UUID> recipeIds);

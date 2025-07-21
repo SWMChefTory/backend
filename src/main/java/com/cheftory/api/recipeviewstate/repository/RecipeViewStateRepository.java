@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecipeViewStateRepository extends JpaRepository<RecipeViewState, UUID> {
 
-  List<ViewStateInfo> findByUserId(UUID userId);
+  List<RecipeViewState> findByUserId(UUID userId);
 }

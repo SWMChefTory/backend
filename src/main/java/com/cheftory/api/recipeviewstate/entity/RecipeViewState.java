@@ -23,6 +23,7 @@ public class RecipeViewState {
   @UuidGenerator
   private UUID id;
   private LocalDateTime viewedAt;
+  private Integer lastPlaySeconds;
   @Column(nullable = false)
   private LocalDateTime createdAt;
   @Column(nullable = false)
@@ -32,6 +33,7 @@ public class RecipeViewState {
 
   public static RecipeViewState of(Clock clock, UUID userId, UUID recipeId) {
     return RecipeViewState.builder()
+        .lastPlaySeconds(0)
         .createdAt(clock.now())
         .userId(userId)
         .recipeId(recipeId)

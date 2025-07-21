@@ -89,7 +89,8 @@ public class RecipeService {
   }
 
   public List<RecipeOverview> findOverviewRecipes(List<UUID> recipeIds) {
-    return recipeRepository.findRecipesById(recipeIds).stream()
+    return recipeRepository.findRecipesById(recipeIds)
+        .stream()
         .filter(Recipe::isCompleted)
         .map(RecipeOverview::from)
         .toList();

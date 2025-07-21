@@ -8,12 +8,14 @@ import com.cheftory.api.recipeviewstate.exception.RecipeViewStateException;
 import com.cheftory.api.recipeviewstate.repository.RecipeViewStateRepository;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class RecipeViewStateService {
+
   private final RecipeViewStateRepository recipeViewStateRepository;
   private final Clock clock;
 
@@ -23,15 +25,18 @@ public class RecipeViewStateService {
   }
 
   public ViewStateInfo findRecipeViewState(UUID recipeViewStateId) {
-    RecipeViewState recipeViewState =  recipeViewStateRepository
+    RecipeViewState recipeViewState = recipeViewStateRepository
         .findById(recipeViewStateId)
-        .orElseThrow(()-> new RecipeViewStateException(
+        .orElseThrow(() -> new RecipeViewStateException(
             RecipeViewStateErrorCode.RECIPE_VIEW_STATE_NOT_FOUND));
 
     return ViewStateInfo.from(recipeViewState);
   }
 
   public List<ViewStateInfo> find(UUID userId) {
-    return recipeViewStateRepository.findByUserId(userId);
+    return recipeViewStateRepository.findByUserId(userId)
+        .stream()
+        .map(ViewStateInfo::from)
+        .collect(Collectors.toList());
   }
 }
