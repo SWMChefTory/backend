@@ -5,7 +5,8 @@ import lombok.Getter;
 
 @Getter
 public enum CaptionErrorCode implements ErrorMessage {
-  CAPTION_NOT_FOUND("CAPTION_001","자막이 존재하지 않습니다.");
+  CAPTION_NOT_FOUND("CAPTION_001","자막이 존재하지 않습니다."),
+  NOT_COOK_ID("CAPTION_002","요리 비디오 id가 아닙니다.");
   final String errorCode;
   final String message;
 

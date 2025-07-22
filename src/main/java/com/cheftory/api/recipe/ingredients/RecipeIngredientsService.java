@@ -2,12 +2,14 @@ package com.cheftory.api.recipe.ingredients;
 
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
 import com.cheftory.api.recipe.ingredients.client.RecipeIngredientsClient;
+import com.cheftory.api.recipe.ingredients.client.dto.ClientIngredientsResponse;
 import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
 import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;
 import com.cheftory.api.recipe.ingredients.exception.RecipeIngredientsErrorCode;
 import com.cheftory.api.recipe.ingredients.exception.RecipeIngredientsException;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.ingredients.repository.RecipeIngredientsRepository;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +25,13 @@ public class RecipeIngredientsService {
 
     @Transactional
     public UUID create(UUID recipeId, String videoId, CaptionInfo captionInfo) {
-        List<Ingredient> ingredients = recipeIngredientsClient
+        ClientIngredientsResponse response = recipeIngredientsClient
                 .fetchRecipeIngredients(videoId, captionInfo);
+
+        List<Ingredient> ingredients = response.getIngredients().stream()
+            .map(ing->
+                Ingredient.of(ing.getName(),ing.getAmount(),ing.getUnit()))
+            .toList();
         RecipeIngredients recipeIngredients = RecipeIngredients.from(ingredients, recipeId);
         recipeIngredientsRepository.save(recipeIngredients);
         return recipeIngredients.getId();
