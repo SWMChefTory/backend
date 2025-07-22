@@ -1,72 +1,51 @@
 package com.cheftory.api.recipe.dto;
 
 import com.cheftory.api.recipe.util.Iso8601DurationToSecondConverter;
-import lombok.Data;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-@Data
-@ToString
-public class YoutubeVideoResponse {
-    private List<Item> items;
-
+public record YoutubeVideoResponse(
+    List<Item> items
+) {
     public String getThumbnailUri() {
-        return items.getFirst()
-                .getSnippet()
-                .getThumbnails()
-                .getMedium()
-                .getUrl();
+        return items.getFirst().snippet().thumbnails().medium().url();
     }
 
     public String getTitle() {
-        return items.getFirst()
-                .getSnippet().getTitle();
+        return items.getFirst().snippet().title();
     }
 
     public Long getSecondsDuration() {
-        return Iso8601DurationToSecondConverter
-                .convert(items
-                        .getFirst()
-                        .getContentDetails()
-                        .getDuration());
+        return Iso8601DurationToSecondConverter.convert(
+            items.getFirst().contentDetails().duration()
+        );
     }
 
-    @Data
-    public static class Item {
-        private Snippet snippet;
-        private ContentDetails contentDetails;
-    }
+    public record Item(
+        Snippet snippet,
+        ContentDetails contentDetails
+    ) {}
 
-    @Data
-    public static class Snippet {
-        private String title;
-        private Thumbnails thumbnails;
-    }
+    public record Snippet(
+        String title,
+        Thumbnails thumbnails
+    ) {}
 
-    @Data
-    public static class Thumbnails {
-        private ThumbnailInfo defaultThumbnail;
-        private ThumbnailInfo medium;
-        private ThumbnailInfo high;
+    public record Thumbnails(
+        @JsonProperty("default")
+        ThumbnailInfo defaultThumbnail,
+        ThumbnailInfo medium,
+        ThumbnailInfo high
+    ) {}
 
-        // JSON 키가 "default"인 경우 Java에서 예약어라 아래와 같이 매핑
-        @com.fasterxml.jackson.annotation.JsonProperty("default")
-        public void setDefault(ThumbnailInfo defaultThumbnail) {
-            this.defaultThumbnail = defaultThumbnail;
-        }
-    }
+    public record ThumbnailInfo(
+        String url,
+        int width,
+        int height
+    ) {}
 
-    @Data
-    public static class ThumbnailInfo {
-        private String url;
-        private int width;
-        private int height;
-    }
-
-    @Data
-    public static class ContentDetails {
-        private String duration; // ISO 8601 (예: PT3M33S)
-    }
+    public record ContentDetails(
+        String duration  // ISO 8601 format (e.g., "PT3M33S")
+    ) {}
 }
-

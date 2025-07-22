@@ -25,7 +25,7 @@ public class RecipeController {
 
   @PostMapping("")
   public RecipeCreateResponse create(@RequestBody RecipeCreateRequest recipeCreateRequest, @UserPrincipal UUID userId) {
-    UUID recipeId = recipeService.create(recipeCreateRequest.getVideoUrl(),userId);
+    UUID recipeId = recipeService.create(recipeCreateRequest.videoUrl(),userId);
     return RecipeCreateResponse.from(recipeId);
   }
 

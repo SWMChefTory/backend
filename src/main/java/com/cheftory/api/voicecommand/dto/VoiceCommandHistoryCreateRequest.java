@@ -5,28 +5,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
-import lombok.Getter;
 
-@Getter
-public class VoiceCommandHistoryCreateRequest {
-        @NotNull
-        @JsonProperty("baseIntent")
-        String transcribe;
+public record VoiceCommandHistoryCreateRequest(
 
-        @NotNull
-        @JsonProperty("intent")
-        String result;
+    @NotNull
+    @JsonProperty("baseIntent")
+    String transcribe,
 
-        @NotNull
-        @ExistsUserId
-        @JsonProperty("userId")
-        UUID userId;
+    @NotNull
+    @JsonProperty("intent")
+    String result,
 
-        @NotNull
-        @JsonProperty("sttModel")
-        String sttModel;
+    @NotNull
+    @ExistsUserId
+    @JsonProperty("userId")
+    UUID userId,
 
-        @NotNull
-        @JsonProperty("intentModel")
-        String intentModel;
-}
+    @NotNull
+    @JsonProperty("sttModel")
+    String sttModel,
+
+    @NotNull
+    @JsonProperty("intentModel")
+    String intentModel
+
+) {}
