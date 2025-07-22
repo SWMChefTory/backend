@@ -14,7 +14,6 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 public class Recipe {
     @Id
-    @UuidGenerator
     private UUID id;
 
     @Embedded
@@ -31,6 +30,7 @@ public class Recipe {
 
     public static Recipe preCompletedOf(VideoInfo videoInfo) {
         return Recipe.builder()
+                .id(UUID.randomUUID())
                 .videoInfo(videoInfo)
                 .status(RecipeStatus.READY)
                 .count(0)

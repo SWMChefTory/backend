@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeviewstate.entity;
+package com.cheftory.api.recipe.viewstatus;
 
 import com.cheftory.api._common.Clock;
 import jakarta.persistence.Column;
@@ -11,17 +11,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access=AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class RecipeViewState {
+public class RecipeViewStatus {
   @Id
-  @UuidGenerator
   private UUID id;
+  @Column(nullable = false)
   private LocalDateTime viewedAt;
   private Integer lastPlaySeconds;
   @Column(nullable = false)
@@ -31,12 +30,18 @@ public class RecipeViewState {
   @Column(nullable = false)
   private UUID recipeId;
 
-  public static RecipeViewState of(Clock clock, UUID userId, UUID recipeId) {
-    return RecipeViewState.builder()
+  public static RecipeViewStatus of(Clock clock, UUID userId, UUID recipeId) {
+    return RecipeViewStatus.builder()
+        .id(UUID.randomUUID())
         .lastPlaySeconds(0)
+        .viewedAt(clock.now())
         .createdAt(clock.now())
         .userId(userId)
         .recipeId(recipeId)
         .build();
+  }
+
+  public void updateViewedAt(Clock clock) {
+    this.viewedAt = clock.now();
   }
 }

@@ -1,7 +1,6 @@
 package com.cheftory.api.recipe.step.entity;
 
 import com.cheftory.api._common.ObjectJsonConverter;
-import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -32,13 +31,13 @@ public class RecipeStep {
     private UUID recipeId;
 
 
-    public static RecipeStep from(Integer stepOrder, ClientRecipeStepResponse stepResponses, UUID recipeId) {
+    public static RecipeStep from(Integer stepOrder, String subtitle, List<String> details, Double start, Double end, UUID recipeId) {
         return RecipeStep.builder()
                 .stepOrder(stepOrder)
-                .subtitle(stepResponses.getSubtitle())
-                .details(stepResponses.getDescriptions())
-                .start(stepResponses.getStart())
-                .end(stepResponses.getEnd())
+                .subtitle(subtitle)
+                .details(details)
+                .start(start)
+                .end(end)
                 .recipeId(recipeId)
                 .build();
     }
