@@ -1,0 +1,104 @@
+[[AuthController-API]]
+= AuthController API
+:toc:
+:sectnums:
+:toclevels: 2
+
+== 사용자 ID 추출 (POST /papi/v1/auth/userId)
+
+=== 1.1 성공 – 유효한 토큰으로 사용자 ID 추출
+
+==== 요청
+include::{snippets}/auth-controller/extract-user-id/valid-token-scenario/should-return-user-id/http-request.adoc[]
+
+==== 요청 헤더
+include::{snippets}/auth-controller/extract-user-id/valid-token-scenario/should-return-user-id/request-headers.adoc[]
+
+==== 요청 본문
+include::{snippets}/auth-controller/extract-user-id/valid-token-scenario/should-return-user-id/request-body.adoc[]
+
+==== 응답
+include::{snippets}/auth-controller/extract-user-id/valid-token-scenario/should-return-user-id/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/auth-controller/extract-user-id/valid-token-scenario/should-return-user-id/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/auth-controller/extract-user-id/valid-token-scenario/should-return-user-id/response-fields.adoc[]
+
+=== 1.2 에러 – 토큰이 비어 있음 (Empty Token)
+
+==== 요청
+include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/http-request.adoc[]
+
+==== 요청 헤더
+include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/request-headers.adoc[]
+
+==== 요청 본문
+include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/request-body.adoc[]
+
+==== 응답
+include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/response-body.adoc[]
+
+==== 에러 필드
+include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/response-fields.adoc[]
+
+=== 1.3 에러 – Authorization 헤더 누락 (Missing Header)
+
+==== 요청
+include::{snippets}/auth-controller/extract-user-id/missing-header-scenario/should-return-bad-request-error/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/auth-controller/extract-user-id/missing-header-scenario/should-return-bad-request-error/request-body.adoc[]
+
+==== 응답
+include::{snippets}/auth-controller/extract-user-id/missing-header-scenario/should-return-bad-request-error/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/auth-controller/extract-user-id/missing-header-scenario/should-return-bad-request-error/response-body.adoc[]
+
+==== 에러 필드
+include::{snippets}/auth-controller/extract-user-id/missing-header-scenario/should-return-bad-request-error/response-fields.adoc[]
+
+=== 1.4 에러 – 만료된 토큰 (Expired Token)
+
+==== 요청
+include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/should-return-bad-request-error/http-request.adoc[]
+
+==== 요청 헤더
+include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/should-return-bad-request-error/request-headers.adoc[]
+
+==== 요청 본문
+include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/should-return-bad-request-error/request-body.adoc[]
+
+==== 응답
+include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/should-return-bad-request-error/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/should-return-bad-request-error/response-body.adoc[]
+
+==== 에러 필드
+include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/should-return-bad-request-error/response-fields.adoc[]
+
+=== 1.5 에러 – 유효하지 않은 토큰 (Invalid Token)
+
+==== 요청
+include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/should-return-bad-request-error/http-request.adoc[]
+
+==== 요청 헤더
+include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/should-return-bad-request-error/request-headers.adoc[]
+
+==== 요청 본문
+include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/should-return-bad-request-error/request-body.adoc[]
+
+==== 응답
+include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/should-return-bad-request-error/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/should-return-bad-request-error/response-body.adoc[]
+
+==== 에러 필드
+include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/should-return-bad-request-error/response-fields.adoc[]

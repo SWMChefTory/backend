@@ -78,30 +78,3 @@ include::{snippets}/voice-command-history-controller/given-invalid-request/when-
 
 ==== 에러 필드
 include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-unsupported-intent-model/then-should-return-bad-request/response-fields.adoc[]
-
-== 에러 코드 정리
-
-[cols="1,1,2,1"]
-|===
-|HTTP 상태|에러 코드|설명|해결 방법
-
-|400
-|USER_NOT_FOUND
-|존재하지 않는 유저 ID
-|유효한 유저 ID로 재시도
-
-|400
-|FIELD_REQUIRED
-|필수 필드 누락
-|누락된 필드 추가 후 재시도
-
-|400
-|VOICE_COMMAND_UNKNOWN_STT_MODEL
-|지원하지 않는 STT 모델
-|VITO 모델 사용
-
-|400
-|VOICE_COMMAND_UNKNOWN_INTENT_MODEL
-|지원하지 않는 Intent 모델
-|GPT4.1 또는 REGEX 모델 사용
-|===
