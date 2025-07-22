@@ -46,13 +46,6 @@ public abstract class RestDocsTest {
         return new MockMvcBuilder(controller, restDocumentation);
     }
 
-    protected MockMvcRequestSpecification setupAuthenticatedJsonRequest() {
-        return mockMvc
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .attribute("userId", "testUserId")
-                .header("Authorization", "Bearer accessToken");
-    }
-
     protected void assertSuccessResponse(ValidatableMockMvcResponse response) {
         response
             .statusCode(200)

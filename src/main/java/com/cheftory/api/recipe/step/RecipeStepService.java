@@ -33,7 +33,7 @@ public class RecipeStepService {
 
         List<RecipeStep> recipeSteps = IntStream.range(0, responses.size())
                 .mapToObj(i ->
-                        RecipeStep.from(i + 1, responses.get(i), recipeId))
+                        RecipeStep.from(i + 1, responses.get(i).getSubtitle(), responses.get(i).getDescriptions(), responses.get(i).getStart(), responses.get(i).getEnd(), recipeId))
                 .toList();
 
         return recipeStepRepository.saveAll(recipeSteps).stream()

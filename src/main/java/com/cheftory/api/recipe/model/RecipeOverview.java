@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.dto;
+package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.VideoInfo;
