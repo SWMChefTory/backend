@@ -49,8 +49,4 @@ public class Recipe {
     public Boolean isBanned(){
         return RecipeStatus.NOT_COOK_URL.equals(status);
     }
-
-    public String getVideoId() {
-        return videoInfo.getVideoId();
-    }
 }

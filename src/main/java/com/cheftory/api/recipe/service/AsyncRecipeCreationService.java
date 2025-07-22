@@ -36,9 +36,9 @@ public class AsyncRecipeCreationService {
     try {
       Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(()->new RecipeException(
           RecipeErrorCode.RECIPE_NOT_FOUND));
-      String videoId = recipe.getVideoId();
+      String videoId = recipe.getVideoInfo().getVideoId();
       CaptionInfo captionInfo = handleCaption(videoId,recipeId);
-      List<Ingredient> ingredientsContent = handleIngredients(recipeId, recipe.getVideoId(), captionInfo);
+      List<Ingredient> ingredientsContent = handleIngredients(recipeId, videoId, captionInfo);
       handleSteps(videoId, recipeId, captionInfo, ingredientsContent);
       recipeRepository.updateStatus(recipeId, RecipeStatus.COMPLETED);
     } catch (Exception e) {
