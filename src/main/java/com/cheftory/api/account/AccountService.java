@@ -39,7 +39,7 @@ public class AccountService {
     }
 
     public AuthToken refresh(String refreshToken) {
-        UUID userId = authService.extractUserIdFromRefreshToken(refreshToken);
+        UUID userId = authService.extractUserIdFromToken(refreshToken);
 
         AuthToken authToken = authService.createAuthToken(userId);
         authService.updateRefreshToken(userId, refreshToken, authToken.getRefreshToken());
@@ -47,12 +47,12 @@ public class AccountService {
     }
 
     public void logout(String refreshToken) {
-        UUID userId = authService.extractUserIdFromRefreshToken(refreshToken);
+        UUID userId = authService.extractUserIdFromToken(refreshToken);
         authService.deleteRefreshToken(userId, refreshToken);
     }
 
     public void delete(String refreshToken) {
-        UUID userId = authService.extractUserIdFromRefreshToken(refreshToken);
+        UUID userId = authService.extractUserIdFromToken(refreshToken);
         authService.deleteRefreshToken(userId, refreshToken);
         userService.deleteUser(userId);
     }
