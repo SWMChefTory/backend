@@ -455,15 +455,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 167
+Content-Length: 170
 Host: test.host
 
 {
-  "sttModel" : "VITO",
-  "intentModel" : "gpt-4",
-  "userId" : "cf109445-c4dd-4134-b0f2-7b01110c46ef",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "gpt-4",
+  "stt_model" : "VITO",
+  "user_id" : "f2345d38-9f24-4b9c-8fb1-45217e4fb690",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -473,11 +473,11 @@ Host: test.host
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-json" data-lang="json">{
-  "sttModel" : "VITO",
-  "intentModel" : "gpt-4",
-  "userId" : "cf109445-c4dd-4134-b0f2-7b01110c46ef",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "gpt-4",
+  "stt_model" : "VITO",
+  "user_id" : "f2345d38-9f24-4b9c-8fb1-45217e4fb690",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -499,7 +499,7 @@ Host: test.host
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>baseIntent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>transcribe</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">기본 의도</p></td>
 </tr>
@@ -509,19 +509,19 @@ Host: test.host
 <td class="tableblock halign-left valign-top"><p class="tableblock">의도</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>userId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>user_id</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">유저 ID</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sttModel</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>stt_model</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">음성 인식에 사용되는 모델. 사용 가능한 값: <code>VITO</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">음성 인식에 사용되는 모델. 사용 가능한 값:  사용 가능한 값: <code>VITO</code></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>intentModel</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>intent_model</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">의도 분류에 사용되는 모델. 사용 가능한 값: <code>GPT4.1</code>, <code>REGEX</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">의도 분류에 사용되는 모델. 사용 가능한 값:  사용 가능한 값: <code>GPT4.1</code>, <code>REGEX</code></p></td>
 </tr>
 </tbody>
 </table>
@@ -583,15 +583,15 @@ Content-Length: 27
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 167
+Content-Length: 170
 Host: test.host
 
 {
-  "sttModel" : "VITO",
-  "intentModel" : "gpt-4",
-  "userId" : "262f23ef-2a9c-44c6-8449-db5d3ab3f257",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "gpt-4",
+  "stt_model" : "VITO",
+  "user_id" : "7f4274bd-7d64-4564-b615-32f2f6d148f1",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -660,12 +660,12 @@ Content-Length: 80
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 90
+Content-Length: 92
 Host: test.host
 
 {
-  "userId" : "0c57e04b-331c-4e87-b939-a15f85383f8e",
-  "baseIntent" : "testBaseIntent"
+  "user_id" : "be1ea7ec-a546-4900-bfed-4b0a23287221",
+  "base_intent" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -676,11 +676,11 @@ Host: test.host
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 400 Bad Request
 Content-Type: application/json
-Content-Length: 80
+Content-Length: 92
 
 {
-  "message" : "회원을 찾을 수 없습니다.",
-  "errorCode" : "USER_1"
+  "message" : "알 수 없는 오류가 발생했습니다.",
+  "errorCode" : "GLOBAL_2"
 }</code></pre>
 </div>
 </div>
@@ -690,8 +690,8 @@ Content-Length: 80
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-json" data-lang="json">{
-  "message" : "회원을 찾을 수 없습니다.",
-  "errorCode" : "USER_1"
+  "message" : "알 수 없는 오류가 발생했습니다.",
+  "errorCode" : "GLOBAL_2"
 }</code></pre>
 </div>
 </div>
@@ -734,15 +734,15 @@ Content-Length: 80
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 174
+Content-Length: 177
 Host: test.host
 
 {
-  "sttModel" : "INVALID_STT",
-  "intentModel" : "gpt-4",
-  "userId" : "21c7f1a1-c80b-4387-b06c-44fa47dc9103",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "gpt-4",
+  "stt_model" : "INVALID_STT",
+  "user_id" : "12d895ae-10e5-46d0-9da2-7f635204ffe8",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -811,15 +811,15 @@ Content-Length: 95
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 176
+Content-Length: 179
 Host: test.host
 
 {
-  "sttModel" : "VITO",
-  "intentModel" : "INVALID_INTENT",
-  "userId" : "5a90fbc0-ebe2-467b-a922-7855fe8c0304",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "INVALID_INTENT",
+  "stt_model" : "VITO",
+  "user_id" : "d5f50625-089a-4eec-a3dd-3faba6df0749",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -882,58 +882,11 @@ Content-Length: 105
 </div>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_에러_코드_정리">에러 코드 정리</h2>
-<div class="sectionbody">
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 20%;">
-<col style="width: 20%;">
-<col style="width: 40%;">
-<col style="width: 20%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">HTTP 상태</th>
-<th class="tableblock halign-left valign-top">에러 코드</th>
-<th class="tableblock halign-left valign-top">설명</th>
-<th class="tableblock halign-left valign-top">해결 방법</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">USER_NOT_FOUND</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">존재하지 않는 유저 ID</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">유효한 유저 ID로 재시도</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FIELD_REQUIRED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">필수 필드 누락</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">누락된 필드 추가 후 재시도</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VOICE_COMMAND_UNKNOWN_STT_MODEL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">지원하지 않는 STT 모델</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VITO 모델 사용</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VOICE_COMMAND_UNKNOWN_INTENT_MODEL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">지원하지 않는 Intent 모델</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GPT4.1 또는 REGEX 모델 사용</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2025-07-19 15:29:43 +0900
+Last updated 2025-07-23 01:26:21 +0900
 </div>
 </div>
 </body>

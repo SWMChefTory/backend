@@ -1,0 +1,62 @@
+[[Recipe-API]]
+= Recipe API
+
+== 최근 조회한 레시피 목록 조회 (GET /api/v1/recipes/recent)
+
+=== 1.1 성공 – 최근 레시피 목록 조회
+
+==== 요청
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/then-should-return-recent-recipes/http-request.adoc[]
+
+==== 요청 헤더
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/then-should-return-recent-recipes/request-headers.adoc[]
+
+==== 응답
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/then-should-return-recent-recipes/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/then-should-return-recent-recipes/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/then-should-return-recent-recipes/response-fields.adoc[]
+
+== 레시피 상세 정보 조회 (GET /api/v1/recipes/+{recipe_id}+)
+
+=== 2.1 성공 – 레시피 전체 정보 조회
+
+==== 요청
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/when-requesting-recipe-detail/then-should-return-recipe-detail/http-request.adoc[]
+
+==== 요청 헤더
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/when-requesting-recipe-detail/then-should-return-recipe-detail/request-headers.adoc[]
+
+==== 경로 매개변수
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/when-requesting-recipe-detail/then-should-return-recipe-detail/path-parameters.adoc[]
+
+==== 응답
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/when-requesting-recipe-detail/then-should-return-recipe-detail/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/when-requesting-recipe-detail/then-should-return-recipe-detail/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recent-recipes/when-requesting-recipe-detail/then-should-return-recipe-detail/response-fields.adoc[]
+
+== 추천 레시피 목록 조회 (GET /api/v1/recipes/recommend)
+
+=== 2.3 성공 – 추천 레시피 목록 조회
+
+==== 요청
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recommend-recipes/then-should-return-recommend-recipes/http-request.adoc[]
+
+==== 요청 헤더
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recommend-recipes/then-should-return-recommend-recipes/request-headers.adoc[]
+
+==== 응답
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recommend-recipes/then-should-return-recommend-recipes/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recommend-recipes/then-should-return-recommend-recipes/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/recipe-controller/given-valid-user-id/when-requesting-recommend-recipes/then-should-return-recommend-recipes/response-fields.adoc[]

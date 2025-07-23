@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.dto;
+package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.util.Iso8601DurationToSecondConverter;
 import com.fasterxml.jackson.annotation.JsonProperty;

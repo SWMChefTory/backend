@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.service;
+package com.cheftory.api.recipe.util;
 
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;

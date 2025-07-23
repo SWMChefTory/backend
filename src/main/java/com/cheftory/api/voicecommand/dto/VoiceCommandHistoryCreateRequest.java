@@ -9,7 +9,7 @@ import java.util.UUID;
 public record VoiceCommandHistoryCreateRequest(
 
     @NotNull
-    @JsonProperty("baseIntent")
+    @JsonProperty("transcribe")
     String transcribe,
 
     @NotNull
@@ -18,15 +18,15 @@ public record VoiceCommandHistoryCreateRequest(
 
     @NotNull
     @ExistsUserId
-    @JsonProperty("userId")
+    @JsonProperty("user_id")
     UUID userId,
 
     @NotNull
-    @JsonProperty("sttModel")
+    @JsonProperty("stt_model")
     String sttModel,
 
     @NotNull
-    @JsonProperty("intentModel")
+    @JsonProperty("intent_model")
     String intentModel
 
 ) {}

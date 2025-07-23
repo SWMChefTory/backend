@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.18">
-<title>API Document</title>
+<title>Recipe API</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,701 +435,25 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 #footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/github.min.css">
 </head>
-<body class="book toc2 toc-left">
+<body id="Recipe-API" class="article">
 <div id="header">
-<h1>API Document</h1>
+<h1>Recipe API</h1>
 <div class="details">
 <span id="revnumber">version 0.0.1-SNAPSHOT</span>
-</div>
-<div id="toc" class="toc2">
-<div id="toctitle">Table of Contents</div>
-<ul class="sectlevel1">
-<li><a href="#_소개">소개</a></li>
-<li><a href="#_공통_사항">공통 사항</a>
-<ul class="sectlevel2">
-<li><a href="#_domain">Domain</a></li>
-</ul>
-</li>
-<li><a href="#_공통_응답_구조">공통 응답 구조</a>
-<ul class="sectlevel2">
-<li><a href="#_성공_응답">성공 응답</a></li>
-<li><a href="#_실패_응답">실패 응답</a></li>
-</ul>
-</li>
-<li><a href="#_상태_코드">상태 코드</a>
-<ul class="sectlevel2">
-<li><a href="#_authorization">Authorization</a></li>
-</ul>
-</li>
-<li><a href="#VoiceCommand-API">VoiceCommand API</a>
-<ul class="sectlevel1">
-<li><a href="#_음성_명령_로그_저장_post_papiv1voice_command">음성 명령 로그 저장 (POST /papi/v1/voice-command)</a>
-<ul class="sectlevel2">
-<li><a href="#_1_1_성공_음성_명령_기록_저장">1.1 성공 – 음성 명령 기록 저장</a>
-<ul class="sectlevel3">
-<li><a href="#_요청">요청</a></li>
-<li><a href="#_요청_본문">요청 본문</a></li>
-<li><a href="#_요청_필드">요청 필드</a></li>
-<li><a href="#_응답">응답</a></li>
-<li><a href="#_응답_본문">응답 본문</a></li>
-<li><a href="#_응답_필드">응답 필드</a></li>
-</ul>
-</li>
-<li><a href="#_1_2_에러_존재하지_않는_유저">1.2 에러 – 존재하지 않는 유저</a>
-<ul class="sectlevel3">
-<li><a href="#_요청_2">요청</a></li>
-<li><a href="#_응답_2">응답</a></li>
-<li><a href="#_응답_본문_2">응답 본문</a></li>
-<li><a href="#_에러_필드">에러 필드</a></li>
-</ul>
-</li>
-<li><a href="#_1_3_에러_필수_필드_누락">1.3 에러 – 필수 필드 누락</a>
-<ul class="sectlevel3">
-<li><a href="#_요청_3">요청</a></li>
-<li><a href="#_응답_3">응답</a></li>
-<li><a href="#_응답_본문_3">응답 본문</a></li>
-<li><a href="#_에러_필드_2">에러 필드</a></li>
-</ul>
-</li>
-<li><a href="#_1_4_에러_지원하지_않는_stt_모델">1.4 에러 – 지원하지 않는 STT 모델</a>
-<ul class="sectlevel3">
-<li><a href="#_요청_4">요청</a></li>
-<li><a href="#_응답_4">응답</a></li>
-<li><a href="#_응답_본문_4">응답 본문</a></li>
-<li><a href="#_에러_필드_3">에러 필드</a></li>
-</ul>
-</li>
-<li><a href="#_1_5_에러_지원하지_않는_intent_모델">1.5 에러 – 지원하지 않는 Intent 모델</a>
-<ul class="sectlevel3">
-<li><a href="#_요청_5">요청</a></li>
-<li><a href="#_응답_5">응답</a></li>
-<li><a href="#_응답_본문_5">응답 본문</a></li>
-<li><a href="#_에러_필드_4">에러 필드</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#Recipe-API">Recipe API</a>
-<ul class="sectlevel1">
-<li><a href="#_최근_조회한_레시피_목록_조회_get_apiv1recipesrecent">최근 조회한 레시피 목록 조회 (GET /api/v1/recipes/recent)</a>
-<ul class="sectlevel2">
-<li><a href="#_1_1_성공_최근_레시피_목록_조회">1.1 성공 – 최근 레시피 목록 조회</a>
-<ul class="sectlevel3">
-<li><a href="#_요청_6">요청</a></li>
-<li><a href="#_요청_헤더">요청 헤더</a></li>
-<li><a href="#_응답_6">응답</a></li>
-<li><a href="#_응답_본문_6">응답 본문</a></li>
-<li><a href="#_응답_필드_2">응답 필드</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#_레시피_상세_정보_조회_get_apiv1recipesrecipe_id">레시피 상세 정보 조회 (GET /api/v1/recipes/{recipe_id})</a>
-<ul class="sectlevel2">
-<li><a href="#_2_1_성공_레시피_전체_정보_조회">2.1 성공 – 레시피 전체 정보 조회</a>
-<ul class="sectlevel3">
-<li><a href="#_요청_7">요청</a></li>
-<li><a href="#_요청_헤더_2">요청 헤더</a></li>
-<li><a href="#_경로_매개변수">경로 매개변수</a></li>
-<li><a href="#_응답_7">응답</a></li>
-<li><a href="#_응답_본문_7">응답 본문</a></li>
-<li><a href="#_응답_필드_3">응답 필드</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#_추천_레시피_목록_조회_get_apiv1recipesrecommend">추천 레시피 목록 조회 (GET /api/v1/recipes/recommend)</a>
-<ul class="sectlevel2">
-<li><a href="#_2_3_성공_추천_레시피_목록_조회">2.3 성공 – 추천 레시피 목록 조회</a>
-<ul class="sectlevel3">
-<li><a href="#_요청_8">요청</a></li>
-<li><a href="#_요청_헤더_3">요청 헤더</a></li>
-<li><a href="#_응답_8">응답</a></li>
-<li><a href="#_응답_본문_8">응답 본문</a></li>
-<li><a href="#_응답_필드_4">응답 필드</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
 </div>
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_소개"><a class="link" href="#_소개">소개</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>API 문서입니다.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_공통_사항"><a class="link" href="#_공통_사항">공통 사항</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>API 문서에서 공통으로 사용되는 내용을 정의합니다.</p>
-</div>
-<div class="sect2">
-<h3 id="_domain"><a class="link" href="#_domain">Domain</a></h3>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_공통_응답_구조"><a class="link" href="#_공통_응답_구조">공통 응답 구조</a></h2>
+<h2 id="_최근_조회한_레시피_목록_조회_get_apiv1recipesrecent">최근 조회한 레시피 목록 조회 (GET /api/v1/recipes/recent)</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_성공_응답"><a class="link" href="#_성공_응답">성공 응답</a></h3>
+<h3 id="_1_1_성공_최근_레시피_목록_조회">1.1 성공 – 최근 레시피 목록 조회</h3>
+<div class="sect3">
+<h4 id="_요청">요청</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
-
-}</code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>status</code>: HTTP 상태 코드</p>
-</li>
-<li>
-<p><code>data</code>: 실제 응답 데이터</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_실패_응답"><a class="link" href="#_실패_응답">실패 응답</a></h3>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
-
-"errorCode": "GLOBAL_1",
-"message": "요청 변수가 잘못되었습니다."
-
-}</code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>errorCode</code>: 에러 코드</p>
-</li>
-<li>
-<p><code>message</code>: 에러 메시지</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_상태_코드"><a class="link" href="#_상태_코드">상태 코드</a></h2>
-<div class="sectionbody">
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">상태 코드</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">의미</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">설명</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">요청이 성공적으로 처리됨</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">BadRequest</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">잘못된 요청</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">500</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Internal Server Error</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">서버 내부 오류</p></td>
-</tr>
-</tbody>
-</table>
-<div class="sect2">
-<h3 id="_authorization"><a class="link" href="#_authorization">Authorization</a></h3>
-<div class="ulist">
-<ul>
-<li>
-<p><code>Authorization</code>: Bearer 액세스 토큰 (필수)</p>
-</li>
-<li>
-<p>형식: <code>Bearer {token}</code></p>
-</li>
-<li>
-<p>인증이 필요한 API 호출 시 반드시 포함</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-<h1 id="VoiceCommand-API" class="sect0"><a class="link" href="#VoiceCommand-API">VoiceCommand API</a></h1>
-<div class="sect1">
-<h2 id="_음성_명령_로그_저장_post_papiv1voice_command"><a class="link" href="#_음성_명령_로그_저장_post_papiv1voice_command">음성 명령 로그 저장 (POST /papi/v1/voice-command)</a></h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_1_1_성공_음성_명령_기록_저장"><a class="link" href="#_1_1_성공_음성_명령_기록_저장">1.1 성공 – 음성 명령 기록 저장</a></h3>
-<div class="sect3">
-<h4 id="_요청"><a class="link" href="#_요청">요청</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
-Content-Type: application/json
-Content-Length: 170
-Host: test.host
-
-{
-  "intent" : "testIntent",
-  "intent_model" : "gpt-4",
-  "stt_model" : "VITO",
-  "user_id" : "f2345d38-9f24-4b9c-8fb1-45217e4fb690",
-  "transcribe" : "testBaseIntent"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_요청_본문"><a class="link" href="#_요청_본문">요청 본문</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "intent" : "testIntent",
-  "intent_model" : "gpt-4",
-  "stt_model" : "VITO",
-  "user_id" : "f2345d38-9f24-4b9c-8fb1-45217e4fb690",
-  "transcribe" : "testBaseIntent"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_요청_필드"><a class="link" href="#_요청_필드">요청 필드</a></h4>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Path</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>transcribe</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">기본 의도</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>intent</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">의도</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>user_id</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">유저 ID</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>stt_model</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">음성 인식에 사용되는 모델. 사용 가능한 값:  사용 가능한 값: <code>VITO</code></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>intent_model</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">의도 분류에 사용되는 모델. 사용 가능한 값:  사용 가능한 값: <code>GPT4.1</code>, <code>REGEX</code></p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="_응답"><a class="link" href="#_응답">응답</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 27
-
-{
-  "message" : "success"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_본문"><a class="link" href="#_응답_본문">응답 본문</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "message" : "success"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_필드"><a class="link" href="#_응답_필드">응답 필드</a></h4>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Path</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>message</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">success</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_1_2_에러_존재하지_않는_유저"><a class="link" href="#_1_2_에러_존재하지_않는_유저">1.2 에러 – 존재하지 않는 유저</a></h3>
-<div class="sect3">
-<h4 id="_요청_2"><a class="link" href="#_요청_2">요청</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
-Content-Type: application/json
-Content-Length: 170
-Host: test.host
-
-{
-  "intent" : "testIntent",
-  "intent_model" : "gpt-4",
-  "stt_model" : "VITO",
-  "user_id" : "7f4274bd-7d64-4564-b615-32f2f6d148f1",
-  "transcribe" : "testBaseIntent"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_2"><a class="link" href="#_응답_2">응답</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 400 Bad Request
-Content-Type: application/json
-Content-Length: 80
-
-{
-  "message" : "회원을 찾을 수 없습니다.",
-  "errorCode" : "USER_1"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_본문_2"><a class="link" href="#_응답_본문_2">응답 본문</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "message" : "회원을 찾을 수 없습니다.",
-  "errorCode" : "USER_1"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_에러_필드"><a class="link" href="#_에러_필드">에러 필드</a></h4>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Path</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>errorCode</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">USER_1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>message</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">회원을 찾을 수 없습니다.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_1_3_에러_필수_필드_누락"><a class="link" href="#_1_3_에러_필수_필드_누락">1.3 에러 – 필수 필드 누락</a></h3>
-<div class="sect3">
-<h4 id="_요청_3"><a class="link" href="#_요청_3">요청</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
-Content-Type: application/json
-Content-Length: 92
-Host: test.host
-
-{
-  "user_id" : "be1ea7ec-a546-4900-bfed-4b0a23287221",
-  "base_intent" : "testBaseIntent"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_3"><a class="link" href="#_응답_3">응답</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 400 Bad Request
-Content-Type: application/json
-Content-Length: 92
-
-{
-  "message" : "알 수 없는 오류가 발생했습니다.",
-  "errorCode" : "GLOBAL_2"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_본문_3"><a class="link" href="#_응답_본문_3">응답 본문</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "message" : "알 수 없는 오류가 발생했습니다.",
-  "errorCode" : "GLOBAL_2"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_에러_필드_2"><a class="link" href="#_에러_필드_2">에러 필드</a></h4>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Path</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>errorCode</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GLOBAL_1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>message</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">필수 필드가 누락되었습니다.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_1_4_에러_지원하지_않는_stt_모델"><a class="link" href="#_1_4_에러_지원하지_않는_stt_모델">1.4 에러 – 지원하지 않는 STT 모델</a></h3>
-<div class="sect3">
-<h4 id="_요청_4"><a class="link" href="#_요청_4">요청</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
-Content-Type: application/json
-Content-Length: 177
-Host: test.host
-
-{
-  "intent" : "testIntent",
-  "intent_model" : "gpt-4",
-  "stt_model" : "INVALID_STT",
-  "user_id" : "12d895ae-10e5-46d0-9da2-7f635204ffe8",
-  "transcribe" : "testBaseIntent"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_4"><a class="link" href="#_응답_4">응답</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 400 Bad Request
-Content-Type: application/json
-Content-Length: 95
-
-{
-  "message" : "지원하지 않는 STT 모델입니다.",
-  "errorCode" : "VOICE_COMMAND_2"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_본문_4"><a class="link" href="#_응답_본문_4">응답 본문</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "message" : "지원하지 않는 STT 모델입니다.",
-  "errorCode" : "VOICE_COMMAND_2"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_에러_필드_3"><a class="link" href="#_에러_필드_3">에러 필드</a></h4>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Path</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>errorCode</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VOICE_COMMAND_2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>message</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">지원하지 않는 STT 모델입니다.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_1_5_에러_지원하지_않는_intent_모델"><a class="link" href="#_1_5_에러_지원하지_않는_intent_모델">1.5 에러 – 지원하지 않는 Intent 모델</a></h3>
-<div class="sect3">
-<h4 id="_요청_5"><a class="link" href="#_요청_5">요청</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
-Content-Type: application/json
-Content-Length: 179
-Host: test.host
-
-{
-  "intent" : "testIntent",
-  "intent_model" : "INVALID_INTENT",
-  "stt_model" : "VITO",
-  "user_id" : "d5f50625-089a-4eec-a3dd-3faba6df0749",
-  "transcribe" : "testBaseIntent"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_5"><a class="link" href="#_응답_5">응답</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 400 Bad Request
-Content-Type: application/json
-Content-Length: 105
-
-{
-  "message" : "지원하지 않는 음성 명령 모델입니다.",
-  "errorCode" : "VOICE_COMMAND_1"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_응답_본문_5"><a class="link" href="#_응답_본문_5">응답 본문</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "message" : "지원하지 않는 음성 명령 모델입니다.",
-  "errorCode" : "VOICE_COMMAND_1"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_에러_필드_4"><a class="link" href="#_에러_필드_4">에러 필드</a></h4>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Path</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>errorCode</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VOICE_COMMAND_1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>message</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">지원하지 않는 음성 명령 모델입니다.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-<h1 id="Recipe-API" class="sect0"><a class="link" href="#Recipe-API">Recipe API</a></h1>
-<div class="sect1">
-<h2 id="_최근_조회한_레시피_목록_조회_get_apiv1recipesrecent"><a class="link" href="#_최근_조회한_레시피_목록_조회_get_apiv1recipesrecent">최근 조회한 레시피 목록 조회 (GET /api/v1/recipes/recent)</a></h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_1_1_성공_최근_레시피_목록_조회"><a class="link" href="#_1_1_성공_최근_레시피_목록_조회">1.1 성공 – 최근 레시피 목록 조회</a></h3>
-<div class="sect3">
-<h4 id="_요청_6"><a class="link" href="#_요청_6">요청</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/recipes/recent HTTP/1.1
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /api/v1/recipes/recent HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer accessToken
 Host: test.host</code></pre>
@@ -1137,7 +461,7 @@ Host: test.host</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_요청_헤더"><a class="link" href="#_요청_헤더">요청 헤더</a></h4>
+<h4 id="_요청_헤더">요청 헤더</h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 50%;">
@@ -1158,10 +482,10 @@ Host: test.host</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_응답_6"><a class="link" href="#_응답_6">응답</a></h4>
+<h4 id="_응답">응답</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 302
 
@@ -1179,10 +503,10 @@ Content-Length: 302
 </div>
 </div>
 <div class="sect3">
-<h4 id="_응답_본문_6"><a class="link" href="#_응답_본문_6">응답 본문</a></h4>
+<h4 id="_응답_본문">응답 본문</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+<pre class="highlight nowrap"><code class="language-json" data-lang="json">{
   "recent_recipes" : [ {
     "viewed_at" : "2025-07-23T12:29:54.77312",
     "last_play_seconds" : 0,
@@ -1196,7 +520,7 @@ Content-Length: 302
 </div>
 </div>
 <div class="sect3">
-<h4 id="_응답_필드_2"><a class="link" href="#_응답_필드_2">응답 필드</a></h4>
+<h4 id="_응답_필드">응답 필드</h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -1253,15 +577,15 @@ Content-Length: 302
 </div>
 </div>
 <div class="sect1">
-<h2 id="_레시피_상세_정보_조회_get_apiv1recipesrecipe_id"><a class="link" href="#_레시피_상세_정보_조회_get_apiv1recipesrecipe_id">레시피 상세 정보 조회 (GET /api/v1/recipes/{recipe_id})</a></h2>
+<h2 id="_레시피_상세_정보_조회_get_apiv1recipesrecipe_id">레시피 상세 정보 조회 (GET /api/v1/recipes/{recipe_id})</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_2_1_성공_레시피_전체_정보_조회"><a class="link" href="#_2_1_성공_레시피_전체_정보_조회">2.1 성공 – 레시피 전체 정보 조회</a></h3>
+<h3 id="_2_1_성공_레시피_전체_정보_조회">2.1 성공 – 레시피 전체 정보 조회</h3>
 <div class="sect3">
-<h4 id="_요청_7"><a class="link" href="#_요청_7">요청</a></h4>
+<h4 id="_요청_2">요청</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/recipes/270f5d23-9316-494c-8a06-5396ddc2d106 HTTP/1.1
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /api/v1/recipes/270f5d23-9316-494c-8a06-5396ddc2d106 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer accessToken
 Host: test.host</code></pre>
@@ -1269,7 +593,7 @@ Host: test.host</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_요청_헤더_2"><a class="link" href="#_요청_헤더_2">요청 헤더</a></h4>
+<h4 id="_요청_헤더_2">요청 헤더</h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 50%;">
@@ -1290,7 +614,7 @@ Host: test.host</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_경로_매개변수"><a class="link" href="#_경로_매개변수">경로 매개변수</a></h4>
+<h4 id="_경로_매개변수">경로 매개변수</h4>
 <table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 1. /api/v1/recipes/{recipe_id}</caption>
 <colgroup>
@@ -1312,10 +636,10 @@ Host: test.host</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_응답_7"><a class="link" href="#_응답_7">응답</a></h4>
+<h4 id="_응답_2">응답</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 783
 
@@ -1354,10 +678,10 @@ Content-Length: 783
 </div>
 </div>
 <div class="sect3">
-<h4 id="_응답_본문_7"><a class="link" href="#_응답_본문_7">응답 본문</a></h4>
+<h4 id="_응답_본문_2">응답 본문</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+<pre class="highlight nowrap"><code class="language-json" data-lang="json">{
   "recipe_status" : "COMPLETED",
   "video_info" : {
     "video_id" : "12345",
@@ -1392,7 +716,7 @@ Content-Length: 783
 </div>
 </div>
 <div class="sect3">
-<h4 id="_응답_필드_3"><a class="link" href="#_응답_필드_3">응답 필드</a></h4>
+<h4 id="_응답_필드_2">응답 필드</h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -1544,15 +868,15 @@ Content-Length: 783
 </div>
 </div>
 <div class="sect1">
-<h2 id="_추천_레시피_목록_조회_get_apiv1recipesrecommend"><a class="link" href="#_추천_레시피_목록_조회_get_apiv1recipesrecommend">추천 레시피 목록 조회 (GET /api/v1/recipes/recommend)</a></h2>
+<h2 id="_추천_레시피_목록_조회_get_apiv1recipesrecommend">추천 레시피 목록 조회 (GET /api/v1/recipes/recommend)</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_2_3_성공_추천_레시피_목록_조회"><a class="link" href="#_2_3_성공_추천_레시피_목록_조회">2.3 성공 – 추천 레시피 목록 조회</a></h3>
+<h3 id="_2_3_성공_추천_레시피_목록_조회">2.3 성공 – 추천 레시피 목록 조회</h3>
 <div class="sect3">
-<h4 id="_요청_8"><a class="link" href="#_요청_8">요청</a></h4>
+<h4 id="_요청_3">요청</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/recipes/recommend HTTP/1.1
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /api/v1/recipes/recommend HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer accessToken
 Host: test.host</code></pre>
@@ -1560,7 +884,7 @@ Host: test.host</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_요청_헤더_3"><a class="link" href="#_요청_헤더_3">요청 헤더</a></h4>
+<h4 id="_요청_헤더_3">요청 헤더</h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 50%;">
@@ -1581,10 +905,10 @@ Host: test.host</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_응답_8"><a class="link" href="#_응답_8">응답</a></h4>
+<h4 id="_응답_3">응답</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 246
 
@@ -1601,10 +925,10 @@ Content-Length: 246
 </div>
 </div>
 <div class="sect3">
-<h4 id="_응답_본문_8"><a class="link" href="#_응답_본문_8">응답 본문</a></h4>
+<h4 id="_응답_본문_3">응답 본문</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+<pre class="highlight nowrap"><code class="language-json" data-lang="json">{
   "recommend_recipes" : [ {
     "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
     "recipe_title" : "Sample Recipe Video",
@@ -1617,7 +941,7 @@ Content-Length: 246
 </div>
 </div>
 <div class="sect3">
-<h4 id="_응답_필드_4"><a class="link" href="#_응답_필드_4">응답 필드</a></h4>
+<h4 id="_응답_필드_3">응답 필드</h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -1672,15 +996,8 @@ Content-Length: 246
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2025-07-23 01:18:34 +0900
+Last updated 2025-07-23 01:33:33 +0900
 </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
-<script>
-if (!hljs.initHighlighting.called) {
-  hljs.initHighlighting.called = true
-  ;[].slice.call(document.querySelectorAll('pre.highlight > code[data-lang]')).forEach(function (el) { hljs.highlightBlock(el) })
-}
-</script>
 </body>
 </html>

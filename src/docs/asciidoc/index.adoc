@@ -32,12 +32,11 @@ API 문서에서 공통으로 사용되는 내용을 정의합니다.
 ----
 {
 
-"errorCode": "COMMON_2",
-  "message": "요청 변수가 잘못되었습니다."
+"errorCode": "GLOBAL_1",
+"message": "요청 변수가 잘못되었습니다."
 
 }
 ----
-* `status`: HTTP 상태 코드
 * `errorCode`: 에러 코드
 * `message`: 에러 메시지
 
@@ -46,7 +45,7 @@ API 문서에서 공통으로 사용되는 내용을 정의합니다.
 |===
 | 상태 코드 | 의미 | 설명
 | 200       | OK   | 요청이 성공적으로 처리됨
-| 401       | Unauthorized | 인증 실패 (잘못된 토큰 등)
+| 400       | BadRequest | 잘못된 요청
 | 500       | Internal Server Error | 서버 내부 오류
 |===
 
@@ -57,3 +56,5 @@ API 문서에서 공통으로 사용되는 내용을 정의합니다.
 
 
 include::VoiceCommand-API.adoc[]
+
+include::Recipe-API.adoc[]

@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.service;
+package com.cheftory.api.recipe;
 
 import com.cheftory.api.recipe.caption.RecipeCaptionService;
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
@@ -6,7 +6,6 @@ import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.repository.RecipeRepository;
 import com.cheftory.api.recipe.ingredients.RecipeIngredientsService;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.step.RecipeStepService;

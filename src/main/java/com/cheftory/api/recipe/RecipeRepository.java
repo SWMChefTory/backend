@@ -1,9 +1,10 @@
-package com.cheftory.api.recipe.repository;
+package com.cheftory.api.recipe;
 
 
 import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,4 +29,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
 
     @Query("select r from Recipe r where r.id in :recipeIds")
     List<Recipe> findRecipesById(List<UUID> recipeIds);
+
+    List<Recipe> findByStatus(RecipeStatus status, Sort sort);
+
 }

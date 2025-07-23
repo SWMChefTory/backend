@@ -1,6 +1,5 @@
-package com.cheftory.api.recipe;
+package com.cheftory.api.recipe.caption;
 
-import com.cheftory.api.recipe.caption.RecipeCaptionService;
 import com.cheftory.api.recipe.caption.dto.CaptionInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

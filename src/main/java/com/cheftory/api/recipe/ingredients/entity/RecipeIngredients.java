@@ -18,7 +18,6 @@ import java.util.UUID;
 @Getter
 public class RecipeIngredients {
     @Id
-    @UuidGenerator
     private UUID id;
 
     //converter로 달아줘야 함.
@@ -30,6 +29,7 @@ public class RecipeIngredients {
 
     public static RecipeIngredients from(List<Ingredient> ingredients, UUID recipeId) {
         return RecipeIngredients.builder()
+                .id(UUID.randomUUID())
                 .ingredients(ingredients)
                 .recipeId(recipeId)
                 .build();

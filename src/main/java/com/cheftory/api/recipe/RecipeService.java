@@ -1,24 +1,23 @@
 package com.cheftory.api.recipe;
 
 import com.cheftory.api.recipe.entity.Recipe;
+import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.recipe.model.FullRecipeInfo;
 import com.cheftory.api.recipe.model.RecipeOverview;
 import com.cheftory.api.recipe.model.RecentRecipeOverview;
-import com.cheftory.api.recipe.repository.RecipeRepository;
-import com.cheftory.api.recipe.service.YoutubeUrlNormalizer;
+import com.cheftory.api.recipe.model.RecipeSort;
+import com.cheftory.api.recipe.util.YoutubeUrlNormalizer;
 import com.cheftory.api.recipe.ingredients.RecipeIngredientsService;
 import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
 import com.cheftory.api.recipe.client.VideoInfoClient;
-import com.cheftory.api.recipe.service.AsyncRecipeCreationService;
 import com.cheftory.api.recipe.step.RecipeStepService;
 import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatusInfo;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatusService;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -111,9 +110,8 @@ public class RecipeService {
     );
   }
 
-  public List<RecentRecipeOverview> findUsers(UUID userId) {
-
-    List<RecipeViewStatusInfo> viewStatusInfos = recipeViewStatusService.findUsers(userId);
+  public List<RecentRecipeOverview> findRecents(UUID userId) {
+    List<RecipeViewStatusInfo> viewStatusInfos = recipeViewStatusService.findRecentUsers(userId);
 
     List<UUID> recipeIds = viewStatusInfos.stream()
         .map(RecipeViewStatusInfo::getRecipeId)
@@ -128,9 +126,7 @@ public class RecipeService {
     Map<UUID, RecipeViewStatusInfo> viewStatusMap = viewStatusInfos.stream()
         .collect(Collectors.toMap(
             RecipeViewStatusInfo::getRecipeId,
-            Function.identity(),
-            (a, b) -> b,
-            HashMap::new
+            Function.identity()
         ));
 
     return recipeOverviews.stream()
@@ -138,8 +134,13 @@ public class RecipeService {
             recipe,
             viewStatusMap.get(recipe.getId())
         ))
-        .sorted((a, b) -> b.getRecipeViewStatusInfo().getViewedAt()
-            .compareTo(a.getRecipeViewStatusInfo().getViewedAt()))
+        .toList();
+  }
+
+  public List<RecipeOverview> findRecommends() {
+    return recipeRepository.findByStatus(RecipeStatus.COMPLETED, RecipeSort.COUNT_DESC)
+        .stream()
+        .map(RecipeOverview::from)
         .toList();
   }
 }

@@ -1,11 +1,13 @@
 package com.cheftory.api.recipe;
 
+import com.cheftory.api.recipe.model.RecommendRecipesResponse;
 import com.cheftory.api.recipe.model.FullRecipeInfo;
-import com.cheftory.api.recipe.dto.RecipeCreateRequest;
+import com.cheftory.api.recipe.model.RecipeCreateRequest;
 import com.cheftory.api.recipe.model.RecentRecipeOverview;
-import com.cheftory.api.recipe.dto.FullRecipeResponse;
-import com.cheftory.api.recipe.dto.RecipeCreateResponse;
-import com.cheftory.api.recipe.dto.RecentRecipesResponse;
+import com.cheftory.api.recipe.model.FullRecipeResponse;
+import com.cheftory.api.recipe.model.RecipeCreateResponse;
+import com.cheftory.api.recipe.model.RecentRecipesResponse;
+import com.cheftory.api.recipe.model.RecipeOverview;
 import com.cheftory.api.security.UserPrincipal;
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/recipe")
+@RequestMapping("/api/v1/recipes")
 public class RecipeController {
   private final RecipeService recipeService;
 
@@ -30,14 +32,20 @@ public class RecipeController {
   }
 
   @GetMapping("/{recipe_id}")
-  public FullRecipeResponse getFullRecipeResponse(@PathVariable("recipe_id") UUID recipe_id, @UserPrincipal UUID userId) {
-    FullRecipeInfo info = recipeService.findFullRecipe(recipe_id,userId);
+  public FullRecipeResponse getFullRecipeResponse(@PathVariable("recipe_id") UUID recipeId, @UserPrincipal UUID userId) {
+    FullRecipeInfo info = recipeService.findFullRecipe(recipeId,userId);
     return FullRecipeResponse.of(info);
   }
 
-  @GetMapping("")
+  @GetMapping("/recent")
   public RecentRecipesResponse getRecentInfos(@UserPrincipal UUID userId) {
-    List<RecentRecipeOverview> infos = recipeService.findUsers(userId);
+    List<RecentRecipeOverview> infos = recipeService.findRecents(userId);
     return RecentRecipesResponse.from(infos);
+  }
+
+  @GetMapping("/recommend")
+  public RecommendRecipesResponse getRecommendedRecipes() {
+    List<RecipeOverview> infos = recipeService.findRecommends();
+    return RecommendRecipesResponse.from(infos);
   }
 }

@@ -33,8 +33,8 @@ public class RecipeViewStatusService {
     return RecipeViewStatusInfo.of(viewStatusRepository.save(RecipeViewStatus.of(clock, userId, recipeId)));
   }
 
-  public List<RecipeViewStatusInfo> findUsers(UUID userId) {
-    return viewStatusRepository.findByUserId(userId).stream().map(
+  public List<RecipeViewStatusInfo> findRecentUsers(UUID userId) {
+    return viewStatusRepository.findByUserId(userId, ViewStatusSort.VIEWED_AT_DESC).stream().map(
         RecipeViewStatusInfo::of
     ).toList();
   }

@@ -1,6 +1,5 @@
-package com.cheftory.api.recipe.dto;
+package com.cheftory.api.recipe.model;
 
-import com.cheftory.api.recipe.model.RecentRecipeOverview;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;
@@ -10,7 +9,7 @@ import java.util.UUID;
 
 public record RecentRecipesResponse(
     @JsonProperty("recent_recipes")
-    List<RecentRecipeResponse> viewStateInfos
+    List<RecentRecipeResponse> recentRecipes
 ) {
   public static RecentRecipesResponse from(List<RecentRecipeOverview> recentRecipes) {
     List<RecentRecipeResponse> responses = recentRecipes.stream()
