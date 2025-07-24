@@ -36,9 +36,12 @@ public class RecipeCaptionService {
         return recipeCaptionRepository.save(recipeCaption).getId();
     }
 
-    public CaptionInfo findCaptionInfo(UUID captionId) {
-        RecipeCaption caption = recipeCaptionRepository.findById(captionId).orElseThrow(()->new RecipeCaptionException(
-            CaptionErrorCode.CAPTION_NOT_FOUND));
+    public CaptionInfo findCaptionInfo(UUID recipeId) {
+        RecipeCaption caption = recipeCaptionRepository
+            .findByRecipeId((recipeId))
+            .orElseThrow(()->
+                new RecipeCaptionException(CaptionErrorCode.CAPTION_NOT_FOUND)
+            );
         return CaptionInfo.from(caption);
     }
 
