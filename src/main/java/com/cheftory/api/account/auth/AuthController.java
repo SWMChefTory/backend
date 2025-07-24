@@ -1,6 +1,6 @@
 package com.cheftory.api.account.auth;
 
-import com.cheftory.api.account.auth.dto.UserId;
+import com.cheftory.api.account.auth.dto.ExtractUserIdResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/papi/v1/auth")
 public class AuthController {
 
-  private final  AuthService authService;
+  private final AuthService authService;
 
-  @PostMapping("/userId")
-  public ResponseEntity<UserId> loginWithOAuth(
+  @PostMapping("/extract-user-id")
+  public ResponseEntity<ExtractUserIdResponse> loginWithOAuth(
       @RequestHeader("Authorization") String accessToken
   ) {
     UUID userId = authService.extractUserIdFromToken(accessToken);
-    return ResponseEntity.ok(new UserId(userId.toString()));
+    return ResponseEntity.ok(ExtractUserIdResponse.of(userId));
   }
 
 }
