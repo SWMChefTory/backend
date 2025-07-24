@@ -512,7 +512,50 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_에러_코드_정리">에러 코드 정리</a></li>
+</ul>
+</li>
+<li><a href="#Recipe-API">Recipe API</a>
+<ul class="sectlevel1">
+<li><a href="#_최근_조회한_레시피_목록_조회_get_apiv1recipesrecent">최근 조회한 레시피 목록 조회 (GET /api/v1/recipes/recent)</a>
+<ul class="sectlevel2">
+<li><a href="#_1_1_성공_최근_레시피_목록_조회">1.1 성공 – 최근 레시피 목록 조회</a>
+<ul class="sectlevel3">
+<li><a href="#_요청_6">요청</a></li>
+<li><a href="#_요청_헤더">요청 헤더</a></li>
+<li><a href="#_응답_6">응답</a></li>
+<li><a href="#_응답_본문_6">응답 본문</a></li>
+<li><a href="#_응답_필드_2">응답 필드</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_레시피_상세_정보_조회_get_apiv1recipesrecipe_id">레시피 상세 정보 조회 (GET /api/v1/recipes/{recipe_id})</a>
+<ul class="sectlevel2">
+<li><a href="#_2_1_성공_레시피_전체_정보_조회">2.1 성공 – 레시피 전체 정보 조회</a>
+<ul class="sectlevel3">
+<li><a href="#_요청_7">요청</a></li>
+<li><a href="#_요청_헤더_2">요청 헤더</a></li>
+<li><a href="#_경로_매개변수">경로 매개변수</a></li>
+<li><a href="#_응답_7">응답</a></li>
+<li><a href="#_응답_본문_7">응답 본문</a></li>
+<li><a href="#_응답_필드_3">응답 필드</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_추천_레시피_목록_조회_get_apiv1recipesrecommend">추천 레시피 목록 조회 (GET /api/v1/recipes/recommend)</a>
+<ul class="sectlevel2">
+<li><a href="#_2_3_성공_추천_레시피_목록_조회">2.3 성공 – 추천 레시피 목록 조회</a>
+<ul class="sectlevel3">
+<li><a href="#_요청_8">요청</a></li>
+<li><a href="#_요청_헤더_3">요청 헤더</a></li>
+<li><a href="#_응답_8">응답</a></li>
+<li><a href="#_응답_본문_8">응답 본문</a></li>
+<li><a href="#_응답_필드_4">응답 필드</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -568,17 +611,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
 
-"errorCode": "COMMON_2",
-  "message": "요청 변수가 잘못되었습니다."
+"errorCode": "GLOBAL_1",
+"message": "요청 변수가 잘못되었습니다."
 
 }</code></pre>
 </div>
 </div>
 <div class="ulist">
 <ul>
-<li>
-<p><code>status</code>: HTTP 상태 코드</p>
-</li>
 <li>
 <p><code>errorCode</code>: 에러 코드</p>
 </li>
@@ -611,9 +651,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><p class="tableblock">요청이 성공적으로 처리됨</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">401</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Unauthorized</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">인증 실패 (잘못된 토큰 등)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BadRequest</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">잘못된 요청</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">500</p></td>
@@ -652,15 +692,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 167
+Content-Length: 170
 Host: test.host
 
 {
-  "sttModel" : "VITO",
-  "intentModel" : "gpt-4",
-  "userId" : "cf109445-c4dd-4134-b0f2-7b01110c46ef",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "gpt-4",
+  "stt_model" : "VITO",
+  "user_id" : "f2345d38-9f24-4b9c-8fb1-45217e4fb690",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -670,11 +710,11 @@ Host: test.host
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "sttModel" : "VITO",
-  "intentModel" : "gpt-4",
-  "userId" : "cf109445-c4dd-4134-b0f2-7b01110c46ef",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "gpt-4",
+  "stt_model" : "VITO",
+  "user_id" : "f2345d38-9f24-4b9c-8fb1-45217e4fb690",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -696,7 +736,7 @@ Host: test.host
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>baseIntent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>transcribe</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">기본 의도</p></td>
 </tr>
@@ -706,19 +746,19 @@ Host: test.host
 <td class="tableblock halign-left valign-top"><p class="tableblock">의도</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>userId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>user_id</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">유저 ID</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sttModel</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>stt_model</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">음성 인식에 사용되는 모델. 사용 가능한 값: <code>VITO</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">음성 인식에 사용되는 모델. 사용 가능한 값:  사용 가능한 값: <code>VITO</code></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>intentModel</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>intent_model</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">의도 분류에 사용되는 모델. 사용 가능한 값: <code>GPT4.1</code>, <code>REGEX</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">의도 분류에 사용되는 모델. 사용 가능한 값:  사용 가능한 값: <code>GPT4.1</code>, <code>REGEX</code></p></td>
 </tr>
 </tbody>
 </table>
@@ -780,15 +820,15 @@ Content-Length: 27
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 167
+Content-Length: 170
 Host: test.host
 
 {
-  "sttModel" : "VITO",
-  "intentModel" : "gpt-4",
-  "userId" : "262f23ef-2a9c-44c6-8449-db5d3ab3f257",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "gpt-4",
+  "stt_model" : "VITO",
+  "user_id" : "7f4274bd-7d64-4564-b615-32f2f6d148f1",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -857,12 +897,12 @@ Content-Length: 80
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 90
+Content-Length: 92
 Host: test.host
 
 {
-  "userId" : "0c57e04b-331c-4e87-b939-a15f85383f8e",
-  "baseIntent" : "testBaseIntent"
+  "user_id" : "be1ea7ec-a546-4900-bfed-4b0a23287221",
+  "base_intent" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -873,11 +913,11 @@ Host: test.host
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 400 Bad Request
 Content-Type: application/json
-Content-Length: 80
+Content-Length: 92
 
 {
-  "message" : "회원을 찾을 수 없습니다.",
-  "errorCode" : "USER_1"
+  "message" : "알 수 없는 오류가 발생했습니다.",
+  "errorCode" : "GLOBAL_2"
 }</code></pre>
 </div>
 </div>
@@ -887,8 +927,8 @@ Content-Length: 80
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "message" : "회원을 찾을 수 없습니다.",
-  "errorCode" : "USER_1"
+  "message" : "알 수 없는 오류가 발생했습니다.",
+  "errorCode" : "GLOBAL_2"
 }</code></pre>
 </div>
 </div>
@@ -931,15 +971,15 @@ Content-Length: 80
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 174
+Content-Length: 177
 Host: test.host
 
 {
-  "sttModel" : "INVALID_STT",
-  "intentModel" : "gpt-4",
-  "userId" : "21c7f1a1-c80b-4387-b06c-44fa47dc9103",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "gpt-4",
+  "stt_model" : "INVALID_STT",
+  "user_id" : "12d895ae-10e5-46d0-9da2-7f635204ffe8",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -1008,15 +1048,15 @@ Content-Length: 95
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /papi/v1/voice-command HTTP/1.1
 Content-Type: application/json
-Content-Length: 176
+Content-Length: 179
 Host: test.host
 
 {
-  "sttModel" : "VITO",
-  "intentModel" : "INVALID_INTENT",
-  "userId" : "5a90fbc0-ebe2-467b-a922-7855fe8c0304",
-  "baseIntent" : "testBaseIntent",
-  "intent" : "testIntent"
+  "intent" : "testIntent",
+  "intent_model" : "INVALID_INTENT",
+  "stt_model" : "VITO",
+  "user_id" : "d5f50625-089a-4eec-a3dd-3faba6df0749",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -1079,58 +1119,560 @@ Content-Length: 105
 </div>
 </div>
 </div>
+<h1 id="Recipe-API" class="sect0"><a class="link" href="#Recipe-API">Recipe API</a></h1>
 <div class="sect1">
-<h2 id="_에러_코드_정리"><a class="link" href="#_에러_코드_정리">에러 코드 정리</a></h2>
+<h2 id="_최근_조회한_레시피_목록_조회_get_apiv1recipesrecent"><a class="link" href="#_최근_조회한_레시피_목록_조회_get_apiv1recipesrecent">최근 조회한 레시피 목록 조회 (GET /api/v1/recipes/recent)</a></h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_1_1_성공_최근_레시피_목록_조회"><a class="link" href="#_1_1_성공_최근_레시피_목록_조회">1.1 성공 – 최근 레시피 목록 조회</a></h3>
+<div class="sect3">
+<h4 id="_요청_6"><a class="link" href="#_요청_6">요청</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/recipes/recent HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer accessToken
+Host: test.host</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_요청_헤더"><a class="link" href="#_요청_헤더">요청 헤더</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 20%;">
-<col style="width: 20%;">
-<col style="width: 40%;">
-<col style="width: 20%;">
+<col style="width: 50%;">
+<col style="width: 50%;">
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">HTTP 상태</th>
-<th class="tableblock halign-left valign-top">에러 코드</th>
-<th class="tableblock halign-left valign-top">설명</th>
-<th class="tableblock halign-left valign-top">해결 방법</th>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">USER_NOT_FOUND</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">존재하지 않는 유저 ID</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">유효한 유저 ID로 재시도</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bearer 액세스 토큰</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_응답_6"><a class="link" href="#_응답_6">응답</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 302
+
+{
+  "recent_recipes" : [ {
+    "viewed_at" : "2025-07-23T12:29:54.77312",
+    "last_play_seconds" : 0,
+    "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
+    "recipe_title" : "Sample Recipe Video",
+    "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
+    "video_id" : "12345"
+  } ]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_응답_본문_6"><a class="link" href="#_응답_본문_6">응답 본문</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "recent_recipes" : [ {
+    "viewed_at" : "2025-07-23T12:29:54.77312",
+    "last_play_seconds" : 0,
+    "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
+    "recipe_title" : "Sample Recipe Video",
+    "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
+    "video_id" : "12345"
+  } ]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_응답_필드_2"><a class="link" href="#_응답_필드_2">응답 필드</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recent_recipes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">사용자의 최근 레시피 접근 기록</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FIELD_REQUIRED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">필수 필드 누락</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">누락된 필드 추가 후 재시도</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recent_recipes[].viewed_at</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 접근 시간</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VOICE_COMMAND_UNKNOWN_STT_MODEL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">지원하지 않는 STT 모델</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VITO 모델 사용</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recent_recipes[].last_play_seconds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 마지막 재생 시간</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">400</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VOICE_COMMAND_UNKNOWN_INTENT_MODEL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">지원하지 않는 Intent 모델</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GPT4.1 또는 REGEX 모델 사용</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recent_recipes[].recipe_id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recent_recipes[].video_id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recent_recipes[].recipe_title</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 제목</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recent_recipes[].video_thumbnail_url</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 썸네일 URL</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_레시피_상세_정보_조회_get_apiv1recipesrecipe_id"><a class="link" href="#_레시피_상세_정보_조회_get_apiv1recipesrecipe_id">레시피 상세 정보 조회 (GET /api/v1/recipes/{recipe_id})</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_2_1_성공_레시피_전체_정보_조회"><a class="link" href="#_2_1_성공_레시피_전체_정보_조회">2.1 성공 – 레시피 전체 정보 조회</a></h3>
+<div class="sect3">
+<h4 id="_요청_7"><a class="link" href="#_요청_7">요청</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/recipes/270f5d23-9316-494c-8a06-5396ddc2d106 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer accessToken
+Host: test.host</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_요청_헤더_2"><a class="link" href="#_요청_헤더_2">요청 헤더</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bearer 액세스 토큰</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_경로_매개변수"><a class="link" href="#_경로_매개변수">경로 매개변수</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. /api/v1/recipes/{recipe_id}</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">조회할 레시피 ID</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_응답_7"><a class="link" href="#_응답_7">응답</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 783
+
+{
+  "recipe_status" : "COMPLETED",
+  "video_info" : {
+    "video_id" : "12345",
+    "video_title" : "Sample Recipe Video",
+    "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
+    "video_seconds" : 120
+  },
+  "ingredients_info" : {
+    "id" : "4c487b4e-c361-462a-9022-3cbe5758233f",
+    "ingredients" : [ {
+      "name" : "ingredient1",
+      "amount" : 100,
+      "unit" : "g"
+    } ]
+  },
+  "recipe_steps" : [ {
+    "id" : null,
+    "step_order" : 1,
+    "subtitle" : "step1",
+    "details" : [ "description1" ],
+    "start_time" : 100.0,
+    "end_time" : 200.0
+  } ],
+  "view_status" : {
+    "id" : "5da80cc5-9898-4dbb-b362-8036168e78df",
+    "viewed_at" : "2025-07-23T12:29:54.77312",
+    "last_play_seconds" : 0,
+    "created_at" : "2025-07-23T12:29:54.773137"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_응답_본문_7"><a class="link" href="#_응답_본문_7">응답 본문</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "recipe_status" : "COMPLETED",
+  "video_info" : {
+    "video_id" : "12345",
+    "video_title" : "Sample Recipe Video",
+    "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
+    "video_seconds" : 120
+  },
+  "ingredients_info" : {
+    "id" : "4c487b4e-c361-462a-9022-3cbe5758233f",
+    "ingredients" : [ {
+      "name" : "ingredient1",
+      "amount" : 100,
+      "unit" : "g"
+    } ]
+  },
+  "recipe_steps" : [ {
+    "id" : null,
+    "step_order" : 1,
+    "subtitle" : "step1",
+    "details" : [ "description1" ],
+    "start_time" : 100.0,
+    "end_time" : 200.0
+  } ],
+  "view_status" : {
+    "id" : "5da80cc5-9898-4dbb-b362-8036168e78df",
+    "viewed_at" : "2025-07-23T12:29:54.77312",
+    "last_play_seconds" : 0,
+    "created_at" : "2025-07-23T12:29:54.773137"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_응답_필드_3"><a class="link" href="#_응답_필드_3">응답 필드</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피의 현재 상태 : 사용 가능한 값: <code>READY</code>, <code>NOT_COOK_URL</code>, <code>FAILED</code>, <code>COMPLETED</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>video_info</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 정보</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ingredients_info</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 재료 정보</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_steps</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 단계 정보</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>view_status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 시청 상태 정보</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>video_info.video_id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>video_info.video_title</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 제목</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>video_info.video_thumbnail_url</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 썸네일 URL</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>video_info.video_seconds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 재생 시간</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ingredients_info.id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 재료 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ingredients_info.ingredients</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 재료 정보</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_steps[].id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 단계 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_steps[].step_order</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 단계 순서</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_steps[].subtitle</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 단계 제목</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_steps[].details</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 단계 설명</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_steps[].start_time</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 단계 시작 시간</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recipe_steps[].end_time</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 단계 종료 시간</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>view_status.id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 시청 상태 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>view_status.viewed_at</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 마지막 시청 시간</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>view_status.last_play_seconds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 마지막 재생 시간</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>view_status.created_at</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 시청 상태 생성 시간</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ingredients_info.ingredients</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 재료 정보</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ingredients_info.id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 재료 정보 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ingredients_info.ingredients[].name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 재료 이름</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ingredients_info.ingredients[].amount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 재료 양</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ingredients_info.ingredients[].unit</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 재료 단위</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_추천_레시피_목록_조회_get_apiv1recipesrecommend"><a class="link" href="#_추천_레시피_목록_조회_get_apiv1recipesrecommend">추천 레시피 목록 조회 (GET /api/v1/recipes/recommend)</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_2_3_성공_추천_레시피_목록_조회"><a class="link" href="#_2_3_성공_추천_레시피_목록_조회">2.3 성공 – 추천 레시피 목록 조회</a></h3>
+<div class="sect3">
+<h4 id="_요청_8"><a class="link" href="#_요청_8">요청</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/recipes/recommend HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer accessToken
+Host: test.host</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_요청_헤더_3"><a class="link" href="#_요청_헤더_3">요청 헤더</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bearer 액세스 토큰</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_응답_8"><a class="link" href="#_응답_8">응답</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 246
+
+{
+  "recommend_recipes" : [ {
+    "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
+    "recipe_title" : "Sample Recipe Video",
+    "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
+    "video_id" : "12345",
+    "count" : 0
+  } ]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_응답_본문_8"><a class="link" href="#_응답_본문_8">응답 본문</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "recommend_recipes" : [ {
+    "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
+    "recipe_title" : "Sample Recipe Video",
+    "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
+    "video_id" : "12345",
+    "count" : 0
+  } ]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_응답_필드_4"><a class="link" href="#_응답_필드_4">응답 필드</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recommend_recipes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">추천 레시피 목록</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recommend_recipes[].recipe_id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recommend_recipes[].recipe_title</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 제목</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recommend_recipes[].video_thumbnail_url</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 썸네일 URL</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recommend_recipes[].video_id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 비디오 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recommend_recipes[].count</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">레시피 조회 수</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2025-07-19 15:29:43 +0900
+Last updated 2025-07-23 01:18:34 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

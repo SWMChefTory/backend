@@ -2,7 +2,6 @@ package com.cheftory.api.voicecommand;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api.voicecommand.dto.VoiceCommandHistoryCreateRequest;
-import com.cheftory.api.voicecommand.dto.VoiceCommandHistoryCreateResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +23,8 @@ public class VoiceCommandHistoryController {
     public ResponseEntity<SuccessOnlyResponse> createVoiceCommandHistory(
             @Valid @RequestBody VoiceCommandHistoryCreateRequest request
     ){
-        voiceCommandHistoryService.create(request.getTranscribe(),  request.getResult(),
-                                   request.getUserId(), request.getSttModel(), request.getIntentModel());
+        voiceCommandHistoryService.create(request.transcribe(),  request.result(),
+                                   request.userId(), request.sttModel(), request.intentModel());
         return ResponseEntity.ok(new SuccessOnlyResponse());
     }
 }

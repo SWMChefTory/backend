@@ -16,7 +16,6 @@ public class VideoInfo {
     private URI videoUri;
     private String title;
     private URI thumbnailUrl;
-
     private Integer videoSeconds;
 
     public static VideoInfo from(UriComponents uriComponents, String title, URI thumbnailUrl, Integer videoSeconds) {

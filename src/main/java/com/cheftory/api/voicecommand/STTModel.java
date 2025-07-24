@@ -6,7 +6,9 @@ import java.util.Arrays;
 
 @Getter
 public enum STTModel {
-  VITO("VITO");
+  VITO("VITO"),
+  OPENAI("OPENAI"),
+  CLOVA("CLOVA");
 
   private final String value;
 

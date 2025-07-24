@@ -20,6 +20,7 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
+import static com.cheftory.api.utils.RestDocsUtils.enumFields;
 import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;
 import static com.cheftory.api.utils.RestDocsUtils.requestPreprocessor;
 import static com.cheftory.api.utils.RestDocsUtils.responseErrorFields;
@@ -28,6 +29,7 @@ import static com.cheftory.api.utils.RestDocsUtils.responseSuccessFields;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -77,11 +79,11 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             testIntentModel = "gpt-4";
 
             request = Map.of(
-                "baseIntent", testBaseIntent,
+                "transcribe", testBaseIntent,
                 "intent", testIntent,
-                "userId", userId.toString(),
-                "sttModel", testSttModel,
-                "intentModel", testIntentModel
+                "user_id", userId.toString(),
+                "stt_model", testSttModel,
+                "intent_model", testIntentModel
             );
         }
 
@@ -112,11 +114,19 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                             requestPreprocessor(),
                             responsePreprocessor(),
                             requestFields(
-                                fieldWithPath("baseIntent").description("기본 의도"),
+                                fieldWithPath("transcribe").description("기본 의도"),
                                 fieldWithPath("intent").description("의도"),
-                                fieldWithPath("userId").description("유저 ID"),
-                                sttModelField(),
-                                intentModelField()
+                                fieldWithPath("user_id").description("유저 ID"),
+                                enumFields(
+                                    "stt_model",
+                                    "음성 인식에 사용되는 모델. 사용 가능한 값: ",
+                                    STTModel.class
+                                ),
+                                enumFields(
+                                    "intent_model",
+                                    "의도 분류에 사용되는 모델. 사용 가능한 값: ",
+                                    IntentModel.class
+                                )
                             ),
                             responseSuccessFields()
                         )
@@ -153,14 +163,14 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 testIntentModel = "gpt-4";
 
                 request = Map.of(
-                    "baseIntent", testBaseIntent,
+                    "transcribe", testBaseIntent,
                     "intent", testIntent,
-                    "userId", userId.toString(),
-                    "sttModel", testSttModel,
-                    "intentModel", testIntentModel
+                    "user_id", userId.toString(),
+                    "stt_model", testSttModel,
+                    "intent_model", testIntentModel
                 );
 
-                when(userService.exists(userId)).thenReturn(false);
+                doReturn(false).when(userService).exists(userId);
             }
 
             @Test
@@ -194,8 +204,8 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             @BeforeEach
             void setUp() {
                 request = Map.of(
-                    "baseIntent", "testBaseIntent",
-                    "userId", generateUserId().toString()
+                    "base_intent", "testBaseIntent",
+                    "user_id", generateUserId().toString()
                 );
             }
 
@@ -239,11 +249,11 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 testIntentModel = "gpt-4";
 
                 request = Map.of(
-                    "baseIntent", testBaseIntent,
+                    "transcribe", testBaseIntent,
                     "intent", testIntent,
-                    "userId", userId.toString(),
-                    "sttModel", invalidSttModel,
-                    "intentModel", testIntentModel
+                    "user_id", userId.toString(),
+                    "stt_model", invalidSttModel,
+                    "intent_model", testIntentModel
                 );
 
                 when(userService.exists(userId)).thenReturn(true);
@@ -294,11 +304,11 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 invalidIntentModel = "INVALID_INTENT";
 
                 request = Map.of(
-                    "baseIntent", testBaseIntent,
+                    "transcribe", testBaseIntent,
                     "intent", testIntent,
-                    "userId", userId.toString(),
-                    "sttModel", testSttModel,
-                    "intentModel", invalidIntentModel
+                    "user_id", userId.toString(),
+                    "stt_model", testSttModel,
+                    "intent_model", invalidIntentModel
                 );
 
                 when(userService.exists(userId)).thenReturn(true);
@@ -332,19 +342,5 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
 
     private UUID generateUserId() {
         return UUID.randomUUID();
-    }
-
-    private FieldDescriptor intentModelField() {
-        String formattedEnumValues = Arrays.stream(IntentModel.values())
-            .map(type -> String.format("`%s`", type.getValue()))
-            .collect(Collectors.joining(", "));
-        return fieldWithPath("intentModel").description("의도 분류에 사용되는 모델. 사용 가능한 값: " + formattedEnumValues);
-    }
-
-    private FieldDescriptor sttModelField() {
-        String formattedEnumValues = Arrays.stream(STTModel.values())
-            .map(type -> String.format("`%s`", type.getValue()))
-            .collect(Collectors.joining(", "));
-        return fieldWithPath("sttModel").description("음성 인식에 사용되는 모델. 사용 가능한 값: " + formattedEnumValues);
     }
 }

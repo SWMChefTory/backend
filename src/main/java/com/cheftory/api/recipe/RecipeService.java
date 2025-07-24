@@ -1,21 +1,28 @@
 package com.cheftory.api.recipe;
 
-import com.cheftory.api.recipe.dto.*;
 import com.cheftory.api.recipe.entity.Recipe;
+import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.repository.RecipeRepository;
-import com.cheftory.api.recipe.service.YoutubeUrlNormalizer;
+import com.cheftory.api.recipe.model.FullRecipeInfo;
+import com.cheftory.api.recipe.model.RecipeOverview;
+import com.cheftory.api.recipe.model.RecentRecipeOverview;
+import com.cheftory.api.recipe.model.RecipeSort;
+import com.cheftory.api.recipe.util.YoutubeUrlNormalizer;
 import com.cheftory.api.recipe.ingredients.RecipeIngredientsService;
 import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
 import com.cheftory.api.recipe.client.VideoInfoClient;
-import com.cheftory.api.recipe.service.AsyncRecipeCreationService;
 import com.cheftory.api.recipe.step.RecipeStepService;
 import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatusInfo;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatusService;
 import java.net.URI;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +30,7 @@ import org.springframework.web.util.UriComponents;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 @RequiredArgsConstructor
@@ -35,15 +43,18 @@ public class RecipeService {
   private final RecipeStepService recipeStepService;
   private final RecipeIngredientsService recipeIngredientsService;
   private final YoutubeUrlNormalizer youtubeUrlNormalizer;
+  private final RecipeViewStatusService recipeViewStatusService;
 
-  public UUID create(UriComponents uri) {
-    UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uri);
+  public UUID create(URI uri, UUID userId) {
+    UriComponents uriOriginal = UriComponentsBuilder.fromUri(uri).build();
+    UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uriOriginal);
     return findByUrl(urlNormalized.toUri())
         .map(Recipe::getId)
         .orElseGet(() -> {
           VideoInfo videoInfo = videoInfoClient.fetchVideoInfo(urlNormalized);
           UUID recipeId = recipeRepository.save(Recipe.preCompletedOf(videoInfo)).getId();
           asyncRecipeCreationService.create(recipeId);
+          recipeViewStatusService.create(userId, recipeId);
           return recipeId;
         });
   }
@@ -65,16 +76,18 @@ public class RecipeService {
         });
   }
 
-  private Recipe findById(UUID recipeId) {
+  private Recipe find(UUID recipeId) {
     return recipeRepository.findById(recipeId)
         .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
   }
 
-  public FullRecipeInfo findFullRecipeInfo(UUID recipeId) {
-    Recipe recipe = findById(recipeId);
+  public FullRecipeInfo findFullRecipe(UUID recipeId, UUID userId) {
+
+    Recipe recipe = find(recipeId);
 
     List<RecipeStepInfo> recipeInfos = recipeStepService
         .getRecipeStepInfos(recipeId);
+
     if(recipeInfos.isEmpty()) {
       recipeInfos = null;
     }
@@ -83,20 +96,50 @@ public class RecipeService {
         .findIngredientsInfoOfRecipe(recipeId);
 
 
-    if (!recipeInfos.isEmpty() && Objects.nonNull(ingredientsInfo)) {
+    if (!Objects.requireNonNull(recipeInfos).isEmpty() && Objects.nonNull(ingredientsInfo)) {
       recipeRepository.increaseCount(recipeId);
     }
+
+    RecipeViewStatusInfo recipeViewStatusInfo = recipeViewStatusService.find(userId, recipeId);
 
     return FullRecipeInfo.of(
         recipe.getStatus()
         , recipe.getVideoInfo()
-        , ingredientsInfo, recipeInfos);
+        , ingredientsInfo, recipeInfos
+        , recipeViewStatusInfo
+    );
   }
 
-  public List<RecipeOverview> findOverviewRecipes(List<UUID> recipeIds) {
-    return recipeRepository.findRecipesById(recipeIds)
+  public List<RecentRecipeOverview> findRecents(UUID userId) {
+    List<RecipeViewStatusInfo> viewStatusInfos = recipeViewStatusService.findRecentUsers(userId);
+
+    List<UUID> recipeIds = viewStatusInfos.stream()
+        .map(RecipeViewStatusInfo::getRecipeId)
+        .toList();
+
+    List<RecipeOverview> recipeOverviews = recipeRepository.findRecipesById(recipeIds)
         .stream()
         .filter(Recipe::isCompleted)
+        .map(RecipeOverview::from)
+        .toList();
+
+    Map<UUID, RecipeViewStatusInfo> viewStatusMap = viewStatusInfos.stream()
+        .collect(Collectors.toMap(
+            RecipeViewStatusInfo::getRecipeId,
+            Function.identity()
+        ));
+
+    return recipeOverviews.stream()
+        .map(recipe -> RecentRecipeOverview.of(
+            recipe,
+            viewStatusMap.get(recipe.getId())
+        ))
+        .toList();
+  }
+
+  public List<RecipeOverview> findRecommends() {
+    return recipeRepository.findByStatus(RecipeStatus.COMPLETED, RecipeSort.COUNT_DESC)
+        .stream()
         .map(RecipeOverview::from)
         .toList();
   }
