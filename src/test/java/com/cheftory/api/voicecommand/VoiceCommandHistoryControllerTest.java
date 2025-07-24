@@ -145,7 +145,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
 
         @Nested
         @DisplayName("When - 존재하지 않는 유저 ID로 요청할 때")
-        class WhenRequestWithNonExistentUserId {
+        class WhenRequestWithNonExistentExtractUserIdResponse {
 
             private String testBaseIntent;
             private String testIntent;
