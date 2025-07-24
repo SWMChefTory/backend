@@ -8,6 +8,7 @@ import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
 import com.cheftory.api.recipe.step.client.RecipeStepClient;
 import com.cheftory.api.recipe.step.repository.RecipeStepRepository;
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +47,7 @@ public class RecipeStepService {
                 .findAllByRecipeId(recipeId)
                 .stream()
                 .map(RecipeStepInfo::from)
+                .sorted(Comparator.comparingInt(RecipeStepInfo::getStepOrder))
                 .toList();
     }
 }

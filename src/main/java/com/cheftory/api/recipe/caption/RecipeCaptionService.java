@@ -13,36 +13,33 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-
-
-
 @Service
 @RequiredArgsConstructor
 public class RecipeCaptionService {
-    private final CaptionClient captionClient;
-    private final RecipeCaptionRepository recipeCaptionRepository;
 
-    @Transactional
-    public UUID create(String videoId, UUID recipeId) {
-        ClientCaptionResponse clientCaptionResponse = captionClient
-                .fetchCaption(videoId);
+  private final CaptionClient captionClient;
+  private final RecipeCaptionRepository recipeCaptionRepository;
 
-        RecipeCaption recipeCaption = RecipeCaption.from(
-                clientCaptionResponse.getCaptions()
-                , clientCaptionResponse.getLangCodeType()
-                , recipeId
+  @Transactional
+  public UUID create(String videoId, UUID recipeId) {
+    ClientCaptionResponse clientCaptionResponse = captionClient
+        .fetchCaption(videoId);
+
+    RecipeCaption recipeCaption = RecipeCaption.from(
+        clientCaptionResponse.getCaptions()
+        , clientCaptionResponse.getLangCodeType()
+        , recipeId
+    );
+
+    return recipeCaptionRepository.save(recipeCaption).getId();
+  }
+
+  public CaptionInfo findCaptionInfo(UUID recipeId) {
+    RecipeCaption caption = recipeCaptionRepository
+        .findByRecipeId((recipeId))
+        .orElseThrow(() ->
+            new RecipeCaptionException(CaptionErrorCode.CAPTION_NOT_FOUND)
         );
-
-        return recipeCaptionRepository.save(recipeCaption).getId();
-    }
-
-    public CaptionInfo findCaptionInfo(UUID recipeId) {
-        RecipeCaption caption = recipeCaptionRepository
-            .findByRecipeId((recipeId))
-            .orElseThrow(()->
-                new RecipeCaptionException(CaptionErrorCode.CAPTION_NOT_FOUND)
-            );
-        return CaptionInfo.from(caption);
-    }
-
+    return CaptionInfo.from(caption);
+  }
 }
