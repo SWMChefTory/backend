@@ -50,7 +50,7 @@ public class AuthControllerTest extends RestDocsTest {
 
   @Nested
   @DisplayName("POST /papi/v1/auth/userId - 사용자 ID 추출")
-  class ExtractUserId {
+  class ExtractExtractUserIdResponse {
 
     @Nested
     @DisplayName("유효한 토큰이 주어졌을 때")
