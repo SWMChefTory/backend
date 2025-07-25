@@ -19,6 +19,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     List<Recipe> findAllByVideoUrl(URI videoUrl);
 
     @Modifying
+    @Transactional
     @Query("update Recipe r SET r.status= :status WHERE r.id =:id")
     int updateStatus(UUID id, @Param("status") RecipeStatus status);
 
