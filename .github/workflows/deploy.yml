@@ -1,6 +1,6 @@
 name: Java CI with Gradle
 
-# 동작 조건 설정 : main 브랜치에 push가 발생할 경우 동작한다.
+# 동작 조건 설정 : dev 브랜치에 머지되면 동작한다.
 # dev에 배포
 on:
   push:
@@ -79,6 +79,7 @@ jobs:
           script: |
             cd ~/cheftory-proxy-server
             cat <<EOF > .env
+            COMPOSE_PROJECT_NAME=cheftory
             DATABASE_HOST=${{ secrets.DATABASE_HOST }}
             DATABASE_PORT=${{ secrets.DATABASE_PORT }}
             DATABASE_NAME=${{ secrets.DATABASE_NAME }}
