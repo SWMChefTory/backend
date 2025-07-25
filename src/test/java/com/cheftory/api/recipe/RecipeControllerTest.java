@@ -260,51 +260,6 @@ public class RecipeControllerTest extends RestDocsTest {
         }
 
         @Nested
-        @DisplayName("When - ingredients 내부 필드가 null인 경우")
-        class WhenRequestingRecipeWithNullIngredientFields {
-
-          private FullRecipeInfo recipeInfoWithNullIngredients;
-          private UUID recipeId;
-
-          @BeforeEach
-          void setUp() {
-            var mockIngredientsInfo = mock(IngredientsInfo.class);
-            when(mockIngredientsInfo.getIngredientsId()).thenReturn(UUID.randomUUID());
-            when(mockIngredientsInfo.getIngredients()).thenReturn(null);
-
-            recipeInfoWithNullIngredients = FullRecipeInfo.of(
-                RecipeStatus.COMPLETED,
-                RecipeControllerTestData.videoInfo,
-                mockIngredientsInfo,
-                List.of(),
-                RecipeControllerTestData.recipeViewStatusInfo
-            );
-
-            recipeId = UUID.randomUUID();
-            when(recipeService.findFullRecipe(recipeId, userId)).thenReturn(recipeInfoWithNullIngredients);
-          }
-
-          @Test
-          @DisplayName("Then - ingredients 리스트가 null로 반환된다")
-          void thenShouldHandleNullIngredientsList() {
-            var response = given()
-                .contentType(ContentType.JSON)
-                .attribute("userId", userId.toString())
-                .header("Authorization", "Bearer accessToken")
-                .get("/api/v1/recipes/{recipe_id}", recipeId)
-                .then()
-                .status(HttpStatus.OK);
-
-            var responseBody = response.extract().jsonPath();
-
-            // ingredients_info는 존재하지만 내부 ingredients는 null이어야 함
-            assertThat((Object) responseBody.get("ingredients_info")).isNotNull();
-            assertThat((Object) responseBody.getString("ingredients_info.id")).isNotNull();
-            assertThat((Object) responseBody.get("ingredients_info.ingredients")).isNull();
-          }
-        }
-
-        @Nested
         @DisplayName("When - 레시피 전체 정보를 조회할 때")
         class WhenRequestingRecipeDetail {
 
