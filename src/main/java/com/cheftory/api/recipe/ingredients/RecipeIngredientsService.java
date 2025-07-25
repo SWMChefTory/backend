@@ -9,6 +9,7 @@ import com.cheftory.api.recipe.ingredients.exception.RecipeIngredientsErrorCode;
 import com.cheftory.api.recipe.ingredients.exception.RecipeIngredientsException;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.ingredients.repository.RecipeIngredientsRepository;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,12 +38,9 @@ public class RecipeIngredientsService {
         return recipeIngredients.getId();
     }
 
-    public IngredientsInfo findIngredientsInfoOfRecipe(UUID recipeId) {
-        RecipeIngredients recipeIngredients = recipeIngredientsRepository
-            .findById(recipeId)
-            .orElseThrow(()->new RecipeIngredientsException(
-                RecipeIngredientsErrorCode.RECIPE_INGREDIENTS_NOT_FOUND));
-        return IngredientsInfo.from(recipeIngredients);
+    public Optional<IngredientsInfo> findIngredientsInfoOfRecipe(UUID recipeId) {
+        Optional<RecipeIngredients> optional =  recipeIngredientsRepository.findById(recipeId);
+      return optional.map(IngredientsInfo::from);
     }
 
     public IngredientsInfo findIngredientsInfo(UUID ingredientId) {
