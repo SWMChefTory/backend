@@ -39,8 +39,9 @@ public class SecurityControllerTest {
   void 인증_있으면_200() throws Exception {
     UUID userId = UUID.randomUUID();
     String validJwt = tokenProvider.createAccessToken(userId);
+    String header =  "Bearer " + validJwt;
     mockMvc.perform(get("/api/security/success")
-            .header(HttpHeaders.AUTHORIZATION, validJwt))
+            .header(HttpHeaders.AUTHORIZATION, header))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").value(userId.toString()));
   }
