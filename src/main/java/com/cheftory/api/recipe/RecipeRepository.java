@@ -3,6 +3,7 @@ package com.cheftory.api.recipe;
 
 import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,10 +20,12 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     List<Recipe> findAllByVideoUrl(URI videoUrl);
 
     @Modifying
+    @Transactional
     @Query("update Recipe r SET r.status= :status WHERE r.id =:id")
     int updateStatus(UUID id, @Param("status") RecipeStatus status);
 
     @Modifying
+    @Transactional
     @Query("update Recipe r set r.count = r.count + 1 where r.id = :id")
     int increaseCount(UUID id);
 
