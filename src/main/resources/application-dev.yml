@@ -31,3 +31,5 @@ jwt:
   secret: ${JWT_SECRET}
   refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
   access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+  access-token-type: ${JWT_ACCESS_TOKEN_TYPE}
+  refresh-token-type: ${JWT_REFRESH_TOKEN_TYPE}
