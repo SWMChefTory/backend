@@ -39,7 +39,7 @@ public class RecipeIngredientsService {
     }
 
     public Optional<IngredientsInfo> findIngredientsInfoOfRecipe(UUID recipeId) {
-        Optional<RecipeIngredients> optional =  recipeIngredientsRepository.findById(recipeId);
+        Optional<RecipeIngredients> optional =  recipeIngredientsRepository.findByRecipeId(recipeId);
       return optional.map(IngredientsInfo::from);
     }
 
