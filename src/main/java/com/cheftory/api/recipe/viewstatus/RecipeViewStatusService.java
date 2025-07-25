@@ -30,7 +30,7 @@ public class RecipeViewStatusService {
     RecipeViewStatus recipeViewStatus = viewStatusRepository.findByRecipeIdAndUserId(recipeId, userId)
         .orElseThrow(() -> new ViewStatusException(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND));
     recipeViewStatus.updateViewedAt(clock);
-    return RecipeViewStatusInfo.of(viewStatusRepository.save(RecipeViewStatus.of(clock, userId, recipeId)));
+    return RecipeViewStatusInfo.of(viewStatusRepository.save(recipeViewStatus));
   }
 
   public List<RecipeViewStatusInfo> findRecentUsers(UUID userId) {
