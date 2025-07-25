@@ -753,11 +753,11 @@ Content-Length: 170
 Host: test.host
 
 {
-  "transcribe" : "testBaseIntent",
   "intent" : "testIntent",
   "intent_model" : "gpt-4",
   "stt_model" : "VITO",
-  "user_id" : "1ed4a839-579d-4020-8a42-e20b2fe5d4d7"
+  "user_id" : "ab62f41e-a385-4895-80f9-81c2a11a43c4",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -767,11 +767,11 @@ Host: test.host
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "transcribe" : "testBaseIntent",
   "intent" : "testIntent",
   "intent_model" : "gpt-4",
   "stt_model" : "VITO",
-  "user_id" : "1ed4a839-579d-4020-8a42-e20b2fe5d4d7"
+  "user_id" : "ab62f41e-a385-4895-80f9-81c2a11a43c4",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -908,7 +908,7 @@ Content-Length: 92
 Host: test.host
 
 {
-  "user_id" : "7f3c0e65-9f55-4057-99dd-2044f1a4f944",
+  "user_id" : "4a86e0e0-e784-4ce0-8333-346a57413622",
   "base_intent" : "testBaseIntent"
 }</code></pre>
 </div>
@@ -982,11 +982,11 @@ Content-Length: 177
 Host: test.host
 
 {
-  "transcribe" : "testBaseIntent",
   "intent" : "testIntent",
   "intent_model" : "gpt-4",
   "stt_model" : "INVALID_STT",
-  "user_id" : "55429fb4-9100-4f1e-b491-bdfe1cc1f6a1"
+  "user_id" : "648f50b4-a023-49cf-8417-e3f71ce12cb7",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -1059,11 +1059,11 @@ Content-Length: 179
 Host: test.host
 
 {
-  "transcribe" : "testBaseIntent",
   "intent" : "testIntent",
   "intent_model" : "INVALID_INTENT",
   "stt_model" : "VITO",
-  "user_id" : "10916a2b-c2f6-4b4a-8c2a-94da28d4549c"
+  "user_id" : "8472a94a-f56e-4b5b-be4a-ca8e5a50f51f",
+  "transcribe" : "testBaseIntent"
 }</code></pre>
 </div>
 </div>
@@ -1174,9 +1174,9 @@ Content-Length: 303
 
 {
   "recent_recipes" : [ {
-    "viewed_at" : "2025-07-26T01:39:35.203356",
+    "viewed_at" : "2025-07-26T02:14:02.820867",
     "last_play_seconds" : 0,
-    "recipe_id" : "887603ea-970a-4f92-bc85-6b39870473c8",
+    "recipe_id" : "e97ae94c-3d94-4a0a-b916-7feacc61bb2c",
     "recipe_title" : "Sample Recipe Video",
     "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
     "video_id" : "12345"
@@ -1191,9 +1191,9 @@ Content-Length: 303
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
   "recent_recipes" : [ {
-    "viewed_at" : "2025-07-26T01:39:35.203356",
+    "viewed_at" : "2025-07-26T02:14:02.820867",
     "last_play_seconds" : 0,
-    "recipe_id" : "887603ea-970a-4f92-bc85-6b39870473c8",
+    "recipe_id" : "e97ae94c-3d94-4a0a-b916-7feacc61bb2c",
     "recipe_title" : "Sample Recipe Video",
     "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
     "video_id" : "12345"
@@ -1268,7 +1268,7 @@ Content-Length: 303
 <h4 id="_요청_7"><a class="link" href="#_요청_7">요청</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/recipes/e1ac9c86-6af9-4c10-a43c-58d0f70b9d5e HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/recipes/ed0373a9-1806-4627-ade8-f3e2465a32a6 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer accessToken
 Host: test.host</code></pre>
@@ -1335,7 +1335,7 @@ Content-Length: 784
     "video_seconds" : 120
   },
   "ingredients_info" : {
-    "id" : "3e4c9d29-3ae0-4204-8eeb-90fa90ffede2",
+    "id" : "8fa798d3-5f09-4512-bd9c-df60d3e7732a",
     "ingredients" : [ {
       "name" : "ingredient1",
       "amount" : 100,
@@ -1351,10 +1351,10 @@ Content-Length: 784
     "end_time" : 200.0
   } ],
   "view_status" : {
-    "id" : "86903f1b-d3ca-4eb0-a4bf-a5d432f499ef",
-    "viewed_at" : "2025-07-26T01:39:35.203356",
+    "id" : "a5a924db-b3d5-492f-b8d7-6c18d52b0e87",
+    "viewed_at" : "2025-07-26T02:14:02.820867",
     "last_play_seconds" : 0,
-    "created_at" : "2025-07-26T01:39:35.203372"
+    "created_at" : "2025-07-26T02:14:02.820885"
   }
 }</code></pre>
 </div>
@@ -1373,7 +1373,7 @@ Content-Length: 784
     "video_seconds" : 120
   },
   "ingredients_info" : {
-    "id" : "3e4c9d29-3ae0-4204-8eeb-90fa90ffede2",
+    "id" : "8fa798d3-5f09-4512-bd9c-df60d3e7732a",
     "ingredients" : [ {
       "name" : "ingredient1",
       "amount" : 100,
@@ -1389,10 +1389,10 @@ Content-Length: 784
     "end_time" : 200.0
   } ],
   "view_status" : {
-    "id" : "86903f1b-d3ca-4eb0-a4bf-a5d432f499ef",
-    "viewed_at" : "2025-07-26T01:39:35.203356",
+    "id" : "a5a924db-b3d5-492f-b8d7-6c18d52b0e87",
+    "viewed_at" : "2025-07-26T02:14:02.820867",
     "last_play_seconds" : 0,
-    "created_at" : "2025-07-26T01:39:35.203372"
+    "created_at" : "2025-07-26T02:14:02.820885"
   }
 }</code></pre>
 </div>
@@ -1597,7 +1597,7 @@ Content-Length: 246
 
 {
   "recommend_recipes" : [ {
-    "recipe_id" : "887603ea-970a-4f92-bc85-6b39870473c8",
+    "recipe_id" : "e97ae94c-3d94-4a0a-b916-7feacc61bb2c",
     "recipe_title" : "Sample Recipe Video",
     "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
     "video_id" : "12345",
@@ -1613,7 +1613,7 @@ Content-Length: 246
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
   "recommend_recipes" : [ {
-    "recipe_id" : "887603ea-970a-4f92-bc85-6b39870473c8",
+    "recipe_id" : "e97ae94c-3d94-4a0a-b916-7feacc61bb2c",
     "recipe_title" : "Sample Recipe Video",
     "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
     "video_id" : "12345",
@@ -1730,7 +1730,7 @@ Content-Type: application/json
 Content-Length: 56
 
 {
-  "user_id" : "ab400b50-592e-407f-a3a6-d7ccf35cb831"
+  "user_id" : "786f5585-66b5-49a4-a798-5f65351add2f"
 }</code></pre>
 </div>
 </div>
@@ -1740,7 +1740,7 @@ Content-Length: 56
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "user_id" : "ab400b50-592e-407f-a3a6-d7ccf35cb831"
+  "user_id" : "786f5585-66b5-49a4-a798-5f65351add2f"
 }</code></pre>
 </div>
 </div>

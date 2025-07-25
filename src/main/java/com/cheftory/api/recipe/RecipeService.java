@@ -49,7 +49,10 @@ public class RecipeService {
     UriComponents uriOriginal = UriComponentsBuilder.fromUri(uri).build();
     UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uriOriginal);
     return findByUrl(urlNormalized.toUri())
-        .map(Recipe::getId)
+        .map(recipe -> {
+          recipeViewStatusService.create(userId, recipe.getId());
+          return recipe.getId();
+        })
         .orElseGet(() -> {
           VideoInfo videoInfo = videoInfoClient.fetchVideoInfo(urlNormalized);
           UUID recipeId = recipeRepository.save(Recipe.preCompletedOf(videoInfo)).getId();
