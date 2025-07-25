@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.net.URI;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
 
@@ -20,6 +21,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
 
     @Modifying
     @Query("update Recipe r SET r.status= :status WHERE r.id =:id")
+    @Transactional
     int updateStatus(UUID id, @Param("status") RecipeStatus status);
 
     @Modifying
