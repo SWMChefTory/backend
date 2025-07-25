@@ -31,12 +31,12 @@ public record FullRecipeResponse(
   public static FullRecipeResponse of(FullRecipeInfo fullRecipeInfo) {
     return new FullRecipeResponse(
         fullRecipeInfo.getRecipeStatus(),
-        VideoInfo.from(fullRecipeInfo.getVideoInfo()),
-        Ingredients.from(fullRecipeInfo.getIngredientsInfo()),
-        fullRecipeInfo.getRecipeStepInfos().stream()
+        fullRecipeInfo.getVideoInfo() != null ? VideoInfo.from(fullRecipeInfo.getVideoInfo()) : null,
+        fullRecipeInfo.getIngredientsInfo() != null ? Ingredients.from(fullRecipeInfo.getIngredientsInfo()) : null,
+        fullRecipeInfo.getRecipeStepInfos() != null ? fullRecipeInfo.getRecipeStepInfos().stream()
             .map(RecipeStep::from)
-            .toList(),
-        ViewStatus.from(fullRecipeInfo.getRecipeViewStatusInfo())
+            .toList() : null,
+        fullRecipeInfo.getRecipeViewStatusInfo() != null ? ViewStatus.from(fullRecipeInfo.getRecipeViewStatusInfo()) : null
     );
   }
 
