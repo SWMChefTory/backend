@@ -487,13 +487,13 @@ Host: test.host</code></pre>
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 302
+Content-Length: 303
 
 {
   "recent_recipes" : [ {
-    "viewed_at" : "2025-07-23T12:29:54.77312",
+    "viewed_at" : "2025-07-26T01:39:35.203356",
     "last_play_seconds" : 0,
-    "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
+    "recipe_id" : "887603ea-970a-4f92-bc85-6b39870473c8",
     "recipe_title" : "Sample Recipe Video",
     "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
     "video_id" : "12345"
@@ -508,9 +508,9 @@ Content-Length: 302
 <div class="content">
 <pre class="highlight nowrap"><code class="language-json" data-lang="json">{
   "recent_recipes" : [ {
-    "viewed_at" : "2025-07-23T12:29:54.77312",
+    "viewed_at" : "2025-07-26T01:39:35.203356",
     "last_play_seconds" : 0,
-    "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
+    "recipe_id" : "887603ea-970a-4f92-bc85-6b39870473c8",
     "recipe_title" : "Sample Recipe Video",
     "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
     "video_id" : "12345"
@@ -585,7 +585,7 @@ Content-Length: 302
 <h4 id="_요청_2">요청</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /api/v1/recipes/270f5d23-9316-494c-8a06-5396ddc2d106 HTTP/1.1
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /api/v1/recipes/e1ac9c86-6af9-4c10-a43c-58d0f70b9d5e HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer accessToken
 Host: test.host</code></pre>
@@ -641,7 +641,7 @@ Host: test.host</code></pre>
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 783
+Content-Length: 784
 
 {
   "recipe_status" : "COMPLETED",
@@ -652,7 +652,7 @@ Content-Length: 783
     "video_seconds" : 120
   },
   "ingredients_info" : {
-    "id" : "4c487b4e-c361-462a-9022-3cbe5758233f",
+    "id" : "3e4c9d29-3ae0-4204-8eeb-90fa90ffede2",
     "ingredients" : [ {
       "name" : "ingredient1",
       "amount" : 100,
@@ -668,10 +668,10 @@ Content-Length: 783
     "end_time" : 200.0
   } ],
   "view_status" : {
-    "id" : "5da80cc5-9898-4dbb-b362-8036168e78df",
-    "viewed_at" : "2025-07-23T12:29:54.77312",
+    "id" : "86903f1b-d3ca-4eb0-a4bf-a5d432f499ef",
+    "viewed_at" : "2025-07-26T01:39:35.203356",
     "last_play_seconds" : 0,
-    "created_at" : "2025-07-23T12:29:54.773137"
+    "created_at" : "2025-07-26T01:39:35.203372"
   }
 }</code></pre>
 </div>
@@ -690,7 +690,7 @@ Content-Length: 783
     "video_seconds" : 120
   },
   "ingredients_info" : {
-    "id" : "4c487b4e-c361-462a-9022-3cbe5758233f",
+    "id" : "3e4c9d29-3ae0-4204-8eeb-90fa90ffede2",
     "ingredients" : [ {
       "name" : "ingredient1",
       "amount" : 100,
@@ -706,10 +706,10 @@ Content-Length: 783
     "end_time" : 200.0
   } ],
   "view_status" : {
-    "id" : "5da80cc5-9898-4dbb-b362-8036168e78df",
-    "viewed_at" : "2025-07-23T12:29:54.77312",
+    "id" : "86903f1b-d3ca-4eb0-a4bf-a5d432f499ef",
+    "viewed_at" : "2025-07-26T01:39:35.203356",
     "last_play_seconds" : 0,
-    "created_at" : "2025-07-23T12:29:54.773137"
+    "created_at" : "2025-07-26T01:39:35.203372"
   }
 }</code></pre>
 </div>
@@ -914,7 +914,7 @@ Content-Length: 246
 
 {
   "recommend_recipes" : [ {
-    "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
+    "recipe_id" : "887603ea-970a-4f92-bc85-6b39870473c8",
     "recipe_title" : "Sample Recipe Video",
     "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
     "video_id" : "12345",
@@ -930,7 +930,7 @@ Content-Length: 246
 <div class="content">
 <pre class="highlight nowrap"><code class="language-json" data-lang="json">{
   "recommend_recipes" : [ {
-    "recipe_id" : "819f10b4-ea58-4aec-a12b-76d4451f5e9f",
+    "recipe_id" : "887603ea-970a-4f92-bc85-6b39870473c8",
     "recipe_title" : "Sample Recipe Video",
     "video_thumbnail_url" : "https://example.com/thumbnail.jpg",
     "video_id" : "12345",
@@ -996,7 +996,7 @@ Content-Length: 246
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2025-07-23 01:33:33 +0900
+Last updated 2025-07-26 00:47:59 +0900
 </div>
 </div>
 </body>

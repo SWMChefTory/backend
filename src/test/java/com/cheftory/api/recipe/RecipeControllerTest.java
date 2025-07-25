@@ -140,7 +140,6 @@ public class RecipeControllerTest extends RestDocsTest {
                 .isEqualTo(recentRecipeOverview.getRecipeViewStatusInfo().getLastPlaySeconds());
           });
         }
-
         @Nested
         @DisplayName("When - 레시피 전체 정보를 조회할 때")
         class WhenRequestingRecipeDetail {

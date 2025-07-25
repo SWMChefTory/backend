@@ -41,7 +41,7 @@ public class AsyncRecipeCreationService {
       handleSteps(videoId, recipeId, captionInfo, ingredientsContent);
       recipeRepository.updateStatus(recipeId, RecipeStatus.COMPLETED);
     } catch (Exception e) {
-      log.error("레시피 생성에 실패했습니다.");
+      log.error("레시피 생성에 실패했습니다.", e);
       recipeRepository.updateStatus(recipeId, RecipeStatus.FAILED);
     }
   }
