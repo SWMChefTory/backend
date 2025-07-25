@@ -7,12 +7,12 @@ import jakarta.persistence.Converter;
 import org.apache.commons.lang3.StringUtils;
 
 @Converter
-public class ObjectJsonConverter implements AttributeConverter<Object, String> {
+public class GenericJsonConverter<T> implements AttributeConverter<T, String> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public String convertToDatabaseColumn(Object attribute) {
+    public String convertToDatabaseColumn(T attribute) {
         if (attribute == null) {
             return null;
         }
@@ -25,13 +25,12 @@ public class ObjectJsonConverter implements AttributeConverter<Object, String> {
     }
 
     @Override
-    public Object convertToEntityAttribute(String dbData) {
+    public T convertToEntityAttribute(String dbData) {
         if (StringUtils.isBlank(dbData)) {
             return null;
         }
         try {
-            return objectMapper.readValue(dbData, new TypeReference<>() {
-            });
+            return objectMapper.readValue(dbData, new TypeReference<>() {});
         } catch (Exception e) {
             // 문구 바꾸기
             throw new IllegalArgumentException("Failed to deserialize JSON to list of strings", e);

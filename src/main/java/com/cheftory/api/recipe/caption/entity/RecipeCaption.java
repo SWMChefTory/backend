@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.caption.entity;
 
-import com.cheftory.api._common.ObjectJsonConverter;
+import com.cheftory.api._common.GenericJsonConverter;
+import com.cheftory.api.recipe.caption.entity.converter.SegmentsJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -18,7 +19,7 @@ public class RecipeCaption {
     @UuidGenerator
     private UUID id;
 
-    @Convert(converter = ObjectJsonConverter.class)
+    @Convert(converter = SegmentsJsonConverter.class)
     @Column(columnDefinition = "json")
     private List<Segment> segments;
 
