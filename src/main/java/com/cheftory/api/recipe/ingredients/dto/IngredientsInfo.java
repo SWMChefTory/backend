@@ -9,10 +9,12 @@ import lombok.Getter;
 
 import java.util.List;
 import java.util.UUID;
+import lombok.ToString;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
+@ToString
 public class IngredientsInfo {
     private UUID ingredientsId;
     private List<Ingredient> ingredients;
