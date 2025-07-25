@@ -44,7 +44,9 @@ public class RecipeIngredientsService {
     }
 
     public IngredientsInfo findIngredientsInfo(UUID ingredientId) {
-        RecipeIngredients recipeIngredients = recipeIngredientsRepository.findByRecipeId(ingredientId);
+        RecipeIngredients recipeIngredients = recipeIngredientsRepository
+            .findById(ingredientId)
+            .orElseThrow(()->new RecipeIngredientsException(RecipeIngredientsErrorCode.RECIPE_INGREDIENTS_NOT_FOUND));
         return IngredientsInfo.from(recipeIngredients);
     }
 }
