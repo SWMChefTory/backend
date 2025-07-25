@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
+
 @Service
 public class RecipeIngredientsClient {
     public RecipeIngredientsClient(@Qualifier("recipeCreateClient") WebClient webClient) {
@@ -22,11 +23,11 @@ public class RecipeIngredientsClient {
         ClientIngredientsRequest request = ClientIngredientsRequest.from(videoId, "youtube", captionInfo);
 
         return webClient.post().uri(uriBuilder -> uriBuilder
-                        .path("/ingredients")
-                        .build())
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(ClientIngredientsResponse.class)
-                .block();
+                .path("/ingredients")
+                .build())
+            .bodyValue(request)
+            .retrieve()
+            .bodyToMono(ClientIngredientsResponse.class)
+            .block();
     }
 }
