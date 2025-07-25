@@ -4,7 +4,7 @@ import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.exception.AuthException;
 import com.cheftory.api.account.auth.jwt.property.JwtProperties;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,48 +23,40 @@ public class TokenProvider {
   private final JwtProperties jwtProperties;
 
   public String createAccessToken(UUID userId) {
-    String token = createToken(userId, jwtProperties.getAccessTokenExpiration());
-    return makeBearerPrefix(token);
+    return createToken(
+        userId,
+        jwtProperties.getAccessTokenExpiration(),
+        jwtProperties.getAccessTokenType()
+    );
   }
 
   public String createRefreshToken(UUID userId) {
-    String token = createToken(userId, jwtProperties.getRefreshTokenExpiration());
-    return makeBearerPrefix(token);
+    return createToken(
+        userId,
+        jwtProperties.getRefreshTokenExpiration(),
+        jwtProperties.getRefreshTokenType()
+    );
   }
 
-  private String createToken(UUID userId, long expirySeconds) {
+  private String createToken(UUID userId, long expirySeconds, String type) {
     Date now = new Date();
     Date expiry = new Date(now.getTime() + expirySeconds * 1000);
 
     return Jwts.builder()
         .setSubject(userId.toString())
+        .claim("type", type)
         .setIssuedAt(now)
         .setExpiration(expiry)
         .signWith(jwtProperties.getSecretKey())
         .compact();
   }
 
-  private String removeBearerPrefix(String originalToken) {
-    if (originalToken == null || !originalToken.startsWith("Bearer ")) {
-      throw new AuthException(AuthErrorCode.INVALID_TOKEN);
-    }
-    return originalToken.substring(7);
-  }
-
-  private String makeBearerPrefix(String token) {
-    if (token == null || token.isEmpty()) {
-      throw new AuthException(AuthErrorCode.INVALID_TOKEN);
-    }
-    return "Bearer " + token;
-  }
-
   public UUID getUserIdFromToken(String token) {
-    String cleanedToken = removeBearerPrefix(token);
     try {
       Claims claims = Jwts.parserBuilder()
           .setSigningKey(jwtProperties.getSecretKey())
           .build()
-          .parseClaimsJws(cleanedToken)
+          .parseClaimsJws(token)
           .getBody();
 
       if (claims.getExpiration().before(new Date())) {
@@ -73,6 +65,22 @@ public class TokenProvider {
 
       return UUID.fromString(claims.getSubject());
     } catch (Exception e) {
+      throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+    }
+  }
+
+  public boolean isRefreshToken(String token) {
+    try {
+      JwtParser parser = Jwts
+          .parserBuilder()
+          .setSigningKey(jwtProperties.getSecretKey())
+          .build();
+
+      Claims claims = parser.parseClaimsJws(token).getBody();
+      String tokenType = claims.get("type", String.class);
+      return jwtProperties.getRefreshTokenType().equals(tokenType);
+    } catch (Exception e) {
+      log.error("토큰 검증 실패: {}", e.getMessage());
       throw new AuthException(AuthErrorCode.INVALID_TOKEN);
     }
   }

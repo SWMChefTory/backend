@@ -1,9 +1,9 @@
 package com.cheftory.api.account;
 
+import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
 import com.cheftory.api.account.dto.*;
-import com.cheftory.api.account.auth.model.AuthToken;
+import com.cheftory.api.account.model.LoginResult;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,35 +14,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/account")
 public class AccountController {
 
-    private final AccountService accountService;
+  private final AccountService accountService;
 
-    @PostMapping("/login/oauth")
-    public ResponseEntity<LoginResponse> loginWithOAuth(@RequestBody LoginRequest request) {
-        AuthToken authToken = accountService.loginWithOAuth(request.getToken(), request.getProvider());
-        return ResponseEntity.ok(LoginResponse.from(authToken));
-    }
+  @PostMapping("/login/oauth")
+  public LoginResponse loginWithOAuth(@RequestBody LoginRequest request) {
+    LoginResult result = accountService.loginWithOAuth(request.idToken(), request.provider());
+    return LoginResponse.from(result);
+  }
 
-    @PostMapping("/signup/oauth")
-    public ResponseEntity<LoginResponse> signupWithOAuth(@RequestBody SignupRequest request) {
-        AuthToken authToken = accountService.signupWithOAuth(request.getToken(), request.getProvider(), request.getNickname(), request.getGender());
-        return ResponseEntity.ok(LoginResponse.from(authToken));
-    }
+  @PostMapping("/signup/oauth")
+  public LoginResponse signupWithOAuth(@RequestBody SignupRequest request) {
+    LoginResult result = accountService.signupWithOAuth(request.idToken(), request.provider(),
+        request.nickname(), request.gender());
+    return LoginResponse.from(result);
+  }
 
-    @PostMapping("/token/refresh")
-    public ResponseEntity<LoginResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
-        AuthToken authToken = accountService.refresh(request.getRefreshToken());
-        return ResponseEntity.ok(LoginResponse.from(authToken));
-    }
+  @PostMapping("/logout")
+  public String logout(@RequestBody LogoutRequest request) {
+    accountService.logout(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+    return "Successfully logged out";
+  }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody LogoutRequest request) {
-        accountService.logout(request.getRefreshToken());
-        return ResponseEntity.ok("Successfully logged out");
-    }
-
-    @PostMapping("/delete")
-    public ResponseEntity<String> delete(@RequestBody LogoutRequest request) {
-        accountService.delete(request.getRefreshToken());
-        return ResponseEntity.ok("Successfully deleted account");
-    }
+  @PostMapping("/delete")
+  public String delete(@RequestBody LogoutRequest request) {
+    accountService.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+    return "Successfully deleted account";
+  }
 }

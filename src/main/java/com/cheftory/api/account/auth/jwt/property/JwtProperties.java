@@ -14,11 +14,14 @@ import java.nio.charset.StandardCharsets;
 @Getter
 @Setter
 public class JwtProperties {
-    private String secret;
-    private long accessTokenExpiration;
-    private long refreshTokenExpiration;
 
-    public SecretKey getSecretKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    }
+  private String secret;
+  private long accessTokenExpiration;
+  private long refreshTokenExpiration;
+  private String accessTokenType;
+  private String refreshTokenType;
+
+  public SecretKey getSecretKey() {
+    return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+  }
 }

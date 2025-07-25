@@ -1,9 +1,9 @@
-package com.cheftory.api.account.dto;
+package com.cheftory.api.account.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 
-public record LogoutRequest(
+public record TokenReissueRequest(
     @JsonProperty("refresh_token") @NotNull String refreshToken
 ) {
 
