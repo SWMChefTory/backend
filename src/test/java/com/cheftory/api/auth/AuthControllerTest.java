@@ -7,6 +7,7 @@ import static com.cheftory.api.utils.RestDocsUtils.requestPreprocessor;
 import static com.cheftory.api.utils.RestDocsUtils.responseErrorFields;
 import static com.cheftory.api.utils.RestDocsUtils.responsePreprocessor;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,7 +51,7 @@ public class AuthControllerTest extends RestDocsTest {
 
   @Nested
   @DisplayName("POST /papi/v1/auth/userId - 사용자 ID 추출")
-  class ExtractExtractUserIdResponse {
+  class ExtractUserId {
 
     @Nested
     @DisplayName("유효한 토큰이 주어졌을 때")
@@ -64,7 +65,7 @@ public class AuthControllerTest extends RestDocsTest {
         userId = generateUserId();
         validToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.token";
 
-        when(authService.extractUserIdFromToken(validToken)).thenReturn(userId);
+        doReturn(userId).when(authService).extractUserIdFromToken(validToken);
       }
 
       @Test
@@ -74,7 +75,7 @@ public class AuthControllerTest extends RestDocsTest {
             .contentType(ContentType.JSON)
             .header(HttpHeaders.AUTHORIZATION, validToken)
             .when()
-            .post("/papi/v1/auth/userId")
+            .post("/papi/v1/auth/extract-user-id")
             .then()
             .status(HttpStatus.OK)
             .apply(
@@ -84,11 +85,11 @@ public class AuthControllerTest extends RestDocsTest {
                     responsePreprocessor(),
                     requestAccessTokenFields(),
                     responseFields(
-                        fieldWithPath("userId").description("사용자 ID")
+                        fieldWithPath("user_id").description("사용자 ID")
                     )
                 )
             );
-        response.body("userId", equalTo(userId.toString()));
+        response.body("user_id", equalTo(userId.toString()));
         verify(authService).extractUserIdFromToken(validToken);
       }
     }
@@ -114,7 +115,7 @@ public class AuthControllerTest extends RestDocsTest {
             .contentType(ContentType.JSON)
             .header(HttpHeaders.AUTHORIZATION, invalidToken)
             .when()
-            .post("/papi/v1/auth/userId")
+            .post("/papi/v1/auth/extract-user-id")
             .then()
             .status(HttpStatus.BAD_REQUEST)
             .apply(
@@ -146,7 +147,7 @@ public class AuthControllerTest extends RestDocsTest {
         var response = given()
             .contentType(ContentType.JSON)
             .when()
-            .post("/papi/v1/auth/userId")
+            .post("/papi/v1/auth/extract-user-id")
             .then()
             .status(HttpStatus.BAD_REQUEST)
             .apply(
@@ -182,7 +183,7 @@ public class AuthControllerTest extends RestDocsTest {
             .contentType(ContentType.JSON)
             .header(HttpHeaders.AUTHORIZATION, expiredToken)
             .when()
-            .post("/papi/v1/auth/userId")
+            .post("/papi/v1/auth/extract-user-id")
             .then()
             .status(HttpStatus.BAD_REQUEST)
             .apply(
@@ -221,7 +222,7 @@ public class AuthControllerTest extends RestDocsTest {
         var response = given().contentType(ContentType.JSON)
             .header(HttpHeaders.AUTHORIZATION, emptyToken)
             .when()
-            .post("/papi/v1/auth/userId")
+            .post("/papi/v1/auth/extract-user-id")
             .then()
             .status(HttpStatus.BAD_REQUEST)
             .apply(
