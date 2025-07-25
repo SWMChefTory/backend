@@ -20,5 +20,4 @@ public class RecipeCaptionController {
         return recipeCaptionService
                 .findCaptionInfo(recipeId);
     }
-
 }
