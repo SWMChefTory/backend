@@ -94,12 +94,14 @@ public class RecipeService {
     if(recipeStepInfos.isEmpty()) {
       recipeStepInfos = null;
     }
+    log.info("Recipe {} has steps {}", recipeId, recipeStepInfos);
 
     Optional<IngredientsInfo> ingredientsInfoOptional = recipeIngredientsService
         .findIngredientsInfoOfRecipe(recipeId);
 
     IngredientsInfo ingredientsInfo = ingredientsInfoOptional
         .orElse(null);
+    log.info("Recipe {} has ingredients {}", recipeId, ingredientsInfo);
 
     if(Objects.nonNull(ingredientsInfo)&& Objects.nonNull(recipeStepInfos)) {
       recipeRepository.increaseCount(recipeId);

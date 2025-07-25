@@ -38,6 +38,7 @@ public class AsyncRecipeCreationService {
       String videoId = recipe.getVideoInfo().getVideoId();
       CaptionInfo captionInfo = handleCaption(videoId,recipeId);
       List<Ingredient> ingredientsContent = handleIngredients(recipeId, videoId, captionInfo);
+      log.info("Creating recipe for caption info: {}", ingredientsContent);
       handleSteps(videoId, recipeId, captionInfo, ingredientsContent);
       recipeRepository.updateStatus(recipeId, RecipeStatus.COMPLETED);
     } catch (Exception e) {
@@ -48,11 +49,13 @@ public class AsyncRecipeCreationService {
 
   private CaptionInfo handleCaption(String videoId, UUID recipeId) {
     UUID captionId = recipeCaptionService.create(videoId, recipeId);
+    log.info("자막 생성");
     return recipeCaptionService.findCaptionInfoById(captionId);
   }
 
   private List<Ingredient> handleIngredients(UUID recipeId, String videoId, CaptionInfo captionInfo) {
     UUID ingredientsId = recipeIngredientsService.create(recipeId, videoId, captionInfo);
+    log.info("재료 생성");
     return recipeIngredientsService.findIngredientsInfo(ingredientsId).getIngredients();
   }
 
