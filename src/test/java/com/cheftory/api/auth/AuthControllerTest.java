@@ -50,7 +50,7 @@ public class AuthControllerTest extends RestDocsTest {
   }
 
   @Nested
-  @DisplayName("POST /papi/v1/auth/userId - 사용자 ID 추출")
+  @DisplayName("POST /papi/v1/auth/extract-user-id - 사용자 ID 추출")
   class ExtractUserId {
 
     @Nested

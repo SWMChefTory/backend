@@ -21,7 +21,7 @@ public class AuthController {
 
   private final AuthService authService;
 
-  @PostMapping("/papi/v1/auth/userId")
+  @PostMapping("/papi/v1/auth/extract-user-id")
   public ResponseEntity<UserId> loginWithOAuth(
       @RequestHeader("Authorization") String accessToken
   ) {
