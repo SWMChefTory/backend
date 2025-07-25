@@ -25,7 +25,7 @@ public class AuthController {
   public ResponseEntity<UserId> loginWithOAuth(
       @RequestHeader("Authorization") String accessToken
   ) {
-    UUID userId = authService.extractUserIdFromToken(accessToken);
+    UUID userId = authService.extractUserIdFromToken(BearerAuthorizationUtils.removePrefix(accessToken));
     return ResponseEntity.ok(new UserId(userId.toString()));
   }
 
