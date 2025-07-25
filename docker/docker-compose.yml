@@ -1,5 +1,6 @@
 services:
   proxy-server:
+    container_name: proxy-server
     image: cheftory/cheftory-proxy-server-dev:latest
     ports:
       - "8080"
