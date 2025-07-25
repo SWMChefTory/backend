@@ -85,18 +85,20 @@ public class RecipeService {
 
     Recipe recipe = find(recipeId);
 
-    List<RecipeStepInfo> recipeInfos = recipeStepService
+    List<RecipeStepInfo> recipeStepInfos = recipeStepService
         .getRecipeStepInfos(recipeId);
 
-    if(recipeInfos.isEmpty()) {
-      recipeInfos = null;
+    if(recipeStepInfos.isEmpty()) {
+      recipeStepInfos = null;
     }
 
-    IngredientsInfo ingredientsInfo = recipeIngredientsService
+    Optional<IngredientsInfo> ingredientsInfoOptional = recipeIngredientsService
         .findIngredientsInfoOfRecipe(recipeId);
 
+    IngredientsInfo ingredientsInfo = ingredientsInfoOptional
+        .orElse(null);
 
-    if (!Objects.requireNonNull(recipeInfos).isEmpty() && Objects.nonNull(ingredientsInfo)) {
+    if(Objects.nonNull(ingredientsInfo)&& Objects.nonNull(recipeStepInfos)) {
       recipeRepository.increaseCount(recipeId);
     }
 
@@ -105,7 +107,7 @@ public class RecipeService {
     return FullRecipeInfo.of(
         recipe.getStatus()
         , recipe.getVideoInfo()
-        , ingredientsInfo, recipeInfos
+        , ingredientsInfo, recipeStepInfos
         , recipeViewStatusInfo
     );
   }
