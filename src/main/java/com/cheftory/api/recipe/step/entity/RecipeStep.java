@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.step.entity;
 
-import com.cheftory.api._common.GenericJsonConverter;
 import com.cheftory.api.recipe.step.entity.converter.DetailsJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;

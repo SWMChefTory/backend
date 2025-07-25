@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.caption.entity;
 
-import com.cheftory.api._common.GenericJsonConverter;
 import com.cheftory.api.recipe.caption.entity.converter.SegmentsJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
