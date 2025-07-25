@@ -105,6 +105,7 @@ public class RecipeService {
       recipeRepository.increaseCount(recipeId);
     }
 
+    recipeViewStatusService.create(userId, recipeId);
     RecipeViewStatusInfo recipeViewStatusInfo = recipeViewStatusService.find(userId, recipeId);
 
     return FullRecipeInfo.of(
