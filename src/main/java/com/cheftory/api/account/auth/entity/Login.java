@@ -24,7 +24,7 @@ public class Login {
   @Column(name = "login_ip")
   private String loginIp;
 
-  @Column(name = "refresh_token", nullable = false, length = 255)
+  @Column(name = "refresh_token", nullable = false, length = 512)
   private String refreshToken;
 
   @Column(name = "refresh_token_expired_at", nullable = false)
@@ -33,7 +33,7 @@ public class Login {
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
-  @Column(name = "device_type", length = 20)
+  @Column(name = "device_type")
   private String deviceType;
 
   @Column(name = "country", length = 100)
