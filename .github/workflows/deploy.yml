@@ -114,7 +114,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd cheftory-proxy-server
+            cd docker/cheftory-proxy-server
 
             # Docker Hub에 로그인
             echo ${{ secrets.DOCKERHUB_PASSWORD }} | sudo docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
