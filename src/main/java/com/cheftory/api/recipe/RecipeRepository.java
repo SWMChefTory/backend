@@ -20,7 +20,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
 
     @Modifying
     @Query("update Recipe r SET r.status= :status WHERE r.id =:id")
-    @Transactional
     int updateStatus(UUID id, @Param("status") RecipeStatus status);
 
     @Modifying
