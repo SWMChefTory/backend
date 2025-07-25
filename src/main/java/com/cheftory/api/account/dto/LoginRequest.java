@@ -1,10 +1,15 @@
 package com.cheftory.api.account.dto;
 
 import com.cheftory.api.user.entity.Provider;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 
-@Getter
-public class LoginRequest {
-    private String token;
-    private Provider provider;
+public record LoginRequest(
+    @JsonProperty("id_token") @NotNull String idToken,
+    @JsonProperty("provider") @NotNull Provider provider
+) {
+
+  public static LoginRequest of(String idToken, Provider provider) {
+    return new LoginRequest(idToken, provider);
+  }
 }

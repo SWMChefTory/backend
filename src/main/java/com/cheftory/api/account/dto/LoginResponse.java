@@ -1,19 +1,21 @@
 package com.cheftory.api.account.dto;
 
-import com.cheftory.api.account.auth.model.AuthToken;
-import lombok.Getter;
+import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
+import com.cheftory.api.account.model.LoginResult;
+import com.cheftory.api.account.model.UserInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Getter
-public class LoginResponse {
-    private final String accessToken;
-    private final String refreshToken;
+public record LoginResponse(
+    @JsonProperty("access_token") String accessToken,
+    @JsonProperty("refresh_token") String refreshToken,
+    @JsonProperty("user_info") UserInfo userInfo
+) {
 
-    private LoginResponse(String accessToken, String refreshToken) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-    }
-
-    public static LoginResponse from(AuthToken token) {
-        return new LoginResponse(token.getAccessToken(), token.getRefreshToken());
-    }
+  public static LoginResponse from(LoginResult loginResult) {
+    return new LoginResponse(
+        BearerAuthorizationUtils.addPrefix(loginResult.accessToken()),
+        BearerAuthorizationUtils.addPrefix(loginResult.refreshToken()),
+        loginResult.userInfo()
+    );
+  }
 }

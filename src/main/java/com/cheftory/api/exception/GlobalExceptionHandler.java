@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CheftoryException.class)
     public ResponseEntity<ErrorResponse> handleCheftoryException(CheftoryException ex) {
-        log.error(ex.getMessage(), ex);
+        log.error(ex.getErrorMessage().getMessage(), ex);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.from(ex));
