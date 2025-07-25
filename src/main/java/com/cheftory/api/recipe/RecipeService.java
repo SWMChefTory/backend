@@ -107,6 +107,8 @@ public class RecipeService {
       recipeRepository.increaseCount(recipeId);
     }
 
+    log.info("nonnull??");
+
     recipeViewStatusService.create(userId, recipeId);
     RecipeViewStatusInfo recipeViewStatusInfo = recipeViewStatusService.find(userId, recipeId);
 
