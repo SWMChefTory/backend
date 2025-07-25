@@ -1,5 +1,7 @@
 package com.cheftory.api.account.auth.verifier;
 
+import com.cheftory.api.account.auth.verifier.exception.VerificationErrorCode;
+import com.cheftory.api.account.auth.verifier.exception.VerificationException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -17,32 +19,46 @@ import java.net.http.HttpResponse;
 @Component
 public class GoogleTokenVerifier {
 
-    private final HttpClient client = HttpClient.newHttpClient();
+  private final HttpClient client = HttpClient.newHttpClient();
 
-    public String getEmailFromToken(String idToken) {
-        try {
-            URI uri = UriComponentsBuilder.fromUriString("https://oauth2.googleapis.com/tokeninfo").queryParam("id_token", idToken).build().toUri();
-            HttpRequest request = HttpRequest.newBuilder().uri(uri).GET().build();
+  public String getEmailFromToken(String idToken) {
+    try {
+      URI uri = UriComponentsBuilder
+          .fromUriString("https://oauth2.googleapis.com/tokeninfo")
+          .queryParam("id_token", idToken)
+          .build()
+          .toUri();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+      HttpRequest request = HttpRequest.newBuilder()
+          .uri(uri)
+          .GET()
+          .build();
 
-            // TODO 찾아보기
-            if (response.statusCode() == 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode json = mapper.readTree(response.body());
+      HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-                return json.get("email").asText();
-            }
-            log.error("[GoogleTokenVerifier] 응답 실패 - statusCode: {}, body: {}", response.statusCode(), response.body());
+      int status = response.statusCode();
+      if (status < 200 || status >= 300) {
+        log.error("[GoogleTokenVerifier] 응답 실패 - statusCode: {}, body: {}", status, response.body());
+        throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
+      }
 
-            // Serverside, Clientside Exception
-        } catch (IOException | InterruptedException e) {
-            log.error("[GoogleTokenVerifier] HTTP 요청 실패", e);
-            // Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            log.error("[GoogleTokenVerifier] 알 수 없는 예외 발생", e);
-        }
-        // TODO exception으로 처리
-        return null;
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode json = mapper.readTree(response.body());
+
+      JsonNode emailNode = json.get("email");
+      if (emailNode == null || emailNode.isNull()) {
+        log.error("[GoogleTokenVerifier] 응답에 email 필드 없음 - body: {}", response.body());
+        throw new VerificationException(VerificationErrorCode.GOOGLE_MISSING_EMAIL);
+      }
+
+      return emailNode.asText();
+
+    } catch (IOException | InterruptedException e) {
+      log.error("[GoogleTokenVerifier] HTTP 요청 실패", e);
+      throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
+    } catch (Exception e) {
+      log.error("[GoogleTokenVerifier] 토큰 검증 중 알 수 없는 예외", e);
+      throw new VerificationException(VerificationErrorCode.UNKNOWN_ERROR);
     }
+  }
 }

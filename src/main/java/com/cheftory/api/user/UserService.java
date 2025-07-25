@@ -18,6 +18,12 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    public User getByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .filter(u -> u.getStatus() != Status.DELETED)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    }
+
     public UUID getUserIdByEmail(String email) {
         return userRepository.findByEmail(email)
                 .filter(u -> u.getStatus() != Status.DELETED)
