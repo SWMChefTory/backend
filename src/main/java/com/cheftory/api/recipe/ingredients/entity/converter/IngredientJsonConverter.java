@@ -9,7 +9,6 @@ public class IngredientJsonConverter extends GenericJsonConverter<List<Ingredien
 
   protected IngredientJsonConverter(
       TypeReference<List<Ingredient>> typeReference) {
-    super(typeReference);
   }
 
 }

@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.ingredients.entity;
 
-import com.cheftory.api._common.GenericJsonConverter;
 import com.cheftory.api.recipe.ingredients.entity.converter.IngredientJsonConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
