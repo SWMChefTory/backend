@@ -48,7 +48,7 @@ public class AsyncRecipeCreationService {
 
   private CaptionInfo handleCaption(String videoId, UUID recipeId) {
     UUID captionId = recipeCaptionService.create(videoId, recipeId);
-    return recipeCaptionService.findCaptionInfo(captionId);
+    return recipeCaptionService.findCaptionInfoById(captionId);
   }
 
   private List<Ingredient> handleIngredients(UUID recipeId, String videoId, CaptionInfo captionInfo) {
