@@ -10,6 +10,11 @@ import org.apache.commons.lang3.StringUtils;
 public class GenericJsonConverter<T> implements AttributeConverter<T, String> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TypeReference<T> typeReference;
+
+    protected GenericJsonConverter(TypeReference<T> typeReference) {
+        this.typeReference = typeReference;
+    }
 
     @Override
     public String convertToDatabaseColumn(T attribute) {
