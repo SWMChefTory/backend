@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.step.dto;
 
 import com.cheftory.api.recipe.step.entity.RecipeStep;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,11 +16,8 @@ import java.util.UUID;
 public class RecipeStepInfo {
     private UUID id;
     private Integer stepOrder;
-
     private String subtitle;
-
     private List<String> details;
-
     private Double start;
     private Double end;
 

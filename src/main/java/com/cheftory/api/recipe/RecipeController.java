@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe;
 
+import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.recipe.model.RecommendRecipesResponse;
 import com.cheftory.api.recipe.model.FullRecipeInfo;
 import com.cheftory.api.recipe.model.RecipeCreateRequest;
@@ -8,7 +9,6 @@ import com.cheftory.api.recipe.model.FullRecipeResponse;
 import com.cheftory.api.recipe.model.RecipeCreateResponse;
 import com.cheftory.api.recipe.model.RecentRecipesResponse;
 import com.cheftory.api.recipe.model.RecipeOverview;
-import com.cheftory.api._common.security.UserPrincipal;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

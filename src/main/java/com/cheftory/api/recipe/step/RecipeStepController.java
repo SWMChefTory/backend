@@ -1,7 +1,7 @@
-package com.cheftory.api.recipe;
+package com.cheftory.api.recipe.step;
 
-import com.cheftory.api.recipe.step.RecipeStepService;
 import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
+import com.cheftory.api.recipe.step.dto.RecipeStepsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,8 +19,9 @@ public class RecipeStepController {
   public final RecipeStepService recipeStepService;
 
   @GetMapping("/{recipeId}/steps")
-  public List<RecipeStepInfo> getRecipeSteps(@PathVariable UUID recipeId) {
-    return recipeStepService
+  public RecipeStepsResponse getRecipeSteps(@PathVariable UUID recipeId) {
+    List<RecipeStepInfo> recipesStepInfo = recipeStepService
         .getRecipeStepInfos(recipeId);
+    return RecipeStepsResponse.from(recipesStepInfo);
   }
 }
