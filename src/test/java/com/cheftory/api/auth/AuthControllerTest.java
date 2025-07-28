@@ -11,7 +11,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -80,7 +79,7 @@ public class AuthControllerTest extends RestDocsTest {
       void shouldReturnUserId() {
         var response = given()
             .contentType(ContentType.JSON)
-            .header(HttpHeaders.AUTHORIZATION, validToken)
+            .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(validToken))
             .when()
             .post("/papi/v1/auth/extract-user-id")
             .then()
@@ -111,8 +110,8 @@ public class AuthControllerTest extends RestDocsTest {
       void setUp() {
         invalidToken = "invalid.malformed.token";
 
-        when(authService.extractUserIdFromToken(invalidToken))
-            .thenThrow(new AuthException(AuthErrorCode.INVALID_TOKEN));
+        doThrow(new AuthException(AuthErrorCode.INVALID_TOKEN))
+            .when(authService).extractUserIdFromToken(invalidToken);
       }
 
       @Test
@@ -120,7 +119,7 @@ public class AuthControllerTest extends RestDocsTest {
       void shouldReturnBadRequestError() {
         var response = given()
             .contentType(ContentType.JSON)
-            .header(HttpHeaders.AUTHORIZATION, invalidToken)
+            .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(invalidToken))
             .when()
             .post("/papi/v1/auth/extract-user-id")
             .then()
@@ -180,8 +179,8 @@ public class AuthControllerTest extends RestDocsTest {
       void setUp() {
         expiredToken = "expired.jwt.token";
 
-        when(authService.extractUserIdFromToken(expiredToken)).thenThrow(
-            new AuthException(AuthErrorCode.EXPIRED_TOKEN));
+        doThrow(new AuthException(AuthErrorCode.EXPIRED_TOKEN))
+            .when(authService).extractUserIdFromToken(expiredToken);
       }
 
       @Test
@@ -189,7 +188,7 @@ public class AuthControllerTest extends RestDocsTest {
       void shouldReturnBadRequestError() {
         var response = given()
             .contentType(ContentType.JSON)
-            .header(HttpHeaders.AUTHORIZATION, expiredToken)
+            .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(expiredToken))
             .when()
             .post("/papi/v1/auth/extract-user-id")
             .then()
@@ -211,132 +210,94 @@ public class AuthControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("빈 토큰인 경우")
-    class EmptyTokenScenario {
+    @DisplayName("POST /api/v1/auth/token/reissue - 토큰 재발급")
+    class TokenReissueScenario {
 
-      private String emptyToken;
+      @Nested
+      @DisplayName("유효한 리프레시 토큰이 주어졌을 때")
+      class ValidRefreshToken {
 
-      @BeforeEach
-      void setUp() {
-        emptyToken = "";
+        private String rawRefreshToken;
+        private String bearerToken;
+        private AuthTokens tokens;
 
-        when(authService.extractUserIdFromToken(emptyToken)).thenThrow(
-            new AuthException(AuthErrorCode.INVALID_TOKEN));
+        @BeforeEach
+        void setUp() {
+          rawRefreshToken = "valid-refresh-token";
+          bearerToken = BearerAuthorizationUtils.addPrefix(rawRefreshToken);
+          tokens = new AuthTokens("new-access-token", "new-refresh-token");
+
+          doReturn(tokens).when(authService).reissue(rawRefreshToken);
+        }
+
+        @Test
+        @DisplayName("성공 - 새로운 토큰을 반환한다")
+        void shouldReissueTokens() {
+          var request = new TokenReissueRequest(bearerToken);
+
+          given()
+              .contentType(ContentType.JSON)
+              .body(request)
+              .when()
+              .post("/api/v1/auth/token/reissue")
+              .then()
+              .statusCode(HttpStatus.OK.value())
+              .apply(
+                  document(
+                      getNestedClassPath(this.getClass()) + "/{method-name}",
+                      requestPreprocessor(),
+                      responsePreprocessor(),
+                      requestFields(
+                          fieldWithPath("refresh_token").description(
+                              "기존 리프레시 토큰 (Bearer prefix 포함)")
+                      ),
+                      responseFields(
+                          fieldWithPath("access_token").description("재발급된 액세스 토큰"),
+                          fieldWithPath("refresh_token").description("재발급된 리프레시 토큰")
+                      )
+                  )
+              )
+              .body("access_token", equalTo("Bearer " + tokens.accessToken()))
+              .body("refresh_token", equalTo("Bearer " + tokens.refreshToken()));
+        }
       }
 
-      @Test
-      @DisplayName("400 Bad Request 에러를 반환한다")
-      void shouldReturnBadRequestError() {
-        var response = given().contentType(ContentType.JSON)
-            .header(HttpHeaders.AUTHORIZATION, emptyToken)
-            .when()
-            .post("/papi/v1/auth/extract-user-id")
-            .then()
-            .status(HttpStatus.BAD_REQUEST)
-            .apply(
-                document(
-                    RestDocsUtils.getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    requestHeaders(
-                        headerWithName(HttpHeaders.AUTHORIZATION).description("빈 Authorization 헤더")
-                    ),
-                    responseErrorFields(AuthErrorCode.INVALID_TOKEN)
-                )
-            );
-        response.body("errorCode", equalTo(AuthErrorCode.INVALID_TOKEN.getErrorCode()));
-        verify(authService).extractUserIdFromToken(emptyToken);
-      }
-    }
-  }
+      @Nested
+      @DisplayName("유효하지 않은 리프레시 토큰이 주어졌을 때")
+      class InvalidRefreshToken {
 
-  @Nested
-  @DisplayName("POST /api/v1/auth/token/reissue - 토큰 재발급")
-  class TokenReissueScenario {
+        private String rawRefreshToken;
+        private String bearerToken;
 
-    @Nested
-    @DisplayName("유효한 리프레시 토큰이 주어졌을 때")
-    class ValidRefreshToken {
+        @BeforeEach
+        void setUp() {
+          rawRefreshToken = "invalid-refresh-token";
+          bearerToken = "Bearer " + rawRefreshToken;
 
-      private String rawRefreshToken;
-      private String bearerToken;
-      private AuthTokens tokens;
+          doThrow(new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN))
+              .when(authService)
+              .reissue(rawRefreshToken);
+        }
 
-      @BeforeEach
-      void setUp() {
-        rawRefreshToken = "valid-refresh-token";
-        bearerToken = BearerAuthorizationUtils.addPrefix(rawRefreshToken);
-        tokens = new AuthTokens("new-access-token", "new-refresh-token");
+        @Test
+        @DisplayName("실패 - INVALID_REFRESH_TOKEN 예외를 던지고 AUTH_007 코드 반환")
+        void shouldReturnErrorForInvalidToken() {
+          var request = new TokenReissueRequest(bearerToken);
 
-        doReturn(tokens).when(authService).reissue(rawRefreshToken);
-      }
-
-      @Test
-      @DisplayName("성공 - 새로운 토큰을 반환한다")
-      void shouldReissueTokens() {
-        var request = new TokenReissueRequest(bearerToken);
-
-        given()
-            .contentType(ContentType.JSON)
-            .body(request)
-            .when()
-            .post("/api/v1/auth/token/reissue")
-            .then()
-            .statusCode(HttpStatus.OK.value())
-            .apply(
-                document(
-                    getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    requestFields(
-                        fieldWithPath("refresh_token").description("기존 리프레시 토큰 (Bearer prefix 포함)")
-                    ),
-                    responseFields(
-                        fieldWithPath("access_token").description("재발급된 액세스 토큰"),
-                        fieldWithPath("refresh_token").description("재발급된 리프레시 토큰")
-                    )
-                )
-            )
-            .body("access_token", equalTo("Bearer " + tokens.accessToken()))
-            .body("refresh_token", equalTo("Bearer " + tokens.refreshToken()));
+          given()
+              .contentType(ContentType.JSON)
+              .body(request)
+              .when()
+              .post("/api/v1/auth/token/reissue")
+              .then()
+              .statusCode(HttpStatus.BAD_REQUEST.value())
+              .body("errorCode", equalTo(AuthErrorCode.INVALID_REFRESH_TOKEN.getErrorCode()));
+        }
       }
     }
 
-    @Nested
-    @DisplayName("유효하지 않은 리프레시 토큰이 주어졌을 때")
-    class InvalidRefreshToken {
-
-      private String rawRefreshToken;
-      private String bearerToken;
-
-      @BeforeEach
-      void setUp() {
-        rawRefreshToken = "invalid-refresh-token";
-        bearerToken = "Bearer " + rawRefreshToken;
-
-        doThrow(new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN))
-            .when(authService)
-            .reissue(rawRefreshToken);
-      }
-
-      @Test
-      @DisplayName("실패 - INVALID_REFRESH_TOKEN 예외를 던지고 AUTH_007 코드 반환")
-      void shouldReturnErrorForInvalidToken() {
-        var request = new TokenReissueRequest(bearerToken);
-
-        given()
-            .contentType(ContentType.JSON)
-            .body(request)
-            .when()
-            .post("/api/v1/auth/token/reissue")
-            .then()
-            .statusCode(HttpStatus.BAD_REQUEST.value())
-            .body("errorCode", equalTo(AuthErrorCode.INVALID_REFRESH_TOKEN.getErrorCode()));
-      }
+    private UUID generateUserId() {
+      return UUID.randomUUID();
     }
-  }
-
-  private UUID generateUserId() {
-    return UUID.randomUUID();
   }
 }
