@@ -17,12 +17,11 @@ public class RecipeViewStatusService {
   private final Clock clock;
 
   @Transactional
-  public UUID create(UUID userId, UUID recipeId) {
-    return viewStatusRepository.findByRecipeIdAndUserId(recipeId, userId)
-        .map(RecipeViewStatus::getId)
+  public void create(UUID userId, UUID recipeId) {
+    viewStatusRepository.findByRecipeIdAndUserId(recipeId, userId)
         .orElseGet(() -> viewStatusRepository
             .save(RecipeViewStatus.of(clock, userId, recipeId))
-            .getId());
+        );
   }
 
   @Transactional

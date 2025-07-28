@@ -42,4 +42,13 @@ public class RecipeCaptionService {
         );
     return CaptionInfo.from(caption);
   }
+
+  public CaptionInfo findCaptionInfoById(UUID captionId) {
+    RecipeCaption caption = recipeCaptionRepository
+        .findById((captionId))
+        .orElseThrow(() ->
+            new RecipeCaptionException(CaptionErrorCode.CAPTION_NOT_FOUND)
+        );
+    return CaptionInfo.from(caption);
+  }
 }

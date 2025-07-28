@@ -49,7 +49,10 @@ public class RecipeService {
     UriComponents uriOriginal = UriComponentsBuilder.fromUri(uri).build();
     UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uriOriginal);
     return findByUrl(urlNormalized.toUri())
-        .map(Recipe::getId)
+        .map(recipe -> {
+          recipeViewStatusService.create(userId, recipe.getId());
+          return recipe.getId();
+        })
         .orElseGet(() -> {
           VideoInfo videoInfo = videoInfoClient.fetchVideoInfo(urlNormalized);
           UUID recipeId = recipeRepository.save(Recipe.preCompletedOf(videoInfo)).getId();
@@ -91,17 +94,22 @@ public class RecipeService {
     if(recipeStepInfos.isEmpty()) {
       recipeStepInfos = null;
     }
+    log.info("Recipe {} has steps {}", recipeId, recipeStepInfos);
 
     Optional<IngredientsInfo> ingredientsInfoOptional = recipeIngredientsService
         .findIngredientsInfoOfRecipe(recipeId);
 
     IngredientsInfo ingredientsInfo = ingredientsInfoOptional
         .orElse(null);
+    log.info("Recipe {} has ingredients {}", recipeId, ingredientsInfo);
 
     if(Objects.nonNull(ingredientsInfo)&& Objects.nonNull(recipeStepInfos)) {
       recipeRepository.increaseCount(recipeId);
     }
 
+    log.info("nonnull??");
+
+    recipeViewStatusService.create(userId, recipeId);
     RecipeViewStatusInfo recipeViewStatusInfo = recipeViewStatusService.find(userId, recipeId);
 
     return FullRecipeInfo.of(

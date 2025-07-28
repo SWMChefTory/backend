@@ -1,6 +1,6 @@
 package com.cheftory.api.recipe.step.entity;
 
-import com.cheftory.api._common.ObjectJsonConverter;
+import com.cheftory.api.recipe.step.entity.converter.DetailsJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -23,7 +23,7 @@ public class RecipeStep {
     private String subtitle;
 
     @Column(columnDefinition = "json")
-    @Convert(converter = ObjectJsonConverter.class)
+    @Convert(converter = DetailsJsonConverter.class)
     private List<String> details;
     private Double start;
     private Double end;

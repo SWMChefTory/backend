@@ -39,12 +39,14 @@ public class RecipeIngredientsService {
     }
 
     public Optional<IngredientsInfo> findIngredientsInfoOfRecipe(UUID recipeId) {
-        Optional<RecipeIngredients> optional =  recipeIngredientsRepository.findById(recipeId);
+        Optional<RecipeIngredients> optional =  recipeIngredientsRepository.findByRecipeId(recipeId);
       return optional.map(IngredientsInfo::from);
     }
 
     public IngredientsInfo findIngredientsInfo(UUID ingredientId) {
-        RecipeIngredients recipeIngredients = recipeIngredientsRepository.findByRecipeId(ingredientId);
+        RecipeIngredients recipeIngredients = recipeIngredientsRepository
+            .findById(ingredientId)
+            .orElseThrow(()->new RecipeIngredientsException(RecipeIngredientsErrorCode.RECIPE_INGREDIENTS_NOT_FOUND));
         return IngredientsInfo.from(recipeIngredients);
     }
 }
