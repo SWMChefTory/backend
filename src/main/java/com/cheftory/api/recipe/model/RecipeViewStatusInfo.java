@@ -1,5 +1,6 @@
-package com.cheftory.api.recipe.viewstatus;
+package com.cheftory.api.recipe.model;
 
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;

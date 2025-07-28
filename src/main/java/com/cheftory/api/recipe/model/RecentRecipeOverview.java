@@ -1,6 +1,6 @@
 package com.cheftory.api.recipe.model;
 
-import com.cheftory.api.recipe.viewstatus.RecipeViewStatusInfo;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,11 +15,11 @@ public class RecentRecipeOverview {
 
   public static RecentRecipeOverview of(
       RecipeOverview recipeOverview,
-      RecipeViewStatusInfo recipeViewStatusInfo
+      RecipeViewStatus recipeViewStatus
   ) {
     return RecentRecipeOverview.builder()
         .recipeOverview(recipeOverview)
-        .recipeViewStatusInfo(recipeViewStatusInfo)
+        .recipeViewStatusInfo(RecipeViewStatusInfo.of(recipeViewStatus))
         .build();
   }
 }

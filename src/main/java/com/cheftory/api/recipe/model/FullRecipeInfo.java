@@ -2,9 +2,9 @@ package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
-import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
-import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
-import com.cheftory.api.recipe.viewstatus.RecipeViewStatusInfo;
+import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;
+import com.cheftory.api.recipe.step.entity.RecipeStep;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
 import lombok.*;
 
 import java.util.List;
@@ -22,16 +22,18 @@ public class FullRecipeInfo {
     public static FullRecipeInfo of(
             RecipeStatus recipeStatus
             , VideoInfo videoInfo
-            , IngredientsInfo ingredientsInfo
-            , List<RecipeStepInfo> recipeStepInfos
-            , RecipeViewStatusInfo recipeViewStatusInfo
+            , RecipeIngredients ingredients
+            , List<RecipeStep> recipeStepInfos
+            , RecipeViewStatus recipeViewStatus
     ) {
         return FullRecipeInfo.builder()
                 .recipeStatus(recipeStatus)
                 .videoInfo(videoInfo)
-                .ingredientsInfo(ingredientsInfo)
-                .recipeStepInfos(recipeStepInfos)
-                .recipeViewStatusInfo(recipeViewStatusInfo)
+                .ingredientsInfo(IngredientsInfo.from(ingredients))
+                .recipeStepInfos(recipeStepInfos.stream()
+                        .map(RecipeStepInfo::from)
+                        .toList())
+                .recipeViewStatusInfo(RecipeViewStatusInfo.of(recipeViewStatus))
                 .build();
     }
 }

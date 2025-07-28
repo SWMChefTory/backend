@@ -1,13 +1,15 @@
 package com.cheftory.api.recipe;
 
 import com.cheftory.api.recipe.caption.RecipeCaptionService;
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
+import com.cheftory.api.recipe.model.CaptionInfo;
+import com.cheftory.api.recipe.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.recipe.ingredients.RecipeIngredientsService;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
+import com.cheftory.api.recipe.model.IngredientsInfo;
 import com.cheftory.api.recipe.step.RecipeStepService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,9 +39,9 @@ public class AsyncRecipeCreationService {
           RecipeErrorCode.RECIPE_NOT_FOUND));
       String videoId = recipe.getVideoInfo().getVideoId();
       CaptionInfo captionInfo = handleCaption(videoId,recipeId);
-      List<Ingredient> ingredientsContent = handleIngredients(recipeId, videoId, captionInfo);
-      log.info("Creating recipe for caption info: {}", ingredientsContent);
-      handleSteps(videoId, recipeId, captionInfo, ingredientsContent);
+      IngredientsInfo ingredients = handleIngredients(recipeId, videoId, captionInfo);
+      log.info("Creating recipe for caption info: {}", ingredients);
+      handleSteps(videoId, recipeId, captionInfo, ingredients.getIngredients());
       recipeRepository.updateStatus(recipeId, RecipeStatus.COMPLETED);
     } catch (Exception e) {
       log.error("레시피 생성에 실패했습니다.", e);
@@ -50,13 +52,13 @@ public class AsyncRecipeCreationService {
   private CaptionInfo handleCaption(String videoId, UUID recipeId) {
     UUID captionId = recipeCaptionService.create(videoId, recipeId);
     log.info("자막 생성");
-    return recipeCaptionService.findCaptionInfoById(captionId);
+    return CaptionInfo.from(recipeCaptionService.find(captionId));
   }
 
-  private List<Ingredient> handleIngredients(UUID recipeId, String videoId, CaptionInfo captionInfo) {
+  private IngredientsInfo handleIngredients(UUID recipeId, String videoId, CaptionInfo captionInfo) {
     UUID ingredientsId = recipeIngredientsService.create(recipeId, videoId, captionInfo);
     log.info("재료 생성");
-    return recipeIngredientsService.findIngredientsInfo(ingredientsId).getIngredients();
+    return IngredientsInfo.from(recipeIngredientsService.find(ingredientsId));
   }
 
   private void handleSteps(String videoId, UUID recipeId, CaptionInfo captionInfo, List<Ingredient> ingredients) {

@@ -1,16 +1,13 @@
 package com.cheftory.api.recipe.ingredients;
 
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
+import com.cheftory.api.recipe.model.CaptionInfo;
 import com.cheftory.api.recipe.ingredients.client.RecipeIngredientsClient;
 import com.cheftory.api.recipe.ingredients.client.dto.ClientIngredientsResponse;
-import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
 import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;
 import com.cheftory.api.recipe.ingredients.exception.RecipeIngredientsErrorCode;
 import com.cheftory.api.recipe.ingredients.exception.RecipeIngredientsException;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.ingredients.repository.RecipeIngredientsRepository;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,15 +35,14 @@ public class RecipeIngredientsService {
         return recipeIngredients.getId();
     }
 
-    public Optional<IngredientsInfo> findIngredientsInfoOfRecipe(UUID recipeId) {
-        Optional<RecipeIngredients> optional =  recipeIngredientsRepository.findByRecipeId(recipeId);
-      return optional.map(IngredientsInfo::from);
+    public RecipeIngredients findByRecipeId(UUID recipeId) {
+        return recipeIngredientsRepository.findByRecipeId(recipeId)
+            .orElseThrow(() -> new RecipeIngredientsException(RecipeIngredientsErrorCode.RECIPE_INGREDIENTS_NOT_FOUND));
     }
 
-    public IngredientsInfo findIngredientsInfo(UUID ingredientId) {
-        RecipeIngredients recipeIngredients = recipeIngredientsRepository
+    public RecipeIngredients find(UUID ingredientId) {
+        return recipeIngredientsRepository
             .findById(ingredientId)
             .orElseThrow(()->new RecipeIngredientsException(RecipeIngredientsErrorCode.RECIPE_INGREDIENTS_NOT_FOUND));
-        return IngredientsInfo.from(recipeIngredients);
     }
 }

@@ -54,7 +54,7 @@ public class YoutubeUrlNormalizer {
             throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_PATH_NULL);
         }
         if (!path.equals("/watch")) {
-            throw new IllegalArgumentException("잘못된 Path입니다.");
+            throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_INVALID);
         }
 
         List<String> firstQueryValue = url

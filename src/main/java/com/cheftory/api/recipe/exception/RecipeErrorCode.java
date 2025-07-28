@@ -13,6 +13,7 @@ public enum RecipeErrorCode implements ErrorMessage {
   YOUTUBE_URL_NULL("RECIPE005", "URL이 비어있습니다."),
   YOUTUBE_URL_HOST_NULL("RECIPE006", "호스트가 비어있습니다."),
   YOUTUBE_URL_PATH_NULL("RECIPE007", "경로가 비어있습니다."),
+  YOUTUBE_URL_INVALID("RECIPE009", "유효하지 않은 유튜브 URL입니다."),
 
   RECIPE_FAILED("RECIPE008", "실패한 레시피 입니다.");
 

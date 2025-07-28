@@ -1,9 +1,6 @@
 package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.entity.RecipeStatus;
-import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
-import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
-import com.cheftory.api.recipe.viewstatus.RecipeViewStatusInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;

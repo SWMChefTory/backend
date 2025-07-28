@@ -1,15 +1,12 @@
 package com.cheftory.api.recipe.ingredients.client;
 
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
+import com.cheftory.api.recipe.model.CaptionInfo;
 import com.cheftory.api.recipe.ingredients.client.dto.ClientIngredientsRequest;
 import com.cheftory.api.recipe.ingredients.client.dto.ClientIngredientsResponse;
-import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.List;
 
 @Slf4j
 @Service

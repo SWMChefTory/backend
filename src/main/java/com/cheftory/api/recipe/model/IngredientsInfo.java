@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.ingredients.dto;
+package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;

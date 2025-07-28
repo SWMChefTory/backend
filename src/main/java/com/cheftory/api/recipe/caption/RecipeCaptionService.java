@@ -2,7 +2,6 @@ package com.cheftory.api.recipe.caption;
 
 import com.cheftory.api.recipe.caption.client.CaptionClient;
 import com.cheftory.api.recipe.caption.client.dto.ClientCaptionResponse;
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
 import com.cheftory.api.recipe.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.caption.exception.CaptionErrorCode;
 import com.cheftory.api.recipe.caption.exception.RecipeCaptionException;
@@ -34,21 +33,19 @@ public class RecipeCaptionService {
     return recipeCaptionRepository.save(recipeCaption).getId();
   }
 
-  public CaptionInfo findCaptionInfo(UUID recipeId) {
-    RecipeCaption caption = recipeCaptionRepository
+  public RecipeCaption findByRecipeId(UUID recipeId) {
+    return recipeCaptionRepository
         .findByRecipeId((recipeId))
         .orElseThrow(() ->
             new RecipeCaptionException(CaptionErrorCode.CAPTION_NOT_FOUND)
         );
-    return CaptionInfo.from(caption);
   }
 
-  public CaptionInfo findCaptionInfoById(UUID captionId) {
-    RecipeCaption caption = recipeCaptionRepository
+  public RecipeCaption find(UUID captionId) {
+    return recipeCaptionRepository
         .findById((captionId))
         .orElseThrow(() ->
             new RecipeCaptionException(CaptionErrorCode.CAPTION_NOT_FOUND)
         );
-    return CaptionInfo.from(caption);
   }
 }

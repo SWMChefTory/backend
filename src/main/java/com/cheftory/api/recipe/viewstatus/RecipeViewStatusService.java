@@ -25,16 +25,14 @@ public class RecipeViewStatusService {
   }
 
   @Transactional
-  public RecipeViewStatusInfo find(UUID userId, UUID recipeId) {
+  public RecipeViewStatus find(UUID userId, UUID recipeId) {
     RecipeViewStatus recipeViewStatus = viewStatusRepository.findByRecipeIdAndUserId(recipeId, userId)
         .orElseThrow(() -> new ViewStatusException(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND));
     recipeViewStatus.updateViewedAt(clock);
-    return RecipeViewStatusInfo.of(viewStatusRepository.save(recipeViewStatus));
+    return viewStatusRepository.save(recipeViewStatus);
   }
 
-  public List<RecipeViewStatusInfo> findRecentUsers(UUID userId) {
-    return viewStatusRepository.findByUserId(userId, ViewStatusSort.VIEWED_AT_DESC).stream().map(
-        RecipeViewStatusInfo::of
-    ).toList();
+  public List<RecipeViewStatus> findRecentUsers(UUID userId) {
+    return viewStatusRepository.findByUserId(userId, ViewStatusSort.VIEWED_AT_DESC);
   }
 }

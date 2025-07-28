@@ -10,7 +10,7 @@ public record RecipeStepsResponse(
     @JsonProperty("steps")
     List<RecipeStepResponse> steps
 ) {
-  public static RecipeStepsResponse from(List<RecipeStepInfo> recipeSteps) {
+  public static RecipeStepsResponse from(List<RecipeStep> recipeSteps) {
     List<RecipeStepResponse> stepResponses = recipeSteps.stream()
         .map(RecipeStepResponse::from)
         .toList();
@@ -31,7 +31,7 @@ public record RecipeStepsResponse(
       @JsonProperty("end")
       Double end
   ) {
-    public static RecipeStepResponse from(RecipeStepInfo step) {
+    public static RecipeStepResponse from(RecipeStep step) {
       return new RecipeStepResponse(
           step.getId(),
           step.getStepOrder(),

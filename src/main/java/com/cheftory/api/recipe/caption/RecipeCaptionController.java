@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.caption;
 
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
 import com.cheftory.api.recipe.caption.dto.RecipeCaptionsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +18,6 @@ public class RecipeCaptionController {
     @GetMapping("/{recipeId}/caption")
     public RecipeCaptionsResponse getRecipeCaption(@PathVariable UUID recipeId) {
         return RecipeCaptionsResponse.from(
-                recipeCaptionService.findCaptionInfo(recipeId));
+                recipeCaptionService.findByRecipeId(recipeId));
     }
 }

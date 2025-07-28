@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.caption.dto;
+package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.caption.entity.LangCodeType;
 import com.cheftory.api.recipe.caption.entity.RecipeCaption;

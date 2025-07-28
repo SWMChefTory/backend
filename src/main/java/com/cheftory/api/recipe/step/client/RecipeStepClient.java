@@ -1,6 +1,6 @@
 package com.cheftory.api.recipe.step.client;
 
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
+import com.cheftory.api.recipe.model.CaptionInfo;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepsRequest;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepsResponse;

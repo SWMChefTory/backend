@@ -1,14 +1,13 @@
 package com.cheftory.api.recipe.step;
 
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
+import com.cheftory.api.recipe.model.CaptionInfo;
 import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepsResponse;
-import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
 import com.cheftory.api.recipe.step.client.RecipeStepClient;
+import com.cheftory.api.recipe.step.entity.RecipeStepSort;
 import com.cheftory.api.recipe.step.repository.RecipeStepRepository;
-import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,12 +41,8 @@ public class RecipeStepService {
             .toList();
     }
 
-    public List<RecipeStepInfo> getRecipeStepInfos(UUID recipeId) {
+    public List<RecipeStep> findByRecipeId(UUID recipeId) {
         return recipeStepRepository
-                .findAllByRecipeId(recipeId)
-                .stream()
-                .map(RecipeStepInfo::from)
-                .sorted(Comparator.comparingInt(RecipeStepInfo::getStepOrder))
-                .toList();
+                .findAllByRecipeId(recipeId, RecipeStepSort.STEP_ORDER_ASC);
     }
 }

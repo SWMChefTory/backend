@@ -1,7 +1,6 @@
-package com.cheftory.api.recipe.step.dto;
+package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.step.entity.RecipeStep;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
