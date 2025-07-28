@@ -20,6 +20,9 @@ public class IngredientsInfo {
     private List<Ingredient> ingredients;
 
     public static IngredientsInfo from(RecipeIngredients recipeIngredients) {
+        if (recipeIngredients == null) {
+            return null;
+        }
         return IngredientsInfo.builder()
                 .ingredientsId(recipeIngredients.getId())
                 .ingredients(recipeIngredients.getIngredients())
