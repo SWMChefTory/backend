@@ -36,7 +36,7 @@ public class Login {
   @Column(name = "device_type")
   private String deviceType;
 
-  @Column(name = "country", length = 100)
+  @Column(name = "country")
   private String country;
 
   @Column(name = "user_id", nullable = false)

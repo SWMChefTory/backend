@@ -26,16 +26,16 @@ include::{snippets}/voice-command-history-controller/given-valid-voice-command-r
 === 1.2 에러 – 존재하지 않는 유저
 
 ==== 요청
-include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-non-existent-user-id/then-should-return-bad-request/http-request.adoc[]
+include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-non-existent-extract-user-id-response/then-should-return-bad-request/http-request.adoc[]
 
 ==== 응답
-include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-non-existent-user-id/then-should-return-bad-request/http-response.adoc[]
+include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-non-existent-extract-user-id-response/then-should-return-bad-request/http-response.adoc[]
 
 ==== 응답 본문
-include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-non-existent-user-id/then-should-return-bad-request/response-body.adoc[]
+include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-non-existent-extract-user-id-response/then-should-return-bad-request/response-body.adoc[]
 
 ==== 에러 필드
-include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-non-existent-user-id/then-should-return-bad-request/response-fields.adoc[]
+include::{snippets}/voice-command-history-controller/given-invalid-request/when-request-with-non-existent-extract-user-id-response/then-should-return-bad-request/response-fields.adoc[]
 
 === 1.3 에러 – 필수 필드 누락
 

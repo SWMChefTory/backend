@@ -469,7 +469,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /papi/v1/auth/extract-user-id HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.token
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.token
 Host: test.host</code></pre>
 </div>
 </div>
@@ -512,7 +512,7 @@ Content-Type: application/json
 Content-Length: 56
 
 {
-  "user_id" : "e8626285-7e28-46fa-a918-d19a74322913"
+  "user_id" : "eefd8993-27b5-4d7a-802e-69beed512196"
 }</code></pre>
 </div>
 </div>
@@ -522,7 +522,7 @@ Content-Length: 56
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-json" data-lang="json">{
-  "user_id" : "e8626285-7e28-46fa-a918-d19a74322913"
+  "user_id" : "eefd8993-27b5-4d7a-802e-69beed512196"
 }</code></pre>
 </div>
 </div>
@@ -734,7 +734,7 @@ Content-Length: 87
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /papi/v1/auth/extract-user-id HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer expired.jwt.token
+Authorization: expired.jwt.token
 Host: test.host</code></pre>
 </div>
 </div>
@@ -755,7 +755,7 @@ Host: test.host</code></pre>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">만료된 Bearer 토큰</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">만료된 토큰</p></td>
 </tr>
 </tbody>
 </table>
@@ -832,7 +832,7 @@ Content-Length: 74
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /papi/v1/auth/extract-user-id HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer invalid.malformed.token
+Authorization: invalid.malformed.token
 Host: test.host</code></pre>
 </div>
 </div>
@@ -853,7 +853,7 @@ Host: test.host</code></pre>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">유효하지 않은 Bearer 토큰</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">유효하지 않은 토큰</p></td>
 </tr>
 </tbody>
 </table>
@@ -928,7 +928,7 @@ Content-Length: 84
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2025-07-24 21:36:52 +0900
+Last updated 2025-07-24 16:50:58 +0900
 </div>
 </div>
 </body>

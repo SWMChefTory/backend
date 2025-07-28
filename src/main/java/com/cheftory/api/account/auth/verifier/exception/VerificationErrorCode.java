@@ -18,6 +18,7 @@ public enum VerificationErrorCode implements ErrorMessage {
   // Google 관련
   GOOGLE_RESPONSE_NOT_OK("GOOGLE_001", "Google 토큰 검증 응답이 실패했습니다."),
   GOOGLE_MISSING_EMAIL("GOOGLE_002", "Google 토큰에 이메일 정보가 없습니다."),
+  GOOGLE_MISSING_SUB("GOOGLE_003", "Google 토큰에 SUB 정보가 없습니다."),
 
   // 공통 오류 코드
   UNKNOWN_ERROR("COMMON_001", "알 수 없는 오류가 발생했습니다.");

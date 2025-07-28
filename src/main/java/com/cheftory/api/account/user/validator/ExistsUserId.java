@@ -1,4 +1,4 @@
-package com.cheftory.api.user.validator;
+package com.cheftory.api.account.user.validator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

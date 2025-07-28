@@ -1,5 +1,6 @@
 package com.cheftory.api.security;
 
+import com.cheftory.api._common.security.UserPrincipal;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

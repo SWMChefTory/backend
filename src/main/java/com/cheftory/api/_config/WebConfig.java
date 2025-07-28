@@ -1,6 +1,6 @@
 package com.cheftory.api._config;
 
-import com.cheftory.api.security.UserArgumentResolver;
+import com.cheftory.api._common.security.UserArgumentResolver;
 import java.util.List;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
