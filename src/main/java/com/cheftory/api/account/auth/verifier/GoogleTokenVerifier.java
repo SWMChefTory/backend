@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
@@ -15,13 +14,36 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-@Slf4j
 @Component
+@Slf4j
 public class GoogleTokenVerifier {
 
   private final HttpClient client = HttpClient.newHttpClient();
+  private final ObjectMapper mapper = new ObjectMapper();
 
   public String getEmailFromToken(String idToken) {
+    JsonNode payload = getPayload(idToken);
+    JsonNode emailNode = payload.get("email");
+
+    if (emailNode == null || emailNode.isNull()) {
+      throw new VerificationException(VerificationErrorCode.GOOGLE_MISSING_EMAIL);
+    }
+
+    return emailNode.asText();
+  }
+
+  public String getSubFromToken(String idToken) {
+    JsonNode payload = getPayload(idToken);
+    JsonNode subNode = payload.get("sub");
+
+    if (subNode == null || subNode.isNull()) {
+      throw new VerificationException(VerificationErrorCode.GOOGLE_MISSING_SUB);
+    }
+
+    return subNode.asText();
+  }
+
+  private JsonNode getPayload(String idToken) {
     try {
       URI uri = UriComponentsBuilder
           .fromUriString("https://oauth2.googleapis.com/tokeninfo")
@@ -38,20 +60,12 @@ public class GoogleTokenVerifier {
 
       int status = response.statusCode();
       if (status < 200 || status >= 300) {
-        log.error("[GoogleTokenVerifier] 응답 실패 - statusCode: {}, body: {}", status, response.body());
+        log.error("[GoogleTokenVerifier] 응답 실패 - statusCode: {}, body: {}", status,
+            response.body());
         throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
       }
 
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode json = mapper.readTree(response.body());
-
-      JsonNode emailNode = json.get("email");
-      if (emailNode == null || emailNode.isNull()) {
-        log.error("[GoogleTokenVerifier] 응답에 email 필드 없음 - body: {}", response.body());
-        throw new VerificationException(VerificationErrorCode.GOOGLE_MISSING_EMAIL);
-      }
-
-      return emailNode.asText();
+      return mapper.readTree(response.body());
 
     } catch (IOException | InterruptedException e) {
       log.error("[GoogleTokenVerifier] HTTP 요청 실패", e);

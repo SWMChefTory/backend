@@ -8,15 +8,15 @@ import com.cheftory.api.account.auth.verifier.AppleTokenVerifier;
 import com.cheftory.api.account.auth.verifier.GoogleTokenVerifier;
 import com.cheftory.api.account.auth.jwt.TokenProvider;
 import com.cheftory.api.account.auth.repository.LoginRepository;
-import com.cheftory.api.user.entity.Provider;
+import com.cheftory.api.account.user.entity.Provider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class AuthService {
 
   private final GoogleTokenVerifier googleVerifier;
@@ -24,11 +24,23 @@ public class AuthService {
   private final TokenProvider jwtProvider;
   private final LoginRepository loginRepository;
 
-  public String extractEmailFromIdToken(String token, Provider provider) {
+  public String extractEmailFromIdToken(String idToken, Provider provider) {
     try {
       return switch (provider) {
-        case GOOGLE -> googleVerifier.getEmailFromToken(token);
-        case APPLE -> appleVerifier.getEmailFromToken(token);
+        case GOOGLE -> googleVerifier.getEmailFromToken(idToken);
+        case APPLE -> appleVerifier.getEmailFromToken(idToken);
+        default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
+      };
+    } catch (Exception e) {
+      throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
+    }
+  }
+
+  public String extractProviderSubFromIdToken(String idToken, Provider provider) {
+    try {
+      return switch (provider) {
+        case GOOGLE -> googleVerifier.getSubFromToken(idToken);
+        case APPLE -> appleVerifier.getSubFromToken(idToken);
         default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
       };
     } catch (Exception e) {
@@ -58,13 +70,13 @@ public class AuthService {
     return AuthTokens.of(accessToken, refreshToken);
   }
 
-  public void saveRefreshToken(UUID userId, String refreshToken) {
+  public void saveLoginSession(UUID userId, String refreshToken) {
     LocalDateTime refreshTokenExpiredAt = jwtProvider.getExpiration(refreshToken);
     Login log = Login.create(userId, refreshToken, refreshTokenExpiredAt);
     loginRepository.save(log);
   }
 
-  public void updateRefreshToken(UUID userId, String oldRefreshToken, String newRefreshToken) {
+  private void updateRefreshToken(UUID userId, String oldRefreshToken, String newRefreshToken) {
     Login log = loginRepository.findByUserIdAndRefreshToken(userId, oldRefreshToken)
         .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
 

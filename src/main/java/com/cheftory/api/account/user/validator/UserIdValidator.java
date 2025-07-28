@@ -1,8 +1,8 @@
-package com.cheftory.api.user.validator;
+package com.cheftory.api.account.user.validator;
 
 
-import com.cheftory.api.user.UserService;
-import com.cheftory.api.user.exception.UserErrorCode;
+import com.cheftory.api.account.user.UserService;
+import com.cheftory.api.account.user.exception.UserErrorCode;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.UUID;

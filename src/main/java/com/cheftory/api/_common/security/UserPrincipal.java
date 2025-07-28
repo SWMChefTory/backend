@@ -1,4 +1,4 @@
-package com.cheftory.api.security;
+package com.cheftory.api._common.security;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

@@ -1,11 +1,10 @@
 package com.cheftory.api._config;
 
-import com.cheftory.api.security.JwtAuthenticationEntryPoint;
-import com.cheftory.api.security.JwtAuthenticationFilter;
+import com.cheftory.api._common.security.JwtAuthenticationEntryPoint;
+import com.cheftory.api._common.security.JwtAuthenticationFilter;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -38,6 +37,7 @@ public class SecurityConfig {
             .requestMatchers("/papi/v1/**").permitAll()
             .requestMatchers("/api/v1/account/**").permitAll()
             .requestMatchers("/api/v1/auth/**").permitAll()
+            .requestMatchers("/docs/**").permitAll()
             .anyRequest().authenticated()
         )
         .addFilterBefore(filter, BasicAuthenticationFilter.class)

@@ -1,24 +1,18 @@
 package com.cheftory.api.voicecommand;
 import com.cheftory.api.exception.GlobalErrorCode;
 import com.cheftory.api.exception.GlobalExceptionHandler;
-import com.cheftory.api.user.UserService;
-import com.cheftory.api.user.exception.UserErrorCode;
+import com.cheftory.api.account.user.UserService;
+import com.cheftory.api.account.user.exception.UserErrorCode;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 
 import java.util.UUID;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.http.HttpStatus;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
 import static com.cheftory.api.utils.RestDocsUtils.enumFields;
 import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;

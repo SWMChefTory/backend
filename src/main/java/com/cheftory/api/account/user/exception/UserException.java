@@ -1,4 +1,4 @@
-package com.cheftory.api.user.exception;
+package com.cheftory.api.account.user.exception;
 
 import com.cheftory.api.exception.CheftoryException;
 

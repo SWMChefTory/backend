@@ -1,4 +1,4 @@
-package com.cheftory.api.user.entity;
+package com.cheftory.api.account.user.entity;
 
 public enum Provider {
     GOOGLE,

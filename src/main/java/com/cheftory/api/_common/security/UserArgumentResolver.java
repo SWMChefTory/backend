@@ -1,4 +1,4 @@
-package com.cheftory.api.security;
+package com.cheftory.api._common.security;
 import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.exception.AuthException;
 import java.util.UUID;

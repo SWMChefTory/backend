@@ -46,7 +46,7 @@ public class AppleTokenVerifier {
     return cachedJwkSet.get();
   }
 
-  public String getEmailFromToken(String identityToken) {
+  private JWTClaimsSet extractVerifiedClaims(String identityToken) {
     try {
       SignedJWT jwt = SignedJWT.parse(identityToken);
       JWSHeader header = jwt.getHeader();
@@ -71,8 +71,8 @@ public class AppleTokenVerifier {
       }
 
       JWTClaimsSet claims = jwt.getJWTClaimsSet();
-
       Date now = new Date();
+
       if (claims.getExpirationTime() == null || now.after(claims.getExpirationTime())) {
         log.error("[AppleTokenVerifier] 토큰 만료됨 - exp: {}", claims.getExpirationTime());
         throw new VerificationException(VerificationErrorCode.APPLE_TOKEN_EXPIRED);
@@ -88,19 +88,26 @@ public class AppleTokenVerifier {
         throw new VerificationException(VerificationErrorCode.APPLE_INVALID_AUDIENCE);
       }
 
-      String email = (String) claims.getClaim("email");
-      log.info("[AppleTokenVerifier] 검증 성공 - sub: {}, email: {}", claims.getSubject(), email);
-
-      return email;
+      return claims;
 
     } catch (ParseException e) {
       log.error("[AppleTokenVerifier] 토큰 파싱 실패", e);
       throw new VerificationException(VerificationErrorCode.APPLE_INVALID_FORMAT);
     } catch (VerificationException e) {
-      throw e; // 커스텀 예외는 그대로 전파
+      throw e;
     } catch (Exception e) {
       log.error("[AppleTokenVerifier] 알 수 없는 예외 발생", e);
       throw new VerificationException(VerificationErrorCode.UNKNOWN_ERROR);
     }
+  }
+
+  public String getEmailFromToken(String identityToken) {
+    JWTClaimsSet claims = extractVerifiedClaims(identityToken);
+    return (String) claims.getClaim("email");
+  }
+
+  public String getSubFromToken(String identityToken) {
+    JWTClaimsSet claims = extractVerifiedClaims(identityToken);
+    return claims.getSubject();
   }
 }
