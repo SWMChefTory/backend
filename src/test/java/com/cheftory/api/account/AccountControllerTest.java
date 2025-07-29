@@ -246,7 +246,7 @@ public class AccountControllerTest extends RestDocsTest {
         request.put("provider", Provider.GOOGLE.name());
         request.put("nickname", nickname);
         request.put("gender", gender);
-        request.put("birth_of_date", validDateOfBirth.toString());
+        request.put("date_of_birth", validDateOfBirth.toString());
 
         var response = given()
             .contentType(ContentType.JSON)
@@ -264,7 +264,7 @@ public class AccountControllerTest extends RestDocsTest {
                     fieldWithPath("provider").description("OAUTH 제공자(GOOGLE, APPLE, KAKAO)"),
                     fieldWithPath("nickname").description("닉네임"),
                     fieldWithPath("gender").description("성별"),
-                    fieldWithPath("birth_of_date").description("생년월일")
+                    fieldWithPath("date_of_birth").description("생년월일")
                 ),
                 responseFields(
                     fieldWithPath("access_token").description("액세스 토큰"),

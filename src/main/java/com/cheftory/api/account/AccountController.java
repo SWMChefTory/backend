@@ -29,7 +29,7 @@ public class AccountController {
         request.provider(),
         request.nickname(),
         request.gender(),
-        request.birthOfDate()
+        request.dateOfBirth()
     );
     return LoginResponse.from(result);
   }
