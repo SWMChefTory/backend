@@ -41,6 +41,12 @@ public class UserService {
     return userRepository.save(user).getId();
   }
 
+  public User get(UUID id) {
+    return userRepository.findById(id)
+        .filter(user -> user.getStatus() != Status.DELETED)
+        .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+  }
+
   public void deleteUser(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
