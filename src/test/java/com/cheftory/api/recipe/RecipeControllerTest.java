@@ -101,6 +101,7 @@ public class RecipeControllerTest extends RestDocsTest {
         doReturn(URI.create("https://example.com/thumbnail.jpg")).when(video).getThumbnailUrl();
         doReturn(LocalDateTime.of(2024, 1, 15, 10, 30, 0)).when(viewStatus).getViewedAt();
         doReturn(120).when(viewStatus).getLastPlaySeconds();
+        doReturn(120).when(video).getVideoSeconds();
 
         recentRecipes = List.of(recentRecipe);
         doReturn(recentRecipes).when(recipeService).findRecents(any(UUID.class));
