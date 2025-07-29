@@ -1,0 +1,94 @@
+[[AccountController-API]]
+= Account API
+:toc:
+:sectnums:
+:toclevels: 2
+
+== 1. OAuth 로그인 (POST /api/v1/account/login/oauth)
+
+=== 1.1 성공 – 유효한 ID 토큰으로 로그인
+
+==== 요청
+include::{snippets}/account-controller/login-with-oauth/valid-id-token-scenario/should-login-with-o-auth/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/account-controller/login-with-oauth/valid-id-token-scenario/should-login-with-o-auth/request-body.adoc[]
+
+==== 응답
+include::{snippets}/account-controller/login-with-oauth/valid-id-token-scenario/should-login-with-o-auth/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/account-controller/login-with-oauth/valid-id-token-scenario/should-login-with-o-auth/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/account-controller/login-with-oauth/valid-id-token-scenario/should-login-with-o-auth/response-fields.adoc[]
+
+=== 1.2 에러 – 유효하지 않은 ID 토큰
+
+==== 요청
+include::{snippets}/account-controller/login-with-oauth/invalid-id-token-scenario/should-return-bad-request-error/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/account-controller/login-with-oauth/invalid-id-token-scenario/should-return-bad-request-error/request-body.adoc[]
+
+==== 응답
+include::{snippets}/account-controller/login-with-oauth/invalid-id-token-scenario/should-return-bad-request-error/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/account-controller/login-with-oauth/invalid-id-token-scenario/should-return-bad-request-error/response-body.adoc[]
+
+==== 에러 필드
+include::{snippets}/account-controller/login-with-oauth/invalid-id-token-scenario/should-return-bad-request-error/response-fields.adoc[]
+
+=== 1.3 에러 – 존재하지 않는 사용자
+
+==== 요청
+include::{snippets}/account-controller/login-with-oauth/nonexistent-user-scenario/should-return-user-not-found-error/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/account-controller/login-with-oauth/nonexistent-user-scenario/should-return-user-not-found-error/request-body.adoc[]
+
+==== 응답
+include::{snippets}/account-controller/login-with-oauth/nonexistent-user-scenario/should-return-user-not-found-error/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/account-controller/login-with-oauth/nonexistent-user-scenario/should-return-user-not-found-error/response-body.adoc[]
+
+==== 에러 필드
+include::{snippets}/account-controller/login-with-oauth/nonexistent-user-scenario/should-return-user-not-found-error/response-fields.adoc[]
+
+== 2. OAuth 회원가입 (POST /api/v1/account/signup/oauth)
+
+=== 2.1 성공 – 유효한 요청으로 회원가입
+
+==== 요청
+include::{snippets}/account-controller/signup-with-oauth/valid-request-scenario/should-signup-with-o-auth/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/account-controller/signup-with-oauth/valid-request-scenario/should-signup-with-o-auth/request-body.adoc[]
+
+==== 응답
+include::{snippets}/account-controller/signup-with-oauth/valid-request-scenario/should-signup-with-o-auth/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/account-controller/signup-with-oauth/valid-request-scenario/should-signup-with-o-auth/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/account-controller/signup-with-oauth/valid-request-scenario/should-signup-with-o-auth/response-fields.adoc[]
+
+=== 2.2 에러 – 닉네임이 null인 경우
+
+==== 요청
+include::{snippets}/account-controller/signup-with-oauth/invalid-request-scenario/should-fail-when-nickname-is-null/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/account-controller/signup-with-oauth/invalid-request-scenario/should-fail-when-nickname-is-null/request-body.adoc[]
+
+==== 응답
+include::{snippets}/account-controller/signup-with-oauth/invalid-request-scenario/should-fail-when-nickname-is-null/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/account-controller/signup-with-oauth/invalid-request-scenario/should-fail-when-nickname-is-null/response-body.adoc[]
+
+==== 에러 필드
+include::{snippets}/account-controller/signup-with-oauth/invalid-request-scenario/should-fail-when-nickname-is-null/response-fields.adoc[]

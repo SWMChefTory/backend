@@ -21,12 +21,17 @@ import com.cheftory.api.account.dto.LoginRequest;
 import com.cheftory.api.account.dto.SignupRequest;
 import com.cheftory.api.account.model.LoginResult;
 import com.cheftory.api.account.model.UserInfo;
+import com.cheftory.api.account.user.exception.UserErrorCode;
+import com.cheftory.api.account.user.exception.UserException;
+import com.cheftory.api.exception.GlobalErrorCode;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.account.user.entity.Gender;
 import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +47,7 @@ public class AccountControllerTest extends RestDocsTest {
   private GlobalExceptionHandler globalExceptionHandler;
 
   private final UUID fixedUserId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-  private final LocalDate fixedDate = LocalDate.of(2000, 1, 1);
+  private final LocalDate validDateOfBirth = LocalDate.of(2000, 1, 1);
 
   @BeforeEach
   void setUp() {
@@ -55,7 +60,7 @@ public class AccountControllerTest extends RestDocsTest {
   }
 
   @Nested
-  @DisplayName("POST //api/v1/account/signin/oauth - OAUTH 로그인")
+  @DisplayName("POST //api/v1/account/login/oauth - OAUTH 로그인")
   class LoginWithOAuth {
 
     @Nested
@@ -64,21 +69,18 @@ public class AccountControllerTest extends RestDocsTest {
 
       private String validIdToken;
       private Provider provider;
-      private LoginResult loginResult;
 
       @BeforeEach
       void setUp() {
         validIdToken = "valid-id-token";
         provider = Provider.APPLE;
-        loginResult = new LoginResult(
+        LoginResult loginResult = new LoginResult(
             "access-token",
             "refresh-token",
             new UserInfo(
-                fixedUserId,
-                "email",
                 "nickname",
                 Gender.MALE,
-                fixedDate
+                validDateOfBirth
             )
         );
 
@@ -92,7 +94,7 @@ public class AccountControllerTest extends RestDocsTest {
             .contentType(ContentType.JSON)
             .body(new LoginRequest(validIdToken, provider))
             .when()
-            .post("/api/v1/account/signin/oauth")
+            .post("/api/v1/account/login/oauth")
             .then()
             .status(HttpStatus.OK)
             .apply(
@@ -107,8 +109,6 @@ public class AccountControllerTest extends RestDocsTest {
                     responseFields(
                         fieldWithPath("access_token").description("액세스 토큰"),
                         fieldWithPath("refresh_token").description("리프레시 토큰"),
-                        fieldWithPath("user_info.id").description("사용자 ID"),
-                        fieldWithPath("user_info.email").description("이메일"),
                         fieldWithPath("user_info.nickname").description("닉네임"),
                         fieldWithPath("user_info.gender").description("성별"),
                         fieldWithPath("user_info.date_of_birth").description("생년월일")
@@ -117,11 +117,9 @@ public class AccountControllerTest extends RestDocsTest {
             );
         response.body("access_token", equalTo("Bearer access-token"))
             .body("refresh_token", equalTo("Bearer refresh-token"))
-            .body("user_info.id", equalTo(fixedUserId.toString()))
-            .body("user_info.email", equalTo("email"))
             .body("user_info.nickname", equalTo("nickname"))
             .body("user_info.gender", equalTo(Gender.MALE.name()))
-            .body("user_info.date_of_birth", equalTo(fixedDate.toString()));
+            .body("user_info.date_of_birth", equalTo(validDateOfBirth.toString()));
 
         verify(accountService).loginWithOAuth(validIdToken, provider);
       }
@@ -151,7 +149,7 @@ public class AccountControllerTest extends RestDocsTest {
             .contentType(ContentType.JSON)
             .body(new LoginRequest(invalidIdToken, provider))
             .when()
-            .post("/api/v1/account/signin/oauth")
+            .post("/api/v1/account/login/oauth")
             .then()
             .status(HttpStatus.BAD_REQUEST)
             .apply(
@@ -163,6 +161,45 @@ public class AccountControllerTest extends RestDocsTest {
                 )
             );
         response.body("errorCode", equalTo(AuthErrorCode.INVALID_ID_TOKEN.getErrorCode()));
+      }
+    }
+
+    @Nested
+    @DisplayName("존재하지 않는 유저일 때")
+    class NonexistentUserScenario {
+
+      private String idToken;
+      private Provider provider;
+
+      @BeforeEach
+      void setUp() {
+        idToken = "valid-but-unregistered-id-token";
+        provider = Provider.GOOGLE;
+
+        doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
+            .when(accountService)
+            .loginWithOAuth(idToken, provider);
+      }
+
+      @Test
+      @DisplayName("실패 - USER_NOT_FOUND 예외를 던지고, AUTH_004 코드를 반환한다")
+      void shouldReturnUserNotFoundError() {
+        var response = given()
+            .contentType(ContentType.JSON)
+            .body(new LoginRequest(idToken, provider))
+            .when()
+            .post("/api/v1/account/login/oauth")
+            .then()
+            .status(HttpStatus.BAD_REQUEST)
+            .apply(
+                document(
+                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                    requestPreprocessor(),
+                    responsePreprocessor(),
+                    responseErrorFields(UserErrorCode.USER_NOT_FOUND)
+                )
+            );
+        response.body("errorCode", equalTo(UserErrorCode.USER_NOT_FOUND.getErrorCode()));
       }
     }
   }
@@ -179,7 +216,6 @@ public class AccountControllerTest extends RestDocsTest {
       private Provider provider;
       private String nickname;
       private Gender gender;
-      private LoginResult loginResult;
 
       @BeforeEach
       void setUp() {
@@ -188,26 +224,29 @@ public class AccountControllerTest extends RestDocsTest {
         nickname = "cheftory";
         gender = Gender.FEMALE;
 
-        loginResult = new LoginResult(
+        LoginResult loginResult = new LoginResult(
             "access-token",
             "refresh-token",
             new UserInfo(
-                fixedUserId,
-                "email@example.com",
                 nickname,
                 gender,
-                fixedDate
+                validDateOfBirth
             )
         );
 
         doReturn(loginResult).when(accountService)
-            .signupWithOAuth(validToken, provider, nickname, gender, fixedDate);
+            .signupWithOAuth(validToken, provider, nickname, gender, validDateOfBirth);
       }
 
       @Test
       @DisplayName("성공 - 액세스 토큰, 리프레시 토큰, 사용자 정보를 반환한다")
       void shouldSignupWithOAuth() {
-        var request = new SignupRequest(validToken, provider, nickname, gender, fixedDate);
+        Map<String, Object> request = new HashMap<>();
+        request.put("id_token", validToken);
+        request.put("provider", Provider.GOOGLE.name());
+        request.put("nickname", nickname);
+        request.put("gender", gender);
+        request.put("birth_of_date", validDateOfBirth.toString());
 
         var response = given()
             .contentType(ContentType.JSON)
@@ -230,8 +269,6 @@ public class AccountControllerTest extends RestDocsTest {
                 responseFields(
                     fieldWithPath("access_token").description("액세스 토큰"),
                     fieldWithPath("refresh_token").description("리프레시 토큰"),
-                    fieldWithPath("user_info.id").description("사용자 ID"),
-                    fieldWithPath("user_info.email").description("이메일"),
                     fieldWithPath("user_info.nickname").description("닉네임"),
                     fieldWithPath("user_info.gender").description("성별"),
                     fieldWithPath("user_info.date_of_birth").description("생년월일")
@@ -240,10 +277,39 @@ public class AccountControllerTest extends RestDocsTest {
 
         response.body("access_token", equalTo("Bearer access-token"))
             .body("refresh_token", equalTo("Bearer refresh-token"))
-            .body("user_info.email", equalTo("email@example.com"))
             .body("user_info.nickname", equalTo(nickname))
             .body("user_info.gender", equalTo(gender.name()))
-            .body("user_info.date_of_birth", equalTo(fixedDate.toString()));
+            .body("user_info.date_of_birth", equalTo(validDateOfBirth.toString()));
+      }
+    }
+
+    @Nested
+    @DisplayName("유효하지 않은 회원가입 요청이 주어졌을 때")
+    class InvalidRequestScenario {
+
+      @Test
+      @DisplayName("실패 - 닉네임이 null인 경우 BAD_REQUEST를 반환한다")
+      void shouldFailWhenNicknameIsNull() {
+        Map<String, Object> request = new HashMap<>();
+        request.put("id_token", "valid-id-token");
+        request.put("provider", Provider.GOOGLE.name());
+        request.put("nickname", null);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/api/v1/account/signup/oauth")
+            .then()
+            .status(HttpStatus.BAD_REQUEST)
+            .apply(
+                document(
+                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                    requestPreprocessor(),
+                    responsePreprocessor(),
+                    responseErrorFields(GlobalErrorCode.FIELD_REQUIRED)
+                )
+            );
       }
     }
   }
