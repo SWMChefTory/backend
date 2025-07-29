@@ -131,7 +131,8 @@ public class RecipeControllerTest extends RestDocsTest {
                     fieldWithPath("recent_recipes[].video_id").description("레시피 비디오 ID"),
                     fieldWithPath("recent_recipes[].recipe_title").description("레시피 비디오 제목"),
                     fieldWithPath("recent_recipes[].video_thumbnail_url").description(
-                        "레시피 비디오 썸네일 URL")
+                        "레시피 비디오 썸네일 URL"),
+                    fieldWithPath("recent_recipes[].video_seconds").description("레시피 비디오 재생 시간")
                 )
             ));
         verify(recipeService).findRecents(userId);
@@ -152,6 +153,8 @@ public class RecipeControllerTest extends RestDocsTest {
         assertThat(responseBody.getString("recent_recipes[0].viewed_at"))
             .isEqualTo("2024-01-15T10:30:00");
         assertThat(responseBody.getInt("recent_recipes[0].last_play_seconds"))
+            .isEqualTo(120);
+        assertThat(responseBody.getInt("recent_recipes[0].video_seconds"))
             .isEqualTo(120);
       }
     }

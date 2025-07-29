@@ -35,7 +35,10 @@ public record RecentRecipesResponse(
       URI thumbnailUrl,
 
       @JsonProperty("video_id")
-      String videoId
+      String videoId,
+
+      @JsonProperty("video_seconds")
+      Integer videoSeconds
   ) {
     public static RecentRecipeResponse from(RecentRecipeOverview info) {
       return new RecentRecipeResponse(
@@ -44,7 +47,8 @@ public record RecentRecipesResponse(
           info.getRecipeOverview().getId(),
           info.getRecipeOverview().getVideoInfo().getTitle(),
           info.getRecipeOverview().getVideoInfo().getThumbnailUrl(),
-          info.getRecipeOverview().getVideoInfo().getVideoId()
+          info.getRecipeOverview().getVideoInfo().getVideoId(),
+          info.getRecipeOverview().getVideoInfo().getVideoSeconds()
       );
     }
   }
