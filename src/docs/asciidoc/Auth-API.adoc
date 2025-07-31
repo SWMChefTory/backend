@@ -1,5 +1,5 @@
 [[AuthController-API]]
-= AuthController API
+= Auth API
 :toc:
 :sectnums:
 :toclevels: 2
@@ -26,27 +26,7 @@ include::{snippets}/auth-controller/extract-user-id/valid-token-scenario/should-
 ==== 응답 필드
 include::{snippets}/auth-controller/extract-user-id/valid-token-scenario/should-return-user-id/response-fields.adoc[]
 
-=== 1.2 에러 – 토큰이 비어 있음 (Empty Token)
-
-==== 요청
-include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/http-request.adoc[]
-
-==== 요청 헤더
-include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/request-headers.adoc[]
-
-==== 요청 본문
-include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/request-body.adoc[]
-
-==== 응답
-include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/http-response.adoc[]
-
-==== 응답 본문
-include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/response-body.adoc[]
-
-==== 에러 필드
-include::{snippets}/auth-controller/extract-user-id/empty-token-scenario/should-return-bad-request-error/response-fields.adoc[]
-
-=== 1.3 에러 – Authorization 헤더 누락 (Missing Header)
+=== 1.2 에러 – Authorization 헤더 누락 (Missing Header)
 
 ==== 요청
 include::{snippets}/auth-controller/extract-user-id/missing-header-scenario/should-return-bad-request-error/http-request.adoc[]
@@ -63,7 +43,7 @@ include::{snippets}/auth-controller/extract-user-id/missing-header-scenario/shou
 ==== 에러 필드
 include::{snippets}/auth-controller/extract-user-id/missing-header-scenario/should-return-bad-request-error/response-fields.adoc[]
 
-=== 1.4 에러 – 만료된 토큰 (Expired Token)
+=== 1.3 에러 – 만료된 토큰 (Expired Token)
 
 ==== 요청
 include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/should-return-bad-request-error/http-request.adoc[]
@@ -83,7 +63,7 @@ include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/shoul
 ==== 에러 필드
 include::{snippets}/auth-controller/extract-user-id/expired-token-scenario/should-return-bad-request-error/response-fields.adoc[]
 
-=== 1.5 에러 – 유효하지 않은 토큰 (Invalid Token)
+=== 1.4 에러 – 유효하지 않은 토큰 (Invalid Token)
 
 ==== 요청
 include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/should-return-bad-request-error/http-request.adoc[]
@@ -102,3 +82,25 @@ include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/shoul
 
 ==== 에러 필드
 include::{snippets}/auth-controller/extract-user-id/invalid-token-scenario/should-return-bad-request-error/response-fields.adoc[]
+
+== 2. 토큰 재발급 (POST /api/v1/auth/token/reissue)
+
+=== 2.1 성공 – 유효한 리프레시 토큰으로 재발급
+
+==== 요청
+include::{snippets}/auth-controller/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/auth-controller/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/request-body.adoc[]
+
+==== 요청 필드
+include::{snippets}/auth-controller/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/request-fields.adoc[]
+
+==== 응답
+include::{snippets}/auth-controller/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/auth-controller/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/auth-controller/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/response-fields.adoc[]
