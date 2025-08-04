@@ -2,6 +2,7 @@ package com.cheftory.api.account.auth.verifier;
 
 import com.cheftory.api.account.auth.verifier.exception.VerificationErrorCode;
 import com.cheftory.api.account.auth.verifier.exception.VerificationException;
+import com.cheftory.api.account.auth.verifier.property.AppleProperties;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
@@ -10,6 +11,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +20,15 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Slf4j
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class AppleTokenVerifier {
+
+  private final AppleProperties appleProperties;
 
   private static final String APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys";
   private static final String APPLE_ISSUER = "https://appleid.apple.com";
-  private static final String APPLE_CLIENT_ID = "com.anonymous.cheftory.service";
-
   private static final AtomicReference<JWKSet> cachedJwkSet = new AtomicReference<>();
   private static long lastFetchTimeMillis = 0;
   private static final long CACHE_DURATION_MS = 60 * 60 * 1000;
@@ -83,7 +86,7 @@ public class AppleTokenVerifier {
         throw new VerificationException(VerificationErrorCode.APPLE_INVALID_ISSUER);
       }
 
-      if (!claims.getAudience().contains(APPLE_CLIENT_ID)) {
+      if (!claims.getAudience().contains(appleProperties.getClientId())) {
         log.error("[AppleTokenVerifier] 잘못된 aud: {}", claims.getAudience());
         throw new VerificationException(VerificationErrorCode.APPLE_INVALID_AUDIENCE);
       }

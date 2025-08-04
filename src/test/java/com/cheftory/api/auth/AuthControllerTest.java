@@ -208,96 +208,96 @@ public class AuthControllerTest extends RestDocsTest {
         verify(authService).extractUserIdFromToken(expiredToken);
       }
     }
+  }
+
+  @Nested
+  @DisplayName("POST /api/v1/auth/token/reissue - 토큰 재발급")
+  class TokenReissueScenario {
 
     @Nested
-    @DisplayName("POST /api/v1/auth/token/reissue - 토큰 재발급")
-    class TokenReissueScenario {
+    @DisplayName("유효한 리프레시 토큰이 주어졌을 때")
+    class ValidRefreshToken {
 
-      @Nested
-      @DisplayName("유효한 리프레시 토큰이 주어졌을 때")
-      class ValidRefreshToken {
+      private String rawRefreshToken;
+      private String bearerToken;
+      private AuthTokens tokens;
 
-        private String rawRefreshToken;
-        private String bearerToken;
-        private AuthTokens tokens;
+      @BeforeEach
+      void setUp() {
+        rawRefreshToken = "valid-refresh-token";
+        bearerToken = BearerAuthorizationUtils.addPrefix(rawRefreshToken);
+        tokens = new AuthTokens("new-access-token", "new-refresh-token");
 
-        @BeforeEach
-        void setUp() {
-          rawRefreshToken = "valid-refresh-token";
-          bearerToken = BearerAuthorizationUtils.addPrefix(rawRefreshToken);
-          tokens = new AuthTokens("new-access-token", "new-refresh-token");
-
-          doReturn(tokens).when(authService).reissue(rawRefreshToken);
-        }
-
-        @Test
-        @DisplayName("성공 - 새로운 토큰을 반환한다")
-        void shouldReissueTokens() {
-          var request = new TokenReissueRequest(bearerToken);
-
-          given()
-              .contentType(ContentType.JSON)
-              .body(request)
-              .when()
-              .post("/api/v1/auth/token/reissue")
-              .then()
-              .statusCode(HttpStatus.OK.value())
-              .apply(
-                  document(
-                      getNestedClassPath(this.getClass()) + "/{method-name}",
-                      requestPreprocessor(),
-                      responsePreprocessor(),
-                      requestFields(
-                          fieldWithPath("refresh_token").description(
-                              "기존 리프레시 토큰 (Bearer prefix 포함)")
-                      ),
-                      responseFields(
-                          fieldWithPath("access_token").description("재발급된 액세스 토큰"),
-                          fieldWithPath("refresh_token").description("재발급된 리프레시 토큰")
-                      )
-                  )
-              )
-              .body("access_token", equalTo("Bearer " + tokens.accessToken()))
-              .body("refresh_token", equalTo("Bearer " + tokens.refreshToken()));
-        }
+        doReturn(tokens).when(authService).reissue(rawRefreshToken);
       }
 
-      @Nested
-      @DisplayName("유효하지 않은 리프레시 토큰이 주어졌을 때")
-      class InvalidRefreshToken {
+      @Test
+      @DisplayName("성공 - 새로운 토큰을 반환한다")
+      void shouldReissueTokens() {
+        var request = new TokenReissueRequest(bearerToken);
 
-        private String rawRefreshToken;
-        private String bearerToken;
-
-        @BeforeEach
-        void setUp() {
-          rawRefreshToken = "invalid-refresh-token";
-          bearerToken = "Bearer " + rawRefreshToken;
-
-          doThrow(new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN))
-              .when(authService)
-              .reissue(rawRefreshToken);
-        }
-
-        @Test
-        @DisplayName("실패 - INVALID_REFRESH_TOKEN 예외를 던지고 AUTH_007 코드 반환")
-        void shouldReturnErrorForInvalidToken() {
-          var request = new TokenReissueRequest(bearerToken);
-
-          given()
-              .contentType(ContentType.JSON)
-              .body(request)
-              .when()
-              .post("/api/v1/auth/token/reissue")
-              .then()
-              .statusCode(HttpStatus.BAD_REQUEST.value())
-              .body("errorCode", equalTo(AuthErrorCode.INVALID_REFRESH_TOKEN.getErrorCode()));
-        }
+        given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/api/v1/auth/token/reissue")
+            .then()
+            .statusCode(HttpStatus.OK.value())
+            .apply(
+                document(
+                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                    requestPreprocessor(),
+                    responsePreprocessor(),
+                    requestFields(
+                        fieldWithPath("refresh_token").description(
+                            "기존 리프레시 토큰 (Bearer prefix 포함)")
+                    ),
+                    responseFields(
+                        fieldWithPath("access_token").description("재발급된 액세스 토큰"),
+                        fieldWithPath("refresh_token").description("재발급된 리프레시 토큰")
+                    )
+                )
+            )
+            .body("access_token", equalTo("Bearer " + tokens.accessToken()))
+            .body("refresh_token", equalTo("Bearer " + tokens.refreshToken()));
       }
     }
 
-    private UUID generateUserId() {
-      return UUID.randomUUID();
+    @Nested
+    @DisplayName("유효하지 않은 리프레시 토큰이 주어졌을 때")
+    class InvalidRefreshToken {
+
+      private String rawRefreshToken;
+      private String bearerToken;
+
+      @BeforeEach
+      void setUp() {
+        rawRefreshToken = "invalid-refresh-token";
+        bearerToken = "Bearer " + rawRefreshToken;
+
+        doThrow(new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN))
+            .when(authService)
+            .reissue(rawRefreshToken);
+      }
+
+      @Test
+      @DisplayName("실패 - INVALID_REFRESH_TOKEN 예외를 던지고 AUTH_007 코드 반환")
+      void shouldReturnErrorForInvalidToken() {
+        var request = new TokenReissueRequest(bearerToken);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(request)
+            .when()
+            .post("/api/v1/auth/token/reissue")
+            .then()
+            .statusCode(HttpStatus.BAD_REQUEST.value())
+            .body("errorCode", equalTo(AuthErrorCode.INVALID_REFRESH_TOKEN.getErrorCode()));
+      }
     }
+  }
+
+  private UUID generateUserId() {
+    return UUID.randomUUID();
   }
 }

@@ -40,8 +40,6 @@ public class AccountService {
         authTokens.accessToken(),
         authTokens.refreshToken(),
         UserInfo.from(
-            id,
-            email,
             nickname,
             gender,
             dateOfBirth
@@ -67,8 +65,6 @@ public class AccountService {
         authTokens.accessToken(),
         authTokens.refreshToken(),
         UserInfo.from(
-            id,
-            email,
             nickname,
             gender,
             dateOfBirth

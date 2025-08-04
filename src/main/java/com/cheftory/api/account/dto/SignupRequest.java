@@ -11,7 +11,7 @@ public record SignupRequest(
     @JsonProperty("provider") @NotNull Provider provider,
     @JsonProperty("nickname") @NotNull String nickname,
     @JsonProperty("gender") @NotNull Gender gender,
-    @JsonProperty("birth_of_date") @NotNull LocalDate birthOfDate
+    @JsonProperty("date_of_birth") @NotNull LocalDate dateOfBirth
 ) {
 
 }

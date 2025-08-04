@@ -54,7 +54,7 @@ API 문서에서 공통으로 사용되는 내용을 정의합니다.
 * 형식: `Bearer {token}`
 * 인증이 필요한 API 호출 시 반드시 포함
 
-
+include::Account-API.adoc[]
+include::Auth-API.adoc[]
 include::VoiceCommand-API.adoc[]
 include::Recipe-API.adoc[]
-include::AuthController-API.adoc[]

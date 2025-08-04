@@ -16,7 +16,7 @@ public class AccountController {
 
   private final AccountService accountService;
 
-  @PostMapping("/signin/oauth")
+  @PostMapping("/login/oauth")
   public LoginResponse loginWithOAuth(@RequestBody LoginRequest request) {
     LoginResult result = accountService.loginWithOAuth(request.idToken(), request.provider());
     return LoginResponse.from(result);
@@ -29,7 +29,7 @@ public class AccountController {
         request.provider(),
         request.nickname(),
         request.gender(),
-        request.birthOfDate()
+        request.dateOfBirth()
     );
     return LoginResponse.from(result);
   }
