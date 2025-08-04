@@ -1,4 +1,4 @@
-name: testCoverage.yml
+name: coverage.yml
 
 on:
   push:
@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v3
+      # Java 21 세팅
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Cache Gradle packages
