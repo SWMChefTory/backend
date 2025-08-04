@@ -3,7 +3,8 @@ package com.cheftory.api.recipe.viewstatus.exception;
 import com.cheftory.api.exception.ErrorMessage;
 
 public enum ViewStatusErrorCode implements ErrorMessage {
-  VIEW_STATUS_NOT_FOUND("VIEW_STATUS_001","유저 레시피가 존재하지 않습니다.");
+  VIEW_STATUS_NOT_FOUND("VIEW_STATUS_001","유저 레시피가 존재하지 않습니다."),
+  VIEW_STATUS_ALREADY_EXISTS("VIEW_STATUS_002", "이미 존재하는 유저 레시피입니다.");
   private final String errorCode;
   private final String message;
 

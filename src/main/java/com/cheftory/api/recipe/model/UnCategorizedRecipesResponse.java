@@ -1,24 +1,23 @@
 package com.cheftory.api.recipe.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record RecentRecipesResponse(
-    @JsonProperty("recent_recipes")
-    List<RecentRecipeResponse> recentRecipes
+public record UnCategorizedRecipesResponse(
+    @JsonProperty("categorized_recipes")
+    List<UnCategorizedRecipeResponse> categorizedRecipes
 ) {
-  public static RecentRecipesResponse from(List<RecipeHistoryOverview> recentRecipes) {
-    List<RecentRecipeResponse> responses = recentRecipes.stream()
-        .map(RecentRecipeResponse::from)
+  public static UnCategorizedRecipesResponse from(List<RecipeHistoryOverview> categorizedRecipes) {
+    List<UnCategorizedRecipeResponse> responses = categorizedRecipes.stream()
+        .map(UnCategorizedRecipeResponse::from)
         .toList();
-    return new RecentRecipesResponse(responses);
+    return new UnCategorizedRecipesResponse(responses);
   }
 
-  public record RecentRecipeResponse(
+  public record UnCategorizedRecipeResponse(
       @JsonProperty("viewed_at")
       LocalDateTime viewedAt,
 
@@ -39,9 +38,9 @@ public record RecentRecipesResponse(
 
       @JsonProperty("video_seconds")
       Integer videoSeconds
-  ) {
-    public static RecentRecipeResponse from(RecipeHistoryOverview info) {
-      return new RecentRecipeResponse(
+  ){
+    public static UnCategorizedRecipeResponse from(RecipeHistoryOverview info) {
+      return new UnCategorizedRecipeResponse(
           info.getRecipeViewStatusInfo().getViewedAt(),
           info.getRecipeViewStatusInfo().getLastPlaySeconds(),
           info.getRecipeOverview().getId(),

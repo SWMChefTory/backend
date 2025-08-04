@@ -1,0 +1,57 @@
+package com.cheftory.api.recipe.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+public record CategorizedRecipesResponse(
+    @JsonProperty("categorized_recipes")
+    List<CategorizedRecipeResponse> categorizedRecipes
+) {
+    public static CategorizedRecipesResponse from(List<RecipeHistoryOverview> categorizedRecipes) {
+        List<CategorizedRecipeResponse> responses = categorizedRecipes.stream()
+            .map(CategorizedRecipeResponse::from)
+            .toList();
+        return new CategorizedRecipesResponse(responses);
+    }
+
+    public record CategorizedRecipeResponse(
+        @JsonProperty("viewed_at")
+        LocalDateTime viewedAt,
+
+        @JsonProperty("last_play_seconds")
+        Integer lastPlaySeconds,
+
+        @JsonProperty("recipe_id")
+        UUID recipeId,
+
+        @JsonProperty("recipe_title")
+        String recipeTitle,
+
+        @JsonProperty("video_thumbnail_url")
+        URI thumbnailUrl,
+
+        @JsonProperty("video_id")
+        String videoId,
+
+        @JsonProperty("video_seconds")
+        Integer videoSeconds,
+        @JsonProperty("category_id")
+        UUID categoryId
+    ){
+        public static CategorizedRecipeResponse from(RecipeHistoryOverview info) {
+            return new CategorizedRecipeResponse(
+                info.getRecipeViewStatusInfo().getViewedAt(),
+                info.getRecipeViewStatusInfo().getLastPlaySeconds(),
+                info.getRecipeOverview().getId(),
+                info.getRecipeOverview().getVideoInfo().getTitle(),
+                info.getRecipeOverview().getVideoInfo().getThumbnailUrl(),
+                info.getRecipeOverview().getVideoInfo().getVideoId(),
+                info.getRecipeOverview().getVideoInfo().getVideoSeconds(),
+                info.getRecipeViewStatusInfo().getCategoryId()
+            );
+        }
+    }
+}

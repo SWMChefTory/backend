@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.model;
 
+import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,16 +10,16 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class RecentRecipeOverview {
+public class RecipeHistoryOverview {
   private RecipeOverview recipeOverview;
   private RecipeViewStatusInfo recipeViewStatusInfo;
 
-  public static RecentRecipeOverview of(
-      RecipeOverview recipeOverview,
+  public static RecipeHistoryOverview of(
+      Recipe recipe,
       RecipeViewStatus recipeViewStatus
   ) {
-    return RecentRecipeOverview.builder()
-        .recipeOverview(recipeOverview)
+    return RecipeHistoryOverview.builder()
+        .recipeOverview(RecipeOverview.from(recipe))
         .recipeViewStatusInfo(RecipeViewStatusInfo.of(recipeViewStatus))
         .build();
   }

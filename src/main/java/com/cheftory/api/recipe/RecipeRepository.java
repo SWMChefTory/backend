@@ -28,9 +28,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     @Query("update Recipe r set r.count = r.count + 1 where r.id = :id")
     void increaseCount(UUID id);
 
-
-    @Query("select r from Recipe r where r.id in :recipeIds")
-    List<Recipe> findRecipesById(List<UUID> recipeIds);
+    List<Recipe> findRecipesByIdInAndStatus(List<UUID> recipeIds, RecipeStatus status);
 
     List<Recipe> findByStatus(RecipeStatus status, Sort sort);
 

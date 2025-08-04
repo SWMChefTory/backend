@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
+import jakarta.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -19,6 +20,8 @@ public class RecipeViewStatusInfo {
   private LocalDateTime createdAt;
   private UUID recipeId;
   private UUID userId;
+  @Nullable
+  private UUID categoryId;
 
   public static RecipeViewStatusInfo of(
       RecipeViewStatus recipeViewStatus
@@ -30,6 +33,7 @@ public class RecipeViewStatusInfo {
         .createdAt(recipeViewStatus.getCreatedAt())
         .recipeId(recipeViewStatus.getRecipeId())
         .userId(recipeViewStatus.getUserId())
+        .categoryId(recipeViewStatus.getRecipeCategoryId())
         .build();
   }
 }

@@ -29,8 +29,10 @@ public class RecipeViewStatus {
   private UUID userId;
   @Column(nullable = false)
   private UUID recipeId;
+  @Column(nullable = true)
+  private UUID recipeCategoryId;
 
-  public static RecipeViewStatus of(Clock clock, UUID userId, UUID recipeId) {
+  public static RecipeViewStatus create(Clock clock, UUID userId, UUID recipeId) {
     return RecipeViewStatus.builder()
         .id(UUID.randomUUID())
         .lastPlaySeconds(0)
@@ -39,6 +41,14 @@ public class RecipeViewStatus {
         .userId(userId)
         .recipeId(recipeId)
         .build();
+  }
+
+  public void updateRecipeCategoryId(UUID recipeCategoryId) {
+    this.recipeCategoryId = recipeCategoryId;
+  }
+
+  public void emptyRecipeCategoryId() {
+    this.recipeCategoryId = null;
   }
 
   public void updateViewedAt(Clock clock) {
