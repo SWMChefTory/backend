@@ -1,8 +1,8 @@
-package com.cheftory.api.recipe.watched.category;
+package com.cheftory.api.recipe.category;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.watched.category.exception.RecipeCategoryErrorCode;
-import com.cheftory.api.recipe.watched.category.exception.RecipeCategoryException;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryErrorCode;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -82,7 +82,6 @@ public class RestDocsUtils {
         while (clazz != null) {
             if (!path.isEmpty()) path.insert(0, "/");
             String className = clazz.getSimpleName()
-                .replace("Test", "")
                 .replaceAll("([a-z])([A-Z])", "$1-$2")
                 .toLowerCase();
             path.insert(0, className);

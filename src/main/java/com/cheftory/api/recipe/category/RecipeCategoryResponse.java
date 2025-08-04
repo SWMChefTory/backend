@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.watched.category;
+package com.cheftory.api.recipe.category;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;

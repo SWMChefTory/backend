@@ -1,11 +1,8 @@
-package com.cheftory.api.recipe.watched.category;
+package com.cheftory.api.recipe.category;
 
-import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
-import com.cheftory.api.recipe.watched.category.RecipeCategoryRequest.Delete;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,11 +19,5 @@ public class RecipeCategoryController {
       UUID userId) {
     UUID recipeCategoryId = recipeCategoryService.create(request.name(), userId);
     return RecipeCategoryResponse.Create.from(recipeCategoryId);
-  }
-
-  @DeleteMapping
-  public SuccessOnlyResponse deleteCategory(@RequestBody Delete request) {
-    recipeCategoryService.delete(request.recipeCategoryId());
-    return  SuccessOnlyResponse.create();
   }
 }

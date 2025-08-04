@@ -5,6 +5,7 @@ import com.cheftory.api.recipe.entity.VideoInfo;
 import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
+import jakarta.annotation.Nullable;
 import lombok.*;
 
 import java.util.List;
@@ -15,25 +16,25 @@ import java.util.List;
 public class FullRecipeInfo {
     private RecipeStatus recipeStatus;
     private VideoInfo videoInfo;
-    private IngredientsInfo ingredientsInfo;
+    @Nullable private IngredientsInfo ingredientsInfo;
     private List<RecipeStepInfo> recipeStepInfos;
     private RecipeViewStatusInfo recipeViewStatusInfo;
 
     public static FullRecipeInfo of(
-            RecipeStatus recipeStatus
-            , VideoInfo videoInfo
-            , RecipeIngredients ingredients
-            , List<RecipeStep> recipeStepInfos
-            , RecipeViewStatus recipeViewStatus
+        RecipeStatus recipeStatus,
+        VideoInfo videoInfo,
+        @Nullable RecipeIngredients ingredients,
+        List<RecipeStep> recipeSteps,
+        RecipeViewStatus recipeViewStatus
     ) {
         return FullRecipeInfo.builder()
-                .recipeStatus(recipeStatus)
-                .videoInfo(videoInfo)
-                .ingredientsInfo(IngredientsInfo.from(ingredients))
-                .recipeStepInfos(recipeStepInfos.stream()
-                        .map(RecipeStepInfo::from)
-                        .toList())
-                .recipeViewStatusInfo(RecipeViewStatusInfo.of(recipeViewStatus))
-                .build();
+            .recipeStatus(recipeStatus)
+            .videoInfo(videoInfo)
+            .ingredientsInfo(ingredients != null ? IngredientsInfo.from(ingredients) : null)
+            .recipeStepInfos(recipeSteps.stream()
+                .map(RecipeStepInfo::from)
+                .toList())
+            .recipeViewStatusInfo(RecipeViewStatusInfo.of(recipeViewStatus))
+            .build();
     }
 }

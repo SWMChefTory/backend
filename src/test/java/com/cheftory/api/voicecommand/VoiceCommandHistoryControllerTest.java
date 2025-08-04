@@ -6,6 +6,7 @@ import com.cheftory.api.account.user.exception.UserErrorCode;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -54,92 +55,92 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("Given - 유효한 음성 명령 요청이 주어졌을 때")
-    class GivenValidVoiceCommandRequest {
-
-        private String testBaseIntent;
-        private String testIntent;
-        private UUID userId;
-        private String testSttModel;
-        private String testIntentModel;
-        private Map<String, Object> request;
-
-        @BeforeEach
-        void setUp() {
-            testBaseIntent = "testBaseIntent";
-            testIntent = "testIntent";
-            userId = generateUserId();
-            testSttModel = "VITO";
-            testIntentModel = "gpt-4";
-
-            request = Map.of(
-                "transcribe", testBaseIntent,
-                "intent", testIntent,
-                "user_id", userId.toString(),
-                "stt_model", testSttModel,
-                "intent_model", testIntentModel
-            );
-        }
+    @DisplayName("음성 명령 기록 생성")
+    class CreateVoiceCommandHistory {
 
         @Nested
-        @DisplayName("When - 음성 명령을 생성할 때")
-        class WhenCreatingVoiceCommand {
+        @DisplayName("Given - 유효한 음성 명령 요청이 주어졌을 때")
+        class GivenValidVoiceCommandRequest {
+
+            private String testBaseIntent;
+            private String testIntent;
+            private UUID userId;
+            private String testSttModel;
+            private String testIntentModel;
+            private Map<String, Object> request;
 
             @BeforeEach
             void setUp() {
-                when(userService.exists(userId)).thenReturn(true);
-                doNothing()
-                    .when(voiceCommandHistoryservice)
-                    .create(testBaseIntent, testIntent, userId, testSttModel, testIntentModel);
+                testBaseIntent = "testBaseIntent";
+                testIntent = "testIntent";
+                userId = generateUserId();
+                testSttModel = "VITO";
+                testIntentModel = "gpt-4";
+
+                request = Map.of(
+                    "transcribe", testBaseIntent,
+                    "intent", testIntent,
+                    "user_id", userId.toString(),
+                    "stt_model", testSttModel,
+                    "intent_model", testIntentModel
+                );
             }
 
-            @Test
-            @DisplayName("Then - 음성 명령 기록을 성공적으로 생성한다")
-            public void thenShouldCreateVoiceCommandHistory() {
-                var response = given()
-                    .contentType(ContentType.JSON)
-                    .body(request)
-                    .post("/papi/v1/voice-command")
-                    .then()
-                    .status(HttpStatus.OK)
-                    .apply(
-                        document(
-                            getNestedClassPath(this.getClass())+"/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            requestFields(
-                                fieldWithPath("transcribe").description("기본 의도"),
-                                fieldWithPath("intent").description("의도"),
-                                fieldWithPath("user_id").description("유저 ID"),
-                                enumFields(
-                                    "stt_model",
-                                    "음성 인식에 사용되는 모델. 사용 가능한 값: ",
-                                    STTModel.class
-                                ),
-                                enumFields(
-                                    "intent_model",
-                                    "의도 분류에 사용되는 모델. 사용 가능한 값: ",
-                                    IntentModel.class
-                                )
-                            ),
-                            responseSuccessFields()
-                        )
-                    );
+            @Nested
+            @DisplayName("When - 음성 명령을 생성할 때")
+            class WhenCreatingVoiceCommand {
 
-                assertSuccessResponse(response);
-                verify(voiceCommandHistoryservice).create(testBaseIntent, testIntent, userId, testSttModel, testIntentModel);
-                verify(userService).exists(userId);
+                @BeforeEach
+                void setUp() {
+                    doReturn(true).when(userService).exists(any(UUID.class));
+                    doNothing()
+                        .when(voiceCommandHistoryservice)
+                        .create(anyString(), anyString(), any(UUID.class), anyString(), anyString());
+                }
+
+                @Test
+                @DisplayName("Then - 음성 명령 기록을 성공적으로 생성한다")
+                public void thenShouldCreateVoiceCommandHistory() {
+                    var response = given()
+                        .contentType(ContentType.JSON)
+                        .body(request)
+                        .post("/papi/v1/voice-command")
+                        .then()
+                        .status(HttpStatus.OK)
+                        .apply(
+                            document(
+                                getNestedClassPath(this.getClass())+"/{method-name}",
+                                requestPreprocessor(),
+                                responsePreprocessor(),
+                                requestFields(
+                                    fieldWithPath("transcribe").description("기본 의도"),
+                                    fieldWithPath("intent").description("의도"),
+                                    fieldWithPath("user_id").description("유저 ID"),
+                                    enumFields(
+                                        "stt_model",
+                                        "음성 인식에 사용되는 모델. 사용 가능한 값: ",
+                                        STTModel.class
+                                    ),
+                                    enumFields(
+                                        "intent_model",
+                                        "의도 분류에 사용되는 모델. 사용 가능한 값: ",
+                                        IntentModel.class
+                                    )
+                                ),
+                                responseSuccessFields()
+                            )
+                        );
+
+                    assertSuccessResponse(response);
+                    verify(voiceCommandHistoryservice).create(testBaseIntent, testIntent, userId, testSttModel, testIntentModel);
+                    verify(userService).exists(userId);
+                }
             }
         }
-    }
-
-    @Nested
-    @DisplayName("Given - 잘못된 요청이 주어졌을 때")
-    class GivenInvalidRequest {
 
         @Nested
-        @DisplayName("When - 존재하지 않는 유저 ID로 요청할 때")
-        class WhenRequestWithNonExistentExtractUserIdResponse {
+        @DisplayName("Given - 존재하지 않는 사용자 ID가 주어졌을 때")
+        class GivenNonExistentUserId {
 
             private String testBaseIntent;
             private String testIntent;
@@ -167,31 +168,36 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 doReturn(false).when(userService).exists(userId);
             }
 
-            @Test
-            @DisplayName("Then - Bad Request를 반환한다")
-            public void thenShouldReturnBadRequest() {
-                var response = given()
-                    .contentType(ContentType.JSON)
-                    .body(request)
-                    .post("/papi/v1/voice-command")
-                    .then()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .apply(
-                        document(
-                            getNestedClassPath(this.getClass())+"/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            responseErrorFields(UserErrorCode.USER_NOT_FOUND)
-                        )
-                    );
+            @Nested
+            @DisplayName("When - 음성 명령을 생성할 때")
+            class WhenCreatingVoiceCommand {
 
-                assertErrorResponse(response, UserErrorCode.USER_NOT_FOUND);
+                @Test
+                @DisplayName("Then - Bad Request를 반환한다")
+                public void thenShouldReturnBadRequest() {
+                    var response = given()
+                        .contentType(ContentType.JSON)
+                        .body(request)
+                        .post("/papi/v1/voice-command")
+                        .then()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .apply(
+                            document(
+                                getNestedClassPath(this.getClass())+"/{method-name}",
+                                requestPreprocessor(),
+                                responsePreprocessor(),
+                                responseErrorFields(UserErrorCode.USER_NOT_FOUND)
+                            )
+                        );
+
+                    assertErrorResponse(response, UserErrorCode.USER_NOT_FOUND);
+                }
             }
         }
 
         @Nested
-        @DisplayName("When - 필수 필드가 누락된 요청을 할 때")
-        class WhenRequestWithMissingRequiredFields {
+        @DisplayName("Given - 필수 필드가 누락된 요청이 주어졌을 때")
+        class GivenMissingRequiredFields {
 
             private Map<String, Object> request;
 
@@ -203,29 +209,34 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 );
             }
 
-            @Test
-            @DisplayName("Then - Bad Request를 반환한다")
-            public void thenShouldReturnBadRequest() {
-                given()
-                    .contentType(ContentType.JSON)
-                    .body(request)
-                    .post("/papi/v1/voice-command")
-                    .then()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .apply(
-                        document(
-                            getNestedClassPath(this.getClass())+"/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            responseErrorFields(GlobalErrorCode.FIELD_REQUIRED)
-                        )
-                    );
+            @Nested
+            @DisplayName("When - 음성 명령을 생성할 때")
+            class WhenCreatingVoiceCommand {
+
+                @Test
+                @DisplayName("Then - Bad Request를 반환한다")
+                public void thenShouldReturnBadRequest() {
+                    given()
+                        .contentType(ContentType.JSON)
+                        .body(request)
+                        .post("/papi/v1/voice-command")
+                        .then()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .apply(
+                            document(
+                                getNestedClassPath(this.getClass())+"/{method-name}",
+                                requestPreprocessor(),
+                                responsePreprocessor(),
+                                responseErrorFields(GlobalErrorCode.FIELD_REQUIRED)
+                            )
+                        );
+                }
             }
         }
 
         @Nested
-        @DisplayName("When - 지원하지 않는 STT 모델로 요청할 때")
-        class WhenRequestWithUnsupportedSttModel {
+        @DisplayName("Given - 지원하지 않는 STT 모델이 주어졌을 때")
+        class GivenUnsupportedSttModel {
 
             private String testBaseIntent;
             private String testIntent;
@@ -250,37 +261,45 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                     "intent_model", testIntentModel
                 );
 
-                when(userService.exists(userId)).thenReturn(true);
+                doReturn(true).when(userService).exists(any(UUID.class));
                 doThrow(new VoiceCommandHistoryException(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL))
                     .when(voiceCommandHistoryservice)
                     .create(anyString(), anyString(), any(UUID.class), anyString(), anyString());
             }
 
-            @Test
-            @DisplayName("Then - Bad Request를 반환한다")
-            public void thenShouldReturnBadRequest() {
-                var response = given()
-                    .contentType(ContentType.JSON)
-                    .body(request)
-                    .post("/papi/v1/voice-command")
-                    .then()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .apply(
-                        document(
-                            getNestedClassPath(this.getClass())+"/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            responseErrorFields(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL)
-                        )
-                    );
+            @Nested
+            @DisplayName("When - 음성 명령을 생성할 때")
+            class WhenCreatingVoiceCommand {
 
-                assertErrorResponse(response, VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL);
+                @Test
+                @DisplayName("Then - Bad Request를 반환한다")
+                public void thenShouldReturnBadRequest() {
+                    var response = given()
+                        .contentType(ContentType.JSON)
+                        .body(request)
+                        .post("/papi/v1/voice-command")
+                        .then()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .apply(
+                            document(
+                                getNestedClassPath(this.getClass())+"/{method-name}",
+                                requestPreprocessor(),
+                                responsePreprocessor(),
+                                responseErrorFields(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL)
+                            )
+                        );
+
+                    assertErrorResponse(response, VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL);
+                    verify(userService).exists(userId);
+                    verify(voiceCommandHistoryservice)
+                        .create(testBaseIntent, testIntent, userId, invalidSttModel, testIntentModel);
+                }
             }
         }
 
         @Nested
-        @DisplayName("When - 지원하지 않는 Intent 모델로 요청할 때")
-        class WhenRequestWithUnsupportedIntentModel {
+        @DisplayName("Given - 지원하지 않는 Intent 모델이 주어졌을 때")
+        class GivenUnsupportedIntentModel {
 
             private String testBaseIntent;
             private String testIntent;
@@ -305,31 +324,39 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                     "intent_model", invalidIntentModel
                 );
 
-                when(userService.exists(userId)).thenReturn(true);
+                doReturn(true).when(userService).exists(any(UUID.class));
                 doThrow(new VoiceCommandHistoryException(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL))
                     .when(voiceCommandHistoryservice)
                     .create(anyString(), anyString(), any(UUID.class), anyString(), anyString());
             }
 
-            @Test
-            @DisplayName("Then - Bad Request를 반환한다")
-            public void thenShouldReturnBadRequest() {
-                var response = given()
-                    .contentType(ContentType.JSON)
-                    .body(request)
-                    .post("/papi/v1/voice-command")
-                    .then()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .apply(
-                        document(
-                            getNestedClassPath(this.getClass())+"/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            responseErrorFields(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL)
-                        )
-                    );
+            @Nested
+            @DisplayName("When - 음성 명령을 생성할 때")
+            class WhenCreatingVoiceCommand {
 
-                assertErrorResponse(response, VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL);
+                @Test
+                @DisplayName("Then - Bad Request를 반환한다")
+                public void thenShouldReturnBadRequest() {
+                    var response = given()
+                        .contentType(ContentType.JSON)
+                        .body(request)
+                        .post("/papi/v1/voice-command")
+                        .then()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .apply(
+                            document(
+                                getNestedClassPath(this.getClass())+"/{method-name}",
+                                requestPreprocessor(),
+                                responsePreprocessor(),
+                                responseErrorFields(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL)
+                            )
+                        );
+
+                    assertErrorResponse(response, VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL);
+                    verify(userService).exists(userId);
+                    verify(voiceCommandHistoryservice)
+                        .create(testBaseIntent, testIntent, userId, testSttModel, invalidIntentModel);
+                }
             }
         }
     }

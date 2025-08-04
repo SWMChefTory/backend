@@ -1,8 +1,8 @@
-package com.cheftory.api.recipe.watched.category;
+package com.cheftory.api.recipe.category;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.watched.category.exception.RecipeCategoryErrorCode;
-import com.cheftory.api.recipe.watched.category.exception.RecipeCategoryException;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryErrorCode;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
@@ -28,11 +28,11 @@ public class RecipeCategoryService {
     recipeCategory.delete();
   }
 
-  public List<RecipeCategory> finds(List<UUID> recipeCategoryIds) {
-    return recipeCategoryRepository.findAllByIdInAndStatus(recipeCategoryIds, RecipeCategoryStatus.ACTIVE);
-  }
-
   public List<RecipeCategory> findUsers(UUID userId) {
     return recipeCategoryRepository.findAllByUserIdAndStatus(userId, RecipeCategoryStatus.ACTIVE);
+  }
+
+  public boolean exists(UUID recipeCategoryId) {
+    return recipeCategoryRepository.existsById(recipeCategoryId);
   }
 }

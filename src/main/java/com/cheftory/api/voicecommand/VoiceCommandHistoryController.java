@@ -20,11 +20,11 @@ public class VoiceCommandHistoryController {
     private final VoiceCommandHistoryService voiceCommandHistoryService;
 
     @PostMapping("")
-    public ResponseEntity<SuccessOnlyResponse> createVoiceCommandHistory(
+    public SuccessOnlyResponse createVoiceCommandHistory(
             @Valid @RequestBody VoiceCommandHistoryCreateRequest request
     ){
         voiceCommandHistoryService.create(request.transcribe(),  request.result(),
                                    request.userId(), request.sttModel(), request.intentModel());
-        return ResponseEntity.ok(new SuccessOnlyResponse());
+        return SuccessOnlyResponse.create();
     }
 }

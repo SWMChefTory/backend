@@ -1,4 +1,4 @@
-package com.cheftory.api.account.user.validator;
+package com.cheftory.api.recipe.category.validator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -10,11 +10,11 @@ import java.lang.annotation.Target;
 
 
 @Documented
-@Constraint(validatedBy = UserIdValidator.class)
+@Constraint(validatedBy = RecipeCategoryIdValidator.class)
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ExistsUserId {
-  String message() default "존재하지 않는 유저 ID입니다.";
+public @interface ExistsRecipeCategoryId {
+  String message() default "존재하지 않는 레시피 카테고리 ID입니다.";
   Class<?>[] groups() default {};
   Class<? extends Payload>[] payload() default {};
 }

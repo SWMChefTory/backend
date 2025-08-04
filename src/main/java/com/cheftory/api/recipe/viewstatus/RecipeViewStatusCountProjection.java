@@ -1,4 +1,8 @@
 package com.cheftory.api.recipe.viewstatus;
 
-public class RecipeViewStatusCountProjection {
+import java.util.UUID;
+
+public interface RecipeViewStatusCountProjection {
+  UUID getCategoryId();
+  Long getCount();
 }

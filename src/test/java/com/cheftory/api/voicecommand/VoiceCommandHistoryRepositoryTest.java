@@ -17,73 +17,131 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
   private VoiceCommandHistoryRepository repository;
 
   @Nested
-  @DisplayName("Given - 유효한 음성명령이 주어졌을 때")
-  class GivenValidVoiceCommandHistory {
-
-    private UUID userId;
-    private String baseIntent;
-    private String intent;
-    private String sttModel;
-    private String intentModel;
-    private VoiceCommandHistory voiceCommandHistory;
-
-    @BeforeEach
-    void setUp() {
-      userId = UUID.randomUUID();
-      baseIntent = "testBaseIntent";
-      intent = "testIntent";
-      sttModel = "VITO";
-      intentModel = "GPT4.1";
-      voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId);
-    }
+  @DisplayName("음성 명령 기록 저장")
+  class SaveVoiceCommandHistory {
 
     @Nested
-    @DisplayName("When - 음성명령을 저장할 때")
-    class WhenSaving {
+    @DisplayName("Given - 유효한 음성 명령이 주어졌을 때")
+    class GivenValidVoiceCommandHistory {
 
+      private UUID userId;
+      private String baseIntent;
+      private String intent;
+      private String sttModel;
+      private String intentModel;
+      private VoiceCommandHistory voiceCommandHistory;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        baseIntent = "testBaseIntent";
+        intent = "testIntent";
+        sttModel = "VITO";
+        intentModel = "GPT4.1";
+        voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId);
+      }
+
+      @Nested
+      @DisplayName("When - 음성 명령을 저장한다면")
+      class WhenSavingVoiceCommand {
+
+        private VoiceCommandHistory savedVoiceCommandHistory;
+
+        @BeforeEach
+        void beforeEach() {
+          savedVoiceCommandHistory = repository.save(voiceCommandHistory);
+        }
+
+        @Test
+        @DisplayName("Then - 생성된 ID와 함께 저장되어야 한다")
+        public void thenShouldPersistWithGeneratedId() {
+          assertThat(savedVoiceCommandHistory.getId()).isNotNull();
+          assertThat(savedVoiceCommandHistory.getId()).isEqualTo(voiceCommandHistory.getId());
+        }
+
+        @Test
+        @DisplayName("Then - 모든 필드가 보존되어야 한다")
+        public void thenAllFieldsShouldBePreserved() {
+          VoiceCommandHistory found = repository.findById(savedVoiceCommandHistory.getId()).orElseThrow();
+
+          assertThat(found.getTranscribe()).isEqualTo(baseIntent);
+          assertThat(found.getResult()).isEqualTo(intent);
+          assertThat(found.getUserId()).isEqualTo(userId);
+          assertThat(found.getSttModel()).isEqualTo(STTModel.VITO);
+          assertThat(found.getIntentModel()).isEqualTo(IntentModel.GPT4_1);
+          assertThat(found.getCreatedAt()).isNotNull();
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("음성 명령 기록 조회")
+  class FindVoiceCommandHistory {
+
+    @Nested
+    @DisplayName("Given - 저장된 음성 명령이 존재할 때")
+    class GivenSavedVoiceCommandExists {
+
+      private UUID userId;
+      private String baseIntent;
+      private String intent;
+      private String sttModel;
+      private String intentModel;
       private VoiceCommandHistory savedVoiceCommandHistory;
 
       @BeforeEach
-      void beforeEach() {
+      void setUp() {
+        userId = UUID.randomUUID();
+        baseIntent = "testBaseIntent";
+        intent = "testIntent";
+        sttModel = "VITO";
+        intentModel = "GPT4.1";
+
+        VoiceCommandHistory voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId);
         savedVoiceCommandHistory = repository.save(voiceCommandHistory);
       }
 
-      @Test
-      @DisplayName("Then - 생성된 ID와 함께 저장되어야 한다")
-      public void thenShouldPersistWithGeneratedId() {
+      @Nested
+      @DisplayName("When - ID로 조회한다면")
+      class WhenFindingById {
 
-        assertThat(savedVoiceCommandHistory.getId()).isNotNull();
-        assertThat(savedVoiceCommandHistory.getId()).isEqualTo(voiceCommandHistory.getId());
+        @Test
+        @DisplayName("Then - 올바른 데이터를 반환해야 한다")
+        public void thenShouldReturnCorrectData() {
+          VoiceCommandHistory found = repository.findById(savedVoiceCommandHistory.getId()).orElseThrow();
 
+          assertThat(found.getId()).isEqualTo(savedVoiceCommandHistory.getId());
+          assertThat(found.getTranscribe()).isEqualTo(baseIntent);
+          assertThat(found.getResult()).isEqualTo(intent);
+          assertThat(found.getUserId()).isEqualTo(userId);
+          assertThat(found.getSttModel()).isEqualTo(STTModel.VITO);
+          assertThat(found.getIntentModel()).isEqualTo(IntentModel.GPT4_1);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 존재하지 않는 ID가 주어졌을 때")
+    class GivenNonExistentId {
+
+      private UUID nonExistentId;
+
+      @BeforeEach
+      void setUp() {
+        nonExistentId = UUID.randomUUID();
       }
 
-      @Test
-      @DisplayName("Then - ID로 조회가 가능해야 한다")
-      public void thenShouldBeRetrievableById() {
+      @Nested
+      @DisplayName("When - ID로 조회한다면")
+      class WhenFindingById {
 
-        VoiceCommandHistory found = repository.findById(savedVoiceCommandHistory.getId()).orElseThrow();
-
-        assertThat(found.getId()).isEqualTo(savedVoiceCommandHistory.getId());
-        assertThat(found.getTranscribe()).isEqualTo(baseIntent);
-        assertThat(found.getResult()).isEqualTo(intent);
-        assertThat(found.getUserId()).isEqualTo(userId);
-        assertThat(found.getSttModel()).isEqualTo(STTModel.VITO);
-        assertThat(found.getIntentModel()).isEqualTo(IntentModel.GPT4_1);
-
-      }
-
-      @Test
-      @DisplayName("Then - 모든 필드가 보존되어야 한다")
-      public void thenAllFieldsShouldBePreserved() {
-
-        VoiceCommandHistory found = repository.findById(savedVoiceCommandHistory.getId()).orElseThrow();
-
-        assertThat(found.getTranscribe()).isEqualTo(baseIntent);
-        assertThat(found.getResult()).isEqualTo(intent);
-        assertThat(found.getUserId()).isEqualTo(userId);
-        assertThat(found.getSttModel()).isEqualTo(STTModel.VITO);
-        assertThat(found.getIntentModel()).isEqualTo(IntentModel.GPT4_1);
-        assertThat(found.getCreatedAt()).isNotNull();
+        @Test
+        @DisplayName("Then - 빈 결과를 반환해야 한다")
+        public void thenShouldReturnEmpty() {
+          var result = repository.findById(nonExistentId);
+          assertThat(result).isEmpty();
+        }
       }
     }
   }

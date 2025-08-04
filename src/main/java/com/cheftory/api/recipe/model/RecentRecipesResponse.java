@@ -11,7 +11,7 @@ public record RecentRecipesResponse(
     @JsonProperty("recent_recipes")
     List<RecentRecipeResponse> recentRecipes
 ) {
-  public static RecentRecipesResponse from(List<RecentRecipeOverview> recentRecipes) {
+  public static RecentRecipesResponse from(List<RecipeHistoryOverview> recentRecipes) {
     List<RecentRecipeResponse> responses = recentRecipes.stream()
         .map(RecentRecipeResponse::from)
         .toList();
@@ -40,7 +40,7 @@ public record RecentRecipesResponse(
       @JsonProperty("video_seconds")
       Integer videoSeconds
   ) {
-    public static RecentRecipeResponse from(RecentRecipeOverview info) {
+    public static RecentRecipeResponse from(RecipeHistoryOverview info) {
       return new RecentRecipeResponse(
           info.getRecipeViewStatusInfo().getViewedAt(),
           info.getRecipeViewStatusInfo().getLastPlaySeconds(),
