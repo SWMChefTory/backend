@@ -726,37 +726,37 @@ public class RecipeControllerTest extends RestDocsTest {
               .get("/api/v1/recipes/uncategorized")
               .then()
               .status(HttpStatus.OK)
-              .body("categorized_recipes", hasSize(unCategorizedRecipes.size()))
+              .body("unCategorized_recipes", hasSize(unCategorizedRecipes.size()))
               .apply(document(
                   getNestedClassPath(this.getClass()) + "/{method-name}",
                   requestPreprocessor(),
                   responsePreprocessor(),
                   requestAccessTokenFields(),
                   responseFields(
-                      fieldWithPath("categorized_recipes").description("미분류 레시피 목록"),
-                      fieldWithPath("categorized_recipes[].viewed_at").description("레시피 접근 시간"),
-                      fieldWithPath("categorized_recipes[].last_play_seconds").description("레시피 마지막 재생 시간"),
-                      fieldWithPath("categorized_recipes[].recipe_id").description("레시피 ID"),
-                      fieldWithPath("categorized_recipes[].recipe_title").description("레시피 제목"),
-                      fieldWithPath("categorized_recipes[].video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
-                      fieldWithPath("categorized_recipes[].video_id").description("레시피 비디오 ID"),
-                      fieldWithPath("categorized_recipes[].video_seconds").description("레시피 비디오 재생 시간")
+                      fieldWithPath("unCategorized_recipes").description("미분류 레시피 목록"),
+                      fieldWithPath("unCategorized_recipes[].viewed_at").description("레시피 접근 시간"),
+                      fieldWithPath("unCategorized_recipes[].last_play_seconds").description("레시피 마지막 재생 시간"),
+                      fieldWithPath("unCategorized_recipes[].recipe_id").description("레시피 ID"),
+                      fieldWithPath("unCategorized_recipes[].recipe_title").description("레시피 제목"),
+                      fieldWithPath("unCategorized_recipes[].video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
+                      fieldWithPath("unCategorized_recipes[].video_id").description("레시피 비디오 ID"),
+                      fieldWithPath("unCategorized_recipes[].video_seconds").description("레시피 비디오 재생 시간")
                   )
               ));
 
           verify(recipeService).findUnCategorized(userId);
 
           var responseBody = response.extract().jsonPath();
-          var unCategorizedRecipesList = responseBody.getList("categorized_recipes");
+          var unCategorizedRecipesList = responseBody.getList("unCategorized_recipes");
 
           assertThat(unCategorizedRecipesList).hasSize(1);
-          assertThat(responseBody.getUUID("categorized_recipes[0].recipe_id")).isEqualTo(recipeId);
-          assertThat(responseBody.getString("categorized_recipes[0].recipe_title")).isEqualTo("Uncategorized Recipe Title");
-          assertThat(responseBody.getString("categorized_recipes[0].video_thumbnail_url")).isEqualTo("https://example.com/uncategorized_thumbnail.jpg");
-          assertThat(responseBody.getString("categorized_recipes[0].video_id")).isEqualTo("uncategorized_video_id");
-          assertThat(responseBody.getInt("categorized_recipes[0].video_seconds")).isEqualTo(240);
-          assertThat(responseBody.getString("categorized_recipes[0].viewed_at")).isEqualTo("2024-01-25T16:45:00");
-          assertThat(responseBody.getInt("categorized_recipes[0].last_play_seconds")).isEqualTo(150);
+          assertThat(responseBody.getUUID("unCategorized_recipes[0].recipe_id")).isEqualTo(recipeId);
+          assertThat(responseBody.getString("unCategorized_recipes[0].recipe_title")).isEqualTo("Uncategorized Recipe Title");
+          assertThat(responseBody.getString("unCategorized_recipes[0].video_thumbnail_url")).isEqualTo("https://example.com/uncategorized_thumbnail.jpg");
+          assertThat(responseBody.getString("unCategorized_recipes[0].video_id")).isEqualTo("uncategorized_video_id");
+          assertThat(responseBody.getInt("unCategorized_recipes[0].video_seconds")).isEqualTo(240);
+          assertThat(responseBody.getString("unCategorized_recipes[0].viewed_at")).isEqualTo("2024-01-25T16:45:00");
+          assertThat(responseBody.getInt("unCategorized_recipes[0].last_play_seconds")).isEqualTo(150);
         }
       }
     }
@@ -793,7 +793,7 @@ public class RecipeControllerTest extends RestDocsTest {
               .get("/api/v1/recipes/uncategorized")
               .then()
               .status(HttpStatus.OK)
-              .body("categorized_recipes", hasSize(0));
+              .body("unCategorized_recipes", hasSize(0));
 
           verify(recipeService).findUnCategorized(userId);
         }
