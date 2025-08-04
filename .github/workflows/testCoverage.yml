@@ -1,4 +1,4 @@
-name: test-dev.yml
+name: testCoverage.yml
 
 on:
   push:
