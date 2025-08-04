@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record UnCategorizedRecipesResponse(
-    @JsonProperty("categorized_recipes")
+    @JsonProperty("unCategorized_recipes")
     List<UnCategorizedRecipeResponse> categorizedRecipes
 ) {
   public static UnCategorizedRecipesResponse from(List<RecipeHistoryOverview> categorizedRecipes) {
