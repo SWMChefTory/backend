@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.viewstatus;
+package com.cheftory.api.recipe.watched.viewstatus;
 
 import com.cheftory.api._common.Clock;
 import jakarta.persistence.Column;

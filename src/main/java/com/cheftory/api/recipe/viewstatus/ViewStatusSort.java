@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.viewstatus;
+package com.cheftory.api.recipe.watched.viewstatus;
 import org.springframework.data.domain.Sort;
 
 public class ViewStatusSort {

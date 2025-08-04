@@ -1,9 +1,8 @@
-package com.cheftory.api.recipe.viewstatus;
+package com.cheftory.api.recipe.watched.viewstatus;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.viewstatus.exception.ViewStatusErrorCode;
-import com.cheftory.api.recipe.viewstatus.exception.ViewStatusException;
-import com.cheftory.api.recipe.viewstatus.repository.ViewStatusRepository;
+import com.cheftory.api.recipe.watched.viewstatus.exception.ViewStatusErrorCode;
+import com.cheftory.api.recipe.watched.viewstatus.exception.ViewStatusException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
