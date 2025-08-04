@@ -1,9 +1,11 @@
 package com.cheftory.api.recipe.viewstatus;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
@@ -12,17 +14,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @DisplayName("RecipeViewStatusRepository Tests")
 public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
   @Autowired
   private RecipeViewStatusRepository repository;
+  @MockitoBean
   private Clock clock;
 
   @BeforeEach
   void setUp() {
-    clock = new Clock();
+    // Mock을 초기화하지 말고 그대로 사용
+    // clock = new Clock(); // 이 줄 제거!
   }
 
   @Nested
@@ -40,6 +45,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
       void setUp() {
         recipeId = UUID.randomUUID();
         userId = UUID.randomUUID();
+        when(clock.now()).thenReturn(LocalDateTime.now());
       }
 
       @Nested
@@ -81,6 +87,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
       void setUp() {
         recipeId = UUID.randomUUID();
         userId = UUID.randomUUID();
+        when(clock.now()).thenReturn(LocalDateTime.now());
       }
 
       @Nested
@@ -146,6 +153,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
       void setUp() {
         recipeId = UUID.randomUUID();
         userId = UUID.randomUUID();
+        when(clock.now()).thenReturn(LocalDateTime.now());
       }
 
       @Nested
@@ -212,6 +220,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
       void setUp() {
         userId = UUID.randomUUID();
         recipeId = UUID.randomUUID();
+        when(clock.now()).thenReturn(LocalDateTime.now());
       }
 
       @Nested
@@ -281,6 +290,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         userId = UUID.randomUUID();
         recipeId = UUID.randomUUID();
         categoryId = UUID.randomUUID();
+        when(clock.now()).thenReturn(LocalDateTime.now());
       }
 
       @Nested
@@ -364,10 +374,17 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         void beforeEach() {
           firstRecipeId = UUID.randomUUID();
           secondRecipeId = UUID.randomUUID();
-          firstRecipeViewStatus = RecipeViewStatus.create(clock, userId, firstRecipeId);
-          secondRecipeViewStatus = RecipeViewStatus.create(clock, userId, secondRecipeId);
 
+          // 첫 번째는 더 이전 시간으로 설정
+          LocalDateTime firstTime = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
+          when(clock.now()).thenReturn(firstTime);
+          firstRecipeViewStatus = RecipeViewStatus.create(clock, userId, firstRecipeId);
           repository.save(firstRecipeViewStatus);
+
+          // 두 번째는 더 최근 시간으로 설정
+          LocalDateTime secondTime = LocalDateTime.of(2024, 1, 1, 11, 0, 0);
+          when(clock.now()).thenReturn(secondTime);
+          secondRecipeViewStatus = RecipeViewStatus.create(clock, userId, secondRecipeId);
           repository.save(secondRecipeViewStatus);
         }
 
@@ -378,14 +395,13 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
           assertThat(statuses.size()).isEqualTo(2);
           assertThat(statuses.getFirst().getUserId()).isEqualTo(userId);
-          assertThat(statuses.getFirst().getRecipeId()).isEqualTo(
-              secondRecipeViewStatus.getRecipeId());
-          assertThat(statuses.getLast().getRecipeId()).isEqualTo(
-              firstRecipeViewStatus.getRecipeId());
-          assertThat(statuses.getFirst().getViewedAt()).isEqualTo(
-              secondRecipeViewStatus.getViewedAt());
-          assertThat(statuses.getLast().getViewedAt()).isEqualTo(
-              firstRecipeViewStatus.getViewedAt());
+
+          // 더 최근 것(11시)이 먼저 나와야 함
+          assertThat(statuses.getFirst().getRecipeId()).isEqualTo(secondRecipeViewStatus.getRecipeId());
+          assertThat(statuses.getLast().getRecipeId()).isEqualTo(firstRecipeViewStatus.getRecipeId());
+
+          // 시간 검증 - 첫 번째가 더 최근이어야 함
+          assertThat(statuses.getFirst().getViewedAt()).isAfter(statuses.getLast().getViewedAt());
         }
       }
     }
@@ -412,6 +428,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         categoryId2 = UUID.randomUUID();
         categoryId3 = UUID.randomUUID();
         categoryIds = List.of(categoryId1, categoryId2, categoryId3);
+        when(clock.now()).thenReturn(LocalDateTime.now());
       }
 
       @Nested
