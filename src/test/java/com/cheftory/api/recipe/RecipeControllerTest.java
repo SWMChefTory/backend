@@ -432,6 +432,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn("Sample Recipe Title").when(videoInfo).getTitle();
           doReturn("sample_video_id").when(videoInfo).getVideoId();
           doReturn(URI.create("https://example.com/thumbnail.jpg")).when(videoInfo).getThumbnailUrl();
+          doReturn(URI.create("https://example.com/video")).when(videoInfo).getVideoUri();
 
           recipes = List.of(recipe);
           doReturn(recipes).when(recipeService).findRecommends();
@@ -458,7 +459,8 @@ public class RecipeControllerTest extends RestDocsTest {
                       fieldWithPath("recommend_recipes[].recipe_title").description("레시피 제목"),
                       fieldWithPath("recommend_recipes[].video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
                       fieldWithPath("recommend_recipes[].video_id").description("레시피 비디오 ID"),
-                      fieldWithPath("recommend_recipes[].count").description("레시피 조회 수")
+                      fieldWithPath("recommend_recipes[].count").description("레시피 조회 수"),
+                      fieldWithPath("recommend_recipes[].video_url").description("레시피 비디오 URL")
                   )
               ));
 
@@ -471,6 +473,7 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("recommend_recipes[0].video_thumbnail_url")).isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getString("recommend_recipes[0].video_id")).isEqualTo("sample_video_id");
           assertThat(responseBody.getInt("recommend_recipes[0].count")).isEqualTo(100);
+          assertThat(responseBody.getString("recommend_recipes[0].video_url")).isEqualTo("https://example.com/video");
         }
       }
     }

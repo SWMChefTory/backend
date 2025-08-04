@@ -25,7 +25,9 @@ public record RecommendRecipesResponse(
       @JsonProperty("video_id")
       String videoId,
       @JsonProperty("count")
-      Integer count
+      Integer count,
+      @JsonProperty("video_url")
+      String videoUrl
   ) {
     public static RecommendRecipeResponse from(RecipeOverview recipe) {
       return new RecommendRecipeResponse(
@@ -33,7 +35,8 @@ public record RecommendRecipesResponse(
           recipe.getVideoInfo().getTitle(),
           recipe.getVideoInfo().getThumbnailUrl().toString(),
           recipe.getVideoInfo().getVideoId(),
-          recipe.getCount()
+          recipe.getCount(),
+          recipe.getVideoInfo().getVideoUri().toString()
       );
     }
   }
