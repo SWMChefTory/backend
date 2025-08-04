@@ -206,4 +206,60 @@ public class RecipeCategoryServiceTest {
       }
     }
   }
+  @Nested
+  @DisplayName("레시피 카테고리 존재 여부 확인")
+  class ExistsRecipeCategory {
+
+    @Nested
+    @DisplayName("Given - 존재하는 카테고리 ID가 주어졌을 때")
+    class GivenExistingCategoryId {
+
+      private UUID recipeCategoryId;
+
+      @BeforeEach
+      void setUp() {
+        recipeCategoryId = UUID.randomUUID();
+        doReturn(true).when(recipeCategoryRepository).existsById(recipeCategoryId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 카테고리 존재 여부를 확인한다면")
+      class WhenCheckingExistsRecipeCategory {
+
+        @Test
+        @DisplayName("Then - true를 반환해야 한다")
+        void thenShouldReturnTrue() {
+          boolean exists = recipeCategoryService.exists(recipeCategoryId);
+          assertThat(exists).isTrue();
+          verify(recipeCategoryRepository).existsById(recipeCategoryId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 존재하지 않는 카테고리 ID가 주어졌을 때")
+    class GivenNonExistentCategoryId {
+
+      private UUID recipeCategoryId;
+
+      @BeforeEach
+      void setUp() {
+        recipeCategoryId = UUID.randomUUID();
+        doReturn(false).when(recipeCategoryRepository).existsById(recipeCategoryId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 카테고리 존재 여부를 확인한다면")
+      class WhenCheckingExistsRecipeCategory {
+
+        @Test
+        @DisplayName("Then - false를 반환해야 한다")
+        void thenShouldReturnFalse() {
+          boolean exists = recipeCategoryService.exists(recipeCategoryId);
+          assertThat(exists).isFalse();
+          verify(recipeCategoryRepository).existsById(recipeCategoryId);
+        }
+      }
+    }
+  }
 }
