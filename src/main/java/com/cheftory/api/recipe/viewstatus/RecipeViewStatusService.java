@@ -17,10 +17,9 @@ public class RecipeViewStatusService {
 
   @Transactional
   public void create(UUID userId, UUID recipeId) {
-    if (recipeViewStatusRepository.existsByRecipeIdAndUserId(recipeId, userId)) {
-      throw new ViewStatusException(ViewStatusErrorCode.VIEW_STATUS_ALREADY_EXISTS);
+    if (!recipeViewStatusRepository.existsByRecipeIdAndUserId(recipeId, userId)) {
+      recipeViewStatusRepository.save(RecipeViewStatus.create(clock, userId, recipeId));
     }
-    recipeViewStatusRepository.save(RecipeViewStatus.create(clock, userId, recipeId));
   }
 
   @Transactional
