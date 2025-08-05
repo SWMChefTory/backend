@@ -16,7 +16,7 @@ public class YoutubeUrlNormalizer {
     public UriComponents normalize(UriComponents url) {
         String id = extractId(url);
 
-        String normalizedPath = "https://youtube.com/watch";
+        String normalizedPath = "https://www.youtube.com/watch";
         String normalizedQueryKey = "v";
 
         return UriComponentsBuilder
@@ -33,11 +33,11 @@ public class YoutubeUrlNormalizer {
         if(Objects.isNull(host)) {
             throw new RecipeException(RecipeErrorCode.YOUTUBE_URL_HOST_NULL);
         }
-        if(host.equals("www.youtu.be")){
+        if(host.equals("www.youtu.be")||host.equals("youtu.be")) {
             return extractIdFromSharedUrl(url);
         }
 
-        if(host.equals("www.youtube.com")){
+        if(host.equals("www.youtube.com")||host.equals("youtube.com")){
             return extractIdFromGeneralUrl(url);
         }
 
