@@ -16,7 +16,7 @@ public class YoutubeUrlNormalizer {
     public UriComponents normalize(UriComponents url) {
         String id = extractId(url);
 
-        String normalizedPath = "https:www//youtube.com/watch";
+        String normalizedPath = "https://www.youtube.com/watch";
         String normalizedQueryKey = "v";
 
         return UriComponentsBuilder
