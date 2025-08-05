@@ -8,11 +8,10 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.assertj.core.api.Assertions.tuple;
+
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.viewstatus.exception.ViewStatusErrorCode;
 import com.cheftory.api.recipe.viewstatus.exception.ViewStatusException;
-import groovy.lang.Tuple;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -102,14 +101,11 @@ public class RecipeViewStatusServiceTest {
         }
 
         @Test
-        @DisplayName("Then - ViewStatusException이 발생해야 한다")
-        public void thenShouldThrowViewStatusException() {
-          ViewStatusException exception = assertThrows(ViewStatusException.class, () -> {
-            service.create(userId, recipeId);
-          });
+        @DisplayName("Then - 아무일도 일어나지 않아야 한다")
+        public void thenShouldNotDoAnything() {
+          service.create(userId, recipeId);
 
-          assertThat(exception.getErrorMessage()).isEqualTo(ViewStatusErrorCode.VIEW_STATUS_ALREADY_EXISTS);
-          verify(repository, never()).save(any());
+          verify(repository, never()).save(any(RecipeViewStatus.class));
         }
       }
     }
