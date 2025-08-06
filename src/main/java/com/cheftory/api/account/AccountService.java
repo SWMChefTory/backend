@@ -28,7 +28,6 @@ public class AccountService {
     User user = userService.getByProviderAndProviderSub(provider, providerSub);
 
     UUID id = user.getId();
-    String email = user.getEmail();
     String nickname = user.getNickname();
     Gender gender = user.getGender();
     LocalDate dateOfBirth = user.getDateOfBirth();
@@ -54,9 +53,8 @@ public class AccountService {
       Gender gender,
       LocalDate dateOfBirth
   ) {
-    String email = authService.extractEmailFromIdToken(idToken, provider);
     String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
-    UUID id = userService.create(email, nickname, gender, dateOfBirth, provider, providerSub);
+    UUID id = userService.create(nickname, gender, dateOfBirth, provider, providerSub);
 
     AuthTokens authTokens = authService.createAuthToken(id);
     authService.saveLoginSession(id, authTokens.refreshToken());

@@ -104,11 +104,6 @@ public class AppleTokenVerifier {
     }
   }
 
-  public String getEmailFromToken(String identityToken) {
-    JWTClaimsSet claims = extractVerifiedClaims(identityToken);
-    return (String) claims.getClaim("email");
-  }
-
   public String getSubFromToken(String identityToken) {
     JWTClaimsSet claims = extractVerifiedClaims(identityToken);
     return claims.getSubject();

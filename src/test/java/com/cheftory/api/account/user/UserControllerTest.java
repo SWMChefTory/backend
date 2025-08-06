@@ -1,4 +1,4 @@
-package com.cheftory.api.user;
+package com.cheftory.api.account.user;
 
 import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;
 import static com.cheftory.api.utils.RestDocsUtils.requestPreprocessor;
@@ -12,11 +12,9 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
 import com.cheftory.api._common.security.UserArgumentResolver;
-import com.cheftory.api.account.user.UserController;
-import com.cheftory.api.account.user.UserService;
 import com.cheftory.api.account.user.entity.Gender;
 import com.cheftory.api.account.user.entity.Provider;
-import com.cheftory.api.account.user.entity.Status;
+import com.cheftory.api.account.user.entity.UserStatus;
 import com.cheftory.api.account.user.entity.User;
 import com.cheftory.api.account.user.exception.UserErrorCode;
 import com.cheftory.api.account.user.exception.UserException;
@@ -73,11 +71,10 @@ public class UserControllerTest extends RestDocsTest {
 
       User user = User.builder()
           .id(fixedUserId)
-          .email("test@example.com")
           .nickname("nickname")
           .gender(Gender.MALE)
           .dateOfBirth(validDateOfBirth)
-          .status(Status.ACTIVE)
+          .userStatus(UserStatus.ACTIVE)
           .createdAt(LocalDateTime.now())
           .updatedAt(LocalDateTime.now())
           .termsAgreedAt(LocalDateTime.now())

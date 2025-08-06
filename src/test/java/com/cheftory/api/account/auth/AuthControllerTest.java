@@ -1,4 +1,4 @@
-package com.cheftory.api.auth;
+package com.cheftory.api.account.auth;
 
 
 import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;
@@ -50,6 +50,7 @@ public class AuthControllerTest extends RestDocsTest {
     authService = mock(AuthService.class);
     controller = new AuthController(authService);
     globalExceptionHandler = new GlobalExceptionHandler();
+
     mockMvc = mockMvcBuilder(controller)
         .withAdvice(globalExceptionHandler)
         .build();

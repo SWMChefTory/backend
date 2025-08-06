@@ -18,6 +18,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.exception.AuthException;
 import com.cheftory.api.account.dto.LoginRequest;
+import com.cheftory.api.account.dto.LogoutRequest;
 import com.cheftory.api.account.dto.SignupRequest;
 import com.cheftory.api.account.model.LoginResult;
 import com.cheftory.api.account.model.UserInfo;
@@ -311,6 +312,90 @@ public class AccountControllerTest extends RestDocsTest {
                 )
             );
       }
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /api/v1/account/logout - 로그아웃")
+  class Logout {
+
+    private String refreshToken;
+
+    @BeforeEach
+    void setUp() {
+      refreshToken = "Bearer refresh-token";
+    }
+
+    @Test
+    @DisplayName("성공 - 로그아웃 처리")
+    void shouldLogoutSuccessfully() {
+      var request = new LogoutRequest(refreshToken);
+
+      var response = given()
+          .contentType(ContentType.JSON)
+          .body(request)
+          .when()
+          .post("/api/v1/account/logout")
+          .then()
+          .status(HttpStatus.OK)
+          .apply(
+              document(
+                  getNestedClassPath(this.getClass()) + "/{method-name}",
+                  requestPreprocessor(),
+                  responsePreprocessor(),
+                  requestFields(
+                      fieldWithPath("refresh_token").description("로그아웃할 리프레시 토큰 (Bearer prefix 포함)")
+                  ),
+                  responseFields(
+                      fieldWithPath("message").description("성공 메시지")
+                  )
+              )
+          );
+
+      assertSuccessResponse(response);
+      verify(accountService).logout("refresh-token");
+    }
+  }
+
+  @Nested
+  @DisplayName("DELETE /api/v1/account/delete - 회원 탈퇴")
+  class DeleteAccount {
+
+    private String refreshToken;
+
+    @BeforeEach
+    void setUp() {
+      refreshToken = "Bearer refresh-token";
+    }
+
+    @Test
+    @DisplayName("성공 - 회원 탈퇴 처리")
+    void shouldDeleteAccountSuccessfully() {
+      var request = new LogoutRequest(refreshToken);
+
+      var response = given()
+          .contentType(ContentType.JSON)
+          .body(request)
+          .when()
+          .delete("/api/v1/account")
+          .then()
+          .status(HttpStatus.OK)
+          .apply(
+              document(
+                  getNestedClassPath(this.getClass()) + "/{method-name}",
+                  requestPreprocessor(),
+                  responsePreprocessor(),
+                  requestFields(
+                      fieldWithPath("refresh_token").description("회원 탈퇴 요청의 리프레시 토큰 (Bearer prefix 포함)")
+                  ),
+                  responseFields(
+                      fieldWithPath("message").description("성공 메시지")
+                  )
+              )
+          );
+
+      assertSuccessResponse(response);
+      verify(accountService).delete("refresh-token");
     }
   }
 }
