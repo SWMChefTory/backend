@@ -105,7 +105,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 해당 레시피 조회 상태가 존재해야 한다")
         void thenShouldExist() {
-          boolean exists = repository.existsByRecipeIdAndUserId(recipeId, userId);
+          boolean exists = repository.existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
           assertThat(exists).isTrue();
         }
       }
@@ -131,7 +131,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 해당 레시피 조회 상태가 존재하지 않아야 한다")
         void thenShouldNotExist() {
-          boolean exists = repository.existsByRecipeIdAndUserId(recipeId, userId);
+          boolean exists = repository.existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
           assertThat(exists).isFalse();
         }
       }
@@ -171,7 +171,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 해당 레시피 조회 상태를 반환해야 한다")
         void thenShouldReturnRecipeViewStatus() {
-          RecipeViewStatus foundStatus = repository.findByRecipeIdAndUserId(recipeId, userId)
+          RecipeViewStatus foundStatus = repository.findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)
               .orElseThrow();
           assertThat(foundStatus.getRecipeId()).isEqualTo(recipeId);
           assertThat(foundStatus.getUserId()).isEqualTo(userId);
@@ -199,7 +199,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 빈 결과를 반환해야 한다")
         void thenShouldReturnEmpty() {
-          assertThat(repository.findByRecipeIdAndUserId(recipeId, userId)).isEmpty();
+          assertThat(repository.findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)).isEmpty();
         }
       }
     }
@@ -238,7 +238,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 해당 레시피 조회 상태를 반환해야 한다")
         void thenShouldReturnUncategorizedRecipeViewStatuses() {
-          var statuses = repository.findAllByUserIdAndRecipeCategoryId(userId, null);
+          var statuses = repository.findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE);
 
           assertThat(statuses.size()).isEqualTo(1);
           assertThat(statuses.getFirst().getUserId()).isEqualTo(userId);
@@ -266,7 +266,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 빈 결과를 반환해야 한다")
         void thenShouldReturnEmpty() {
-          var statuses = repository.findAllByUserIdAndRecipeCategoryId(userId, null);
+          var statuses = repository.findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE);
           assertThat(statuses.size()).isEqualTo(0);
         }
       }
@@ -309,7 +309,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 해당 레시피 조회 상태를 반환해야 한다")
         void thenShouldReturnCategorizedRecipeViewStatuses() {
-          var statuses = repository.findAllByUserIdAndRecipeCategoryId(userId, categoryId);
+          var statuses = repository.findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE);
 
           assertThat(statuses.size()).isEqualTo(1);
           assertThat(statuses.getFirst().getUserId()).isEqualTo(userId);
@@ -339,7 +339,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 빈 결과를 반환해야 한다")
         void thenShouldReturnEmpty() {
-          var statuses = repository.findAllByUserIdAndRecipeCategoryId(userId, categoryId);
+          var statuses = repository.findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE);
           assertThat(statuses.size()).isEqualTo(0);
         }
       }
@@ -391,7 +391,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들을 반환해야 한다")
         void thenShouldReturnRecentRecipeViewStatusesByUserId() {
-          var statuses = repository.findByUserId(userId, ViewStatusSort.VIEWED_AT_DESC);
+          var statuses = repository.findByUserIdAndStatus(userId,RecipeViewState.ACTIVE, ViewStatusSort.VIEWED_AT_DESC);
 
           assertThat(statuses.size()).isEqualTo(2);
           assertThat(statuses.getFirst().getUserId()).isEqualTo(userId);
@@ -457,7 +457,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 각 카테고리별 정확한 개수를 반환해야 한다")
         void thenShouldReturnCorrectCountsForEachCategory() {
-          List<RecipeViewStatusCountProjection> counts = repository.countByCategoryIds(categoryIds);
+          List<RecipeViewStatusCountProjection> counts = repository.countByCategoryIdsAndStatus(categoryIds, RecipeViewState.ACTIVE);
 
           assertThat(counts.size()).isEqualTo(2);
 
@@ -498,7 +498,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 빈 결과를 반환해야 한다")
         void thenShouldReturnEmpty() {
-          List<RecipeViewStatusCountProjection> counts = repository.countByCategoryIds(nonExistentCategoryIds);
+          List<RecipeViewStatusCountProjection> counts = repository.countByCategoryIdsAndStatus(nonExistentCategoryIds, RecipeViewState.ACTIVE);
           assertThat(counts.size()).isEqualTo(0);
         }
       }
@@ -515,8 +515,47 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 빈 결과를 반환해야 한다")
         void thenShouldReturnEmpty() {
-          List<RecipeViewStatusCountProjection> counts = repository.countByCategoryIds(List.of());
+          List<RecipeViewStatusCountProjection> counts = repository.countByCategoryIdsAndStatus(List.of(), RecipeViewState.ACTIVE);
           assertThat(counts.size()).isEqualTo(0);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 조회 상태 삭제")
+  class DeleteRecipeViewStatus {
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
+    class GivenValidRecipeIdAndUserId {
+
+      private UUID recipeId;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+        when(clock.now()).thenReturn(LocalDateTime.now());
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 조회 상태를 삭제한다면")
+      class WhenDeletingRecipeViewStatus {
+
+        private RecipeViewStatus recipeViewStatus;
+
+        @BeforeEach
+        void beforeEach() {
+          recipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+          repository.save(recipeViewStatus);
+          repository.delete(recipeViewStatus);
+        }
+
+        @Test
+        @DisplayName("Then - 해당 레시피 조회 상태가 삭제되어야 한다")
+        void thenShouldDeleteRecipeViewStatus() {
+          assertThat(repository.findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)).isEmpty();
         }
       }
     }

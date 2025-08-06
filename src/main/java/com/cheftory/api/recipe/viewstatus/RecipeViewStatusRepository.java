@@ -10,16 +10,19 @@ import org.springframework.data.repository.query.Param;
 
 public interface RecipeViewStatusRepository extends JpaRepository<RecipeViewStatus, UUID> {
 
-  List<RecipeViewStatus> findByUserId(UUID userId, Sort sort);
-  Optional<RecipeViewStatus> findByRecipeIdAndUserId(UUID recipeId, UUID userId);
-  List<RecipeViewStatus> findAllByUserIdAndRecipeCategoryId(UUID userId, UUID recipeCategoryId);
-  List<RecipeViewStatus> findByRecipeCategoryId(UUID recipeCategoryId);
+  List<RecipeViewStatus> findByUserIdAndStatus(UUID userId, RecipeViewState status, Sort sort);
+  Optional<RecipeViewStatus> findByRecipeIdAndUserIdAndStatus(UUID recipeId, UUID userId, RecipeViewState status);
+  List<RecipeViewStatus> findAllByUserIdAndRecipeCategoryIdAndStatus(UUID userId, UUID recipeCategoryId, RecipeViewState status);
+  List<RecipeViewStatus> findByRecipeCategoryIdAndStatus(UUID recipeCategoryId, RecipeViewState status);
 
   @Query("SELECT r.recipeCategoryId as categoryId, COUNT(r) as count " +
       "FROM RecipeViewStatus r " +
       "WHERE r.recipeCategoryId IN :categoryIds " +
+      "AND r.status = :status " +
       "GROUP BY r.recipeCategoryId")
-  List<RecipeViewStatusCountProjection> countByCategoryIds(@Param("categoryIds") List<UUID> categoryIds);
-
-  boolean existsByRecipeIdAndUserId(UUID recipeId, UUID userId);
+  List<RecipeViewStatusCountProjection> countByCategoryIdsAndStatus(
+      @Param("categoryIds") List<UUID> categoryIds,
+      @Param("status") RecipeViewState status
+  );
+  boolean existsByRecipeIdAndUserIdAndStatus(UUID recipeId, UUID userId, RecipeViewState status);
 }

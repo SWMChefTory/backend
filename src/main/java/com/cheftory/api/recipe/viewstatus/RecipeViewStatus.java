@@ -3,6 +3,8 @@ package com.cheftory.api.recipe.viewstatus;
 import com.cheftory.api._common.Clock;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -31,6 +33,9 @@ public class RecipeViewStatus {
   private UUID recipeId;
   @Column(nullable = true)
   private UUID recipeCategoryId;
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private RecipeViewState status;
 
   public static RecipeViewStatus create(Clock clock, UUID userId, UUID recipeId) {
     return RecipeViewStatus.builder()
@@ -40,6 +45,7 @@ public class RecipeViewStatus {
         .createdAt(clock.now())
         .userId(userId)
         .recipeId(recipeId)
+        .status(RecipeViewState.ACTIVE)
         .build();
   }
 
@@ -53,5 +59,9 @@ public class RecipeViewStatus {
 
   public void updateViewedAt(Clock clock) {
     this.viewedAt = clock.now();
+  }
+
+  public void delete() {
+    this.status = RecipeViewState.DELETED;
   }
 }

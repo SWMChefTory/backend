@@ -5,6 +5,7 @@ import com.cheftory.api._common.security.UserPrincipal;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +25,15 @@ public class RecipeViewStatusController {
       @UserPrincipal UUID userId
   ) {
     recipeViewStatusService.updateCategory(userId, recipeId, request.categoryId());
+    return SuccessOnlyResponse.create();
+  }
+
+  @DeleteMapping("")
+  public SuccessOnlyResponse deleteViewStatus(
+      @PathVariable("recipe_id") UUID recipeId,
+      @UserPrincipal UUID userId
+  ) {
+    recipeViewStatusService.delete(userId, recipeId);
     return SuccessOnlyResponse.create();
   }
 }
