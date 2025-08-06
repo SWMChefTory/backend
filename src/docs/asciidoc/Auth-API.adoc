@@ -88,19 +88,19 @@ include::{snippets}/auth-controller-test/extract-user-id/invalid-token-scenario/
 === 2.1 성공 – 유효한 리프레시 토큰으로 재발급
 
 ==== 요청
-include::{snippets}/auth-controller-test/extract-user-id/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/http-request.adoc[]
+include::{snippets}/auth-controller-test/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/http-request.adoc[]
 
 ==== 요청 본문
-include::{snippets}/auth-controller-test/extract-user-id/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/request-body.adoc[]
+include::{snippets}/auth-controller-test/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/request-body.adoc[]
 
 ==== 요청 필드
-include::{snippets}/auth-controller-test/extract-user-id/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/request-fields.adoc[]
+include::{snippets}/auth-controller-test/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/request-fields.adoc[]
 
 ==== 응답
-include::{snippets}/auth-controller-test/extract-user-id/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/http-response.adoc[]
+include::{snippets}/auth-controller-test/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/http-response.adoc[]
 
 ==== 응답 본문
-include::{snippets}/auth-controller-test/extract-user-id/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/response-body.adoc[]
+include::{snippets}/auth-controller-test/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/response-body.adoc[]
 
 ==== 응답 필드
-include::{snippets}/auth-controller-test/extract-user-id/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/response-fields.adoc[]
+include::{snippets}/auth-controller-test/token-reissue-scenario/valid-refresh-token/should-reissue-tokens/response-fields.adoc[]

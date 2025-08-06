@@ -21,17 +21,6 @@ public class GoogleTokenVerifier {
   private final HttpClient client = HttpClient.newHttpClient();
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public String getEmailFromToken(String idToken) {
-    JsonNode payload = getPayload(idToken);
-    JsonNode emailNode = payload.get("email");
-
-    if (emailNode == null || emailNode.isNull()) {
-      throw new VerificationException(VerificationErrorCode.GOOGLE_MISSING_EMAIL);
-    }
-
-    return emailNode.asText();
-  }
-
   public String getSubFromToken(String idToken) {
     JsonNode payload = getPayload(idToken);
     JsonNode subNode = payload.get("sub");

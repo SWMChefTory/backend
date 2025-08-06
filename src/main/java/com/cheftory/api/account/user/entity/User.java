@@ -10,16 +10,13 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE) // builder()로만 생성하려면 유지 가능
-@Table(name = "user")
-@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "`user`")
+@Builder(toBuilder = true)
 public class User {
 
   @Id
   private UUID id;
-
-  @Column(nullable = false, unique = true, length = 320)
-  private String email;
 
   @Column(nullable = false, length = 20)
   private String nickname;
@@ -33,7 +30,7 @@ public class User {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Status status;
+  private UserStatus userStatus;
 
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
@@ -52,7 +49,6 @@ public class User {
   private String providerSub;
 
   public static User create(
-      String email,
       String nickname,
       Gender gender,
       LocalDate dateOfBirth,
@@ -61,11 +57,10 @@ public class User {
   ) {
     return User.builder()
         .id(UUID.randomUUID())
-        .email(email)
         .nickname(nickname)
         .gender(gender)
         .dateOfBirth(dateOfBirth)
-        .status(Status.ACTIVE)
+        .userStatus(UserStatus.ACTIVE)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
         .termsAgreedAt(LocalDateTime.now())
@@ -74,8 +69,8 @@ public class User {
         .build();
   }
 
-  public void changeStatus(Status status) {
-    this.status = status;
+  public void changeStatus(UserStatus userStatus) {
+    this.userStatus = userStatus;
     this.updatedAt = LocalDateTime.now();
   }
 }

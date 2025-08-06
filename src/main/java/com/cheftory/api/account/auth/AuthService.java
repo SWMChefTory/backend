@@ -9,11 +9,13 @@ import com.cheftory.api.account.auth.verifier.GoogleTokenVerifier;
 import com.cheftory.api.account.auth.jwt.TokenProvider;
 import com.cheftory.api.account.auth.repository.LoginRepository;
 import com.cheftory.api.account.user.entity.Provider;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Propagation;
 
 @RequiredArgsConstructor
 @Service
@@ -23,18 +25,6 @@ public class AuthService {
   private final AppleTokenVerifier appleVerifier;
   private final TokenProvider jwtProvider;
   private final LoginRepository loginRepository;
-
-  public String extractEmailFromIdToken(String idToken, Provider provider) {
-    try {
-      return switch (provider) {
-        case GOOGLE -> googleVerifier.getEmailFromToken(idToken);
-        case APPLE -> appleVerifier.getEmailFromToken(idToken);
-        default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
-      };
-    } catch (Exception e) {
-      throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
-    }
-  }
 
   public String extractProviderSubFromIdToken(String idToken, Provider provider) {
     try {

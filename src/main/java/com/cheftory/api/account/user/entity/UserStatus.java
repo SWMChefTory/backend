@@ -1,6 +1,6 @@
 package com.cheftory.api.account.user.entity;
 
-public enum Status {
+public enum UserStatus {
     ACTIVE,
     DELETED,
     BANNED

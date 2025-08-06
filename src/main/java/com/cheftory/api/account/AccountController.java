@@ -1,9 +1,12 @@
 package com.cheftory.api.account;
 
+import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
 import com.cheftory.api.account.dto.*;
 import com.cheftory.api.account.model.LoginResult;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,14 +38,14 @@ public class AccountController {
   }
 
   @PostMapping("/logout")
-  public String logout(@RequestBody LogoutRequest request) {
+  public SuccessOnlyResponse logout(@RequestBody LogoutRequest request) {
     accountService.logout(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
-    return "Successfully logged out";
+    return SuccessOnlyResponse.create();
   }
 
-  @PostMapping("/delete")
-  public String delete(@RequestBody LogoutRequest request) {
+  @DeleteMapping
+  public SuccessOnlyResponse delete(@RequestBody LogoutRequest request) {
     accountService.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
-    return "Successfully deleted account";
+    return SuccessOnlyResponse.create();
   }
 }
