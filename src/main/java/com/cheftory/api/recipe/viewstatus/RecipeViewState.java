@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.viewstatus;
 
-public class ViewStatusStatus {
-
+public enum RecipeViewState {
+  ACTIVE,
+  DELETED,
 }

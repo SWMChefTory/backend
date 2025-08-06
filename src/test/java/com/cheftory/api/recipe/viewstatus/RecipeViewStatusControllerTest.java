@@ -182,4 +182,58 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
       }
     }
   }
+
+  @Nested
+  @DisplayName("레시피 조회 상태 삭제")
+  class DeleteRecipeViewStatus {
+    @Nested
+    @DisplayName("Given - 레시피 조회 상태 삭제 요청이 주어졌을 때")
+    class GivenValidParametersForDelete {
+
+      private UUID recipeId;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+
+        var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        doNothing().when(recipeViewStatusService).delete(any(UUID.class), any(UUID.class));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 조회 상태를 삭제한다면")
+      class WhenDeletingRecipeViewStatus {
+
+        @Test
+        @DisplayName("Then - 레시피 조회 상태를 삭제한다 - 성공")
+        void thenShouldDeleteRecipeViewStatus() {
+          given()
+              .contentType(ContentType.JSON)
+              .attribute("userId", userId)
+              .header("Authorization", "Bearer accessToken")
+              .when()
+              .delete("/api/v1/recipes/{recipe_id}", recipeId)
+              .then()
+              .status(HttpStatus.OK)
+              .apply(
+                  document(
+                      getNestedClassPath(this.getClass())+"/{method-name}",
+                      requestPreprocessor(),
+                      responsePreprocessor(),
+                      requestAccessTokenFields(),
+                      pathParameters(
+                          parameterWithName("recipe_id").description("레시피 ID")
+                      ),
+                      responseSuccessFields()
+                  )
+              );
+          verify(recipeViewStatusService).delete(userId, recipeId);
+        }
+      }
+    }
+  }
 }

@@ -51,3 +51,26 @@ include::{snippets}/recipe-view-status-controller-test/update-recipe-view-status
 
 ==== 응답 본문
 include::{snippets}/recipe-view-status-controller-test/update-recipe-view-status-category-exception/given-non-existent-category-id/then-should-throw-exception/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/recipe-view-status-controller-test/update-recipe-view-status-category-exception/given-non-existent-category-id/then-should-throw-exception/response-fields.adoc[]
+
+== 레시피 시청 상태 삭제 (DELETE /api/v1/recipes/+{recipe_id}+)
+=== 2.1 성공 – 레시피 시청 상태 카테고리 삭제
+==== 요청
+include::{snippets}/recipe-view-status-controller-test/delete-recipe-view-status/given-valid-parameters-for-delete/when-deleting-recipe-view-status/then-should-delete-recipe-view-status/curl-request.adoc[]
+
+==== 요청 헤더
+include::{snippets}/recipe-view-status-controller-test/delete-recipe-view-status/given-valid-parameters-for-delete/when-deleting-recipe-view-status/then-should-delete-recipe-view-status/http-request.adoc[]
+
+==== 경로 매개변수
+include::{snippets}/recipe-view-status-controller-test/delete-recipe-view-status/given-valid-parameters-for-delete/when-deleting-recipe-view-status/then-should-delete-recipe-view-status/path-parameters.adoc[]
+
+==== 요청 본문
+include::{snippets}/recipe-view-status-controller-test/delete-recipe-view-status/given-valid-parameters-for-delete/when-deleting-recipe-view-status/then-should-delete-recipe-view-status/request-body.adoc[]
+
+==== 응답 본문
+include::{snippets}/recipe-view-status-controller-test/delete-recipe-view-status/given-valid-parameters-for-delete/when-deleting-recipe-view-status/then-should-delete-recipe-view-status/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/recipe-view-status-controller-test/delete-recipe-view-status/given-valid-parameters-for-delete/when-deleting-recipe-view-status/then-should-delete-recipe-view-status/response-fields.adoc[]

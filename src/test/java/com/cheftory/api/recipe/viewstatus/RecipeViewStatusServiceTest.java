@@ -61,7 +61,7 @@ public class RecipeViewStatusServiceTest {
 
         @BeforeEach
         void beforeEach() {
-          doReturn(false).when(repository).existsByRecipeIdAndUserId(recipeId, userId);
+          doReturn(false).when(repository).existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
         }
 
         @Test
@@ -69,7 +69,7 @@ public class RecipeViewStatusServiceTest {
         public void thenShouldCallRepositorySaveWithCorrectParameters() {
           service.create(userId, recipeId);
 
-          verify(repository).existsByRecipeIdAndUserId(recipeId, userId);
+          verify(repository).existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
           verify(repository).save(argThat(recipeViewStatus ->
               recipeViewStatus.getRecipeId().equals(recipeId)
                   && recipeViewStatus.getUserId().equals(userId)
@@ -97,7 +97,7 @@ public class RecipeViewStatusServiceTest {
 
         @BeforeEach
         void beforeEach() {
-          doReturn(true).when(repository).existsByRecipeIdAndUserId(recipeId, userId);
+          doReturn(true).when(repository).existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
         }
 
         @Test
@@ -145,7 +145,7 @@ public class RecipeViewStatusServiceTest {
 
           doReturn(updateTime).when(clock).now();
 
-          doReturn(Optional.of(realRecipeViewStatus)).when(repository).findByRecipeIdAndUserId(recipeId, userId);
+          doReturn(Optional.of(realRecipeViewStatus)).when(repository).findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
           doReturn(realRecipeViewStatus).when(repository).save(any(RecipeViewStatus.class));
         }
 
@@ -159,7 +159,7 @@ public class RecipeViewStatusServiceTest {
           assertThat(status.getUserId()).isEqualTo(userId);
           assertThat(status.getViewedAt()).isEqualTo(updateTime); // 실제로 업데이트된 시간
 
-          verify(repository).findByRecipeIdAndUserId(recipeId, userId);
+          verify(repository).findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
           verify(repository).save(realRecipeViewStatus);
         }
       }
@@ -184,7 +184,7 @@ public class RecipeViewStatusServiceTest {
 
         @BeforeEach
         void beforeEach() {
-          doReturn(Optional.empty()).when(repository).findByRecipeIdAndUserId(recipeId, userId);
+          doReturn(Optional.empty()).when(repository).findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
         }
 
         @Test
@@ -230,7 +230,7 @@ public class RecipeViewStatusServiceTest {
         void beforeEach() {
           realRecipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
           doReturn(Optional.of(realRecipeViewStatus)).when(repository)
-              .findByRecipeIdAndUserId(recipeId, userId);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
           doReturn(realRecipeViewStatus).when(repository).save(any(RecipeViewStatus.class));
         }
 
@@ -270,7 +270,7 @@ public class RecipeViewStatusServiceTest {
 
         @BeforeEach
         void beforeEach() {
-          doReturn(Optional.empty()).when(repository).findByRecipeIdAndUserId(recipeId, userId);
+          doReturn(Optional.empty()).when(repository).findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
         }
 
         @Test
@@ -322,7 +322,7 @@ public class RecipeViewStatusServiceTest {
 
           viewStatusesWithCategory = List.of(status1, status2);
 
-          doReturn(viewStatusesWithCategory).when(repository).findByRecipeCategoryId(categoryId);
+          doReturn(viewStatusesWithCategory).when(repository).findByRecipeCategoryIdAndStatus(categoryId, RecipeViewState.ACTIVE);
           doReturn(viewStatusesWithCategory).when(repository).saveAll(any());
         }
 
@@ -349,7 +349,7 @@ public class RecipeViewStatusServiceTest {
 
         @BeforeEach
         void beforeEach() {
-          doReturn(List.of()).when(repository).findByRecipeCategoryId(categoryId);
+          doReturn(List.of()).when(repository).findByRecipeCategoryIdAndStatus(categoryId, RecipeViewState.ACTIVE);
         }
 
         @Test
@@ -357,7 +357,7 @@ public class RecipeViewStatusServiceTest {
         public void thenShouldCallSaveAllWithEmptyList() {
           service.deleteCategories(categoryId);
 
-          verify(repository).findByRecipeCategoryId(categoryId);
+          verify(repository).findByRecipeCategoryIdAndStatus(categoryId, RecipeViewState.ACTIVE);
           verify(repository).saveAll(List.of());
         }
       }
@@ -379,12 +379,12 @@ public class RecipeViewStatusServiceTest {
           RecipeViewStatus.create(clock, userId, UUID.randomUUID())
       );
 
-      doReturn(expectedStatuses).when(repository).findAllByUserIdAndRecipeCategoryId(userId, categoryId);
+      doReturn(expectedStatuses).when(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE);
 
       List<RecipeViewStatus> result = service.findCategories(userId, categoryId);
 
       assertThat(result).isEqualTo(expectedStatuses);
-      verify(repository).findAllByUserIdAndRecipeCategoryId(userId, categoryId);
+      verify(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE);
     }
   }
 
@@ -400,12 +400,12 @@ public class RecipeViewStatusServiceTest {
           RecipeViewStatus.create(clock, userId, UUID.randomUUID())
       );
 
-      doReturn(expectedStatuses).when(repository).findAllByUserIdAndRecipeCategoryId(userId, null);
+      doReturn(expectedStatuses).when(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE);
 
       List<RecipeViewStatus> result = service.findUnCategories(userId);
 
       assertThat(result).isEqualTo(expectedStatuses);
-      verify(repository).findAllByUserIdAndRecipeCategoryId(userId, null);
+      verify(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE);
     }
   }
 
@@ -436,7 +436,7 @@ public class RecipeViewStatusServiceTest {
               RecipeViewStatus.create(clock, userId, UUID.randomUUID()),
               RecipeViewStatus.create(clock, userId, UUID.randomUUID())
           );
-          doReturn(expectedStatuses).when(repository).findByUserId(userId, ViewStatusSort.VIEWED_AT_DESC);
+          doReturn(expectedStatuses).when(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, ViewStatusSort.VIEWED_AT_DESC);
         }
 
         @Test
@@ -445,7 +445,7 @@ public class RecipeViewStatusServiceTest {
           List<RecipeViewStatus> result = service.findRecentUsers(userId);
 
           assertThat(result).isEqualTo(expectedStatuses);
-          verify(repository).findByUserId(userId, ViewStatusSort.VIEWED_AT_DESC);
+          verify(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE,ViewStatusSort.VIEWED_AT_DESC);
         }
       }
     }
@@ -478,7 +478,7 @@ public class RecipeViewStatusServiceTest {
               createMockProjection(categoryIds.get(0), 5L),
               createMockProjection(categoryIds.get(1), 3L)
           );
-          doReturn(projections).when(repository).countByCategoryIds(categoryIds);
+          doReturn(projections).when(repository).countByCategoryIdsAndStatus(categoryIds, RecipeViewState.ACTIVE);
         }
 
         private RecipeViewStatusCountProjection createMockProjection(UUID categoryId, Long count) {
@@ -503,7 +503,86 @@ public class RecipeViewStatusServiceTest {
           assertThat(second.getCategoryId()).isEqualTo(categoryIds.get(1));
           assertThat(second.getCount()).isEqualTo(3);
 
-          verify(repository).countByCategoryIds(categoryIds);
+          verify(repository).countByCategoryIdsAndStatus(categoryIds , RecipeViewState.ACTIVE);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 조회 상태 삭제")
+  class DeleteRecipeViewStatus {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
+    class GivenValidRecipeAndUserId {
+
+      private UUID recipeId;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 조회 상태를 삭제한다면")
+      class WhenDeletingRecipeViewStatus {
+
+        private RecipeViewStatus realRecipeViewStatus;
+
+        @BeforeEach
+        void beforeEach() {
+          realRecipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+          doReturn(Optional.of(realRecipeViewStatus)).when(repository)
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Then - 레시피 조회 상태가 삭제되어야 한다")
+        public void thenShouldDeleteRecipeViewStatus() {
+          service.delete(userId, recipeId);
+
+          verify(repository).findByRecipeIdAndUserIdAndStatus(recipeId, userId,
+              RecipeViewState.ACTIVE);
+          verify(repository).save(realRecipeViewStatus);
+          assertThat(realRecipeViewStatus.getStatus() == RecipeViewState.DELETED).isTrue();
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 존재하지 않는 레시피 ID와 사용자 ID가 주어졌을 떄")
+    class GivenNonExistentRecipeAndUserId {
+
+      private UUID recipeId;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 조회 상태를 삭제한다면")
+      class WhenDeletingNonExistentRecipeViewStatus {
+
+        @BeforeEach
+        void beforeEach() {
+          doReturn(Optional.empty()).when(repository).findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Then - ViewStatusException이 발생해야 한다")
+        public void thenShouldThrowViewStatusException() {
+          ViewStatusException exception = assertThrows(ViewStatusException.class, () -> {
+            service.delete(userId, recipeId);
+          });
+
+          assertThat(exception.getErrorMessage()).isEqualTo(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND);
+          verify(repository, never()).save(any());
         }
       }
     }
