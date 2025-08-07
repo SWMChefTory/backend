@@ -452,6 +452,16 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
                 return status;
               })
               .forEach(repository::save);
+
+          IntStream.range(0, 3)
+              .mapToObj(i -> {
+                RecipeViewStatus status = RecipeViewStatus.create(clock, userId, UUID.randomUUID());
+                status.updateRecipeCategoryId(categoryId3);
+                status.delete();
+                repository.save(status);
+                return status;
+              })
+              .forEach(repository::save);
         }
 
         @Test

@@ -134,8 +134,12 @@ public class RecipeService {
     Map<UUID, RecipeViewStatus> viewStatusMap = viewStatuses.stream()
         .collect(Collectors.toMap(RecipeViewStatus::getRecipeId, Function.identity()));
 
+    List<UUID> recipeIds = viewStatuses.stream()
+        .map(RecipeViewStatus::getRecipeId)
+        .toList();
+
     return recipeRepository
-        .findRecipesByIdInAndStatus(viewStatusMap.keySet().stream().toList(), RecipeStatus.COMPLETED)
+        .findRecipesByIdInAndStatus(recipeIds, RecipeStatus.COMPLETED)
         .stream()
         .map(recipe -> RecipeHistoryOverview.of(recipe, viewStatusMap.get(recipe.getId())))
         .toList();
