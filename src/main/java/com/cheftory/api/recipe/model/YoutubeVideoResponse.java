@@ -9,7 +9,7 @@ public record YoutubeVideoResponse(
     List<Item> items
 ) {
     public String getThumbnailUri() {
-        return items.getFirst().snippet().thumbnails().medium().url();
+        return items.getFirst().snippet().thumbnails().maxres().url();
     }
 
     public String getTitle() {
@@ -36,7 +36,8 @@ public record YoutubeVideoResponse(
         @JsonProperty("default")
         ThumbnailInfo defaultThumbnail,
         ThumbnailInfo medium,
-        ThumbnailInfo high
+        ThumbnailInfo high,
+        ThumbnailInfo maxres
     ) {}
 
     public record ThumbnailInfo(
