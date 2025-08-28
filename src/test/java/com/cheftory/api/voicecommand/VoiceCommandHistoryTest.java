@@ -1,5 +1,10 @@
 package com.cheftory.api.voicecommand;
 
+import com.cheftory.api.voicecommand.enums.IntentModel;
+import com.cheftory.api.voicecommand.enums.STTModel;
+import com.cheftory.api.voicecommand.exception.VoiceCommandErrorCode;
+import com.cheftory.api.voicecommand.exception.VoiceCommandHistoryException;
+import com.cheftory.api.voicecommand.model.VoiceCommandHistory;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +27,7 @@ public class VoiceCommandHistoryTest {
 
       private String sttModel;
       private String intentGPT4Model;
-      private String intentRegexModel;
+      private String intentNLUModel;
       private String transcribe;
       private String result;
       private UUID userId;
@@ -31,7 +36,7 @@ public class VoiceCommandHistoryTest {
       void setUp() {
         sttModel = "VITO";
         intentGPT4Model = "GPT4.1";
-        intentRegexModel = "REGEX";
+        intentNLUModel = "NLU";
         transcribe = "hello world";
         result = "greeting";
         userId = UUID.randomUUID();
@@ -63,21 +68,21 @@ public class VoiceCommandHistoryTest {
       }
 
       @Nested
-      @DisplayName("When - REGEX 모델로 생성한다면")
-      class WhenCreatingWithRegex {
+      @DisplayName("When - NLU 모델로 생성한다면")
+      class WhenCreatingWithNLU {
 
         private VoiceCommandHistory voiceCommandHistory;
 
         @BeforeEach
         void beforeEach() {
-          voiceCommandHistory = VoiceCommandHistory.create(sttModel, transcribe, intentRegexModel, result, userId);
+          voiceCommandHistory = VoiceCommandHistory.create(sttModel, transcribe, intentNLUModel, result, userId);
         }
 
         @Test
-        @DisplayName("Then - REGEX 모델로 올바르게 생성되어야 한다")
-        public void thenShouldCreateWithRegexModel() {
+        @DisplayName("Then - NLU 모델로 올바르게 생성되어야 한다")
+        public void thenShouldCreateWithNLUModel() {
           assertThat(voiceCommandHistory.getSttModel()).isEqualTo(STTModel.VITO);
-          assertThat(voiceCommandHistory.getIntentModel()).isEqualTo(IntentModel.REGEX);
+          assertThat(voiceCommandHistory.getIntentModel()).isEqualTo(IntentModel.NLU);
           assertThat(voiceCommandHistory.getTranscribe()).isEqualTo(transcribe);
           assertThat(voiceCommandHistory.getResult()).isEqualTo(result);
           assertThat(voiceCommandHistory.getUserId()).isEqualTo(userId);
