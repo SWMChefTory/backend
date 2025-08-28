@@ -4,7 +4,6 @@ package com.cheftory.api.utils;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 
 import com.cheftory.api.exception.ErrorMessage;
-import com.cheftory.api.voicecommand.STTModel;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;

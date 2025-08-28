@@ -1,5 +1,7 @@
-package com.cheftory.api.voicecommand;
+package com.cheftory.api.voicecommand.model;
 
+import com.cheftory.api.voicecommand.enums.IntentModel;
+import com.cheftory.api.voicecommand.enums.STTModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

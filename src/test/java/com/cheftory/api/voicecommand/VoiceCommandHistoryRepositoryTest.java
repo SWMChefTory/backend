@@ -1,6 +1,9 @@
 package com.cheftory.api.voicecommand;
 
 import com.cheftory.api.DbContextTest;
+import com.cheftory.api.voicecommand.enums.IntentModel;
+import com.cheftory.api.voicecommand.enums.STTModel;
+import com.cheftory.api.voicecommand.model.VoiceCommandHistory;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

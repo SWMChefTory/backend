@@ -1,4 +1,4 @@
-package com.cheftory.api.voicecommand;
+package com.cheftory.api.voicecommand.exception;
 
 import com.cheftory.api.exception.ErrorMessage;
 

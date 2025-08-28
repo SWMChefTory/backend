@@ -5,6 +5,9 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.voicecommand.enums.IntentModel;
+import com.cheftory.api.voicecommand.enums.STTModel;
+import com.cheftory.api.voicecommand.exception.VoiceCommandHistoryException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
