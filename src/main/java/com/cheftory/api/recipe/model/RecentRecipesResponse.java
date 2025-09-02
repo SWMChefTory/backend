@@ -6,16 +6,35 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
 
 public record RecentRecipesResponse(
     @JsonProperty("recent_recipes")
-    List<RecentRecipeResponse> recentRecipes
+    List<RecentRecipeResponse> recentRecipes,
+
+    @JsonProperty("current_page")
+    int currentPage,
+
+    @JsonProperty("total_pages")
+    int totalPages,
+
+    @JsonProperty("total_elements")
+    long totalElements,
+
+    @JsonProperty("has_next")
+    boolean hasNext
 ) {
-  public static RecentRecipesResponse from(List<RecipeHistoryOverview> recentRecipes) {
+  public static RecentRecipesResponse from(Page<RecipeHistoryOverview> recentRecipes) {
     List<RecentRecipeResponse> responses = recentRecipes.stream()
         .map(RecentRecipeResponse::from)
         .toList();
-    return new RecentRecipesResponse(responses);
+    return new RecentRecipesResponse(
+        responses,
+        recentRecipes.getNumber(),
+        recentRecipes.getTotalPages(),
+        recentRecipes.getTotalElements(),
+        recentRecipes.hasNext()
+    );
   }
 
   public record RecentRecipeResponse(

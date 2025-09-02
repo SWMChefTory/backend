@@ -1,12 +1,18 @@
 package com.cheftory.api.recipe.viewstatus;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipe.model.RecipeSort;
+import com.cheftory.api.recipe.util.RecipePageRequest;
 import com.cheftory.api.recipe.viewstatus.exception.ViewStatusErrorCode;
 import com.cheftory.api.recipe.viewstatus.exception.ViewStatusException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -53,16 +59,19 @@ public class RecipeViewStatusService {
     recipeViewStatusRepository.save(recipeViewStatus);
   }
 
-  public List<RecipeViewStatus> findCategories(UUID userId, UUID categoryId) {
-    return recipeViewStatusRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE);
+  public Page<RecipeViewStatus> findCategories(UUID userId, UUID categoryId, Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
+    return recipeViewStatusRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE, pageable);
   }
 
-  public List<RecipeViewStatus> findUnCategories(UUID userId) {
-    return recipeViewStatusRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE);
+  public Page<RecipeViewStatus> findUnCategories(UUID userId, Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
+    return recipeViewStatusRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE,pageable);
   }
 
-  public List<RecipeViewStatus> findRecentUsers(UUID userId) {
-    return recipeViewStatusRepository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, ViewStatusSort.VIEWED_AT_DESC);
+  public Page<RecipeViewStatus> findRecentUsers(UUID userId, Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
+    return recipeViewStatusRepository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
   }
 
   public List<RecipeViewStatusCount> countByCategories(List<UUID> categoryIds) {

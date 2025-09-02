@@ -13,6 +13,7 @@ import com.cheftory.api.recipe.model.RecipeOverview;
 import com.cheftory.api.recipe.model.RecipeStepInfo;
 import com.cheftory.api.recipe.model.RecipeViewStatusInfo;
 import com.cheftory.api.utils.RestDocsTest;
+
 import java.time.LocalDateTime;
 import java.net.URI;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +24,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,6 +47,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
 @DisplayName("Recipe Controller")
 public class RecipeControllerTest extends RestDocsTest {
@@ -86,12 +91,14 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 레시피 최근 기록을 조회한다면")
       class WhenRequestingRecentRecipes {
 
-        private List<RecipeHistoryOverview> recentRecipes;
+        private Page<RecipeHistoryOverview> recentRecipes;
         private RecipeHistoryOverview recentRecipe;
         private RecipeOverview recipe;
         private VideoInfo video;
         private RecipeViewStatusInfo viewStatus;
         private UUID recipeId;
+        private Integer page;
+        private Pageable pageable;
 
         @BeforeEach
         void setUp() {
@@ -100,6 +107,8 @@ public class RecipeControllerTest extends RestDocsTest {
           recipe = mock(RecipeOverview.class);
           video = mock(VideoInfo.class);
           viewStatus = mock(RecipeViewStatusInfo.class);
+          page = 0;
+          pageable = Pageable.ofSize(10);
 
           doReturn(recipe).when(recentRecipe).getRecipeOverview();
           doReturn(viewStatus).when(recentRecipe).getRecipeViewStatusInfo();
@@ -113,8 +122,8 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(120).when(viewStatus).getLastPlaySeconds();
           doReturn(120).when(video).getVideoSeconds();
 
-          recentRecipes = List.of(recentRecipe);
-          doReturn(recentRecipes).when(recipeService).findRecents(any(UUID.class));
+          recentRecipes = new PageImpl<>(List.of(recentRecipe), pageable, 1);
+          doReturn(recentRecipes).when(recipeService).findRecents(any(UUID.class), any(Integer.class));
         }
 
         @Test
@@ -124,15 +133,19 @@ public class RecipeControllerTest extends RestDocsTest {
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
+              .param("page", page)
               .get("/api/v1/recipes/recent")
               .then()
               .status(HttpStatus.OK)
-              .body("recent_recipes", hasSize(recentRecipes.size()))
+              .body("recent_recipes", hasSize(recentRecipes.getContent().size()))
               .apply(document(
                   getNestedClassPath(this.getClass()) + "/{method-name}",
                   requestPreprocessor(),
                   responsePreprocessor(),
                   requestAccessTokenFields(),
+                  queryParameters(
+                      parameterWithName("page").description("페이지 번호 (0부터 시작, 기본값: 0)").optional()
+                  ),
                   responseFields(
                       fieldWithPath("recent_recipes").description("사용자의 최근 레시피 접근 기록"),
                       fieldWithPath("recent_recipes[].viewed_at").description("레시피 접근 시간"),
@@ -141,11 +154,15 @@ public class RecipeControllerTest extends RestDocsTest {
                       fieldWithPath("recent_recipes[].video_id").description("레시피 비디오 ID"),
                       fieldWithPath("recent_recipes[].recipe_title").description("레시피 비디오 제목"),
                       fieldWithPath("recent_recipes[].video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
-                      fieldWithPath("recent_recipes[].video_seconds").description("레시피 비디오 재생 시간")
+                      fieldWithPath("recent_recipes[].video_seconds").description("레시피 비디오 재생 시간"),
+                      fieldWithPath("current_page").description("현재 페이지 번호"),
+                      fieldWithPath("total_pages").description("전체 페이지 수"),
+                      fieldWithPath("total_elements").description("전체 요소 수"),
+                      fieldWithPath("has_next").description("다음 페이지 존재 여부")
                   )
               ));
 
-          verify(recipeService).findRecents(userId);
+          verify(recipeService).findRecents(userId, page);
 
           var responseBody = response.extract().jsonPath();
           var recentRecipesList = responseBody.getList("recent_recipes");
@@ -158,6 +175,10 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("recent_recipes[0].viewed_at")).isEqualTo("2024-01-15T10:30:00");
           assertThat(responseBody.getInt("recent_recipes[0].last_play_seconds")).isEqualTo(120);
           assertThat(responseBody.getInt("recent_recipes[0].video_seconds")).isEqualTo(120);
+          assertThat(responseBody.getString("current_page")).isEqualTo("0");
+          assertThat(responseBody.getString("total_pages")).isEqualTo("1");
+          assertThat(responseBody.getString("total_elements")).isEqualTo("1");
+          assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
         }
       }
     }
@@ -167,9 +188,13 @@ public class RecipeControllerTest extends RestDocsTest {
     class GivenNonExistentUserId {
 
       private UUID userId;
+      private Integer page;
+      private Pageable pageable;
 
       @BeforeEach
       void setUp() {
+        page = 0;
+        pageable = Pageable.ofSize(10);
         userId = UUID.randomUUID();
         var authentication = new UsernamePasswordAuthenticationToken(userId, null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -181,7 +206,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         @BeforeEach
         void setUp() {
-          doReturn(List.of()).when(recipeService).findRecents(userId);
+          doReturn(new PageImpl<>(List.of(), pageable, 0)).when(recipeService).findRecents(userId, page);
         }
 
         @Test
@@ -191,12 +216,13 @@ public class RecipeControllerTest extends RestDocsTest {
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
+              .param("page", page)
               .get("/api/v1/recipes/recent")
               .then()
               .status(HttpStatus.OK)
               .body("recent_recipes", hasSize(0));
 
-          verify(recipeService).findRecents(userId);
+          verify(recipeService).findRecents(userId, page);
         }
       }
     }
@@ -402,10 +428,12 @@ public class RecipeControllerTest extends RestDocsTest {
     class GivenRecommendRecipesRequest {
 
       private UUID userId;
+      private Integer page;
 
       @BeforeEach
       void setUp() {
         userId = UUID.randomUUID();
+        page = 0;
         var authentication = new UsernamePasswordAuthenticationToken(userId, null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
@@ -414,16 +442,18 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 추천 레시피를 조회한다면")
       class WhenRequestingRecommendRecipes {
 
-        private List<RecipeOverview> recipes;
+        private Page<RecipeOverview> recipes;
         private UUID recipeId;
         private VideoInfo videoInfo;
         private RecipeOverview recipe;
+        private Pageable pageable;
 
         @BeforeEach
         void setUp() {
           recipeId = UUID.randomUUID();
           recipe = mock(RecipeOverview.class);
           videoInfo = mock(VideoInfo.class);
+          pageable = Pageable.ofSize(10);
 
           doReturn(videoInfo).when(recipe).getVideoInfo();
           doReturn(recipeId).when(recipe).getId();
@@ -434,8 +464,8 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(URI.create("https://example.com/thumbnail.jpg")).when(videoInfo).getThumbnailUrl();
           doReturn(URI.create("https://example.com/video")).when(videoInfo).getVideoUri();
 
-          recipes = List.of(recipe);
-          doReturn(recipes).when(recipeService).findRecommends();
+          recipes = new PageImpl<>(List.of(recipe), pageable, 1);
+          doReturn(recipes).when(recipeService).findRecommends(any(Integer.class));
         }
 
         @Test
@@ -445,6 +475,7 @@ public class RecipeControllerTest extends RestDocsTest {
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
+              .param("page", page)
               .get("/api/v1/recipes/recommend")
               .then()
               .status(HttpStatus.OK)
@@ -453,6 +484,9 @@ public class RecipeControllerTest extends RestDocsTest {
                   requestPreprocessor(),
                   responsePreprocessor(),
                   requestAccessTokenFields(),
+                  queryParameters(
+                      parameterWithName("page").description("페이지 번호 (0부터 시작, 기본값: 0)").optional()
+                  ),
                   responseFields(
                       fieldWithPath("recommend_recipes").description("추천 레시피 목록"),
                       fieldWithPath("recommend_recipes[].recipe_id").description("레시피 ID"),
@@ -460,20 +494,28 @@ public class RecipeControllerTest extends RestDocsTest {
                       fieldWithPath("recommend_recipes[].video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
                       fieldWithPath("recommend_recipes[].video_id").description("레시피 비디오 ID"),
                       fieldWithPath("recommend_recipes[].count").description("레시피 조회 수"),
-                      fieldWithPath("recommend_recipes[].video_url").description("레시피 비디오 URL")
+                      fieldWithPath("recommend_recipes[].video_url").description("레시피 비디오 URL"),
+                      fieldWithPath("current_page").description("현재 페이지 번호"),
+                      fieldWithPath("total_pages").description("전체 페이지 수"),
+                      fieldWithPath("total_elements").description("전체 요소 수"),
+                      fieldWithPath("has_next").description("다음 페이지 존재 여부")
                   )
               ));
 
-          verify(recipeService).findRecommends();
+          verify(recipeService).findRecommends(page);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("recommend_recipes")).hasSize(1);
-          assertThat(responseBody.getUUID("recommend_recipes[0].recipe_id")).isEqualTo(recipeId);
+          assertThat(responseBody.getString("recommend_recipes[0].recipe_id")).isEqualTo(recipeId.toString());
           assertThat(responseBody.getString("recommend_recipes[0].recipe_title")).isEqualTo("Sample Recipe Title");
           assertThat(responseBody.getString("recommend_recipes[0].video_thumbnail_url")).isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getString("recommend_recipes[0].video_id")).isEqualTo("sample_video_id");
           assertThat(responseBody.getInt("recommend_recipes[0].count")).isEqualTo(100);
           assertThat(responseBody.getString("recommend_recipes[0].video_url")).isEqualTo("https://example.com/video");
+          assertThat(responseBody.getString("current_page")).isEqualTo("0");
+          assertThat(responseBody.getString("total_pages")).isEqualTo("1");
+          assertThat(responseBody.getString("total_elements")).isEqualTo("1");
+          assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
         }
       }
     }
@@ -483,10 +525,12 @@ public class RecipeControllerTest extends RestDocsTest {
     class GivenNoRecommendRecipes {
 
       private UUID userId;
+      private Integer page;
 
       @BeforeEach
       void setUp() {
         userId = UUID.randomUUID();
+        page = 0;
         var authentication = new UsernamePasswordAuthenticationToken(userId, null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
@@ -495,9 +539,12 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 추천 레시피를 조회한다면")
       class WhenRequestingRecommendRecipes {
 
+        private Pageable pageable;
+
         @BeforeEach
         void setUp() {
-          doReturn(List.of()).when(recipeService).findRecommends();
+          pageable = Pageable.ofSize(10);
+          doReturn(new PageImpl<>(List.of(), pageable, 0)).when(recipeService).findRecommends(any(Integer.class));
         }
 
         @Test
@@ -507,12 +554,13 @@ public class RecipeControllerTest extends RestDocsTest {
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
+              .param("page", page)
               .get("/api/v1/recipes/recommend")
               .then()
               .status(HttpStatus.OK)
               .body("recommend_recipes", hasSize(0));
 
-          verify(recipeService).findRecommends();
+          verify(recipeService).findRecommends(page);
         }
       }
     }
@@ -541,16 +589,20 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 카테고리별 레시피를 조회한다면")
       class WhenRequestingCategorizedRecipes {
 
-        private List<RecipeHistoryOverview> categorizedRecipes;
+        private Page<RecipeHistoryOverview> categorizedRecipes;
         private RecipeHistoryOverview categorizedRecipe;
         private RecipeOverview recipe;
         private VideoInfo video;
         private RecipeViewStatusInfo viewStatus;
         private UUID recipeId;
+        private Integer page;
+        private Pageable pageable;
 
         @BeforeEach
         void setUp() {
           recipeId = UUID.randomUUID();
+          page = 0;
+          pageable = Pageable.ofSize(10);
           categorizedRecipe = mock(RecipeHistoryOverview.class);
           recipe = mock(RecipeOverview.class);
           video = mock(VideoInfo.class);
@@ -570,21 +622,22 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(90).when(viewStatus).getLastPlaySeconds();
           doReturn(categoryId).when(viewStatus).getCategoryId();
 
-          categorizedRecipes = List.of(categorizedRecipe);
-          doReturn(categorizedRecipes).when(recipeService).findCategorized(any(UUID.class), any(UUID.class));
+          categorizedRecipes = new PageImpl<>(List.of(categorizedRecipe), pageable, 1);
+          doReturn(categorizedRecipes).when(recipeService).findCategorized(any(UUID.class), any(UUID.class), any(Integer.class));
         }
 
         @Test
         @DisplayName("Then - 카테고리별 레시피를 성공적으로 반환해야 한다")
         void thenShouldReturnCategorizedRecipes() {
-          var response = given()
+          given()
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
+              .param("page", page)
               .get("/api/v1/recipes/categorized/{recipe_category_id}", categoryId)
               .then()
               .status(HttpStatus.OK)
-              .body("categorized_recipes", hasSize(categorizedRecipes.size()))
+              .body("categorized_recipes", hasSize(categorizedRecipes.getContent().size()))
               .apply(document(
                   getNestedClassPath(this.getClass()) + "/{method-name}",
                   requestPreprocessor(),
@@ -592,6 +645,9 @@ public class RecipeControllerTest extends RestDocsTest {
                   requestAccessTokenFields(),
                   pathParameters(
                       parameterWithName("recipe_category_id").description("조회할 레시피 카테고리 ID")
+                  ),
+                  queryParameters(
+                      parameterWithName("page").description("페이지 번호 (0부터 시작, 기본값: 0)").optional()
                   ),
                   responseFields(
                       fieldWithPath("categorized_recipes").description("카테고리별 레시피 목록"),
@@ -602,24 +658,15 @@ public class RecipeControllerTest extends RestDocsTest {
                       fieldWithPath("categorized_recipes[].video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
                       fieldWithPath("categorized_recipes[].video_id").description("레시피 비디오 ID"),
                       fieldWithPath("categorized_recipes[].video_seconds").description("레시피 비디오 재생 시간"),
-                      fieldWithPath("categorized_recipes[].category_id").description("레시피 카테고리 ID")
+                      fieldWithPath("categorized_recipes[].category_id").description("레시피 카테고리 ID"),
+                      fieldWithPath("current_page").description("현재 페이지 번호"),
+                      fieldWithPath("total_pages").description("전체 페이지 수"),
+                      fieldWithPath("total_elements").description("전체 요소 수"),
+                      fieldWithPath("has_next").description("다음 페이지 존재 여부")
                   )
-              ));
+                            ));
 
-          verify(recipeService).findCategorized(userId, categoryId);
-
-          var responseBody = response.extract().jsonPath();
-          var categorizedRecipesList = responseBody.getList("categorized_recipes");
-
-          assertThat(categorizedRecipesList).hasSize(1);
-          assertThat(responseBody.getUUID("categorized_recipes[0].recipe_id")).isEqualTo(recipeId);
-          assertThat(responseBody.getString("categorized_recipes[0].recipe_title")).isEqualTo("Categorized Recipe Title");
-          assertThat(responseBody.getString("categorized_recipes[0].video_thumbnail_url")).isEqualTo("https://example.com/categorized_thumbnail.jpg");
-          assertThat(responseBody.getString("categorized_recipes[0].video_id")).isEqualTo("categorized_video_id");
-          assertThat(responseBody.getInt("categorized_recipes[0].video_seconds")).isEqualTo(180);
-          assertThat(responseBody.getString("categorized_recipes[0].viewed_at")).isEqualTo("2024-01-20T14:30:00");
-          assertThat(responseBody.getInt("categorized_recipes[0].last_play_seconds")).isEqualTo(90);
-          assertThat(responseBody.getUUID("categorized_recipes[0].category_id")).isEqualTo(categoryId);
+          verify(recipeService).findCategorized(userId, categoryId, page);
         }
       }
     }
@@ -643,9 +690,14 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 카테고리별 레시피를 조회한다면")
       class WhenRequestingCategorizedRecipes {
 
+        private Integer page;
+        private Pageable pageable;
+
         @BeforeEach
         void setUp() {
-          doReturn(List.of()).when(recipeService).findCategorized(userId, categoryId);
+          page = 0;
+          pageable = Pageable.ofSize(10);
+          doReturn(new PageImpl<>(List.of(), pageable, 0)).when(recipeService).findCategorized(userId, categoryId, page);
         }
 
         @Test
@@ -655,12 +707,13 @@ public class RecipeControllerTest extends RestDocsTest {
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
+              .param("page", page)
               .get("/api/v1/recipes/categorized/{recipe_category_id}", categoryId)
               .then()
               .status(HttpStatus.OK)
               .body("categorized_recipes", hasSize(0));
 
-          verify(recipeService).findCategorized(userId, categoryId);
+          verify(recipeService).findCategorized(userId, categoryId, page);
         }
       }
     }
@@ -687,16 +740,20 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 미분류 레시피를 조회한다면")
       class WhenRequestingUnCategorizedRecipes {
 
-        private List<RecipeHistoryOverview> unCategorizedRecipes;
+        private Page<RecipeHistoryOverview> unCategorizedRecipes;
         private RecipeHistoryOverview unCategorizedRecipe;
         private RecipeOverview recipe;
         private VideoInfo video;
         private RecipeViewStatusInfo viewStatus;
         private UUID recipeId;
+        private Integer page;
+        private Pageable pageable;
 
         @BeforeEach
         void setUp() {
           recipeId = UUID.randomUUID();
+          page = 0;
+          pageable = Pageable.ofSize(10);
           unCategorizedRecipe = mock(RecipeHistoryOverview.class);
           recipe = mock(RecipeOverview.class);
           video = mock(VideoInfo.class);
@@ -715,26 +772,30 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(LocalDateTime.of(2024, 1, 25, 16, 45, 0)).when(viewStatus).getViewedAt();
           doReturn(150).when(viewStatus).getLastPlaySeconds();
 
-          unCategorizedRecipes = List.of(unCategorizedRecipe);
-          doReturn(unCategorizedRecipes).when(recipeService).findUnCategorized(any(UUID.class));
+          unCategorizedRecipes = new PageImpl<>(List.of(unCategorizedRecipe), pageable, 1);
+          doReturn(unCategorizedRecipes).when(recipeService).findUnCategorized(any(UUID.class), any(Integer.class));
         }
 
         @Test
         @DisplayName("Then - 미분류 레시피를 성공적으로 반환해야 한다")
         void thenShouldReturnUnCategorizedRecipes() {
-          var response = given()
+          given()
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
+              .param("page", page)
               .get("/api/v1/recipes/uncategorized")
               .then()
               .status(HttpStatus.OK)
-              .body("unCategorized_recipes", hasSize(unCategorizedRecipes.size()))
+              .body("unCategorized_recipes", hasSize(unCategorizedRecipes.getContent().size()))
               .apply(document(
                   getNestedClassPath(this.getClass()) + "/{method-name}",
                   requestPreprocessor(),
                   responsePreprocessor(),
                   requestAccessTokenFields(),
+                  queryParameters(
+                      parameterWithName("page").description("페이지 번호 (0부터 시작, 기본값: 0)").optional()
+                  ),
                   responseFields(
                       fieldWithPath("unCategorized_recipes").description("미분류 레시피 목록"),
                       fieldWithPath("unCategorized_recipes[].viewed_at").description("레시피 접근 시간"),
@@ -743,23 +804,15 @@ public class RecipeControllerTest extends RestDocsTest {
                       fieldWithPath("unCategorized_recipes[].recipe_title").description("레시피 제목"),
                       fieldWithPath("unCategorized_recipes[].video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
                       fieldWithPath("unCategorized_recipes[].video_id").description("레시피 비디오 ID"),
-                      fieldWithPath("unCategorized_recipes[].video_seconds").description("레시피 비디오 재생 시간")
+                      fieldWithPath("unCategorized_recipes[].video_seconds").description("레시피 비디오 재생 시간"),
+                      fieldWithPath("current_page").description("현재 페이지 번호"),
+                      fieldWithPath("total_pages").description("전체 페이지 수"),
+                      fieldWithPath("total_elements").description("전체 요소 수"),
+                      fieldWithPath("has_next").description("다음 페이지 존재 여부")
                   )
               ));
 
-          verify(recipeService).findUnCategorized(userId);
-
-          var responseBody = response.extract().jsonPath();
-          var unCategorizedRecipesList = responseBody.getList("unCategorized_recipes");
-
-          assertThat(unCategorizedRecipesList).hasSize(1);
-          assertThat(responseBody.getUUID("unCategorized_recipes[0].recipe_id")).isEqualTo(recipeId);
-          assertThat(responseBody.getString("unCategorized_recipes[0].recipe_title")).isEqualTo("Uncategorized Recipe Title");
-          assertThat(responseBody.getString("unCategorized_recipes[0].video_thumbnail_url")).isEqualTo("https://example.com/uncategorized_thumbnail.jpg");
-          assertThat(responseBody.getString("unCategorized_recipes[0].video_id")).isEqualTo("uncategorized_video_id");
-          assertThat(responseBody.getInt("unCategorized_recipes[0].video_seconds")).isEqualTo(240);
-          assertThat(responseBody.getString("unCategorized_recipes[0].viewed_at")).isEqualTo("2024-01-25T16:45:00");
-          assertThat(responseBody.getInt("unCategorized_recipes[0].last_play_seconds")).isEqualTo(150);
+          verify(recipeService).findUnCategorized(userId, page);
         }
       }
     }
@@ -781,9 +834,14 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 미분류 레시피를 조회한다면")
       class WhenRequestingUnCategorizedRecipes {
 
+        private Integer page;
+        private Pageable pageable;
+
         @BeforeEach
         void setUp() {
-          doReturn(List.of()).when(recipeService).findUnCategorized(userId);
+          page = 0;
+          pageable = Pageable.ofSize(10);
+          doReturn(new PageImpl<>(List.of(), pageable, 0)).when(recipeService).findUnCategorized(userId, page);
         }
 
         @Test
@@ -793,12 +851,13 @@ public class RecipeControllerTest extends RestDocsTest {
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
+              .param("page", page)
               .get("/api/v1/recipes/uncategorized")
               .then()
               .status(HttpStatus.OK)
               .body("unCategorized_recipes", hasSize(0));
 
-          verify(recipeService).findUnCategorized(userId);
+          verify(recipeService).findUnCategorized(userId, page);
         }
       }
     }
