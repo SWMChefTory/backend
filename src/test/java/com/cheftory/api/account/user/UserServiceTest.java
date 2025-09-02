@@ -47,15 +47,15 @@ class UserServiceTest {
             .thenReturn(Optional.empty());
 
         UUID generatedId = UUID.randomUUID();
-        User user = User.create(nickname, gender, birth, provider, providerSub);
+        User user = User.create(nickname, gender, birth, provider, providerSub, true);
         user = user.toBuilder().id(generatedId).build();
 
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        UUID result = userService.create(nickname, gender, birth, provider, providerSub);
+        User user1 = userService.create(nickname, gender, birth, provider, providerSub, true, true, false);
 
         verify(userRepository).save(any(User.class));
-        Assertions.assertEquals(generatedId, result);
+        Assertions.assertEquals(generatedId, user1.getId());
       }
     }
 
@@ -67,14 +67,14 @@ class UserServiceTest {
       @DisplayName("Then - 예외를 던져야 한다")
       void thenShouldThrowUserAlreadyExist() {
         // Given
-        User existing = User.create(nickname, gender, birth, provider, providerSub);
+        User existing = User.create(nickname, gender, birth, provider, providerSub, true);
         when(userRepository.findByProviderAndProviderSubAndUserStatus(provider, providerSub,
             UserStatus.ACTIVE))
             .thenReturn(Optional.of(existing));
 
         // When
         UserException ex = assertThrows(UserException.class, () ->
-            userService.create(nickname, gender, birth, provider, providerSub)
+            userService.create(nickname, gender, birth, provider, providerSub, true, true, false)
         );
 
         // Then
@@ -96,7 +96,7 @@ class UserServiceTest {
       @Test
       @DisplayName("Then - 유저 정보를 반환해야 한다")
       void thenShouldReturnUser() {
-        User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub");
+        User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true);
         when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
             .thenReturn(Optional.of(user));
 
@@ -141,7 +141,7 @@ class UserServiceTest {
       @Test
       @DisplayName("Then - 유저 상태를 DELETED로 변경해야 한다")
       void thenShouldMarkUserAsDeleted() {
-        User user = User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub");
+        User user = User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub", true);
         when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
             .thenReturn(Optional.of(user));
 

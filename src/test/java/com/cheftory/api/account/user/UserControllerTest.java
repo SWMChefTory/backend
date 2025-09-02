@@ -77,7 +77,7 @@ public class UserControllerTest extends RestDocsTest {
           .userStatus(UserStatus.ACTIVE)
           .createdAt(LocalDateTime.now())
           .updatedAt(LocalDateTime.now())
-          .termsAgreedAt(LocalDateTime.now())
+          .termsOfUseAgreedAt(LocalDateTime.now())
           .provider(Provider.APPLE)
           .providerSub("apple-sub-123")
           .build();

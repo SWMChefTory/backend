@@ -25,20 +25,31 @@ public class UserService {
         .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
   }
 
-  public UUID create(
+  public User create(
       String nickname,
       Gender gender,
       LocalDate dateOfBirth,
       Provider provider,
-      String providerSub
+      String providerSub,
+      boolean isTermsOfUseAgreed,
+      boolean isPrivacyPolicyAgreed,
+      boolean isMarketingAgreed
   ) {
     Optional<User> existUser = userRepository.findByProviderAndProviderSubAndUserStatus(provider, providerSub, UserStatus.ACTIVE);
     if (existUser.isPresent()) {
       throw new UserException(UserErrorCode.USER_ALREADY_EXIST);
     }
 
-    User user = User.create(nickname, gender, dateOfBirth, provider, providerSub);
-    return userRepository.save(user).getId();
+    if (!isTermsOfUseAgreed) {
+      throw new UserException(UserErrorCode.TERMS_OF_USE_NOT_AGREED);
+    }
+
+    if (!isPrivacyPolicyAgreed) {
+      throw new UserException(UserErrorCode.PRIVACY_POLICY_NOT_AGREED);
+    }
+
+    User user = User.create(nickname, gender, dateOfBirth, provider, providerSub, isMarketingAgreed);
+    return userRepository.save(user);
   }
 
   public User get(UUID id) {
