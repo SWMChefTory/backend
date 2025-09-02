@@ -9,7 +9,6 @@ public record LoginResponse(
     @JsonProperty("refresh_token") String refreshToken,
     @JsonProperty("user_info") UserInfo userInfo
 ) {
-
   public static LoginResponse from(com.cheftory.api.account.model.LoginResult loginResult) {
     return new LoginResponse(
         BearerAuthorizationUtils.addPrefix(loginResult.accessToken()),

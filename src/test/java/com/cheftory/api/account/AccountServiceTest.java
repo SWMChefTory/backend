@@ -40,7 +40,7 @@ class AccountServiceTest {
 
   @BeforeEach
   void setUp() {
-    user = User.create(nickname, gender, dob, provider, providerSub);
+    user = User.create(nickname, gender, dob, provider, providerSub, true);
     userId = user.getId();
   }
 
@@ -68,12 +68,12 @@ class AccountServiceTest {
   void signupWithOAuth_shouldReturnLoginResult() {
     // given
     doReturn(providerSub).when(authService).extractProviderSubFromIdToken(idToken, provider);
-    doReturn(userId).when(userService).create(nickname, gender, dob, provider, providerSub);
+    doReturn(user).when(userService).create(nickname, gender, dob, provider, providerSub, true, true, false);
     doReturn(authTokens).when(authService).createAuthToken(userId);
     doNothing().when(authService).saveLoginSession(userId, authTokens.refreshToken());
 
     // when
-    LoginResult result = accountService.signupWithOAuth(idToken, provider, nickname, gender, dob);
+    LoginResult result = accountService.signupWithOAuth(idToken, provider, nickname, gender, dob, true, true, false);
 
     // then
     assertThat(result.accessToken()).isEqualTo("access-token");

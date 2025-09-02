@@ -21,11 +21,10 @@ public class User {
   @Column(nullable = false, length = 20)
   private String nickname;
 
-  @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private Gender gender;
 
-  @Column(name = "date_of_birth", nullable = false)
+  @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
 
   @Enumerated(EnumType.STRING)
@@ -38,8 +37,14 @@ public class User {
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
-  @Column(name = "terms_agreed_at", nullable = false)
-  private LocalDateTime termsAgreedAt;
+  @Column(name = "terms_of_use_agreed_at", nullable = false)
+  private LocalDateTime termsOfUseAgreedAt;
+
+  @Column(name = "privacy_agreed_at", nullable = false)
+  private LocalDateTime privacyAgreedAt;
+
+  @Column(name = "marketing_agreed_at")
+  private LocalDateTime marketingAgreedAt;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -53,7 +58,8 @@ public class User {
       Gender gender,
       LocalDate dateOfBirth,
       Provider provider,
-      String providerSub
+      String providerSub,
+      boolean isMarketingAgreed
   ) {
     return User.builder()
         .id(UUID.randomUUID())
@@ -63,7 +69,9 @@ public class User {
         .userStatus(UserStatus.ACTIVE)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
-        .termsAgreedAt(LocalDateTime.now())
+        .termsOfUseAgreedAt(LocalDateTime.now())
+        .privacyAgreedAt(LocalDateTime.now())
+        .marketingAgreedAt(isMarketingAgreed ? LocalDateTime.now() : null)
         .provider(provider)
         .providerSub(providerSub)
         .build();

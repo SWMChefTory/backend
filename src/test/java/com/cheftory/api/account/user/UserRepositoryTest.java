@@ -25,7 +25,8 @@ class UserRepositoryTest extends DbContextTest {
         Gender.MALE,
         LocalDate.of(1990, 1, 1),
         Provider.GOOGLE,
-        "sub-1234"
+        "sub-1234",
+        true
     );
 
     userRepository.save(user);
@@ -49,7 +50,8 @@ class UserRepositoryTest extends DbContextTest {
         Gender.FEMALE,
         LocalDate.of(1995, 3, 15),
         Provider.GOOGLE,
-        "sub-9999"
+        "sub-9999",
+        false
     );
     user.changeStatus(UserStatus.DELETED);
     userRepository.save(user);

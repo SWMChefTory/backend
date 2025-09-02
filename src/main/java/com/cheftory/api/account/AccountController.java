@@ -32,7 +32,10 @@ public class AccountController {
         request.provider(),
         request.nickname(),
         request.gender(),
-        request.dateOfBirth()
+        request.dateOfBirth(),
+        request.isTermsOfUseAgreed(),
+        request.isPrivacyAgreed(),
+        request.isMarketingAgreed()
     );
     return LoginResponse.from(result);
   }
