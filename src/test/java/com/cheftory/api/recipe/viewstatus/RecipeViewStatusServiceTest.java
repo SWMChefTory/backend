@@ -4,12 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipe.util.RecipePageRequest;
 import com.cheftory.api.recipe.viewstatus.exception.ViewStatusErrorCode;
 import com.cheftory.api.recipe.viewstatus.exception.ViewStatusException;
 import java.time.LocalDateTime;
@@ -20,6 +23,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @DisplayName("RecipeViewStatusService Tests")
 public class RecipeViewStatusServiceTest {
@@ -374,17 +381,25 @@ public class RecipeViewStatusServiceTest {
     void shouldFindRecipeViewStatusesByCategory() {
       UUID userId = UUID.randomUUID();
       UUID categoryId = UUID.randomUUID();
-      List<RecipeViewStatus> expectedStatuses = List.of(
-          RecipeViewStatus.create(clock, userId, UUID.randomUUID()),
+      int page = 0;
+      Pageable pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
+
+      Page<RecipeViewStatus> expectedStatuses = new PageImpl<>(List.of(
           RecipeViewStatus.create(clock, userId, UUID.randomUUID())
-      );
+      ));
 
-      doReturn(expectedStatuses).when(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE);
+      doReturn(expectedStatuses).when(repository)
+          .findAllByUserIdAndRecipeCategoryIdAndStatus(
+              any(UUID.class),
+              any(UUID.class),
+              any(RecipeViewState.class),
+              any(Pageable.class)
+          );
 
-      List<RecipeViewStatus> result = service.findCategories(userId, categoryId);
+      Page<RecipeViewStatus> result = service.findCategories(userId,categoryId, page);
 
       assertThat(result).isEqualTo(expectedStatuses);
-      verify(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE);
+      verify(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, categoryId, RecipeViewState.ACTIVE, pageable);
     }
   }
 
@@ -396,16 +411,27 @@ public class RecipeViewStatusServiceTest {
     @DisplayName("카테고리가 없는 레시피 조회 상태들을 조회한다")
     void shouldFindUncategorizedRecipeViewStatuses() {
       UUID userId = UUID.randomUUID();
+      int page = 0;
+      Pageable pageable = PageRequest.of(page, 10, ViewStatusSort.VIEWED_AT_DESC);
+
       List<RecipeViewStatus> expectedStatuses = List.of(
           RecipeViewStatus.create(clock, userId, UUID.randomUUID())
       );
+      Page<RecipeViewStatus> expectedPage =
+          new PageImpl<>(expectedStatuses, pageable, expectedStatuses.size());
 
-      doReturn(expectedStatuses).when(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE);
+      doReturn(expectedPage).when(repository)
+          .findAllByUserIdAndRecipeCategoryIdAndStatus(
+              any(UUID.class),
+              isNull(),
+              any(RecipeViewState.class),
+              any(Pageable.class)
+          );
 
-      List<RecipeViewStatus> result = service.findUnCategories(userId);
+      Page<RecipeViewStatus> result = service.findUnCategories(userId, page);
 
-      assertThat(result).isEqualTo(expectedStatuses);
-      verify(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE);
+      assertThat(result.getContent()).isEqualTo(expectedStatuses);
+      verify(repository).findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeViewState.ACTIVE, pageable);
     }
   }
 
@@ -418,34 +444,38 @@ public class RecipeViewStatusServiceTest {
     class GivenValidUserId {
 
       private UUID userId;
+      private Integer page;
+      private Pageable pageable;
 
       @BeforeEach
       void setUp() {
         userId = UUID.randomUUID();
+        page = 0;
+        pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
       }
 
       @Nested
       @DisplayName("When - 사용자의 최근 조회한 레시피 상태들을 조회한다면")
       class WhenFindingRecentRecipeViewStatuses {
 
-        private List<RecipeViewStatus> expectedStatuses;
+        private Page<RecipeViewStatus> expectedStatuses;;
 
         @BeforeEach
         void beforeEach() {
-          expectedStatuses = List.of(
+          expectedStatuses = new PageImpl<>(List.of(
               RecipeViewStatus.create(clock, userId, UUID.randomUUID()),
               RecipeViewStatus.create(clock, userId, UUID.randomUUID())
-          );
-          doReturn(expectedStatuses).when(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, ViewStatusSort.VIEWED_AT_DESC);
+          ));
+          doReturn(expectedStatuses).when(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
         }
 
         @Test
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들이 반환되어야 한다")
         void thenShouldReturnRecentRecipeViewStatuses() {
-          List<RecipeViewStatus> result = service.findRecentUsers(userId);
+          List<RecipeViewStatus> result = service.findRecentUsers(userId, page).getContent();
 
-          assertThat(result).isEqualTo(expectedStatuses);
-          verify(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE,ViewStatusSort.VIEWED_AT_DESC);
+          assertThat(result).isEqualTo(expectedStatuses.getContent());
+          verify(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
         }
       }
     }

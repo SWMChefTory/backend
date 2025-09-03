@@ -5,16 +5,35 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
 
 public record CategorizedRecipesResponse(
     @JsonProperty("categorized_recipes")
-    List<CategorizedRecipeResponse> categorizedRecipes
+    List<CategorizedRecipeResponse> categorizedRecipes,
+
+    @JsonProperty("current_page")
+    int currentPage,
+
+    @JsonProperty("total_pages")
+    int totalPages,
+
+    @JsonProperty("total_elements")
+    long totalElements,
+
+    @JsonProperty("has_next")
+    boolean hasNext
 ) {
-    public static CategorizedRecipesResponse from(List<RecipeHistoryOverview> categorizedRecipes) {
+    public static CategorizedRecipesResponse from(Page<RecipeHistoryOverview> categorizedRecipes) {
+
         List<CategorizedRecipeResponse> responses = categorizedRecipes.stream()
             .map(CategorizedRecipeResponse::from)
             .toList();
-        return new CategorizedRecipesResponse(responses);
+        return new CategorizedRecipesResponse(
+            responses,
+            categorizedRecipes.getNumber(),
+            categorizedRecipes.getTotalPages(),
+            categorizedRecipes.getTotalElements(),
+            categorizedRecipes.hasNext());
     }
 
     public record CategorizedRecipeResponse(

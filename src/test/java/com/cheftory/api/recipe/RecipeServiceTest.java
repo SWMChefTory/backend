@@ -29,6 +29,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 @DisplayName("RecipeService Tests")
 public class RecipeServiceTest {
@@ -74,26 +76,28 @@ public class RecipeServiceTest {
     class GivenValidUserId {
 
       private UUID userId;
-      private List<RecipeViewStatus> viewStatuses;
+      private Page<RecipeViewStatus> viewStatuses;
       private List<Recipe> recipes;
+      private Integer page;
 
       @BeforeEach
       void setUp() {
         userId = UUID.randomUUID();
+        page = 0;
         UUID recipeId1 = UUID.randomUUID();
         UUID recipeId2 = UUID.randomUUID();
 
-        viewStatuses = List.of(
+        viewStatuses = new PageImpl<>(List.of(
             createMockRecipeViewStatus(recipeId1),
             createMockRecipeViewStatus(recipeId2)
-        );
+        ));
 
         recipes = List.of(
             createMockRecipe(recipeId1, "김치찌개"),
             createMockRecipe(recipeId2, "된장찌개")
         );
 
-        doReturn(viewStatuses).when(recipeViewStatusService).findRecentUsers(userId);
+        doReturn(viewStatuses).when(recipeViewStatusService).findRecentUsers(userId, page);
         doReturn(recipes).when(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
       }
 
@@ -104,14 +108,14 @@ public class RecipeServiceTest {
         @Test
         @DisplayName("Then - 최근 레시피 히스토리 목록을 반환해야 한다")
         void thenShouldReturnRecentRecipeHistories() {
-          List<RecipeHistoryOverview> result = recipeService.findRecents(userId);
+          List<RecipeHistoryOverview> result = recipeService.findRecents(userId, page).getContent();
 
           assertThat(result).hasSize(2);
           assertThat(result).allMatch(overview ->
               overview.getRecipeOverview() != null &&
                   overview.getRecipeViewStatusInfo() != null
           );
-          verify(recipeViewStatusService).findRecentUsers(userId);
+          verify(recipeViewStatusService).findRecentUsers(userId, page);
           verify(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
         }
       }
@@ -128,19 +132,21 @@ public class RecipeServiceTest {
 
       private UUID userId;
       private UUID recipeCategoryId;
-      private List<RecipeViewStatus> viewStatuses;
+      private Page<RecipeViewStatus> viewStatuses;
       private List<Recipe> recipes;
+      private Integer page;
 
       @BeforeEach
       void setUp() {
         userId = UUID.randomUUID();
         recipeCategoryId = UUID.randomUUID();
+        page = 0;
         UUID recipeId1 = UUID.randomUUID();
 
-        viewStatuses = List.of(createMockRecipeViewStatus(recipeId1));
+        viewStatuses = new PageImpl<>(List.of(createMockRecipeViewStatus(recipeId1)));
         recipes = List.of(createMockRecipe(recipeId1, "한식 요리"));
 
-        doReturn(viewStatuses).when(recipeViewStatusService).findCategories(userId, recipeCategoryId);
+        doReturn(viewStatuses).when(recipeViewStatusService).findCategories(userId, recipeCategoryId, page);
         doReturn(recipes).when(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
       }
 
@@ -151,12 +157,12 @@ public class RecipeServiceTest {
         @Test
         @DisplayName("Then - 해당 카테고리의 레시피 히스토리 목록을 반환해야 한다")
         void thenShouldReturnCategorizedRecipeHistories() {
-          List<RecipeHistoryOverview> result = recipeService.findCategorized(userId, recipeCategoryId);
+          List<RecipeHistoryOverview> result = recipeService.findCategorized(userId, recipeCategoryId, page).getContent();
 
           assertThat(result).hasSize(1);
           assertThat(result.get(0).getRecipeOverview()).isNotNull();
           assertThat(result.get(0).getRecipeViewStatusInfo()).isNotNull();
-          verify(recipeViewStatusService).findCategories(userId, recipeCategoryId);
+          verify(recipeViewStatusService).findCategories(userId, recipeCategoryId, page);
           verify(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
         }
       }
@@ -172,18 +178,20 @@ public class RecipeServiceTest {
     class GivenValidUserId {
 
       private UUID userId;
-      private List<RecipeViewStatus> viewStatuses;
+      private Page<RecipeViewStatus> viewStatuses;
       private List<Recipe> recipes;
+      private Integer page;
 
       @BeforeEach
       void setUp() {
         userId = UUID.randomUUID();
+        page = 0;
         UUID recipeId1 = UUID.randomUUID();
 
-        viewStatuses = List.of(createMockRecipeViewStatus(recipeId1));
+        viewStatuses = new PageImpl<>(List.of(createMockRecipeViewStatus(recipeId1)));
         recipes = List.of(createMockRecipe(recipeId1, "미분류 요리"));
 
-        doReturn(viewStatuses).when(recipeViewStatusService).findUnCategories(userId);
+        doReturn(viewStatuses).when(recipeViewStatusService).findUnCategories(userId, page);
         doReturn(recipes).when(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
       }
 
@@ -194,12 +202,12 @@ public class RecipeServiceTest {
         @Test
         @DisplayName("Then - 미분류 레시피 히스토리 목록을 반환해야 한다")
         void thenShouldReturnUnCategorizedRecipeHistories() {
-          List<RecipeHistoryOverview> result = recipeService.findUnCategorized(userId);
+          List<RecipeHistoryOverview> result = recipeService.findUnCategorized(userId, page).getContent();
 
           assertThat(result).hasSize(1);
           assertThat(result.get(0).getRecipeOverview()).isNotNull();
           assertThat(result.get(0).getRecipeViewStatusInfo()).isNotNull();
-          verify(recipeViewStatusService).findUnCategories(userId);
+          verify(recipeViewStatusService).findUnCategories(userId, page);
           verify(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
         }
       }
