@@ -24,7 +24,7 @@ public class VoiceCommandHistoryController {
             @Valid @RequestBody VoiceCommandHistoryCreateRequest request
     ){
         voiceCommandHistoryService.create(request.transcribe(),  request.result(),
-                                   request.userId(), request.sttModel(), request.intentModel());
+                                   request.userId(), request.sttModel(), request.intentModel(),request.awsAudioFile());
         return SuccessOnlyResponse.create();
     }
 }

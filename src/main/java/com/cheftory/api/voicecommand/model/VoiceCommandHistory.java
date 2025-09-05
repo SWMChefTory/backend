@@ -44,12 +44,16 @@ public class VoiceCommandHistory {
   @Column(nullable = false)
   private LocalDateTime createdAt;
 
+  @Column(nullable = false)
+  private String awsAudioFileName;
+
   public static VoiceCommandHistory create(
       String sttModel,
       String transcribe,
       String intentModel,
       String result,
-      UUID userId
+      UUID userId,
+      String awsAudioFileName
   ) {
     return new VoiceCommandHistory(
         UUID.randomUUID(),
@@ -58,7 +62,8 @@ public class VoiceCommandHistory {
         IntentModel.fromValue(intentModel),
         result,
         userId,
-        LocalDateTime.now()
+        LocalDateTime.now(),
+        awsAudioFileName
     );
   }
 }
