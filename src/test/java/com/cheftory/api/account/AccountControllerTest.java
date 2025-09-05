@@ -31,6 +31,7 @@ import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -49,6 +50,9 @@ public class AccountControllerTest extends RestDocsTest {
 
   private final UUID fixedUserId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
   private final LocalDate validDateOfBirth = LocalDate.of(2000, 1, 1);
+  private final LocalDateTime validTermsOfUseAgreedAt = LocalDateTime.of(2023, 1, 1, 0, 0);
+  private final LocalDateTime validPrivacyAgreedAt = LocalDateTime.of(2023, 1, 1, 0, 0);
+  private final LocalDateTime validMarketingAgreedAt = LocalDateTime.of(2023, 1, 1, 0, 0);
 
   @BeforeEach
   void setUp() {
@@ -81,7 +85,10 @@ public class AccountControllerTest extends RestDocsTest {
             new UserInfo(
                 "nickname",
                 Gender.MALE,
-                validDateOfBirth
+                validDateOfBirth,
+                validTermsOfUseAgreedAt,
+                validPrivacyAgreedAt,
+                validMarketingAgreedAt
             )
         );
 
@@ -112,7 +119,10 @@ public class AccountControllerTest extends RestDocsTest {
                         fieldWithPath("refresh_token").description("리프레시 토큰"),
                         fieldWithPath("user_info.nickname").description("닉네임"),
                         fieldWithPath("user_info.gender").description("성별"),
-                        fieldWithPath("user_info.date_of_birth").description("생년월일")
+                        fieldWithPath("user_info.date_of_birth").description("생년월일"),
+                        fieldWithPath("user_info.terms_of_use_agreed_at").description("약관 동의 일시"),
+                        fieldWithPath("user_info.privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                        fieldWithPath("user_info.marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
                     )
                 )
             );
@@ -218,6 +228,7 @@ public class AccountControllerTest extends RestDocsTest {
       private String nickname;
       private Gender gender;
 
+
       @BeforeEach
       void setUp() {
         validToken = "valid-id-token";
@@ -231,12 +242,15 @@ public class AccountControllerTest extends RestDocsTest {
             new UserInfo(
                 nickname,
                 gender,
-                validDateOfBirth
+                validDateOfBirth,
+                validTermsOfUseAgreedAt,
+                validPrivacyAgreedAt,
+                validMarketingAgreedAt
             )
         );
 
         doReturn(loginResult).when(accountService)
-            .signupWithOAuth(validToken, provider, nickname, gender, validDateOfBirth);
+            .signupWithOAuth(validToken, provider, nickname, gender, validDateOfBirth, true, true, true);
       }
 
       @Test
@@ -248,6 +262,9 @@ public class AccountControllerTest extends RestDocsTest {
         request.put("nickname", nickname);
         request.put("gender", gender);
         request.put("date_of_birth", validDateOfBirth.toString());
+        request.put("is_terms_of_use_agreed", true);
+        request.put("is_privacy_agreed", true);
+        request.put("is_marketing_agreed", true);
 
         var response = given()
             .contentType(ContentType.JSON)
@@ -265,14 +282,20 @@ public class AccountControllerTest extends RestDocsTest {
                     fieldWithPath("provider").description("OAUTH 제공자(GOOGLE, APPLE, KAKAO)"),
                     fieldWithPath("nickname").description("닉네임"),
                     fieldWithPath("gender").description("성별"),
-                    fieldWithPath("date_of_birth").description("생년월일")
+                    fieldWithPath("date_of_birth").description("생년월일"),
+                    fieldWithPath("is_terms_of_use_agreed").description("약관 동의 여부"),
+                    fieldWithPath("is_privacy_agreed").description("개인정보 처리방침 동의 여부"),
+                    fieldWithPath("is_marketing_agreed").description("마케팅 정보 수신 동의 여부")
                 ),
                 responseFields(
                     fieldWithPath("access_token").description("액세스 토큰"),
                     fieldWithPath("refresh_token").description("리프레시 토큰"),
                     fieldWithPath("user_info.nickname").description("닉네임"),
                     fieldWithPath("user_info.gender").description("성별"),
-                    fieldWithPath("user_info.date_of_birth").description("생년월일")
+                    fieldWithPath("user_info.date_of_birth").description("생년월일"),
+                    fieldWithPath("user_info.terms_of_use_agreed_at").description("약관 동의 일시"),
+                    fieldWithPath("user_info.privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                    fieldWithPath("user_info.marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
                 )
             ));
 

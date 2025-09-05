@@ -14,15 +14,18 @@ import com.cheftory.api.recipe.model.RecipeCreateResponse;
 import com.cheftory.api.recipe.model.RecentRecipesResponse;
 import com.cheftory.api.recipe.model.RecipeOverview;
 import com.cheftory.api.recipe.model.UnCategorizedRecipesResponse;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -44,26 +47,33 @@ public class RecipeController {
   }
 
   @GetMapping("/recent")
-  public RecentRecipesResponse getRecentInfos(@UserPrincipal UUID userId) {
-    List<RecipeHistoryOverview> infos = recipeService.findRecents(userId);
+  public RecentRecipesResponse getRecentInfos(
+      @UserPrincipal UUID userId,
+      @RequestParam(defaultValue = "0") @Min(0) Integer page) {
+    Page<RecipeHistoryOverview> infos = recipeService.findRecents(userId, page);
     return RecentRecipesResponse.from(infos);
   }
 
   @GetMapping("/recommend")
-  public RecommendRecipesResponse getRecommendedRecipes() {
-    List<RecipeOverview> infos = recipeService.findRecommends();
+  public RecommendRecipesResponse getRecommendedRecipes(
+      @RequestParam(defaultValue = "0") @Min(0) Integer page) {
+    Page<RecipeOverview> infos = recipeService.findRecommends(page);
     return RecommendRecipesResponse.from(infos);
   }
 
   @GetMapping("/categorized/{recipe_category_id}")
-  public CategorizedRecipesResponse getCategorizedRecipes(@PathVariable("recipe_category_id") UUID categoryId, @UserPrincipal UUID userId) {
-    List<RecipeHistoryOverview> infos = recipeService.findCategorized(userId,categoryId);
+  public CategorizedRecipesResponse getCategorizedRecipes(
+      @PathVariable("recipe_category_id") UUID categoryId,
+      @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
+    Page<RecipeHistoryOverview> infos = recipeService.findCategorized(userId,categoryId, page);
     return CategorizedRecipesResponse.from(infos);
   }
 
   @GetMapping("/uncategorized")
-  public UnCategorizedRecipesResponse getUnCategorizedRecipes(@UserPrincipal UUID userId) {
-    List<RecipeHistoryOverview> infos = recipeService.findUnCategorized(userId);
+  public UnCategorizedRecipesResponse getUnCategorizedRecipes(
+      @UserPrincipal UUID userId,
+      @RequestParam(defaultValue = "0") @Min(0) Integer page) {
+    Page<RecipeHistoryOverview> infos = recipeService.findUnCategorized(userId, page);
     return UnCategorizedRecipesResponse.from(infos);
   }
 

@@ -77,7 +77,9 @@ public class UserControllerTest extends RestDocsTest {
           .userStatus(UserStatus.ACTIVE)
           .createdAt(LocalDateTime.now())
           .updatedAt(LocalDateTime.now())
-          .termsAgreedAt(LocalDateTime.now())
+          .termsOfUseAgreedAt(LocalDateTime.now())
+          .privacyAgreedAt(LocalDateTime.now())
+          .marketingAgreedAt(null)
           .provider(Provider.APPLE)
           .providerSub("apple-sub-123")
           .build();
@@ -99,7 +101,10 @@ public class UserControllerTest extends RestDocsTest {
               responseFields(
                   fieldWithPath("nickname").description("닉네임"),
                   fieldWithPath("gender").description("성별"),
-                  fieldWithPath("date_of_birth").description("생년월일")
+                  fieldWithPath("date_of_birth").description("생년월일"),
+                  fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
+                  fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                  fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
               )
           ));
 

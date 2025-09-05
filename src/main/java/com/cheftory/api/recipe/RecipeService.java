@@ -14,6 +14,7 @@ import com.cheftory.api.recipe.model.RecipeOverview;
 import com.cheftory.api.recipe.model.RecipeHistoryOverview;
 import com.cheftory.api.recipe.model.RecipeSort;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
+import com.cheftory.api.recipe.util.RecipePageRequest;
 import com.cheftory.api.recipe.util.YoutubeUrlNormalizer;
 import com.cheftory.api.recipe.ingredients.RecipeIngredientsService;
 import com.cheftory.api.recipe.client.VideoInfoClient;
@@ -23,11 +24,16 @@ import com.cheftory.api.recipe.viewstatus.RecipeViewStatusCount;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatusService;
 import java.net.URI;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 
@@ -108,41 +114,43 @@ public class RecipeService {
     );
   }
 
-  public List<RecipeOverview> findRecommends() {
-    return recipeRepository.findByStatus(RecipeStatus.COMPLETED, RecipeSort.COUNT_DESC)
-        .stream()
-        .map(RecipeOverview::from)
-        .toList();
+  public Page<RecipeOverview> findRecommends(Integer page) {
+    Pageable pageable = RecipePageRequest.create(page,RecipeSort.COUNT_DESC);
+    return recipeRepository.findByStatus(RecipeStatus.COMPLETED, pageable)
+        .map(RecipeOverview::from);
   }
 
-  public List<RecipeHistoryOverview> findRecents(UUID userId) {
-    List<RecipeViewStatus> viewStatuses = recipeViewStatusService.findRecentUsers(userId);
+  public Page<RecipeHistoryOverview> findRecents(UUID userId, Integer page) {
+    Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findRecentUsers(userId, page);
     return buildHistoryOverviews(viewStatuses);
   }
 
-  public List<RecipeHistoryOverview> findCategorized(UUID userId, UUID recipeCategoryId) {
-    List<RecipeViewStatus> viewStatuses = recipeViewStatusService.findCategories(userId, recipeCategoryId);
+  public Page<RecipeHistoryOverview> findCategorized(UUID userId, UUID recipeCategoryId, Integer page) {
+    Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findCategories(userId, recipeCategoryId, page);
     return buildHistoryOverviews(viewStatuses);
   }
 
-  public List<RecipeHistoryOverview> findUnCategorized(UUID userId) {
-    List<RecipeViewStatus> viewStatuses = recipeViewStatusService.findUnCategories(userId);
+  public Page<RecipeHistoryOverview> findUnCategorized(UUID userId, Integer page) {
+    Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findUnCategories(userId, page);
     return buildHistoryOverviews(viewStatuses);
   }
 
-  private List<RecipeHistoryOverview> buildHistoryOverviews(List<RecipeViewStatus> viewStatuses) {
-    Map<UUID, RecipeViewStatus> viewStatusMap = viewStatuses.stream()
-        .collect(Collectors.toMap(RecipeViewStatus::getRecipeId, Function.identity()));
-
+  private Page<RecipeHistoryOverview> buildHistoryOverviews(Page<RecipeViewStatus> viewStatuses) {
     List<UUID> recipeIds = viewStatuses.stream()
         .map(RecipeViewStatus::getRecipeId)
         .toList();
 
-    return recipeRepository
+    Map<UUID, Recipe> recipeMap = recipeRepository
         .findRecipesByIdInAndStatus(recipeIds, RecipeStatus.COMPLETED)
         .stream()
-        .map(recipe -> RecipeHistoryOverview.of(recipe, viewStatusMap.get(recipe.getId())))
+        .collect(Collectors.toMap(Recipe::getId, Function.identity()));
+
+    List<RecipeHistoryOverview> content = viewStatuses.stream()
+        .filter(viewStatus -> recipeMap.containsKey(viewStatus.getRecipeId()))
+        .map(viewStatus -> RecipeHistoryOverview.of(recipeMap.get(viewStatus.getRecipeId()), viewStatus))
         .toList();
+
+    return new PageImpl<>(content, viewStatuses.getPageable(), viewStatuses.getTotalElements());
   }
 
   public List<CountRecipeCategory> findCategories(UUID userId) {

@@ -4,6 +4,8 @@ package com.cheftory.api.recipe;
 import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,6 +32,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
 
     List<Recipe> findRecipesByIdInAndStatus(List<UUID> recipeIds, RecipeStatus status);
 
-    List<Recipe> findByStatus(RecipeStatus status, Sort sort);
+    Page<Recipe> findByStatus(RecipeStatus status, Pageable pageable);
 
 }

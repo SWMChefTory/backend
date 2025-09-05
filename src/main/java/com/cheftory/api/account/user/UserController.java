@@ -22,7 +22,10 @@ public class UserController {
     return new UserMeResponse(
         user.getNickname(),
         user.getGender(),
-        user.getDateOfBirth()
+        user.getDateOfBirth(),
+        user.getTermsOfUseAgreedAt(),
+        user.getPrivacyAgreedAt(),
+        user.getMarketingAgreedAt()
     );
   }
 }
