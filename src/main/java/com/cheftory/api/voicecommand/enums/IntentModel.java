@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 public enum IntentModel {
   GPT4_1("GPT4.1"),
+  REGEX("REGEX"),
   NLU("NLU");
 
   private final String value;
