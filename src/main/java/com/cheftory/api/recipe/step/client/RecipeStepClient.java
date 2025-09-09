@@ -18,9 +18,8 @@ public class RecipeStepClient {
 
     private final WebClient webClient;
 
-    public ClientRecipeStepsResponse fetchRecipeSteps(String videoId, RecipeCaption recipeCaption, List<RecipeAnalysis.Ingredient> ingredients) {
-        ClientRecipeStepsRequest request = ClientRecipeStepsRequest
-                .from(videoId, "youtube", recipeCaption, ingredients);
+    public ClientRecipeStepsResponse fetchRecipeSteps(RecipeCaption recipeCaption) {
+        ClientRecipeStepsRequest request = ClientRecipeStepsRequest.from(recipeCaption);
       return webClient.post()
               .uri(uriBuilder -> uriBuilder
                       .path("/steps")

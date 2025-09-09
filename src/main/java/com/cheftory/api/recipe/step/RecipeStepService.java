@@ -21,9 +21,9 @@ public class RecipeStepService {
     private final RecipeStepRepository recipeStepRepository;
 
     @Transactional
-    public List<UUID> create(String videoId, UUID recipeId, RecipeCaption recipeCaption, List<RecipeAnalysis.Ingredient> ingredients) {
+    public List<UUID> create(UUID recipeId, RecipeCaption recipeCaption) {
         ClientRecipeStepsResponse response = recipeStepClient
-                .fetchRecipeSteps(videoId, recipeCaption, ingredients);
+                .fetchRecipeSteps(recipeCaption);
 
         List<RecipeStep> recipeSteps = response.toRecipeSteps(recipeId);
 
