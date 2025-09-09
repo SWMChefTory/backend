@@ -8,38 +8,30 @@ import java.util.List;
 
 
 public record ClientRecipeStepsRequest(
-    @JsonProperty("video_id")
-    String videoId,
-    @JsonProperty("video_type")
-    String videoType,
-    @JsonProperty("captions_data")
-    RecipeCaption recipeCaption,
-    @JsonProperty("ingredients")
-    List<Ingredient> ingredients
+    @JsonProperty("captions")
+    List<Caption> recipeCaptions
 ) {
-    private record Ingredient(
-        @JsonProperty("name")
-        String name,
-        @JsonProperty("amount")
-        Integer  amount,
-        @JsonProperty("unit")
-        String unit
+    private record Caption(
+        @JsonProperty("start")
+        Double start,
+        @JsonProperty("end")
+        Double end,
+        @JsonProperty("text")
+        String text
     ) {
-        public static Ingredient from(RecipeAnalysis.Ingredient ingredient) {
-            return new Ingredient(
-                ingredient.getName(),
-                ingredient.getAmount(),
-                ingredient.getUnit()
+        public static Caption from(RecipeCaption.Segment segment) {
+            return new Caption(
+                segment.getStart(),
+                segment.getEnd(),
+                segment.getText()
             );
         }
     }
-    public static ClientRecipeStepsRequest from(String videoId, String videoType, RecipeCaption recipeCaption, List<RecipeAnalysis.Ingredient> ingredients) {
+    public static ClientRecipeStepsRequest from(RecipeCaption recipeCaption) {
         return new ClientRecipeStepsRequest(
-            videoId,
-            videoType,
-            recipeCaption,
-            ingredients.stream()
-                .map(Ingredient::from)
+            recipeCaption.getSegments()
+                .stream()
+                .map(Caption::from)
                 .toList()
         );
     }

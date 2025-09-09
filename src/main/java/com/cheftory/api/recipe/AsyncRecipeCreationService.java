@@ -34,8 +34,8 @@ public class AsyncRecipeCreationService {
           RecipeErrorCode.RECIPE_NOT_FOUND));
       String videoId = recipe.getVideoInfo().getVideoId();
       RecipeCaption recipeCaption = handleCaption(videoId,recipeId);
-      RecipeAnalysis ingredients = handleAnalysis(recipeId, videoId, recipeCaption);
-      handleSteps(videoId, recipeId, recipeCaption, ingredients.getIngredients());
+      handleAnalysis(recipeId, videoId, recipeCaption);
+      handleSteps(recipeId, recipeCaption);
       recipeRepository.updateStatus(recipeId, RecipeStatus.COMPLETED);
     } catch (Exception e) {
       log.error("레시피 생성에 실패했습니다.", e);
@@ -48,12 +48,11 @@ public class AsyncRecipeCreationService {
     return recipeCaptionService.find(captionId);
   }
 
-  private RecipeAnalysis handleAnalysis(UUID recipeId, String videoId, RecipeCaption recipeCaption) {
-    UUID analysisId = recipeAnalysisService.create(recipeId, videoId, recipeCaption);
-    return recipeAnalysisService.find(analysisId);
+  private void handleAnalysis(UUID recipeId, String videoId, RecipeCaption recipeCaption) {
+    recipeAnalysisService.create(recipeId, videoId, recipeCaption);
   }
 
-  private void handleSteps(String videoId, UUID recipeId, RecipeCaption recipeCaption, List<RecipeAnalysis.Ingredient> ingredients) {
-    recipeStepService.create(videoId, recipeId, recipeCaption, ingredients);
+  private void handleSteps(UUID recipeId, RecipeCaption recipeCaption) {
+    recipeStepService.create(recipeId, recipeCaption);
   }
 }
