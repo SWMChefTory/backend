@@ -1,12 +1,13 @@
 package com.cheftory.api.recipe.model;
 
+import com.cheftory.api.recipe.entity.Recipe;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
 public record RecommendRecipesResponse(
     @JsonProperty("recommend_recipes")
-    List<RecommendRecipeResponse> recommendRecipes,
+    List<RecommendRecipe> recommendRecipes,
 
     @JsonProperty("current_page")
     int currentPage,
@@ -21,9 +22,9 @@ public record RecommendRecipesResponse(
     boolean hasNext
 ) {
 
-  public static RecommendRecipesResponse from(Page<RecipeOverview> recipes) {
-    List<RecommendRecipeResponse> responses = recipes.stream()
-        .map(RecommendRecipeResponse::from)
+  public static RecommendRecipesResponse from(Page<Recipe> recipes) {
+    List<RecommendRecipe> responses = recipes.stream()
+        .map(RecommendRecipe::from)
         .toList();
     return new RecommendRecipesResponse(
         responses,
@@ -33,7 +34,7 @@ public record RecommendRecipesResponse(
         recipes.hasNext());
   }
 
-  public record RecommendRecipeResponse(
+  private record RecommendRecipe(
       @JsonProperty("recipe_id")
       String recipeId,
       @JsonProperty("recipe_title")
@@ -47,8 +48,8 @@ public record RecommendRecipesResponse(
       @JsonProperty("video_url")
       String videoUrl
   ) {
-    public static RecommendRecipeResponse from(RecipeOverview recipe) {
-      return new RecommendRecipeResponse(
+    public static RecommendRecipe from(Recipe recipe) {
+      return new RecommendRecipe(
           recipe.getId().toString(),
           recipe.getVideoInfo().getTitle(),
           recipe.getVideoInfo().getThumbnailUrl().toString(),

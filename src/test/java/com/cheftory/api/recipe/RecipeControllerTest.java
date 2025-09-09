@@ -2,16 +2,15 @@ package com.cheftory.api.recipe;
 
 import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.recipe.category.RecipeCategory;
+import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
+import com.cheftory.api.recipe.analysis.entity.RecipeAnalysis;
 import com.cheftory.api.recipe.model.CountRecipeCategory;
-import com.cheftory.api.recipe.model.IngredientsInfo;
-import com.cheftory.api.recipe.ingredients.entity.Ingredient;
 import com.cheftory.api.recipe.model.FullRecipeInfo;
-import com.cheftory.api.recipe.model.RecipeHistoryOverview;
-import com.cheftory.api.recipe.model.RecipeOverview;
-import com.cheftory.api.recipe.model.RecipeStepInfo;
-import com.cheftory.api.recipe.model.RecipeViewStatusInfo;
+import com.cheftory.api.recipe.model.RecipeHistory;
+import com.cheftory.api.recipe.step.entity.RecipeStep;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
 import com.cheftory.api.utils.RestDocsTest;
 
 import java.time.LocalDateTime;
@@ -91,11 +90,11 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 레시피 최근 기록을 조회한다면")
       class WhenRequestingRecentRecipes {
 
-        private Page<RecipeHistoryOverview> recentRecipes;
-        private RecipeHistoryOverview recentRecipe;
-        private RecipeOverview recipe;
+        private Page<RecipeHistory> recentRecipes;
+        private RecipeHistory recentRecipe;
+        private Recipe recipe;
         private VideoInfo video;
-        private RecipeViewStatusInfo viewStatus;
+        private RecipeViewStatus viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -103,15 +102,15 @@ public class RecipeControllerTest extends RestDocsTest {
         @BeforeEach
         void setUp() {
           recipeId = UUID.randomUUID();
-          recentRecipe = mock(RecipeHistoryOverview.class);
-          recipe = mock(RecipeOverview.class);
+          recentRecipe = mock(RecipeHistory.class);
+          recipe = mock(Recipe.class);
           video = mock(VideoInfo.class);
-          viewStatus = mock(RecipeViewStatusInfo.class);
+          viewStatus = mock(RecipeViewStatus.class);
           page = 0;
           pageable = Pageable.ofSize(10);
 
-          doReturn(recipe).when(recentRecipe).getRecipeOverview();
-          doReturn(viewStatus).when(recentRecipe).getRecipeViewStatusInfo();
+          doReturn(recipe).when(recentRecipe).getRecipe();
+          doReturn(viewStatus).when(recentRecipe).getRecipeViewStatus();
           doReturn(video).when(recipe).getVideoInfo();
 
           doReturn(recipeId).when(recipe).getId();
@@ -253,9 +252,9 @@ public class RecipeControllerTest extends RestDocsTest {
 
         private FullRecipeInfo fullRecipe;
         private VideoInfo video;
-        private IngredientsInfo ingredients;
-        private RecipeViewStatusInfo viewStatus;
-        private RecipeStepInfo recipeStep;
+        private RecipeAnalysis ingredients;
+        private RecipeViewStatus viewStatus;
+        private RecipeStep recipeStep;
         private UUID ingredientsId;
         private UUID viewStatusId;
         private UUID stepId;
@@ -264,37 +263,46 @@ public class RecipeControllerTest extends RestDocsTest {
         void setUp() {
           fullRecipe = mock(FullRecipeInfo.class);
           video = mock(VideoInfo.class);
-          ingredients = mock(IngredientsInfo.class);
-          viewStatus = mock(RecipeViewStatusInfo.class);
-          recipeStep = mock(RecipeStepInfo.class);
+          ingredients = mock(RecipeAnalysis.class);
+          viewStatus = mock(RecipeViewStatus.class);
+          recipeStep = mock(RecipeStep.class);
+          var stepDetail = RecipeStep.Detail.builder()
+              .text("Step 1 detail")
+              .start(0.0)
+              .build();
+
 
           doReturn(RecipeStatus.COMPLETED).when(fullRecipe).getRecipeStatus();
           doReturn(video).when(fullRecipe).getVideoInfo();
-          doReturn(ingredients).when(fullRecipe).getIngredientsInfo();
+          doReturn(ingredients).when(fullRecipe).getRecipeAnalysis();
           doReturn(List.of(recipeStep)).when(fullRecipe).getRecipeStepInfos();
-          doReturn(viewStatus).when(fullRecipe).getRecipeViewStatusInfo();
+          doReturn(viewStatus).when(fullRecipe).getRecipeViewStatus();
 
           doReturn("sample_video_id").when(video).getVideoId();
           doReturn("Sample Recipe Title").when(video).getTitle();
           doReturn(URI.create("https://example.com/thumbnail.jpg")).when(video).getThumbnailUrl();
           doReturn(120).when(video).getVideoSeconds();
 
+          // RecipeAnalysis 모킹
           ingredientsId = UUID.randomUUID();
-          var ingredient = mock(Ingredient.class);
+          var ingredient = mock(RecipeAnalysis.Ingredient.class);
           doReturn("토마토").when(ingredient).getName();
           doReturn(2).when(ingredient).getAmount();
           doReturn("개").when(ingredient).getUnit();
 
-          doReturn(ingredientsId).when(ingredients).getIngredientsId();
+          doReturn(ingredientsId).when(ingredients).getId();
+          doReturn("맛있는 토마토 요리입니다").when(ingredients).getDescription();
           doReturn(List.of(ingredient)).when(ingredients).getIngredients();
+          doReturn(List.of("한식", "건강식")).when(ingredients).getTags();
+          doReturn(2).when(ingredients).getServings();
+          doReturn(30).when(ingredients).getCookTime();
 
           stepId = UUID.randomUUID();
           doReturn(stepId).when(recipeStep).getId();
           doReturn(1).when(recipeStep).getStepOrder();
-          doReturn("Step 1 Title").when(recipeStep).getSubtitle();
-          doReturn(List.of("Step 1 detail")).when(recipeStep).getDetails();
+          doReturn(List.of(stepDetail)).when(recipeStep).getDetails();
           doReturn(0.0).when(recipeStep).getStart();
-          doReturn(30.0).when(recipeStep).getEnd();
+          doReturn("Step 1 Title").when(recipeStep).getSubtitle();
 
           viewStatusId = UUID.randomUUID();
           doReturn(viewStatusId).when(viewStatus).getId();
@@ -326,24 +334,33 @@ public class RecipeControllerTest extends RestDocsTest {
                   responseFields(
                       enumFields("recipe_status", "레시피의 현재 상태: ", RecipeStatus.class),
                       fieldWithPath("video_info").description("레시피 비디오 정보"),
-                      fieldWithPath("ingredients_info").description("레시피 재료 정보"),
-                      fieldWithPath("recipe_steps").description("레시피 단계 정보"),
-                      fieldWithPath("view_status").description("레시피 시청 상태 정보"),
                       fieldWithPath("video_info.video_id").description("레시피 비디오 ID"),
                       fieldWithPath("video_info.video_title").description("레시피 비디오 제목"),
                       fieldWithPath("video_info.video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
                       fieldWithPath("video_info.video_seconds").description("레시피 비디오 재생 시간"),
-                      fieldWithPath("ingredients_info.id").description("레시피 재료 ID"),
-                      fieldWithPath("ingredients_info.ingredients").description("레시피 재료 정보"),
-                      fieldWithPath("ingredients_info.ingredients[].name").description("레시피 재료 이름"),
-                      fieldWithPath("ingredients_info.ingredients[].amount").description("레시피 재료 양"),
-                      fieldWithPath("ingredients_info.ingredients[].unit").description("레시피 재료 단위"),
+
+                      // analysis로 변경
+                      fieldWithPath("analysis").description("레시피 분석 정보"),
+                      fieldWithPath("analysis.id").description("레시피 분석 ID"),
+                      fieldWithPath("analysis.description").description("레시피 설명"),
+                      fieldWithPath("analysis.ingredients").description("레시피 재료 목록"),
+                      fieldWithPath("analysis.ingredients[].name").description("재료 이름"),
+                      fieldWithPath("analysis.ingredients[].amount").description("재료 양"),
+                      fieldWithPath("analysis.ingredients[].unit").description("재료 단위"),
+                      fieldWithPath("analysis.tags").description("레시피 태그"),
+                      fieldWithPath("analysis.servings").description("인분"),
+                      fieldWithPath("analysis.cook_time").description("조리 시간(분)"),
+
+                      fieldWithPath("recipe_steps").description("레시피 단계 정보"),
                       fieldWithPath("recipe_steps[].id").description("레시피 단계 ID"),
                       fieldWithPath("recipe_steps[].step_order").description("레시피 단계 순서"),
                       fieldWithPath("recipe_steps[].subtitle").description("레시피 단계 제목"),
-                      fieldWithPath("recipe_steps[].details").description("레시피 단계 설명"),
+                      fieldWithPath("recipe_steps[].details").description("레시피 단계 설명 목록"),
+                      fieldWithPath("recipe_steps[].details[].text").description("레시피 단계 설명 텍스트"),
+                      fieldWithPath("recipe_steps[].details[].start").description("레시피 단계 설명 시작 시간"),
                       fieldWithPath("recipe_steps[].start_time").description("레시피 단계 시작 시간"),
-                      fieldWithPath("recipe_steps[].end_time").description("레시피 단계 종료 시간"),
+
+                      fieldWithPath("view_status").description("레시피 시청 상태 정보"),
                       fieldWithPath("view_status.id").description("레시피 시청 상태 ID"),
                       fieldWithPath("view_status.viewed_at").description("레시피 마지막 시청 시간"),
                       fieldWithPath("view_status.last_play_seconds").description("레시피 마지막 재생 시간"),
@@ -360,10 +377,6 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("video_info.video_title")).isEqualTo("Sample Recipe Title");
           assertThat(responseBody.getString("video_info.video_thumbnail_url")).isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getInt("video_info.video_seconds")).isEqualTo(120);
-          assertThat(responseBody.getUUID("ingredients_info.id")).isEqualTo(ingredientsId);
-          assertThat(responseBody.getString("ingredients_info.ingredients[0].name")).isEqualTo("토마토");
-          assertThat(responseBody.getInt("ingredients_info.ingredients[0].amount")).isEqualTo(2);
-          assertThat(responseBody.getString("ingredients_info.ingredients[0].unit")).isEqualTo("개");
           assertThat(responseBody.getUUID("view_status.id")).isEqualTo(viewStatusId);
           assertThat(responseBody.getString("view_status.viewed_at")).isEqualTo("2024-01-15T10:30:00");
           assertThat(responseBody.getInt("view_status.last_play_seconds")).isEqualTo(60);
@@ -371,9 +384,18 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getUUID("recipe_steps[0].id")).isEqualTo(stepId);
           assertThat(responseBody.getInt("recipe_steps[0].step_order")).isEqualTo(1);
           assertThat(responseBody.getString("recipe_steps[0].subtitle")).isEqualTo("Step 1 Title");
-          assertThat(responseBody.getList("recipe_steps[0].details")).isEqualTo(List.of("Step 1 detail"));
+          assertThat(responseBody.getString("recipe_steps[0].details[0].text")).isEqualTo("Step 1 detail");
+          assertThat(responseBody.getDouble("recipe_steps[0].details[0].start")).isEqualTo(0.0);
           assertThat(responseBody.getDouble("recipe_steps[0].start_time")).isEqualTo(0.0);
-          assertThat(responseBody.getDouble("recipe_steps[0].end_time")).isEqualTo(30.0);
+          assertThat(responseBody.getUUID("analysis.id")).isEqualTo(ingredientsId);
+          assertThat(responseBody.getString("analysis.description")).isEqualTo("맛있는 토마토 요리입니다");
+          assertThat(responseBody.getString("analysis.ingredients[0].name")).isEqualTo("토마토");
+          assertThat(responseBody.getInt("analysis.ingredients[0].amount")).isEqualTo(2);
+          assertThat(responseBody.getString("analysis.ingredients[0].unit")).isEqualTo("개");
+          assertThat(responseBody.getList("analysis.tags")).isEqualTo(List.of("한식", "건강식"));
+          assertThat(responseBody.getInt("analysis.servings")).isEqualTo(2);
+          assertThat(responseBody.getInt("analysis.cook_time")).isEqualTo(30);
+
         }
       }
     }
@@ -442,16 +464,16 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 추천 레시피를 조회한다면")
       class WhenRequestingRecommendRecipes {
 
-        private Page<RecipeOverview> recipes;
+        private Page<Recipe> recipes;
         private UUID recipeId;
         private VideoInfo videoInfo;
-        private RecipeOverview recipe;
+        private Recipe recipe;
         private Pageable pageable;
 
         @BeforeEach
         void setUp() {
           recipeId = UUID.randomUUID();
-          recipe = mock(RecipeOverview.class);
+          recipe = mock(Recipe.class);
           videoInfo = mock(VideoInfo.class);
           pageable = Pageable.ofSize(10);
 
@@ -589,11 +611,11 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 카테고리별 레시피를 조회한다면")
       class WhenRequestingCategorizedRecipes {
 
-        private Page<RecipeHistoryOverview> categorizedRecipes;
-        private RecipeHistoryOverview categorizedRecipe;
-        private RecipeOverview recipe;
+        private Page<RecipeHistory> categorizedRecipes;
+        private RecipeHistory categorizedRecipe;
+        private Recipe recipe;
         private VideoInfo video;
-        private RecipeViewStatusInfo viewStatus;
+        private RecipeViewStatus viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -603,13 +625,13 @@ public class RecipeControllerTest extends RestDocsTest {
           recipeId = UUID.randomUUID();
           page = 0;
           pageable = Pageable.ofSize(10);
-          categorizedRecipe = mock(RecipeHistoryOverview.class);
-          recipe = mock(RecipeOverview.class);
+          categorizedRecipe = mock(RecipeHistory.class);
+          recipe = mock(Recipe.class);
           video = mock(VideoInfo.class);
-          viewStatus = mock(RecipeViewStatusInfo.class);
+          viewStatus = mock(RecipeViewStatus.class);
 
-          doReturn(recipe).when(categorizedRecipe).getRecipeOverview();
-          doReturn(viewStatus).when(categorizedRecipe).getRecipeViewStatusInfo();
+          doReturn(recipe).when(categorizedRecipe).getRecipe();
+          doReturn(viewStatus).when(categorizedRecipe).getRecipeViewStatus();
           doReturn(video).when(recipe).getVideoInfo();
 
           doReturn(recipeId).when(recipe).getId();
@@ -620,7 +642,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
           doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(viewStatus).getViewedAt();
           doReturn(90).when(viewStatus).getLastPlaySeconds();
-          doReturn(categoryId).when(viewStatus).getCategoryId();
+          doReturn(categoryId).when(viewStatus).getRecipeCategoryId();
 
           categorizedRecipes = new PageImpl<>(List.of(categorizedRecipe), pageable, 1);
           doReturn(categorizedRecipes).when(recipeService).findCategorized(any(UUID.class), any(UUID.class), any(Integer.class));
@@ -740,11 +762,11 @@ public class RecipeControllerTest extends RestDocsTest {
       @DisplayName("When - 미분류 레시피를 조회한다면")
       class WhenRequestingUnCategorizedRecipes {
 
-        private Page<RecipeHistoryOverview> unCategorizedRecipes;
-        private RecipeHistoryOverview unCategorizedRecipe;
-        private RecipeOverview recipe;
+        private Page<RecipeHistory> unCategorizedRecipes;
+        private RecipeHistory unCategorizedRecipe;
+        private Recipe recipe;
         private VideoInfo video;
-        private RecipeViewStatusInfo viewStatus;
+        private RecipeViewStatus viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -754,13 +776,13 @@ public class RecipeControllerTest extends RestDocsTest {
           recipeId = UUID.randomUUID();
           page = 0;
           pageable = Pageable.ofSize(10);
-          unCategorizedRecipe = mock(RecipeHistoryOverview.class);
-          recipe = mock(RecipeOverview.class);
+          unCategorizedRecipe = mock(RecipeHistory.class);
+          recipe = mock(Recipe.class);
           video = mock(VideoInfo.class);
-          viewStatus = mock(RecipeViewStatusInfo.class);
+          viewStatus = mock(RecipeViewStatus.class);
 
-          doReturn(recipe).when(unCategorizedRecipe).getRecipeOverview();
-          doReturn(viewStatus).when(unCategorizedRecipe).getRecipeViewStatusInfo();
+          doReturn(recipe).when(unCategorizedRecipe).getRecipe();
+          doReturn(viewStatus).when(unCategorizedRecipe).getRecipeViewStatus();
           doReturn(video).when(recipe).getVideoInfo();
 
           doReturn(recipeId).when(recipe).getId();

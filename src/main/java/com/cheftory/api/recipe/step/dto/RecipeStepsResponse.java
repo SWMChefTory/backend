@@ -25,20 +25,33 @@ public record RecipeStepsResponse(
       @JsonProperty("subtitle")
       String subtitle,
       @JsonProperty("details")
-      List<String> details,
+      List<RecipeStepDetailResponse> details,
       @JsonProperty("start")
-      Double start,
-      @JsonProperty("end")
-      Double end
+      Double start
   ) {
+    public record RecipeStepDetailResponse(
+        @JsonProperty("text")
+        String text,
+        @JsonProperty("start")
+        Double start
+    ) {
+      public static RecipeStepDetailResponse from(RecipeStep.Detail detail) {
+        return new RecipeStepDetailResponse(
+            detail.getText(),
+            detail.getStart()
+        );
+      }
+    }
+
     public static RecipeStepResponse from(RecipeStep step) {
       return new RecipeStepResponse(
           step.getId(),
           step.getStepOrder(),
           step.getSubtitle(),
-          step.getDetails(),
-          step.getStart(),
-          step.getEnd()
+          step.getDetails().stream()
+              .map(RecipeStepDetailResponse::from)
+              .toList(),
+          step.getStart()
       );
     }
   }

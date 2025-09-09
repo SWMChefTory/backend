@@ -18,6 +18,16 @@ public class RecipeCaption {
     @UuidGenerator
     private UUID id;
 
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class Segment {
+        private String text;
+        private Double start;
+        private Double end;
+    }
+
     @Convert(converter = SegmentsJsonConverter.class)
     @Column(columnDefinition = "json")
     private List<Segment> segments;
