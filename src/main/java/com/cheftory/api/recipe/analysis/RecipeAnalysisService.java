@@ -29,16 +29,16 @@ public class RecipeAnalysisService {
         RecipeAnalysis recipeAnalysis = RecipeAnalysis.from(response.toIngredients(), recipeId, response.tags(),
             response.servings(), response.cookTime(), response.description());
 
-        return recipeAnalysisRepository.save(recipeAnalysis).getId();
+        return recipeAnalysisRepository.save(recipeAnalysis).getRecipeId();
     }
 
     public Optional<RecipeAnalysis> findByRecipeId(UUID recipeId) {
         return recipeAnalysisRepository.findByRecipeId(recipeId);
     }
 
-    public RecipeAnalysis find(UUID analysisId) {
+    public RecipeAnalysis find(UUID ingredientId) {
         return recipeAnalysisRepository
-            .findById(analysisId)
+            .findById(ingredientId)
             .orElseThrow(()->new RecipeAnalysisException(RecipeAnalysisErrorCode.RECIPE_INGREDIENTS_NOT_FOUND));
     }
 }
