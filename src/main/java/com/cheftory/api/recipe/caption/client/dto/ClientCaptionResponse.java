@@ -12,7 +12,7 @@ public record ClientCaptionResponse(
     @JsonProperty("lang_code")
     @NotNull
     LangCodeType langCode,
-    @JsonProperty("segments")
+    @JsonProperty("captions")
     @NotNull
     List<Segment> segments
 ) {
