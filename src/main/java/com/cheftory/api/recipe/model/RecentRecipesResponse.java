@@ -24,7 +24,7 @@ public record RecentRecipesResponse(
     @JsonProperty("has_next")
     boolean hasNext
 ) {
-  public static RecentRecipesResponse from(Page<RecipeHistoryOverview> recentRecipes) {
+  public static RecentRecipesResponse from(Page<RecipeHistory> recentRecipes) {
     List<RecentRecipeResponse> responses = recentRecipes.stream()
         .map(RecentRecipeResponse::from)
         .toList();
@@ -59,15 +59,15 @@ public record RecentRecipesResponse(
       @JsonProperty("video_seconds")
       Integer videoSeconds
   ) {
-    public static RecentRecipeResponse from(RecipeHistoryOverview info) {
+    public static RecentRecipeResponse from(RecipeHistory info) {
       return new RecentRecipeResponse(
-          info.getRecipeViewStatusInfo().getViewedAt(),
-          info.getRecipeViewStatusInfo().getLastPlaySeconds(),
-          info.getRecipeOverview().getId(),
-          info.getRecipeOverview().getVideoInfo().getTitle(),
-          info.getRecipeOverview().getVideoInfo().getThumbnailUrl(),
-          info.getRecipeOverview().getVideoInfo().getVideoId(),
-          info.getRecipeOverview().getVideoInfo().getVideoSeconds()
+          info.getRecipeViewStatus().getViewedAt(),
+          info.getRecipeViewStatus().getLastPlaySeconds(),
+          info.getRecipe().getId(),
+          info.getRecipe().getVideoInfo().getTitle(),
+          info.getRecipe().getVideoInfo().getThumbnailUrl(),
+          info.getRecipe().getVideoInfo().getVideoId(),
+          info.getRecipe().getVideoInfo().getVideoSeconds()
       );
     }
   }

@@ -10,17 +10,17 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class RecipeHistoryOverview {
-  private RecipeOverview recipeOverview;
-  private RecipeViewStatusInfo recipeViewStatusInfo;
+public class RecipeHistory {
+  private Recipe recipe;
+  private RecipeViewStatus recipeViewStatus;
 
-  public static RecipeHistoryOverview of(
+  public static RecipeHistory of(
       Recipe recipe,
       RecipeViewStatus recipeViewStatus
   ) {
-    return RecipeHistoryOverview.builder()
-        .recipeOverview(RecipeOverview.from(recipe))
-        .recipeViewStatusInfo(RecipeViewStatusInfo.of(recipeViewStatus))
+    return RecipeHistory.builder()
+        .recipe(recipe)
+        .recipeViewStatus(recipeViewStatus)
         .build();
   }
 }

@@ -25,7 +25,7 @@ public class CaptionClient {
      */
     public ClientCaptionResponse fetchCaption(String videoId) {
         ClientCaptionRequest request = ClientCaptionRequest
-                .from(videoId, "youtube");
+                .from(videoId);
         return webClient.post().uri(uriBuilder -> uriBuilder
                         .path("/captions")
                         .build()

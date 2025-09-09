@@ -7,16 +7,15 @@ import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;
+import com.cheftory.api.recipe.analysis.entity.RecipeAnalysis;
 import com.cheftory.api.recipe.model.FullRecipeInfo;
 import com.cheftory.api.recipe.model.CountRecipeCategory;
-import com.cheftory.api.recipe.model.RecipeOverview;
-import com.cheftory.api.recipe.model.RecipeHistoryOverview;
+import com.cheftory.api.recipe.model.RecipeHistory;
 import com.cheftory.api.recipe.model.RecipeSort;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
 import com.cheftory.api.recipe.util.RecipePageRequest;
 import com.cheftory.api.recipe.util.YoutubeUrlNormalizer;
-import com.cheftory.api.recipe.ingredients.RecipeIngredientsService;
+import com.cheftory.api.recipe.analysis.RecipeAnalysisService;
 import com.cheftory.api.recipe.client.VideoInfoClient;
 import com.cheftory.api.recipe.step.RecipeStepService;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
@@ -24,7 +23,6 @@ import com.cheftory.api.recipe.viewstatus.RecipeViewStatusCount;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatusService;
 import java.net.URI;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
@@ -50,7 +47,7 @@ public class RecipeService {
   private final AsyncRecipeCreationService asyncRecipeCreationService;
   private final RecipeRepository recipeRepository;
   private final RecipeStepService recipeStepService;
-  private final RecipeIngredientsService recipeIngredientsService;
+  private final RecipeAnalysisService recipeAnalysisService;
   private final YoutubeUrlNormalizer youtubeUrlNormalizer;
   private final RecipeViewStatusService recipeViewStatusService;
   private final RecipeCategoryService recipeCategoryService;
@@ -98,7 +95,7 @@ public class RecipeService {
     }
 
     List<RecipeStep> recipeSteps = recipeStepService.findByRecipeId(recipeId);
-    Optional<RecipeIngredients> ingredients = recipeIngredientsService.findByRecipeId(recipeId);
+    Optional<RecipeAnalysis> ingredients = recipeAnalysisService.findByRecipeId(recipeId);
 
     RecipeViewStatus recipeViewStatus = recipeViewStatusService.find(userId, recipeId);
 
@@ -114,28 +111,27 @@ public class RecipeService {
     );
   }
 
-  public Page<RecipeOverview> findRecommends(Integer page) {
+  public Page<Recipe> findRecommends(Integer page) {
     Pageable pageable = RecipePageRequest.create(page,RecipeSort.COUNT_DESC);
-    return recipeRepository.findByStatus(RecipeStatus.COMPLETED, pageable)
-        .map(RecipeOverview::from);
+    return recipeRepository.findByStatus(RecipeStatus.COMPLETED, pageable);
   }
 
-  public Page<RecipeHistoryOverview> findRecents(UUID userId, Integer page) {
+  public Page<RecipeHistory> findRecents(UUID userId, Integer page) {
     Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findRecentUsers(userId, page);
     return buildHistoryOverviews(viewStatuses);
   }
 
-  public Page<RecipeHistoryOverview> findCategorized(UUID userId, UUID recipeCategoryId, Integer page) {
+  public Page<RecipeHistory> findCategorized(UUID userId, UUID recipeCategoryId, Integer page) {
     Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findCategories(userId, recipeCategoryId, page);
     return buildHistoryOverviews(viewStatuses);
   }
 
-  public Page<RecipeHistoryOverview> findUnCategorized(UUID userId, Integer page) {
+  public Page<RecipeHistory> findUnCategorized(UUID userId, Integer page) {
     Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findUnCategories(userId, page);
     return buildHistoryOverviews(viewStatuses);
   }
 
-  private Page<RecipeHistoryOverview> buildHistoryOverviews(Page<RecipeViewStatus> viewStatuses) {
+  private Page<RecipeHistory> buildHistoryOverviews(Page<RecipeViewStatus> viewStatuses) {
     List<UUID> recipeIds = viewStatuses.stream()
         .map(RecipeViewStatus::getRecipeId)
         .toList();
@@ -145,9 +141,9 @@ public class RecipeService {
         .stream()
         .collect(Collectors.toMap(Recipe::getId, Function.identity()));
 
-    List<RecipeHistoryOverview> content = viewStatuses.stream()
+    List<RecipeHistory> content = viewStatuses.stream()
         .filter(viewStatus -> recipeMap.containsKey(viewStatus.getRecipeId()))
-        .map(viewStatus -> RecipeHistoryOverview.of(recipeMap.get(viewStatus.getRecipeId()), viewStatus))
+        .map(viewStatus -> RecipeHistory.of(recipeMap.get(viewStatus.getRecipeId()), viewStatus))
         .toList();
 
     return new PageImpl<>(content, viewStatuses.getPageable(), viewStatuses.getTotalElements());

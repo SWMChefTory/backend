@@ -2,7 +2,7 @@ package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
-import com.cheftory.api.recipe.ingredients.entity.RecipeIngredients;
+import com.cheftory.api.recipe.analysis.entity.RecipeAnalysis;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
 import jakarta.annotation.Nullable;
@@ -16,25 +16,24 @@ import java.util.List;
 public class FullRecipeInfo {
     private RecipeStatus recipeStatus;
     private VideoInfo videoInfo;
-    @Nullable private IngredientsInfo ingredientsInfo;
-    private List<RecipeStepInfo> recipeStepInfos;
-    private RecipeViewStatusInfo recipeViewStatusInfo;
+    @Nullable
+    private RecipeAnalysis recipeAnalysis;
+    private List<RecipeStep> recipeStepInfos;
+    private RecipeViewStatus recipeViewStatus;
 
     public static FullRecipeInfo of(
         RecipeStatus recipeStatus,
         VideoInfo videoInfo,
-        @Nullable RecipeIngredients ingredients,
+        @Nullable RecipeAnalysis ingredients,
         List<RecipeStep> recipeSteps,
         RecipeViewStatus recipeViewStatus
     ) {
         return FullRecipeInfo.builder()
             .recipeStatus(recipeStatus)
             .videoInfo(videoInfo)
-            .ingredientsInfo(ingredients != null ? IngredientsInfo.from(ingredients) : null)
-            .recipeStepInfos(recipeSteps.stream()
-                .map(RecipeStepInfo::from)
-                .toList())
-            .recipeViewStatusInfo(RecipeViewStatusInfo.of(recipeViewStatus))
+            .recipeAnalysis(ingredients)
+            .recipeStepInfos(recipeSteps)
+            .recipeViewStatus(recipeViewStatus)
             .build();
     }
 }

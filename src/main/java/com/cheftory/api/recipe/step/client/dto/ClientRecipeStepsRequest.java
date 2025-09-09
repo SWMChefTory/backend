@@ -1,32 +1,46 @@
 package com.cheftory.api.recipe.step.client.dto;
 
-import com.cheftory.api.recipe.model.CaptionInfo;
-import com.cheftory.api.recipe.ingredients.entity.Ingredient;
+import com.cheftory.api.recipe.analysis.entity.RecipeAnalysis;
+import com.cheftory.api.recipe.caption.entity.RecipeCaption;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
 
 import java.util.List;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder(access = AccessLevel.PRIVATE)
-@Getter
-public class ClientRecipeStepsRequest {
-    @JsonProperty("video_id")
-    private String videoId;
-    @JsonProperty("video_type")
-    private String videoType;
-    @JsonProperty("captions_data")
-    private CaptionInfo captionInfo;
-    private List<Ingredient> ingredients;
 
-    public static ClientRecipeStepsRequest from(String videoId, String videoType, CaptionInfo captionInfo, List<Ingredient> ingredients) {
-        return ClientRecipeStepsRequest.builder()
-                .videoId(videoId)
-                .videoType(videoType)
-                .captionInfo(captionInfo)
-                .ingredients(ingredients).build();
+public record ClientRecipeStepsRequest(
+    @JsonProperty("video_id")
+    String videoId,
+    @JsonProperty("video_type")
+    String videoType,
+    @JsonProperty("captions_data")
+    RecipeCaption recipeCaption,
+    @JsonProperty("ingredients")
+    List<Ingredient> ingredients
+) {
+    private record Ingredient(
+        @JsonProperty("name")
+        String name,
+        @JsonProperty("amount")
+        Integer  amount,
+        @JsonProperty("unit")
+        String unit
+    ) {
+        public static Ingredient from(RecipeAnalysis.Ingredient ingredient) {
+            return new Ingredient(
+                ingredient.getName(),
+                ingredient.getAmount(),
+                ingredient.getUnit()
+            );
+        }
+    }
+    public static ClientRecipeStepsRequest from(String videoId, String videoType, RecipeCaption recipeCaption, List<RecipeAnalysis.Ingredient> ingredients) {
+        return new ClientRecipeStepsRequest(
+            videoId,
+            videoType,
+            recipeCaption,
+            ingredients.stream()
+                .map(Ingredient::from)
+                .toList()
+        );
     }
 }

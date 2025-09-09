@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 
 public record UnCategorizedRecipesResponse(
     @JsonProperty("unCategorized_recipes")
-    List<UnCategorizedRecipeResponse> categorizedRecipes,
+    List<UnCategorizedRecipe> categorizedRecipes,
 
     @JsonProperty("current_page")
     int currentPage,
@@ -23,9 +23,9 @@ public record UnCategorizedRecipesResponse(
     @JsonProperty("has_next")
     boolean hasNext
 ) {
-  public static UnCategorizedRecipesResponse from(Page<RecipeHistoryOverview> categorizedRecipes) {
-    List<UnCategorizedRecipeResponse> responses = categorizedRecipes.stream()
-        .map(UnCategorizedRecipeResponse::from)
+  public static UnCategorizedRecipesResponse from(Page<RecipeHistory> categorizedRecipes) {
+    List<UnCategorizedRecipe> responses = categorizedRecipes.stream()
+        .map(UnCategorizedRecipe::from)
         .toList();
     return new UnCategorizedRecipesResponse(
         responses,
@@ -36,7 +36,7 @@ public record UnCategorizedRecipesResponse(
     );
   }
 
-  public record UnCategorizedRecipeResponse(
+  private record UnCategorizedRecipe(
       @JsonProperty("viewed_at")
       LocalDateTime viewedAt,
 
@@ -58,15 +58,15 @@ public record UnCategorizedRecipesResponse(
       @JsonProperty("video_seconds")
       Integer videoSeconds
   ){
-    public static UnCategorizedRecipeResponse from(RecipeHistoryOverview info) {
-      return new UnCategorizedRecipeResponse(
-          info.getRecipeViewStatusInfo().getViewedAt(),
-          info.getRecipeViewStatusInfo().getLastPlaySeconds(),
-          info.getRecipeOverview().getId(),
-          info.getRecipeOverview().getVideoInfo().getTitle(),
-          info.getRecipeOverview().getVideoInfo().getThumbnailUrl(),
-          info.getRecipeOverview().getVideoInfo().getVideoId(),
-          info.getRecipeOverview().getVideoInfo().getVideoSeconds()
+    public static UnCategorizedRecipe from(RecipeHistory info) {
+      return new UnCategorizedRecipe(
+          info.getRecipeViewStatus().getViewedAt(),
+          info.getRecipeViewStatus().getLastPlaySeconds(),
+          info.getRecipe().getId(),
+          info.getRecipe().getVideoInfo().getTitle(),
+          info.getRecipe().getVideoInfo().getThumbnailUrl(),
+          info.getRecipe().getVideoInfo().getVideoId(),
+          info.getRecipe().getVideoInfo().getVideoSeconds()
       );
     }
   }

@@ -2,17 +2,17 @@ package com.cheftory.api.recipe;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.model.CategorizedRecipesResponse;
 import com.cheftory.api.recipe.model.CountRecipeCategoriesResponse;
 import com.cheftory.api.recipe.model.CountRecipeCategory;
 import com.cheftory.api.recipe.model.RecommendRecipesResponse;
 import com.cheftory.api.recipe.model.FullRecipeInfo;
 import com.cheftory.api.recipe.model.RecipeCreateRequest;
-import com.cheftory.api.recipe.model.RecipeHistoryOverview;
+import com.cheftory.api.recipe.model.RecipeHistory;
 import com.cheftory.api.recipe.model.FullRecipeResponse;
 import com.cheftory.api.recipe.model.RecipeCreateResponse;
 import com.cheftory.api.recipe.model.RecentRecipesResponse;
-import com.cheftory.api.recipe.model.RecipeOverview;
 import com.cheftory.api.recipe.model.UnCategorizedRecipesResponse;
 import jakarta.validation.constraints.Min;
 import java.util.List;
@@ -50,22 +50,22 @@ public class RecipeController {
   public RecentRecipesResponse getRecentInfos(
       @UserPrincipal UUID userId,
       @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistoryOverview> infos = recipeService.findRecents(userId, page);
+    Page<RecipeHistory> infos = recipeService.findRecents(userId, page);
     return RecentRecipesResponse.from(infos);
   }
 
   @GetMapping("/recommend")
   public RecommendRecipesResponse getRecommendedRecipes(
       @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeOverview> infos = recipeService.findRecommends(page);
-    return RecommendRecipesResponse.from(infos);
+    Page<Recipe> recipes = recipeService.findRecommends(page);
+    return RecommendRecipesResponse.from(recipes);
   }
 
   @GetMapping("/categorized/{recipe_category_id}")
   public CategorizedRecipesResponse getCategorizedRecipes(
       @PathVariable("recipe_category_id") UUID categoryId,
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistoryOverview> infos = recipeService.findCategorized(userId,categoryId, page);
+    Page<RecipeHistory> infos = recipeService.findCategorized(userId,categoryId, page);
     return CategorizedRecipesResponse.from(infos);
   }
 
@@ -73,7 +73,7 @@ public class RecipeController {
   public UnCategorizedRecipesResponse getUnCategorizedRecipes(
       @UserPrincipal UUID userId,
       @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistoryOverview> infos = recipeService.findUnCategorized(userId, page);
+    Page<RecipeHistory> infos = recipeService.findUnCategorized(userId, page);
     return UnCategorizedRecipesResponse.from(infos);
   }
 

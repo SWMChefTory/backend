@@ -13,9 +13,9 @@ import com.cheftory.api.recipe.client.VideoInfoClient;
 import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
-import com.cheftory.api.recipe.ingredients.RecipeIngredientsService;
+import com.cheftory.api.recipe.analysis.RecipeAnalysisService;
 import com.cheftory.api.recipe.model.CountRecipeCategory;
-import com.cheftory.api.recipe.model.RecipeHistoryOverview;
+import com.cheftory.api.recipe.model.RecipeHistory;
 import com.cheftory.api.recipe.step.RecipeStepService;
 import com.cheftory.api.recipe.util.YoutubeUrlNormalizer;
 import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
@@ -41,7 +41,7 @@ public class RecipeServiceTest {
   private RecipeService recipeService;
   private VideoInfoClient videoInfoClient;
   private RecipeStepService recipeStepService;
-  private RecipeIngredientsService recipeIngredientsService;
+  private RecipeAnalysisService recipeAnalysisService;
   private YoutubeUrlNormalizer youtubeUrlNormalizer;
   private AsyncRecipeCreationService asyncRecipeCreationService;
 
@@ -53,14 +53,14 @@ public class RecipeServiceTest {
     videoInfoClient = mock(VideoInfoClient.class);
     youtubeUrlNormalizer = mock(YoutubeUrlNormalizer.class);
     recipeStepService = mock(RecipeStepService.class);
-    recipeIngredientsService = mock(RecipeIngredientsService.class);
+    recipeAnalysisService = mock(RecipeAnalysisService.class);
     asyncRecipeCreationService = mock(AsyncRecipeCreationService.class);
     recipeService = new RecipeService(
         videoInfoClient,
         asyncRecipeCreationService,
         recipeRepository,
         recipeStepService,
-        recipeIngredientsService,
+        recipeAnalysisService,
         youtubeUrlNormalizer,
         recipeViewStatusService,
         recipeCategoryService
@@ -108,12 +108,12 @@ public class RecipeServiceTest {
         @Test
         @DisplayName("Then - 최근 레시피 히스토리 목록을 반환해야 한다")
         void thenShouldReturnRecentRecipeHistories() {
-          List<RecipeHistoryOverview> result = recipeService.findRecents(userId, page).getContent();
+          List<RecipeHistory> result = recipeService.findRecents(userId, page).getContent();
 
           assertThat(result).hasSize(2);
           assertThat(result).allMatch(overview ->
-              overview.getRecipeOverview() != null &&
-                  overview.getRecipeViewStatusInfo() != null
+              overview.getRecipe() != null &&
+                  overview.getRecipeViewStatus() != null
           );
           verify(recipeViewStatusService).findRecentUsers(userId, page);
           verify(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
@@ -157,11 +157,11 @@ public class RecipeServiceTest {
         @Test
         @DisplayName("Then - 해당 카테고리의 레시피 히스토리 목록을 반환해야 한다")
         void thenShouldReturnCategorizedRecipeHistories() {
-          List<RecipeHistoryOverview> result = recipeService.findCategorized(userId, recipeCategoryId, page).getContent();
+          List<RecipeHistory> result = recipeService.findCategorized(userId, recipeCategoryId, page).getContent();
 
           assertThat(result).hasSize(1);
-          assertThat(result.get(0).getRecipeOverview()).isNotNull();
-          assertThat(result.get(0).getRecipeViewStatusInfo()).isNotNull();
+          assertThat(result.get(0).getRecipe()).isNotNull();
+          assertThat(result.get(0).getRecipeViewStatus()).isNotNull();
           verify(recipeViewStatusService).findCategories(userId, recipeCategoryId, page);
           verify(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
         }
@@ -202,11 +202,11 @@ public class RecipeServiceTest {
         @Test
         @DisplayName("Then - 미분류 레시피 히스토리 목록을 반환해야 한다")
         void thenShouldReturnUnCategorizedRecipeHistories() {
-          List<RecipeHistoryOverview> result = recipeService.findUnCategorized(userId, page).getContent();
+          List<RecipeHistory> result = recipeService.findUnCategorized(userId, page).getContent();
 
           assertThat(result).hasSize(1);
-          assertThat(result.get(0).getRecipeOverview()).isNotNull();
-          assertThat(result.get(0).getRecipeViewStatusInfo()).isNotNull();
+          assertThat(result.get(0).getRecipe()).isNotNull();
+          assertThat(result.get(0).getRecipeViewStatus()).isNotNull();
           verify(recipeViewStatusService).findUnCategories(userId, page);
           verify(recipeRepository).findRecipesByIdInAndStatus(anyList(), eq(RecipeStatus.COMPLETED));
         }
