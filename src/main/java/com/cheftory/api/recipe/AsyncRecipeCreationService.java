@@ -49,8 +49,8 @@ public class AsyncRecipeCreationService {
   }
 
   private RecipeAnalysis handleAnalysis(UUID recipeId, String videoId, RecipeCaption recipeCaption) {
-    UUID ingredientsId = recipeAnalysisService.create(recipeId, videoId, recipeCaption);
-    return recipeAnalysisService.find(ingredientsId);
+    UUID analysisId = recipeAnalysisService.create(recipeId, videoId, recipeCaption);
+    return recipeAnalysisService.find(analysisId);
   }
 
   private void handleSteps(String videoId, UUID recipeId, RecipeCaption recipeCaption, List<RecipeAnalysis.Ingredient> ingredients) {
