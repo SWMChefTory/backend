@@ -22,7 +22,7 @@ public class RecipeAnalysisService {
     private final RecipeAnalysisRepository recipeAnalysisRepository;
 
     @Transactional
-    public UUID create(UUID recipeId, String videoId, RecipeCaption recipeCaption) {
+    public void create(UUID recipeId, String videoId, RecipeCaption recipeCaption) {
         ClientRecipeAnalysisResponse response = recipeAnalysisClient
                 .fetchRecipeIngredients(videoId, recipeCaption);
 
