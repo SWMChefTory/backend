@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 @DisplayName("UserService")
 class UserServiceTest {
@@ -124,6 +125,139 @@ class UserServiceTest {
 
         // Then
         assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("유저 정보 수정 (update)")
+  class UpdateUser {
+
+    String oldNickname = "oldNick";
+    Gender oldGender = Gender.FEMALE;
+    LocalDate oldBirth = LocalDate.of(1999, 1, 1);
+
+    String newNickname = "newNick";
+    Gender newGender = Gender.MALE;
+    LocalDate newBirth = LocalDate.of(2000, 1, 1);
+
+    @Nested
+    @DisplayName("Given - 유저가 존재할 때")
+    class GivenUserExists {
+
+      @Test
+      @DisplayName("닉네임 수정")
+      void updateNicknameOnly() {
+        // given
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        UUID id = user.getId();
+        doReturn(Optional.of(user))
+            .when(userRepository)
+            .findByIdAndUserStatus(id, UserStatus.ACTIVE);
+
+        // when: 닉네임만 전달 (다른 필드는 미제공)
+        userService.update(
+            id,
+            Optional.of(newNickname),
+            JsonNullable.undefined(),
+            JsonNullable.undefined()
+        );
+
+        // then
+        Assertions.assertEquals(newNickname, user.getNickname());
+        Assertions.assertEquals(oldGender, user.getGender());
+        Assertions.assertEquals(oldBirth, user.getDateOfBirth());
+      }
+
+      @Test
+      @DisplayName("성별 수정")
+      void updateGenderOnly() {
+        // given
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        UUID id = user.getId();
+        doReturn(Optional.of(user))
+            .when(userRepository)
+            .findByIdAndUserStatus(id, UserStatus.ACTIVE);
+
+        // when: 성별만 전달
+        userService.update(
+            id,
+            Optional.empty(),
+            JsonNullable.of(newGender),
+            JsonNullable.undefined()
+        );
+
+        // then
+        Assertions.assertEquals(oldNickname, user.getNickname());
+        Assertions.assertEquals(newGender, user.getGender());
+        Assertions.assertEquals(oldBirth, user.getDateOfBirth());
+      }
+
+      // 성별을 null 로 비우는 케이스도 검증하고 싶다면 추가
+      @Test
+      @DisplayName("성별 수정 (NULL)")
+      void clearGenderToNull() {
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        UUID id = user.getId();
+        doReturn(Optional.of(user))
+            .when(userRepository)
+            .findByIdAndUserStatus(id, UserStatus.ACTIVE);
+
+        userService.update(
+            id,
+            Optional.empty(),
+            JsonNullable.of(null),
+            JsonNullable.undefined()
+        );
+
+        Assertions.assertNull(user.getGender());
+        Assertions.assertEquals(oldNickname, user.getNickname());
+        Assertions.assertEquals(oldBirth, user.getDateOfBirth());
+      }
+
+      @Test
+      @DisplayName("생년월일 수정")
+      void updateBirthOnly() {
+        // given
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        UUID id = user.getId();
+        doReturn(Optional.of(user))
+            .when(userRepository)
+            .findByIdAndUserStatus(id, UserStatus.ACTIVE);
+
+        // when: 생년월일만 전달
+        userService.update(
+            id,
+            Optional.empty(),
+            JsonNullable.undefined(),
+            JsonNullable.of(newBirth)
+        );
+
+        // then
+        Assertions.assertEquals(oldNickname, user.getNickname());
+        Assertions.assertEquals(oldGender, user.getGender());
+        Assertions.assertEquals(newBirth, user.getDateOfBirth());
+      }
+
+      @Test
+      @DisplayName("생년월일 수정 (NULL)")
+      void clearBirthToNull() {
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        UUID id = user.getId();
+        doReturn(Optional.of(user))
+            .when(userRepository)
+            .findByIdAndUserStatus(id, UserStatus.ACTIVE);
+
+        userService.update(
+            id,
+            Optional.empty(),
+            JsonNullable.undefined(),
+            JsonNullable.of(null)
+        );
+
+        Assertions.assertNull(user.getDateOfBirth());
+        Assertions.assertEquals(oldNickname, user.getNickname());
+        Assertions.assertEquals(oldGender, user.getGender());
       }
     }
   }
