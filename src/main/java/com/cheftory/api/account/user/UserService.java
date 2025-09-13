@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -55,6 +56,17 @@ public class UserService {
   public User get(UUID id) {
     return userRepository.findByIdAndUserStatus(id, UserStatus.ACTIVE)
         .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+  }
+
+  public void update(UUID id, Optional<String> nickname, JsonNullable<Gender> gender, JsonNullable<LocalDate> dateOfBirth) {
+    User user = userRepository.findByIdAndUserStatus(id, UserStatus.ACTIVE)
+        .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+    nickname.ifPresent(user::changeNickname);
+    gender.ifPresent(user::changeGender);
+    dateOfBirth.ifPresent(user::changeDateOfBirth);
+
+    userRepository.save(user);
   }
 
   @Transactional
