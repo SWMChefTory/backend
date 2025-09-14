@@ -39,6 +39,8 @@ public class VoiceCommandHistoryServiceTest {
       private UUID userId;
       private String sttModel;
       private String intentModel;
+      private Integer start;
+      private Integer end;
 
       @BeforeEach
       void setUp() {
@@ -47,6 +49,8 @@ public class VoiceCommandHistoryServiceTest {
         userId = UUID.randomUUID();
         sttModel = "VITO";
         intentModel = "GPT4.1";
+        start = 1;
+        end = 2;
       }
 
       @Nested
@@ -56,14 +60,16 @@ public class VoiceCommandHistoryServiceTest {
         @Test
         @DisplayName("Then - 올바른 파라미터로 Repository의 save가 호출되어야 한다")
         public void thenShouldCallRepositorySaveWithCorrectParameters() {
-          voiceCommandHistoryService.create(baseIntent, intent, userId, sttModel, intentModel);
+          voiceCommandHistoryService.create(baseIntent, intent, userId, sttModel, intentModel, start, end);
 
           verify(voiceCommandHistoryRepository).save(argThat(voiceCommand ->
               voiceCommand.getTranscribe().equals(baseIntent) &&
                   voiceCommand.getResult().equals(intent) &&
                   voiceCommand.getUserId().equals(userId) &&
                   voiceCommand.getSttModel().equals(STTModel.fromValue(sttModel)) &&
-                  voiceCommand.getIntentModel().equals(IntentModel.fromValue(intentModel))
+                  voiceCommand.getIntentModel().equals(IntentModel.fromValue(intentModel))&&
+                  voiceCommand.getStart().equals(start)&&
+                  voiceCommand.getEnd().equals(end)
           ));
         }
       }
@@ -78,6 +84,8 @@ public class VoiceCommandHistoryServiceTest {
       private UUID userId;
       private String invalidSttModel;
       private String intentModel;
+      private Integer start;
+      private Integer end;
 
       @BeforeEach
       void setUp() {
@@ -86,6 +94,8 @@ public class VoiceCommandHistoryServiceTest {
         userId = UUID.randomUUID();
         invalidSttModel = "INVALID_STT";
         intentModel = "GPT4.1";
+        start = 1;
+        end = 2;
       }
 
       @Nested
@@ -96,7 +106,7 @@ public class VoiceCommandHistoryServiceTest {
         @DisplayName("Then - 예외가 발생해야 한다")
         public void thenShouldThrowException() {
           assertThatThrownBy(() ->
-              voiceCommandHistoryService.create(baseIntent, intent, userId, invalidSttModel, intentModel))
+              voiceCommandHistoryService.create(baseIntent, intent, userId, invalidSttModel, intentModel, start, end))
               .isInstanceOf(VoiceCommandHistoryException.class);
         }
       }
@@ -111,6 +121,8 @@ public class VoiceCommandHistoryServiceTest {
       private UUID userId;
       private String sttModel;
       private String invalidIntentModel;
+      private Integer start;
+      private Integer end;
 
       @BeforeEach
       void setUp() {
@@ -119,6 +131,8 @@ public class VoiceCommandHistoryServiceTest {
         userId = UUID.randomUUID();
         sttModel = "VITO";
         invalidIntentModel = "INVALID_INTENT";
+        start = 1;
+        end = 2;
       }
 
       @Nested
@@ -129,7 +143,7 @@ public class VoiceCommandHistoryServiceTest {
         @DisplayName("Then - 예외가 발생해야 한다")
         public void thenShouldThrowException() {
           assertThatThrownBy(() ->
-              voiceCommandHistoryService.create(baseIntent, intent, userId, sttModel, invalidIntentModel))
+              voiceCommandHistoryService.create(baseIntent, intent, userId, sttModel, invalidIntentModel,start, end ))
               .isInstanceOf(VoiceCommandHistoryException.class);
         }
       }

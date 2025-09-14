@@ -25,6 +25,7 @@ import static com.cheftory.api.utils.RestDocsUtils.responseErrorFields;
 import static com.cheftory.api.utils.RestDocsUtils.responsePreprocessor;
 import static com.cheftory.api.utils.RestDocsUtils.responseSuccessFields;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -69,6 +70,8 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             private UUID userId;
             private String testSttModel;
             private String testIntentModel;
+            private Integer start;
+            private Integer end;
             private Map<String, Object> request;
 
             @BeforeEach
@@ -78,13 +81,17 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 userId = generateUserId();
                 testSttModel = "VITO";
                 testIntentModel = "gpt-4";
+                start = 1;
+                end = 2;
 
                 request = Map.of(
                     "transcribe", testBaseIntent,
                     "intent", testIntent,
                     "user_id", userId.toString(),
                     "stt_model", testSttModel,
-                    "intent_model", testIntentModel
+                    "intent_model", testIntentModel,
+                    "start", start,
+                    "end", end
                 );
             }
 
@@ -97,7 +104,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                     doReturn(true).when(userService).exists(any(UUID.class));
                     doNothing()
                         .when(voiceCommandHistoryservice)
-                        .create(anyString(), anyString(), any(UUID.class), anyString(), anyString());
+                        .create(anyString(), anyString(), any(UUID.class), anyString(), anyString(),anyInt(), anyInt());
                 }
 
                 @Test
@@ -118,6 +125,8 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                                     fieldWithPath("transcribe").description("기본 의도"),
                                     fieldWithPath("intent").description("의도"),
                                     fieldWithPath("user_id").description("유저 ID"),
+                                    fieldWithPath("start").description("발화의 시작 시간"),
+                                    fieldWithPath("end").description("발화의 종료 시간"),
                                     enumFields(
                                         "stt_model",
                                         "음성 인식에 사용되는 모델. 사용 가능한 값: ",
@@ -134,7 +143,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                         );
 
                     assertSuccessResponse(response);
-                    verify(voiceCommandHistoryservice).create(testBaseIntent, testIntent, userId, testSttModel, testIntentModel);
+                    verify(voiceCommandHistoryservice).create(testBaseIntent, testIntent, userId, testSttModel, testIntentModel, start, end);
                     verify(userService).exists(userId);
                 }
             }
@@ -149,6 +158,8 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             private UUID userId;
             private String testSttModel;
             private String testIntentModel;
+            private Integer start;
+            private Integer end;
             private Map<String, Object> request;
 
             @BeforeEach
@@ -158,13 +169,17 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 userId = generateUserId();
                 testSttModel = "VITO";
                 testIntentModel = "gpt-4";
+                start = 1;
+                end = 2;
 
                 request = Map.of(
                     "transcribe", testBaseIntent,
                     "intent", testIntent,
                     "user_id", userId.toString(),
                     "stt_model", testSttModel,
-                    "intent_model", testIntentModel
+                    "intent_model", testIntentModel,
+                    "start",start,
+                    "end", end
                 );
 
                 doReturn(false).when(userService).exists(userId);
@@ -245,7 +260,10 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             private UUID userId;
             private String invalidSttModel;
             private String testIntentModel;
+            private Integer start;
+            private Integer end;
             private Map<String, Object> request;
+
 
             @BeforeEach
             void setUp() {
@@ -254,19 +272,23 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 userId = generateUserId();
                 invalidSttModel = "INVALID_STT";
                 testIntentModel = "gpt-4";
+                start = 1;
+                end = 2;
 
                 request = Map.of(
                     "transcribe", testBaseIntent,
                     "intent", testIntent,
                     "user_id", userId.toString(),
                     "stt_model", invalidSttModel,
-                    "intent_model", testIntentModel
+                    "intent_model", testIntentModel,
+                    "start",start,
+                    "end",end
                 );
 
                 doReturn(true).when(userService).exists(any(UUID.class));
                 doThrow(new VoiceCommandHistoryException(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL))
                     .when(voiceCommandHistoryservice)
-                    .create(anyString(), anyString(), any(UUID.class), anyString(), anyString());
+                    .create(anyString(), anyString(), any(UUID.class), anyString(), anyString(), anyInt(), anyInt());
             }
 
             @Nested
@@ -294,7 +316,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                     assertErrorResponse(response, VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL);
                     verify(userService).exists(userId);
                     verify(voiceCommandHistoryservice)
-                        .create(testBaseIntent, testIntent, userId, invalidSttModel, testIntentModel);
+                        .create(testBaseIntent, testIntent, userId, invalidSttModel, testIntentModel, start, end);
                 }
             }
         }
@@ -308,6 +330,8 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             private UUID userId;
             private String testSttModel;
             private String invalidIntentModel;
+            private Integer start;
+            private Integer end;
             private Map<String, Object> request;
 
             @BeforeEach
@@ -317,19 +341,23 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                 userId = generateUserId();
                 testSttModel = "VITO";
                 invalidIntentModel = "INVALID_INTENT";
+                start = 1;
+                end = 2;
 
                 request = Map.of(
                     "transcribe", testBaseIntent,
                     "intent", testIntent,
                     "user_id", userId.toString(),
                     "stt_model", testSttModel,
-                    "intent_model", invalidIntentModel
+                    "intent_model", invalidIntentModel,
+                    "start", start,
+                    "end", end
                 );
 
                 doReturn(true).when(userService).exists(any(UUID.class));
                 doThrow(new VoiceCommandHistoryException(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL))
                     .when(voiceCommandHistoryservice)
-                    .create(anyString(), anyString(), any(UUID.class), anyString(), anyString());
+                    .create(anyString(), anyString(), any(UUID.class), anyString(), anyString(), anyInt(), anyInt());
             }
 
             @Nested
@@ -357,7 +385,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
                     assertErrorResponse(response, VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL);
                     verify(userService).exists(userId);
                     verify(voiceCommandHistoryservice)
-                        .create(testBaseIntent, testIntent, userId, testSttModel, invalidIntentModel);
+                        .create(testBaseIntent, testIntent, userId, testSttModel, invalidIntentModel, start, end);
                 }
             }
         }

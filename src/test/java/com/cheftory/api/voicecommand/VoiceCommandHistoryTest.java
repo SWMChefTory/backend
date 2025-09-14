@@ -31,6 +31,8 @@ public class VoiceCommandHistoryTest {
       private String transcribe;
       private String result;
       private UUID userId;
+      private Integer start;
+      private Integer end;
 
       @BeforeEach
       void setUp() {
@@ -40,6 +42,8 @@ public class VoiceCommandHistoryTest {
         transcribe = "hello world";
         result = "greeting";
         userId = UUID.randomUUID();
+        start = 1;
+        end = 2;
       }
 
       @Nested
@@ -50,7 +54,7 @@ public class VoiceCommandHistoryTest {
 
         @BeforeEach
         void beforeEach() {
-          voiceCommandHistory = VoiceCommandHistory.create(sttModel, transcribe, intentGPT4Model, result, userId);
+          voiceCommandHistory = VoiceCommandHistory.create(sttModel, transcribe, intentGPT4Model, result, userId, start, end);
         }
 
         @Test
@@ -64,6 +68,8 @@ public class VoiceCommandHistoryTest {
           assertThat(voiceCommandHistory.getUserId()).isEqualTo(userId);
           assertThat(voiceCommandHistory.getCreatedAt()).isNotNull();
           assertThat(voiceCommandHistory.getCreatedAt()).isBeforeOrEqualTo(LocalDateTime.now());
+          assertThat(voiceCommandHistory.getStart()).isEqualTo(start);
+          assertThat(voiceCommandHistory.getEnd()).isEqualTo(end);
         }
       }
 
@@ -75,7 +81,7 @@ public class VoiceCommandHistoryTest {
 
         @BeforeEach
         void beforeEach() {
-          voiceCommandHistory = VoiceCommandHistory.create(sttModel, transcribe, intentNLUModel, result, userId);
+          voiceCommandHistory = VoiceCommandHistory.create(sttModel, transcribe, intentNLUModel, result, userId, start, end);
         }
 
         @Test
@@ -86,6 +92,8 @@ public class VoiceCommandHistoryTest {
           assertThat(voiceCommandHistory.getTranscribe()).isEqualTo(transcribe);
           assertThat(voiceCommandHistory.getResult()).isEqualTo(result);
           assertThat(voiceCommandHistory.getUserId()).isEqualTo(userId);
+          assertThat(voiceCommandHistory.getStart()).isEqualTo(start);
+          assertThat(voiceCommandHistory.getEnd()).isEqualTo(end);
         }
       }
     }
@@ -99,6 +107,8 @@ public class VoiceCommandHistoryTest {
       private String transcribe;
       private String result;
       private UUID userId;
+      private Integer start;
+      private Integer end;
 
       @BeforeEach
       void setUp() {
@@ -107,6 +117,8 @@ public class VoiceCommandHistoryTest {
         transcribe = "test";
         result = "result";
         userId = UUID.randomUUID();
+        start = 1;
+        end = 2;
       }
 
       @Nested
@@ -117,7 +129,7 @@ public class VoiceCommandHistoryTest {
         @DisplayName("Then - STT 모델 예외가 발생해야 한다")
         public void thenShouldThrowSttModelException() {
           assertThatThrownBy(() ->
-              VoiceCommandHistory.create(invalidSttModel, transcribe, validIntentModel, result, userId)
+              VoiceCommandHistory.create(invalidSttModel, transcribe, validIntentModel, result, userId, start, end)
           ).isInstanceOf(VoiceCommandHistoryException.class)
               .satisfies(ex -> {
                 VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
@@ -136,6 +148,8 @@ public class VoiceCommandHistoryTest {
       private String transcribe;
       private String result;
       private UUID userId;
+      private Integer start;
+      private Integer end;
 
       @BeforeEach
       void setUp() {
@@ -144,6 +158,8 @@ public class VoiceCommandHistoryTest {
         transcribe = "test";
         result = "result";
         userId = UUID.randomUUID();
+        start = 1;
+        end = 2;
       }
 
       @Nested
@@ -154,7 +170,7 @@ public class VoiceCommandHistoryTest {
         @DisplayName("Then - Intent 모델 예외가 발생해야 한다")
         public void thenShouldThrowIntentModelException() {
           assertThatThrownBy(() ->
-              VoiceCommandHistory.create(validSttModel, transcribe, invalidIntentModel, result, userId)
+              VoiceCommandHistory.create(validSttModel, transcribe, invalidIntentModel, result, userId, start, end)
           ).isInstanceOf(VoiceCommandHistoryException.class)
               .satisfies(ex -> {
                 VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;

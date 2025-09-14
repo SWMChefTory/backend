@@ -30,6 +30,10 @@ public record VoiceCommandHistoryCreateRequest(
     String intentModel,
 
     @NotNull
-    @JsonProperty("aws_audio_file")
-    String awsAudioFile
+    @JsonProperty("start")
+    Integer start,
+
+    @NotNull
+    @JsonProperty("end")
+    Integer end
 ) {}

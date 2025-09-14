@@ -14,8 +14,8 @@ public class VoiceCommandHistoryService {
 
     private final VoiceCommandHistoryRepository voiceCommandHistoryRepository;
 
-    public void create(String transcribe, String result, UUID userId, String sttModel, String intentModel, String awsAudioFileName) {
-        VoiceCommandHistory voiceCommandHistory = VoiceCommandHistory.create(sttModel,transcribe, intentModel, result, userId,awsAudioFileName);
+    public void create(String transcribe, String result, UUID userId, String sttModel, String intentModel, Integer start, Integer end) {
+        VoiceCommandHistory voiceCommandHistory = VoiceCommandHistory.create(sttModel,transcribe, intentModel, result, userId, start, end);
         voiceCommandHistoryRepository.save(voiceCommandHistory);
     }
 }
