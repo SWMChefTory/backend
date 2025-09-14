@@ -56,6 +56,7 @@ API 문서에서 공통으로 사용되는 내용을 정의합니다.
 
 include::Account-API.adoc[]
 include::Auth-API.adoc[]
+include::User-API.adoc[]
 include::VoiceCommand-API.adoc[]
 include::Recipe-API.adoc[]
 include::RecipeViewStatus-API.adoc[]

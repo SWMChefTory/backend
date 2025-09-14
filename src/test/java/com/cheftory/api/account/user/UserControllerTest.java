@@ -18,7 +18,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
 import com.cheftory.api._common.security.UserArgumentResolver;
-import com.cheftory.api.account.user.dto.UserMeRequest;
 import com.cheftory.api.account.user.entity.Gender;
 import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.account.user.entity.UserStatus;
@@ -148,18 +147,45 @@ public class UserControllerTest extends RestDocsTest {
   @DisplayName("PATCH /api/v1/users/me - 현재 로그인한 사용자 정보 수정")
   class updateUserInfo {
 
+    String oldNickname = "oldNick";
+    Gender oldGender = Gender.FEMALE;
+    LocalDate oldBirth = LocalDate.of(1999, 1, 1);
+
+    String newNickname = "newNick";
+    Gender newGender = Gender.MALE;
+    LocalDate newBirth = LocalDate.of(2000, 1, 1);
+
     @Test
-    @DisplayName("성공 - 닉네임만 수정한다")
+    @DisplayName("성공 - 닉네임 수정")
     void shouldUpdateNicknameOnly() {
       // given
-      doNothing().when(userService)
-          .update(eq(fixedUserId), any(Optional.class), any(JsonNullable.class),
-              any(JsonNullable.class));
+
+      User user = User.builder()
+          .id(fixedUserId)
+          .nickname(newNickname)
+          .gender(oldGender)
+          .dateOfBirth(oldBirth)
+          .userStatus(UserStatus.ACTIVE)
+          .createdAt(LocalDateTime.now())
+          .updatedAt(LocalDateTime.now())
+          .termsOfUseAgreedAt(LocalDateTime.now())
+          .privacyAgreedAt(LocalDateTime.now())
+          .marketingAgreedAt(null)
+          .provider(Provider.APPLE)
+          .providerSub("apple-sub-123")
+          .build();
+
+      doReturn(user).when(userService).update(fixedUserId, newNickname, oldGender, oldBirth);
+
+      Map<String, Object> request = new HashMap<>();
+      request.put("nickname", newNickname);
+      request.put("gender", oldGender);
+      request.put("date_of_birth", oldBirth);
 
       // when & then
-      given()
+      var response = given()
           .contentType(ContentType.JSON)
-          .body(Map.of("nickname", "newNickname")) // 닉네임만 보냄
+          .body(request)
           .attribute("userId", fixedUserId.toString())
           .header("Authorization", "Bearer accessToken")
           .when()
@@ -171,33 +197,55 @@ public class UserControllerTest extends RestDocsTest {
               requestPreprocessor(),
               responsePreprocessor(),
               requestFields(
-                  fieldWithPath("nickname").optional().description("변경할 닉네임")
+                  fieldWithPath("nickname").description("변경할 닉네임"),
+                  fieldWithPath("gender").description("기존 성별"),
+                  fieldWithPath("date_of_birth").description("기존 생년월일")
               ),
               responseFields(
-                  fieldWithPath("message").description("성공 메시지")
+                  fieldWithPath("nickname").description("닉네임"),
+                  fieldWithPath("gender").description("성별"),
+                  fieldWithPath("date_of_birth").description("생년월일"),
+                  fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
+                  fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                  fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
               )
           ));
 
-      // 서비스 호출 인자 검증: nickname=Optional.of("newNickname"), 나머지는 absent
-      verify(userService).update(
-          eq(fixedUserId),
-          eq(Optional.of("newNickname")),
-          argThat(jn -> !jn.isPresent()),
-          argThat(jn -> !jn.isPresent())
-      );
+      response.body("nickname", equalTo(newNickname))
+          .body("gender", equalTo(oldGender.name()))
+          .body("date_of_birth", equalTo(oldBirth.toString()));
     }
 
     @Test
-    @DisplayName("성공 - 성별만 수정한다")
+    @DisplayName("성공 - 성별 수정")
     void shouldUpdateGenderOnly() {
       // given
-      doNothing().when(userService)
-          .update(eq(fixedUserId), any(Optional.class), any(JsonNullable.class),
-              any(JsonNullable.class));
+      User user = User.builder()
+          .id(fixedUserId)
+          .nickname(oldNickname)
+          .gender(newGender)
+          .dateOfBirth(oldBirth)
+          .userStatus(UserStatus.ACTIVE)
+          .createdAt(LocalDateTime.now())
+          .updatedAt(LocalDateTime.now())
+          .termsOfUseAgreedAt(LocalDateTime.now())
+          .privacyAgreedAt(LocalDateTime.now())
+          .marketingAgreedAt(null)
+          .provider(Provider.APPLE)
+          .providerSub("apple-sub-123")
+          .build();
 
-      given()
+      doReturn(user).when(userService).update(fixedUserId, oldNickname, newGender, oldBirth);
+
+      Map<String, Object> request = new HashMap<>();
+      request.put("nickname", oldNickname);
+      request.put("gender", newGender);
+      request.put("date_of_birth", oldBirth);
+
+      // when & then
+      var response = given()
           .contentType(ContentType.JSON)
-          .body(Map.of("gender", Gender.MALE.name())) // 성별만 보냄
+          .body(request)
           .attribute("userId", fixedUserId.toString())
           .header("Authorization", "Bearer accessToken")
           .when()
@@ -209,33 +257,115 @@ public class UserControllerTest extends RestDocsTest {
               requestPreprocessor(),
               responsePreprocessor(),
               requestFields(
-                  fieldWithPath("gender").optional().description("성별 (MALE/FEMALE)")
+                  fieldWithPath("nickname").description("기존 닉네임"),
+                  fieldWithPath("gender").description("변경할 성별 (NULL 가능)"),
+                  fieldWithPath("date_of_birth").description("기존 생년월일")
               ),
               responseFields(
-                  fieldWithPath("message").description("성공 메시지")
+                  fieldWithPath("nickname").description("닉네임"),
+                  fieldWithPath("gender").description("성별"),
+                  fieldWithPath("date_of_birth").description("생년월일"),
+                  fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
+                  fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                  fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
               )
           ));
 
-      // gender 가 present 이고 값이 MALE 이어야 함, nickname/date_of_birth 는 미제공
-      verify(userService).update(
-          eq(fixedUserId),
-          eq(Optional.empty()),
-          argThat(jn -> jn.isPresent() && jn.get() == Gender.MALE),
-          argThat(jn -> !jn.isPresent())
-      );
+      response.body("nickname", equalTo(oldNickname))
+          .body("gender", equalTo(newGender.name()))
+          .body("date_of_birth", equalTo(oldBirth.toString()));
     }
 
     @Test
-    @DisplayName("성공 - 생년월일만 수정한다")
+    @DisplayName("성공 - 성별 수정(NULL)")
+    void shouldUpdateGenderToNULL() {
+      // given
+      User user = User.builder()
+          .id(fixedUserId)
+          .nickname(oldNickname)
+          .gender(null)
+          .dateOfBirth(oldBirth)
+          .userStatus(UserStatus.ACTIVE)
+          .createdAt(LocalDateTime.now())
+          .updatedAt(LocalDateTime.now())
+          .termsOfUseAgreedAt(LocalDateTime.now())
+          .privacyAgreedAt(LocalDateTime.now())
+          .marketingAgreedAt(null)
+          .provider(Provider.APPLE)
+          .providerSub("apple-sub-123")
+          .build();
+
+      doReturn(user).when(userService).update(fixedUserId, oldNickname, null, oldBirth);
+
+      Map<String, Object> request = new HashMap<>();
+      request.put("nickname", oldNickname);
+      request.put("gender", null);
+      request.put("date_of_birth", oldBirth);
+
+      // when & then
+      var response = given()
+          .contentType(ContentType.JSON)
+          .body(request)
+          .attribute("userId", fixedUserId.toString())
+          .header("Authorization", "Bearer accessToken")
+          .when()
+          .patch("/api/v1/users/me")
+          .then()
+          .status(HttpStatus.OK)
+          .apply(document(
+              getNestedClassPath(this.getClass()) + "/{method-name}",
+              requestPreprocessor(),
+              responsePreprocessor(),
+              requestFields(
+                  fieldWithPath("nickname").description("기존 닉네임"),
+                  fieldWithPath("gender").description("변경할 성별"),
+                  fieldWithPath("date_of_birth").description("기존 생년월일")
+              ),
+              responseFields(
+                  fieldWithPath("nickname").description("닉네임"),
+                  fieldWithPath("gender").description("성별"),
+                  fieldWithPath("date_of_birth").description("생년월일"),
+                  fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
+                  fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                  fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
+              )
+          ));
+
+      response.body("nickname", equalTo(oldNickname))
+          .body("gender", equalTo(null))
+          .body("date_of_birth", equalTo(oldBirth.toString()));
+    }
+
+    @Test
+    @DisplayName("성공 - 생년월일 수정")
     void shouldUpdateBirthOnly() {
       // given
-      doNothing().when(userService)
-          .update(eq(fixedUserId), any(Optional.class), any(JsonNullable.class),
-              any(JsonNullable.class));
+      User user = User.builder()
+          .id(fixedUserId)
+          .nickname(oldNickname)
+          .gender(oldGender)
+          .dateOfBirth(newBirth)
+          .userStatus(UserStatus.ACTIVE)
+          .createdAt(LocalDateTime.now())
+          .updatedAt(LocalDateTime.now())
+          .termsOfUseAgreedAt(LocalDateTime.now())
+          .privacyAgreedAt(LocalDateTime.now())
+          .marketingAgreedAt(null)
+          .provider(Provider.APPLE)
+          .providerSub("apple-sub-123")
+          .build();
 
-      given()
+      doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, newBirth);
+
+      Map<String, Object> request = new HashMap<>();
+      request.put("nickname", oldNickname);
+      request.put("gender", oldGender);
+      request.put("date_of_birth", newBirth);
+
+      // when & then
+      var response = given()
           .contentType(ContentType.JSON)
-          .body(Map.of("date_of_birth", validDateOfBirth.toString())) // 생년월일만 보냄 (yyyy-MM-dd)
+          .body(request)
           .attribute("userId", fixedUserId.toString())
           .header("Authorization", "Bearer accessToken")
           .when()
@@ -247,35 +377,55 @@ public class UserControllerTest extends RestDocsTest {
               requestPreprocessor(),
               responsePreprocessor(),
               requestFields(
-                  fieldWithPath("date_of_birth").optional().description("생년월일 (yyyy-MM-dd)")
+                  fieldWithPath("nickname").description("기존 닉네임"),
+                  fieldWithPath("gender").description("기존 성별"),
+                  fieldWithPath("date_of_birth").description("변경할 생년월일")
               ),
               responseFields(
-                  fieldWithPath("message").description("성공 메시지")
+                  fieldWithPath("nickname").description("닉네임"),
+                  fieldWithPath("gender").description("성별"),
+                  fieldWithPath("date_of_birth").description("생년월일"),
+                  fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
+                  fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                  fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
               )
           ));
 
-      verify(userService).update(
-          eq(fixedUserId),
-          eq(Optional.empty()),
-          argThat(jn -> !jn.isPresent()),
-          argThat(jn -> jn.isPresent() && validDateOfBirth.equals(jn.get()))
-      );
+      response.body("nickname", equalTo(oldNickname))
+          .body("gender", equalTo(oldGender.name()))
+          .body("date_of_birth", equalTo(newBirth.toString()));
     }
 
     @Test
-    @DisplayName("성공 - 성별을 null 로 비운다")
-    void shouldClearGenderToNull() {
-      doNothing().when(userService)
-          .update(eq(fixedUserId), any(Optional.class), any(JsonNullable.class),
-              any(JsonNullable.class));
+    @DisplayName("성공 - 생년월일 수정(NULL)")
+    void shouldUpdateBirthToNULL() {
+      // given
+      User user = User.builder()
+          .id(fixedUserId)
+          .nickname(oldNickname)
+          .gender(oldGender)
+          .dateOfBirth(null)
+          .userStatus(UserStatus.ACTIVE)
+          .createdAt(LocalDateTime.now())
+          .updatedAt(LocalDateTime.now())
+          .termsOfUseAgreedAt(LocalDateTime.now())
+          .privacyAgreedAt(LocalDateTime.now())
+          .marketingAgreedAt(null)
+          .provider(Provider.APPLE)
+          .providerSub("apple-sub-123")
+          .build();
 
-      Map<String, Object> body = new HashMap<>();
-      body.put("gender", null);
+      doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, null);
 
-      // 명시적 null 전송
-      given()
+      Map<String, Object> request = new HashMap<>();
+      request.put("nickname", oldNickname);
+      request.put("gender", oldGender);
+      request.put("date_of_birth", null);
+
+      // when & then
+      var response = given()
           .contentType(ContentType.JSON)
-          .body(body)
+          .body(request)
           .attribute("userId", fixedUserId.toString())
           .header("Authorization", "Bearer accessToken")
           .when()
@@ -287,59 +437,23 @@ public class UserControllerTest extends RestDocsTest {
               requestPreprocessor(),
               responsePreprocessor(),
               requestFields(
-                  fieldWithPath("gender").optional().description("성별 (null 전송 시 값 제거)")
+                  fieldWithPath("nickname").description("기존 닉네임"),
+                  fieldWithPath("gender").description("기존 성별"),
+                  fieldWithPath("date_of_birth").description("변경할 생년월일 (NULL 가능)")
               ),
               responseFields(
-                  fieldWithPath("message").description("성공 메시지")
+                  fieldWithPath("nickname").description("닉네임"),
+                  fieldWithPath("gender").description("성별"),
+                  fieldWithPath("date_of_birth").description("생년월일"),
+                  fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
+                  fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                  fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
               )
           ));
 
-      verify(userService).update(
-          eq(fixedUserId),
-          eq(Optional.empty()),
-          argThat(jn -> jn.isPresent() && jn.get() == null), // null 저장
-          argThat(jn -> !jn.isPresent())
-      );
-    }
-
-    @Test
-    @DisplayName("성공 - 생년월일을 null 로 비운다")
-    void shouldClearBirthToNull() {
-      doNothing().when(userService)
-          .update(eq(fixedUserId), any(Optional.class), any(JsonNullable.class),
-              any(JsonNullable.class));
-
-      Map<String, Object> body = new HashMap<>();
-      body.put("date_of_birth", null);
-
-      // 명시적 null 전송
-      given()
-          .contentType(ContentType.JSON)
-          .body(body)
-          .attribute("userId", fixedUserId.toString())
-          .header("Authorization", "Bearer accessToken")
-          .when()
-          .patch("/api/v1/users/me")
-          .then()
-          .status(HttpStatus.OK)
-          .apply(document(
-              getNestedClassPath(this.getClass()) + "/{method-name}",
-              requestPreprocessor(),
-              responsePreprocessor(),
-              requestFields(
-                  fieldWithPath("date_of_birth").optional().description("생년월일 (null 전송 시 값 제거)")
-              ),
-              responseFields(
-                  fieldWithPath("message").description("성공 메시지")
-              )
-          ));
-
-      verify(userService).update(
-          eq(fixedUserId),
-          eq(Optional.empty()),
-          argThat(jn -> !jn.isPresent()),
-          argThat(jn -> jn.isPresent() && jn.get() == null) // null 저장
-      );
+      response.body("nickname", equalTo(oldNickname))
+          .body("gender", equalTo(oldGender.name()))
+          .body("date_of_birth", equalTo(null));
     }
   }
 }

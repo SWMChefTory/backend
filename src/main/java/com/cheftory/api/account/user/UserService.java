@@ -58,15 +58,15 @@ public class UserService {
         .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
   }
 
-  public void update(UUID id, Optional<String> nickname, JsonNullable<Gender> gender, JsonNullable<LocalDate> dateOfBirth) {
+  public User update(UUID id, String nickname, Gender gender, LocalDate dateOfBirth) {
     User user = userRepository.findByIdAndUserStatus(id, UserStatus.ACTIVE)
         .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-    nickname.ifPresent(user::changeNickname);
-    gender.ifPresent(user::changeGender);
-    dateOfBirth.ifPresent(user::changeDateOfBirth);
-
+    user.change(nickname, gender, dateOfBirth);
     userRepository.save(user);
+
+    return userRepository.findByIdAndUserStatus(id, UserStatus.ACTIVE)
+        .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
   }
 
   @Transactional

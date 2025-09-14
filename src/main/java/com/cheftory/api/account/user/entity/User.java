@@ -77,19 +77,10 @@ public class User {
         .build();
   }
 
-  public void changeNickname(String nickname) {
+  public void change(String nickname, Gender gender, LocalDate dateOfBirth) {
     this.nickname = nickname;
-    this.updatedAt = LocalDateTime.now();
-  }
-
-  public void changeGender(Gender gender) {
     this.gender = gender;
-    this.updatedAt = LocalDateTime.now();
-  }
-
-  public void changeDateOfBirth(LocalDate dateOfBirth) {
     this.dateOfBirth = dateOfBirth;
-    this.updatedAt = LocalDateTime.now();
   }
 
   public void changeStatus(UserStatus userStatus) {
