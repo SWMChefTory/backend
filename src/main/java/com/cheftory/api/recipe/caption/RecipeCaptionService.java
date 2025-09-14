@@ -21,14 +21,9 @@ public class RecipeCaptionService {
 
   @Transactional
   public UUID create(String videoId, UUID recipeId) {
-    ClientCaptionResponse clientCaptionResponse = captionClient
-        .fetchCaption(videoId);
 
-    RecipeCaption recipeCaption = RecipeCaption.from(
-        clientCaptionResponse.getCaptions()
-        , clientCaptionResponse.getLangCodeType()
-        , recipeId
-    );
+    RecipeCaption recipeCaption = captionClient
+        .fetchCaption(videoId).toRecipeCaption(recipeId);
 
     return recipeCaptionRepository.save(recipeCaption).getId();
   }

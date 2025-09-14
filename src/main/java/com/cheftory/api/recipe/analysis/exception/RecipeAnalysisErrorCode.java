@@ -1,13 +1,13 @@
-package com.cheftory.api.recipe.ingredients.exception;
+package com.cheftory.api.recipe.analysis.exception;
 
 import com.cheftory.api.exception.ErrorMessage;
 
-public enum RecipeIngredientsErrorCode implements ErrorMessage {
+public enum RecipeAnalysisErrorCode implements ErrorMessage {
   RECIPE_INGREDIENTS_NOT_FOUND("RECIPE_INGREDIENTS_001","레시피 재료가 존재하지 않습니다.");
   private final String errorCode;
   private final String message;
 
-  RecipeIngredientsErrorCode(String errorCode, String message){
+  RecipeAnalysisErrorCode(String errorCode, String message){
     this.errorCode = errorCode;
     this.message = message;
   }

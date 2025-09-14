@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 
 public record CategorizedRecipesResponse(
     @JsonProperty("categorized_recipes")
-    List<CategorizedRecipeResponse> categorizedRecipes,
+    List<CategorizedRecipe> categorizedRecipes,
 
     @JsonProperty("current_page")
     int currentPage,
@@ -23,10 +23,10 @@ public record CategorizedRecipesResponse(
     @JsonProperty("has_next")
     boolean hasNext
 ) {
-    public static CategorizedRecipesResponse from(Page<RecipeHistoryOverview> categorizedRecipes) {
+    public static CategorizedRecipesResponse from(Page<RecipeHistory> categorizedRecipes) {
 
-        List<CategorizedRecipeResponse> responses = categorizedRecipes.stream()
-            .map(CategorizedRecipeResponse::from)
+        List<CategorizedRecipe> responses = categorizedRecipes.stream()
+            .map(CategorizedRecipe::from)
             .toList();
         return new CategorizedRecipesResponse(
             responses,
@@ -36,7 +36,7 @@ public record CategorizedRecipesResponse(
             categorizedRecipes.hasNext());
     }
 
-    public record CategorizedRecipeResponse(
+    private record CategorizedRecipe(
         @JsonProperty("viewed_at")
         LocalDateTime viewedAt,
 
@@ -60,16 +60,16 @@ public record CategorizedRecipesResponse(
         @JsonProperty("category_id")
         UUID categoryId
     ){
-        public static CategorizedRecipeResponse from(RecipeHistoryOverview info) {
-            return new CategorizedRecipeResponse(
-                info.getRecipeViewStatusInfo().getViewedAt(),
-                info.getRecipeViewStatusInfo().getLastPlaySeconds(),
-                info.getRecipeOverview().getId(),
-                info.getRecipeOverview().getVideoInfo().getTitle(),
-                info.getRecipeOverview().getVideoInfo().getThumbnailUrl(),
-                info.getRecipeOverview().getVideoInfo().getVideoId(),
-                info.getRecipeOverview().getVideoInfo().getVideoSeconds(),
-                info.getRecipeViewStatusInfo().getCategoryId()
+        public static CategorizedRecipe from(RecipeHistory info) {
+            return new CategorizedRecipe(
+                info.getRecipeViewStatus().getViewedAt(),
+                info.getRecipeViewStatus().getLastPlaySeconds(),
+                info.getRecipe().getId(),
+                info.getRecipe().getVideoInfo().getTitle(),
+                info.getRecipe().getVideoInfo().getThumbnailUrl(),
+                info.getRecipe().getVideoInfo().getVideoId(),
+                info.getRecipe().getVideoInfo().getVideoSeconds(),
+                info.getRecipeViewStatus().getRecipeCategoryId()
             );
         }
     }

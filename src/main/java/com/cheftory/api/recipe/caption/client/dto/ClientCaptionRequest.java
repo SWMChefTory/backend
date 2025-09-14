@@ -12,13 +12,10 @@ import lombok.Getter;
 public class ClientCaptionRequest {
     @JsonProperty("video_id")
     private String videoId;
-    @JsonProperty("video_type")
-    private String videoType;
 
-    public static ClientCaptionRequest from(String videoId, String videoType) {
+    public static ClientCaptionRequest from(String videoId) {
         return ClientCaptionRequest.builder()
                 .videoId(videoId)
-                .videoType(videoType)
                 .build();
     }
 }

@@ -1,6 +1,9 @@
 package com.cheftory.api.recipe.model;
 
 import com.cheftory.api.recipe.entity.RecipeStatus;
+import com.cheftory.api.recipe.analysis.entity.RecipeAnalysis;
+import com.cheftory.api.recipe.step.entity.RecipeStep;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;
@@ -15,11 +18,11 @@ public record FullRecipeResponse(
     @JsonProperty("video_info")
     VideoInfo videoInfo,
 
-    @JsonProperty("ingredients_info")
-    Ingredients ingredientsInfo,
+    @JsonProperty("analysis")
+    Analysis analysis,
 
     @JsonProperty("recipe_steps")
-    List<RecipeStep> recipeSteps,
+    List<Step> recipeSteps,
 
     @JsonProperty("view_status")
     ViewStatus viewStatus
@@ -29,11 +32,11 @@ public record FullRecipeResponse(
     return new FullRecipeResponse(
         fullRecipeInfo.getRecipeStatus(),
         fullRecipeInfo.getVideoInfo() != null ? VideoInfo.from(fullRecipeInfo.getVideoInfo()) : null,
-        fullRecipeInfo.getIngredientsInfo() != null ? Ingredients.from(fullRecipeInfo.getIngredientsInfo()) : null,
+        fullRecipeInfo.getRecipeAnalysis() != null ? Analysis.from(fullRecipeInfo.getRecipeAnalysis()) : null,
         fullRecipeInfo.getRecipeStepInfos() != null ? fullRecipeInfo.getRecipeStepInfos().stream()
-            .map(RecipeStep::from)
+            .map(Step::from)
             .toList() : null,
-        fullRecipeInfo.getRecipeViewStatusInfo() != null ? ViewStatus.from(fullRecipeInfo.getRecipeViewStatusInfo()) : null
+        fullRecipeInfo.getRecipeViewStatus() != null ? ViewStatus.from(fullRecipeInfo.getRecipeViewStatus()) : null
     );
   }
 
@@ -60,43 +63,58 @@ public record FullRecipeResponse(
     }
   }
 
-  public record Ingredients(
+  public record Analysis(
       @JsonProperty("id")
       UUID id,
+      @JsonProperty("description")
+      String description,
 
       @JsonProperty("ingredients")
-      List<Ingredient> ingredients
+      List<Ingredient> ingredients,
+
+      @JsonProperty("tags")
+      List<String> tags,
+
+      @JsonProperty("servings")
+      Integer servings,
+
+      @JsonProperty("cook_time")
+      Integer cookTime
   ) {
-    public static Ingredients from(IngredientsInfo ingredientsInfo) {
-      return new Ingredients(
-          ingredientsInfo.getIngredientsId(),
-          ingredientsInfo.getIngredients().stream()
+
+    public record Ingredient(
+        @JsonProperty("name")
+        String name,
+
+        @JsonProperty("amount")
+        Integer amount,
+
+        @JsonProperty("unit")
+        String unit
+    ) {
+      public static Ingredient from(RecipeAnalysis.Ingredient ingredient) {
+        return new Ingredient(
+            ingredient.getName(),
+            ingredient.getAmount(),
+            ingredient.getUnit()
+        );
+      }
+    }
+
+    public static Analysis from(RecipeAnalysis recipeAnalysis) {
+      return new Analysis(
+          recipeAnalysis.getId(),
+          recipeAnalysis.getDescription(),
+          recipeAnalysis.getIngredients().stream()
               .map(Ingredient::from)
-              .toList()
+              .toList(),
+          recipeAnalysis.getTags(),
+          recipeAnalysis.getServings(),
+          recipeAnalysis.getCookTime()
       );
     }
   }
-
-  public record Ingredient(
-      @JsonProperty("name")
-      String name,
-
-      @JsonProperty("amount")
-      Integer amount,
-
-      @JsonProperty("unit")
-      String unit
-  ) {
-    public static Ingredient from(com.cheftory.api.recipe.ingredients.entity.Ingredient ingredient) {
-      return new Ingredient(
-          ingredient.getName(),
-          ingredient.getAmount(),
-          ingredient.getUnit()
-      );
-    }
-  }
-
-  public record RecipeStep(
+  private record Step(
       @JsonProperty("id")
       UUID id,
 
@@ -107,22 +125,33 @@ public record FullRecipeResponse(
       String subtitle,
 
       @JsonProperty("details")
-      List<String> details,
+      List<Detail> details,
 
       @JsonProperty("start_time")
-      Double startTime,
-
-      @JsonProperty("end_time")
-      Double endTime
+      Double startTime
   ) {
-    public static RecipeStep from(RecipeStepInfo stepInfo) {
-      return new RecipeStep(
-          stepInfo.getId(),
-          stepInfo.getStepOrder(),
-          stepInfo.getSubtitle(),
-          stepInfo.getDetails(),
-          stepInfo.getStart(),
-          stepInfo.getEnd()
+    private record Detail(
+        @JsonProperty("text")
+        String text,
+
+        @JsonProperty("start")
+        Double start
+    ) {
+      public static Detail from(RecipeStep.Detail detail) {
+        return new Detail(
+            detail.getText(),
+            detail.getStart()
+        );
+      }
+    }
+    public static Step from(RecipeStep step) {
+      return new Step(
+          step.getId(),
+          step.getStepOrder(),
+          step.getSubtitle(),
+          step.getDetails().stream()
+                  .map(Detail::from).toList(),
+          step.getStart()
       );
     }
   }
@@ -140,12 +169,12 @@ public record FullRecipeResponse(
       @JsonProperty("created_at")
       LocalDateTime createdAt
   ) {
-    public static ViewStatus from(RecipeViewStatusInfo viewStatusInfo) {
+    public static ViewStatus from(RecipeViewStatus viewStatus) {
       return new ViewStatus(
-          viewStatusInfo.getId(),
-          viewStatusInfo.getViewedAt(),
-          viewStatusInfo.getLastPlaySeconds(),
-          viewStatusInfo.getCreatedAt()
+          viewStatus.getId(),
+          viewStatus.getViewedAt(),
+          viewStatus.getLastPlaySeconds(),
+          viewStatus.getCreatedAt()
       );
     }
   }

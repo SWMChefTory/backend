@@ -1,8 +1,7 @@
 package com.cheftory.api.recipe.step;
 
-import com.cheftory.api.recipe.model.CaptionInfo;
-import com.cheftory.api.recipe.ingredients.entity.Ingredient;
-import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;
+import com.cheftory.api.recipe.analysis.entity.RecipeAnalysis;
+import com.cheftory.api.recipe.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepsResponse;
 import com.cheftory.api.recipe.step.entity.RecipeStep;
 import com.cheftory.api.recipe.step.client.RecipeStepClient;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -23,18 +21,11 @@ public class RecipeStepService {
     private final RecipeStepRepository recipeStepRepository;
 
     @Transactional
-    public List<UUID> create(String videoId, UUID recipeId, CaptionInfo captionInfo, List<Ingredient> ingredients) {
-        ClientRecipeStepsResponse clientRecipeStepsResponse = recipeStepClient
-                .fetchRecipeSteps(videoId, captionInfo, ingredients);
+    public List<UUID> create(UUID recipeId, RecipeCaption recipeCaption) {
+        ClientRecipeStepsResponse response = recipeStepClient
+                .fetchRecipeSteps(recipeCaption);
 
-        List<ClientRecipeStepResponse> responses = clientRecipeStepsResponse
-                .getSummary()
-                .getSteps();
-
-        List<RecipeStep> recipeSteps = IntStream.range(0, responses.size())
-                .mapToObj(i ->
-                        RecipeStep.from(i + 1, responses.get(i).getSubtitle(), responses.get(i).getDescriptions(), responses.get(i).getStart(), responses.get(i).getEnd(), recipeId))
-                .toList();
+        List<RecipeStep> recipeSteps = response.toRecipeSteps(recipeId);
 
         return recipeStepRepository.saveAll(recipeSteps).stream()
             .map(RecipeStep::getId)
