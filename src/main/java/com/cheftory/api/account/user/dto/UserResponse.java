@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public record UserMeResponse(
+public record UserResponse(
     @JsonProperty("nickname") String nickname,
     @JsonProperty("gender") Gender gender,
     @JsonProperty("date_of_birth") LocalDate dateOfBirth,

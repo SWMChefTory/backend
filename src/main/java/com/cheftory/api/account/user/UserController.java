@@ -1,9 +1,8 @@
 package com.cheftory.api.account.user;
 
-import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
-import com.cheftory.api.account.user.dto.UserMeRequest;
-import com.cheftory.api.account.user.dto.UserMeResponse;
+import com.cheftory.api.account.user.dto.UpdateUserResponse;
+import com.cheftory.api.account.user.dto.UserResponse;
 import com.cheftory.api.account.user.entity.User;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +20,9 @@ public class UserController {
   private final UserService userService;
 
   @GetMapping("/me")
-  public UserMeResponse getMyInfo(@UserPrincipal UUID userId) {
+  public UserResponse getMyInfo(@UserPrincipal UUID userId) {
     User user = userService.get(userId);
-    return new UserMeResponse(
+    return new UserResponse(
         user.getNickname(),
         user.getGender(),
         user.getDateOfBirth(),
@@ -34,11 +33,18 @@ public class UserController {
   }
 
   @PatchMapping("/me")
-  public SuccessOnlyResponse updateMyInfo(
+  public UserResponse updateMyInfo(
       @UserPrincipal UUID userId,
-      @RequestBody UserMeRequest request
+      @RequestBody UpdateUserResponse request
   ) {
-    userService.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
-    return SuccessOnlyResponse.create();
+    User user = userService.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
+    return new UserResponse(
+        user.getNickname(),
+        user.getGender(),
+        user.getDateOfBirth(),
+        user.getTermsOfUseAgreedAt(),
+        user.getPrivacyAgreedAt(),
+        user.getMarketingAgreedAt()
+    );
   }
 }

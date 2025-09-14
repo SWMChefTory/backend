@@ -158,9 +158,9 @@ class UserServiceTest {
         // when: 닉네임만 전달 (다른 필드는 미제공)
         userService.update(
             id,
-            Optional.of(newNickname),
-            JsonNullable.undefined(),
-            JsonNullable.undefined()
+            newNickname,
+            oldGender,
+            oldBirth
         );
 
         // then
@@ -182,9 +182,9 @@ class UserServiceTest {
         // when: 성별만 전달
         userService.update(
             id,
-            Optional.empty(),
-            JsonNullable.of(newGender),
-            JsonNullable.undefined()
+            oldNickname,
+            newGender,
+            oldBirth
         );
 
         // then
@@ -205,13 +205,13 @@ class UserServiceTest {
 
         userService.update(
             id,
-            Optional.empty(),
-            JsonNullable.of(null),
-            JsonNullable.undefined()
+            oldNickname,
+            null,
+            oldBirth
         );
 
-        Assertions.assertNull(user.getGender());
         Assertions.assertEquals(oldNickname, user.getNickname());
+        Assertions.assertNull(user.getGender());
         Assertions.assertEquals(oldBirth, user.getDateOfBirth());
       }
 
@@ -228,9 +228,9 @@ class UserServiceTest {
         // when: 생년월일만 전달
         userService.update(
             id,
-            Optional.empty(),
-            JsonNullable.undefined(),
-            JsonNullable.of(newBirth)
+            oldNickname,
+            oldGender,
+            newBirth
         );
 
         // then
@@ -250,14 +250,14 @@ class UserServiceTest {
 
         userService.update(
             id,
-            Optional.empty(),
-            JsonNullable.undefined(),
-            JsonNullable.of(null)
+            oldNickname,
+            oldGender,
+            null
         );
 
-        Assertions.assertNull(user.getDateOfBirth());
         Assertions.assertEquals(oldNickname, user.getNickname());
-        Assertions.assertEquals(oldGender, user.getGender());
+        Assertions.assertEquals(oldNickname, user.getNickname());
+        Assertions.assertNull(user.getDateOfBirth());
       }
     }
   }
