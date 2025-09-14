@@ -27,6 +27,13 @@ public record VoiceCommandHistoryCreateRequest(
 
     @NotNull
     @JsonProperty("intent_model")
-    String intentModel
+    String intentModel,
 
+    @NotNull
+    @JsonProperty("start")
+    Integer start,
+
+    @NotNull
+    @JsonProperty("end")
+    Integer end
 ) {}

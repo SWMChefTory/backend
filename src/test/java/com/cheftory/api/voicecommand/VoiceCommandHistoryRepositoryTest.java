@@ -32,6 +32,8 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
       private String intent;
       private String sttModel;
       private String intentModel;
+      private Integer start;
+      private Integer end;
       private VoiceCommandHistory voiceCommandHistory;
 
       @BeforeEach
@@ -41,7 +43,9 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
         intent = "testIntent";
         sttModel = "VITO";
         intentModel = "GPT4.1";
-        voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId);
+        start = 1;
+        end = 2;
+        voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId, start, end);
       }
 
       @Nested
@@ -72,6 +76,8 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
           assertThat(found.getUserId()).isEqualTo(userId);
           assertThat(found.getSttModel()).isEqualTo(STTModel.VITO);
           assertThat(found.getIntentModel()).isEqualTo(IntentModel.GPT4_1);
+          assertThat(found.getStart()).isEqualTo(start);
+          assertThat(found.getEnd()).isEqualTo(end);
           assertThat(found.getCreatedAt()).isNotNull();
         }
       }
@@ -91,6 +97,8 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
       private String intent;
       private String sttModel;
       private String intentModel;
+      private Integer start;
+      private Integer end;
       private VoiceCommandHistory savedVoiceCommandHistory;
 
       @BeforeEach
@@ -100,8 +108,10 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
         intent = "testIntent";
         sttModel = "VITO";
         intentModel = "GPT4.1";
+        start = 1;
+        end = 2;
 
-        VoiceCommandHistory voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId);
+        VoiceCommandHistory voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId, start, end);
         savedVoiceCommandHistory = repository.save(voiceCommandHistory);
       }
 
@@ -120,6 +130,8 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
           assertThat(found.getUserId()).isEqualTo(userId);
           assertThat(found.getSttModel()).isEqualTo(STTModel.VITO);
           assertThat(found.getIntentModel()).isEqualTo(IntentModel.GPT4_1);
+          assertThat(found.getStart()).isEqualTo(start);
+          assertThat(found.getEnd()).isEqualTo(end);
         }
       }
     }

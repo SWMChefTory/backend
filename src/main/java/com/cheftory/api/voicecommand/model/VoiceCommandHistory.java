@@ -44,12 +44,20 @@ public class VoiceCommandHistory {
   @Column(nullable = false)
   private LocalDateTime createdAt;
 
+  @Column(nullable = false, name="start_time")
+  private Integer start;
+
+  @Column(nullable = false, name="end_time")
+  private Integer end;
+
   public static VoiceCommandHistory create(
       String sttModel,
       String transcribe,
       String intentModel,
       String result,
-      UUID userId
+      UUID userId,
+      Integer start,
+      Integer end
   ) {
     return new VoiceCommandHistory(
         UUID.randomUUID(),
@@ -58,7 +66,9 @@ public class VoiceCommandHistory {
         IntentModel.fromValue(intentModel),
         result,
         userId,
-        LocalDateTime.now()
+        LocalDateTime.now(),
+        start,
+        end
     );
   }
 }
