@@ -99,7 +99,7 @@ jobs:
             EOF
 
 
-      - name: Copy docker-compose.yml to EC2
+      - name: Copy docker-compose.prod.yml to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -124,8 +124,8 @@ jobs:
             # Docker Hub에 로그인
             echo ${{ secrets.DOCKERHUB_PASSWORD }} | sudo docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-            # docker-compose.yml에서 이미지 이름 수정
-            sed -i "s|image: cheftory-proxy-server:latest|image: ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest|g" docker-compose.yml
+            # docker-compose.prod.yml에서 이미지 이름 수정
+            sed -i "s|image: cheftory-proxy-server:latest|image: ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest|g" docker-compose.prod.yml
 
             # 기존 컨테이너 정리
             sudo docker-compose stop || true

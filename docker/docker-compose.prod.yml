@@ -1,0 +1,45 @@
+services:
+  proxy-server:
+    image: cheftory-proxy-server:latest
+    ports:
+      - "8080"
+    depends_on:
+      - mysql
+    env_file:
+      - ../.env
+
+    #.env 파일을 읽어서 환경변수로 지정
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DATABASE_DB_HOST: ${DATABASE_HOST}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
+      SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
+      DATABASE_PORT: 3306
+    networks:
+      - cheftory_network
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      TZ: Asia/Seoul
+    ports:
+      - "3306"
+    volumes:
+      - ./data/mysql-data:/var/lib/mysql
+    command: [
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+      "--init-connect=SET NAMES utf8mb4",
+      "--skip-character-set-client-handshake"
+    ]
+    networks:
+      - cheftory_network
+
+networks:
+  cheftory_network:
+    name: cheftory_network
+    driver: bridge
