@@ -124,16 +124,8 @@ jobs:
             # Docker Hub에 로그인
             echo ${{ secrets.DOCKERHUB_PASSWORD }} | sudo docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-            # 현재 docker-compose.yml 확인
-            echo "=== Before modification ==="
-            cat docker-compose.yml
-
             # docker-compose.yml에서 이미지 이름 수정
             sed -i "s|image: cheftory-proxy-server:latest|image: ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest|g" docker-compose.yml
-
-            # 수정된 내용 확인
-            echo "=== After modification ==="
-            cat docker-compose.yml
 
             # 기존 컨테이너 정리
             sudo docker-compose stop || true
@@ -141,8 +133,8 @@ jobs:
             sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest || true
 
             # 새 이미지 pull 및 실행
-            sudo docker-compose --env-file .env pull
-            sudo docker-compose --env-file .env up -d
+            sudo docker-compose --env-file ../.env pull
+            sudo docker-compose --env-file ../.env up -d
 
             # 컨테이너 상태 확인
             sudo docker-compose ps

@@ -1,11 +1,12 @@
 services:
   proxy-server:
+    image: cheftory-proxy-server:latest
     ports:
       - "8080"
     depends_on:
       - mysql
     env_file:
-      - .env
+      - ../.env
 
     #.env 파일을 읽어서 환경변수로 지정
     environment:
