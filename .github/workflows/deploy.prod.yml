@@ -128,13 +128,10 @@ jobs:
             sed -i "s|image: cheftory-proxy-server:latest|image: ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest|g" docker-compose.prod.yml
 
             # 기존 컨테이너 정리
-            sudo docker-compose stop || true
-            sudo docker-compose rm -f || true
+            sudo docker-compose -f docker-compose.prod.yml stop || true
+            sudo docker-compose -f docker-compose.prod.yml rm -f || true
             sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest || true
 
             # 새 이미지 pull 및 실행
-            sudo docker-compose --env-file ../.env pull
-            sudo docker-compose --env-file ../.env up -d
-
-            # 컨테이너 상태 확인
-            sudo docker-compose ps
+            sudo docker-compose -f docker-compose.prod.yml --env-file ../.env pull
+            sudo docker-compose -f docker-compose.prod.yml --env-file ../.env up -d
