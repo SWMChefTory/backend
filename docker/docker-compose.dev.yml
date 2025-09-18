@@ -11,7 +11,7 @@ services:
     #.env 파일을 읽어서 환경변수로 지정
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      DATABASE_DB_HOST: ${DATABASE_HOST}
+      DATABASE_HOST: ${DATABASE_HOST}
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
       SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
       DATABASE_PORT: 3306
