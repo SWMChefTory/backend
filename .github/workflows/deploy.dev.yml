@@ -68,7 +68,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            mkdir -p cheftory-proxy-server/docker
+            mkdir -p cheftory-proxy-server
 
       - name: Create .env on EC2
         uses: appleboy/ssh-action@v1
@@ -103,9 +103,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./docker/docker-compose.dev.yml"
-          target: "~/cheftory-proxy-server/docker"
-          strip_components: 0
+          source: "docker/docker-compose.dev.yml"
+          target: "/home/ubuntu/cheftory-proxy-server"
+          strip_components: 1
 
       - name: List workspace files
         run: ls -R
@@ -117,7 +117,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd cheftory-proxy-server/docker
+            cd cheftory-proxy-server
 
             # Docker Hub에 로그인
             echo ${{ secrets.DOCKERHUB_PASSWORD }} | sudo docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
@@ -131,5 +131,5 @@ jobs:
             sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server-dev:latest || true
 
             # 새 이미지 pull 및 실행
-            sudo docker-compose -f docker-compose.dev.yml --env-file .env pull
-            sudo docker-compose -f docker-compose.dev.yml --env-file .env up -d
+            sudo docker-compose -f docker-compose.prod.yml pull
+            sudo docker-compose -f docker-compose.prod.yml up -d
