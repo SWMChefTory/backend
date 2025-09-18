@@ -1,6 +1,5 @@
 services:
   proxy-server:
-    image: cheftory/cheftory-proxy-server-dev:latest
     ports:
       - "8080"
     depends_on:
@@ -41,5 +40,5 @@ services:
 
 networks:
   cheftory_network:
-    name: dev_cheftory_network
+    name: cheftory_network
     driver: bridge

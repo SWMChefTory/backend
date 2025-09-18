@@ -41,7 +41,7 @@ jobs:
 
       #  Docker 이미지 빌드
       - name: docker image build
-        run: docker build -f ./docker/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server-dev .
+        run: docker build -f ./docker/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server .
 
       #  DockerHub 로그인
       - name: docker login
@@ -52,7 +52,7 @@ jobs:
 
       #  Docker Hub 이미지 푸시
       - name: docker Hub push
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server-dev
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server
 
   # ec2에 배포
   deploy:
@@ -129,7 +129,7 @@ jobs:
             cat docker-compose.yml
 
             # docker-compose.yml에서 이미지 이름 수정
-            sed -i "s|image: cheftory-proxy-server-dev:latest|image: ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server-dev:latest|g" docker-compose.yml
+            sed -i "s|image: cheftory-proxy-server:latest|image: ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest|g" docker-compose.yml
 
             # 수정된 내용 확인
             echo "=== After modification ==="
@@ -138,7 +138,7 @@ jobs:
             # 기존 컨테이너 정리
             sudo docker-compose stop || true
             sudo docker-compose rm -f || true
-            sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server-dev:latest || true
+            sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest || true
 
             # 새 이미지 pull 및 실행
             sudo docker-compose --env-file .env pull
