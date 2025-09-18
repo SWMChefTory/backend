@@ -1,5 +1,3 @@
-# Dockerfile
-
 # jdk21 Image Start
 FROM openjdk:21
 
