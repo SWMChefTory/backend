@@ -1,6 +1,6 @@
 services:
   proxy-server:
-    image: cheftory-proxy-server:latest
+    image: cheftory-proxy-server-dev:latest
     ports:
       - "8080"
     depends_on:
