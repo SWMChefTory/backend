@@ -1,6 +1,6 @@
 package com.cheftory.api.recipe.client;
 
-import com.cheftory.api.recipe.dto.YoutubeVideoResponse;
+import com.cheftory.api.recipe.model.YoutubeVideoResponse;
 import com.cheftory.api.recipe.entity.VideoInfo;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

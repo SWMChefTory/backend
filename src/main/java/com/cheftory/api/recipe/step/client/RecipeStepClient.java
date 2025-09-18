@@ -1,7 +1,7 @@
 package com.cheftory.api.recipe.step.client;
 
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
-import com.cheftory.api.recipe.ingredients.entity.Ingredient;
+import com.cheftory.api.recipe.analysis.entity.RecipeAnalysis;
+import com.cheftory.api.recipe.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepsRequest;
 import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepsResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,16 +18,15 @@ public class RecipeStepClient {
 
     private final WebClient webClient;
 
-    public ClientRecipeStepsResponse fetchRecipeSteps(String videoId, CaptionInfo captionInfo, List<Ingredient> ingredients) {
-        ClientRecipeStepsRequest request = ClientRecipeStepsRequest
-                .from(videoId, "youtube", captionInfo, ingredients);
-        return webClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/summaries")
-                        .build())
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(ClientRecipeStepsResponse.class)
-                .block();
+    public ClientRecipeStepsResponse fetchRecipeSteps(RecipeCaption recipeCaption) {
+        ClientRecipeStepsRequest request = ClientRecipeStepsRequest.from(recipeCaption);
+      return webClient.post()
+              .uri(uriBuilder -> uriBuilder
+                      .path("/steps")
+                      .build())
+              .bodyValue(request)
+              .retrieve()
+              .bodyToMono(ClientRecipeStepsResponse.class)
+              .block();
     }
 }

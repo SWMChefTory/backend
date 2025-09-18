@@ -1,9 +1,6 @@
 package com.cheftory.api.recipe.step.entity;
 
-
-import com.cheftory.api.common.converter.StringListJsonConverter;
-import com.cheftory.api.recipe.step.client.dto.ClientRecipeStepResponse;
-import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
+import com.cheftory.api.recipe.step.entity.converter.DetailsJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -17,6 +14,16 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeStep {
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class Detail {
+        private String text;
+        private Double start;
+    }
+
     @UuidGenerator
     @Id
     private UUID id;
@@ -26,27 +33,26 @@ public class RecipeStep {
     private String subtitle;
 
     @Column(columnDefinition = "json")
-    @Convert(converter = StringListJsonConverter.class)
-    private List<String> details;
+    @Convert(converter = DetailsJsonConverter.class)
+    private List<Detail> details;
+
     private Double start;
-    private Double end;
 
     private UUID recipeId;
 
-
-    public static RecipeStep from(Integer stepOrder, ClientRecipeStepResponse stepResponses, UUID recipeId) {
+    public static RecipeStep from(
+        Integer stepOrder,
+        String subtitle,
+        List<Detail> details,
+        Double start,
+        UUID recipeId
+    ) {
         return RecipeStep.builder()
-                .stepOrder(stepOrder)
-                .subtitle(stepResponses.getSubtitle())
-                .details(stepResponses.getDescriptions())
-                .start(stepResponses.getStart())
-                .end(stepResponses.getEnd())
-                .recipeId(recipeId)
-                .build();
-    }
-
-    public RecipeStepInfo toRecipeStepInfo() {
-        return RecipeStepInfo.from(
-                this);
+            .stepOrder(stepOrder)
+            .subtitle(subtitle)
+            .details(details)
+            .start(start)
+            .recipeId(recipeId)
+            .build();
     }
 }

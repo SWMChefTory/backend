@@ -1,0 +1,63 @@
+= API Document
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+
+== 소개
+
+API 문서입니다.
+
+== 공통 사항
+API 문서에서 공통으로 사용되는 내용을 정의합니다.
+
+=== Domain
+
+== 공통 응답 구조
+
+=== 성공 응답
+[source,json]
+----
+{
+
+}
+----
+* `userStatus`: HTTP 상태 코드
+* `data`: 실제 응답 데이터
+
+=== 실패 응답
+[source,json]
+----
+{
+
+"errorCode": "GLOBAL_1",
+"message": "요청 변수가 잘못되었습니다."
+
+}
+----
+* `errorCode`: 에러 코드
+* `message`: 에러 메시지
+
+== 상태 코드
+
+|===
+| 상태 코드 | 의미 | 설명
+| 200       | OK   | 요청이 성공적으로 처리됨
+| 400       | BadRequest | 잘못된 요청
+| 500       | Internal Server Error | 서버 내부 오류
+|===
+
+=== Authorization
+* `Authorization`: Bearer 액세스 토큰 (필수)
+* 형식: `Bearer {token}`
+* 인증이 필요한 API 호출 시 반드시 포함
+
+include::Account-API.adoc[]
+include::Auth-API.adoc[]
+include::User-API.adoc[]
+include::VoiceCommand-API.adoc[]
+include::Recipe-API.adoc[]
+include::RecipeViewStatus-API.adoc[]
+include::RecipeCategory-API.adoc[]

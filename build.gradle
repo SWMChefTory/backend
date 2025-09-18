@@ -2,6 +2,9 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.asciidoctor.jvm.convert' version '4.0.4'
+	id 'jacoco'
+	id "io.sentry.jvm.gradle" version "5.9.0"
 }
 
 group = 'com.cheftory'
@@ -13,14 +16,30 @@ java {
 	}
 }
 
+jacoco {
+	toolVersion = "0.8.13"
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	asciidoctorExt
 }
 
 repositories {
 	mavenCentral()
+}
+
+sentry {
+	// Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
+	// This enables source context, allowing you to see your source
+	// code as part of your stack traces in Sentry.
+	includeSourceContext = true
+
+	org = "cheftory"
+	projectName = "cheftory-backend"
+	authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
 dependencies {
@@ -29,19 +48,90 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+	implementation "org.openapitools:jackson-databind-nullable:0.2.6"
 
+	implementation(platform("io.sentry:sentry-bom:8.20.0"))  // sentry 버전 통일
+	implementation("io.sentry:sentry-spring-boot-starter-jakarta")
+
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 
 	runtimeOnly 'com.mysql:mysql-connector-j'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testRuntimeOnly 'com.h2database:h2'
+
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testImplementation 'io.rest-assured:spring-mock-mvc'
+	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+def snippetsDir = file("build/generated-snippets")
+
+tasks {
+	test {
+		useJUnitPlatform()
+
+		doFirst {
+			delete("build/generated-snippets")
+		}
+	}
+
+	jacocoTestReport {
+		dependsOn test
+		reports {
+			xml.required = true
+			html.required = true
+			csv.required = true
+		}
+
+		afterEvaluate {
+			classDirectories.setFrom(files(classDirectories.files.collect {
+				fileTree(dir: it, exclude: [
+						'**/_*/**',
+						'**/*Application*',
+				])
+			}))
+		}
+	}
+
+
+	asciidoctor {
+
+		inputs.dir snippetsDir
+
+
+		dependsOn test
+
+		baseDirFollowsSourceDir()
+
+		attributes 'snippets': snippetsDir.absolutePath
+	}
+
+	bootJar {
+		dependsOn asciidoctor
+		from("build/docs/asciidoc") {
+			into 'static/docs'
+		}
+	}
+
+	tasks.register('copyAsciidoctor', Copy) {
+		dependsOn asciidoctor
+
+		from(layout.buildDirectory.dir("docs/asciidoc"))
+		into layout.projectDirectory.dir('src/main/resources/static/docs')
+	}
+
+	build {
+		dependsOn copyAsciidoctor
+	}
 }

@@ -1,105 +1,170 @@
 package com.cheftory.api.recipe;
 
-import com.cheftory.api.recipe.dto.*;
+import com.cheftory.api.recipe.category.RecipeCategory;
+import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.entity.Recipe;
 import com.cheftory.api.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipe.entity.VideoInfo;
-import com.cheftory.api.recipe.service.YoutubeUrlNormalizer;
-import com.cheftory.api.recipe.helper.RecipeCreator;
-import com.cheftory.api.recipe.helper.RecipeFinder;
-import com.cheftory.api.recipe.helper.RecipeUpdator;
-import com.cheftory.api.recipe.helper.RecipeChecker;
-import com.cheftory.api.recipe.ingredients.RecipeIngredientsService;
-import com.cheftory.api.recipe.ingredients.dto.IngredientsInfo;
+import com.cheftory.api.recipe.exception.RecipeErrorCode;
+import com.cheftory.api.recipe.exception.RecipeException;
+import com.cheftory.api.recipe.analysis.entity.RecipeAnalysis;
+import com.cheftory.api.recipe.model.FullRecipeInfo;
+import com.cheftory.api.recipe.model.CountRecipeCategory;
+import com.cheftory.api.recipe.model.RecipeHistory;
+import com.cheftory.api.recipe.model.RecipeSort;
+import com.cheftory.api.recipe.step.entity.RecipeStep;
+import com.cheftory.api.recipe.util.RecipePageRequest;
+import com.cheftory.api.recipe.util.YoutubeUrlNormalizer;
+import com.cheftory.api.recipe.analysis.RecipeAnalysisService;
 import com.cheftory.api.recipe.client.VideoInfoClient;
-import com.cheftory.api.recipe.service.AsyncRecipeCreationService;
 import com.cheftory.api.recipe.step.RecipeStepService;
-import com.cheftory.api.recipe.step.dto.RecipeStepInfo;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatus;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatusCount;
+import com.cheftory.api.recipe.viewstatus.RecipeViewStatusService;
+import java.net.URI;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class RecipeService {
-    private final VideoInfoClient videoInfoClient;
 
-    private final AsyncRecipeCreationService asyncRecipeCreationService;
+  private final VideoInfoClient videoInfoClient;
+  private final AsyncRecipeCreationService asyncRecipeCreationService;
+  private final RecipeRepository recipeRepository;
+  private final RecipeStepService recipeStepService;
+  private final RecipeAnalysisService recipeAnalysisService;
+  private final YoutubeUrlNormalizer youtubeUrlNormalizer;
+  private final RecipeViewStatusService recipeViewStatusService;
+  private final RecipeCategoryService recipeCategoryService;
 
-    private final RecipeFinder recipeFinder;
-    private final RecipeCreator recipeCreator;
-    private final RecipeUpdator recipeUpdator;
-    private final RecipeChecker recipeChecker;
+  public UUID create(URI uri, UUID userId) {
+    UriComponents uriOriginal = UriComponentsBuilder.fromUri(uri).build();
+    UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uriOriginal);
+    return findByUrl(urlNormalized.toUri())
+        .map(recipe -> {
+          recipeViewStatusService.create(userId, recipe.getId());
+          return recipe.getId();
+        })
+        .orElseGet(() -> {
+          VideoInfo videoInfo = videoInfoClient.fetchVideoInfo(urlNormalized);
+          UUID recipeId = recipeRepository.save(Recipe.preCompletedOf(videoInfo)).getId();
+          asyncRecipeCreationService.create(recipeId);
+          recipeViewStatusService.create(userId, recipeId);
+          return recipeId;
+        });
+  }
 
-    private final RecipeStepService recipeStepService;
+  private Optional<Recipe> findByUrl(URI url) {
+    List<Recipe> recipes = recipeRepository.findAllByVideoUrl(url);
 
-    private final RecipeIngredientsService recipeIngredientsService;
+    return recipes.stream()
+        .filter(r -> r.isCompleted() || r.isReady())
+        .findFirst()
+        .or(() -> {
+          recipes.stream()
+              .filter(Recipe::isBanned)
+              .findFirst()
+              .ifPresent(r -> {
+                throw new RecipeException(RecipeErrorCode.RECIPE_BANNED);
+              });
+          return Optional.empty();
+        });
+  }
 
-    private final YoutubeUrlNormalizer youtubeUrlNormalizer;
+  public FullRecipeInfo findFullRecipe(UUID recipeId, UUID userId) {
+    Recipe recipe = recipeRepository.findById(recipeId)
+        .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
 
-    public UUID create(UriComponents uri) {
-        UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uri);
-
-        if (recipeChecker.checkAlreadyCreated(urlNormalized.toUri())) {
-            Recipe recipe = recipeFinder.findByUri(urlNormalized.toUri());
-            recipe.isBanned();
-            return recipe.getId();
-        }
-
-        VideoInfo videoInfo = videoInfoClient.fetchVideoInfo(urlNormalized);
-        UUID recipeId = recipeCreator.create(videoInfo);
-        asyncRecipeCreationService.create(recipeId);
-        return recipeId;
+    if (recipe.isCompleted()) {
+      recipeRepository.increaseCount(recipeId);
     }
 
-    public RecipeFindResponse findTotalRecipeInfo(UUID recipeId) {
-        VideoInfo videoInfo = recipeFinder.findVideoInfo(recipeId);
+    List<RecipeStep> recipeSteps = recipeStepService.findByRecipeId(recipeId);
+    Optional<RecipeAnalysis> ingredients = recipeAnalysisService.findByRecipeId(recipeId);
 
-        RecipeSubContentCreatedAt recipeSubContentCreatedAt = findSubContentCreatedAt(recipeId);
+    RecipeViewStatus recipeViewStatus = recipeViewStatusService.find(userId, recipeId);
 
-        if (!recipeSubContentCreatedAt.isAllCreated()) {
-            return RecipeFindResponse.preCompletedFrom(RecipeStatus.PRE_COMPLETED, recipeSubContentCreatedAt);
-        }
+    log.info("Recipe {} loaded with {} steps and {} ingredients",
+        recipeId, recipeSteps.size(), ingredients.isPresent() ? "some" : "no");
 
-        List<RecipeStepInfo> recipeInfos = recipeStepService
-                .getRecipeStepInfos(recipeId);
-        IngredientsInfo ingredientsInfo = recipeIngredientsService
-                .getIngredientsInfoOfRecipe(recipeId);
+    return FullRecipeInfo.of(
+        recipe.getStatus(),
+        recipe.getVideoInfo(),
+        ingredients.orElse(null),
+        recipeSteps,
+        recipeViewStatus
+    );
+  }
 
-        recipeUpdator.increseCount(recipeId);
-        return RecipeFindResponse.completedFrom(
-                RecipeStatus.COMPLETED
-                , recipeSubContentCreatedAt
-                , videoInfo
-                , ingredientsInfo, recipeInfos);
-    }
+  public Page<Recipe> findRecommends(Integer page) {
+    Pageable pageable = RecipePageRequest.create(page,RecipeSort.COUNT_DESC);
+    return recipeRepository.findByStatus(RecipeStatus.COMPLETED, pageable);
+  }
 
-    public RecipeOverviewsResponse findRecipeOverviewsResponse() {
-        return RecipeOverviewsResponse
-                .of(findAllOverviewRecipes());
-    }
+  public Page<RecipeHistory> findRecents(UUID userId, Integer page) {
+    Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findRecentUsers(userId, page);
+    return buildHistoryOverviews(viewStatuses);
+  }
 
+  public Page<RecipeHistory> findCategorized(UUID userId, UUID recipeCategoryId, Integer page) {
+    Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findCategories(userId, recipeCategoryId, page);
+    return buildHistoryOverviews(viewStatuses);
+  }
 
-    private RecipeSubContentCreatedAt findSubContentCreatedAt(UUID recipeId) {
-        LocalDateTime captionCreatedAt = recipeFinder.findCaptionCreatedAt(recipeId);
-        LocalDateTime ingredientsCreatedAt = recipeFinder.findIngredientsCreatedAt(recipeId);
-        LocalDateTime stepCreatedAt = recipeFinder.findStepCreatedAt(recipeId);
+  public Page<RecipeHistory> findUnCategorized(UUID userId, Integer page) {
+    Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.findUnCategories(userId, page);
+    return buildHistoryOverviews(viewStatuses);
+  }
 
-        return RecipeSubContentCreatedAt
-                .from(captionCreatedAt, ingredientsCreatedAt, stepCreatedAt);
-    }
+  private Page<RecipeHistory> buildHistoryOverviews(Page<RecipeViewStatus> viewStatuses) {
+    List<UUID> recipeIds = viewStatuses.stream()
+        .map(RecipeViewStatus::getRecipeId)
+        .toList();
 
+    Map<UUID, Recipe> recipeMap = recipeRepository
+        .findRecipesByIdInAndStatus(recipeIds, RecipeStatus.COMPLETED)
+        .stream()
+        .collect(Collectors.toMap(Recipe::getId, Function.identity()));
 
-    public List<RecipeOverview> findAllOverviewRecipes() {
-        List<Recipe> recipes = recipeFinder.findAllRecipes();
-        return recipes.stream()
-                .map(RecipeOverview::of)
-                .toList();
-    }
+    List<RecipeHistory> content = viewStatuses.stream()
+        .filter(viewStatus -> recipeMap.containsKey(viewStatus.getRecipeId()))
+        .map(viewStatus -> RecipeHistory.of(recipeMap.get(viewStatus.getRecipeId()), viewStatus))
+        .toList();
+
+    return new PageImpl<>(content, viewStatuses.getPageable(), viewStatuses.getTotalElements());
+  }
+
+  public List<CountRecipeCategory> findCategories(UUID userId) {
+    var categories = recipeCategoryService.findUsers(userId);
+    var categoryIds = categories.stream().map(RecipeCategory::getId).toList();
+    var counts = recipeViewStatusService.countByCategories(categoryIds);
+
+    var countMap = counts.stream()
+        .collect(Collectors.toMap(RecipeViewStatusCount::getCategoryId, RecipeViewStatusCount::getCount));
+
+    return categories.stream()
+        .map(category -> CountRecipeCategory.of(category, countMap.getOrDefault(category.getId(), 0)))
+        .toList();
+  }
+
+  public void deleteCategory(UUID categoryId) {
+    recipeViewStatusService.deleteCategories(categoryId);
+    recipeCategoryService.delete(categoryId);
+  }
+
 }

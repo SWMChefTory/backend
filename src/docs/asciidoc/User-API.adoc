@@ -1,0 +1,111 @@
+[[User-API]]
+= User API
+:toc:
+:sectnums:
+:toclevels: 2
+
+== 1. User 정보 조회 (GET /api/v1/user/me)
+
+=== 1.1 성공 – 유효한 토큰으로 사용자 정보 조회
+
+==== 요청
+include::{snippets}/user-controller-test/get-user-info/should-return-user-info/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/user-controller-test/get-user-info/should-return-user-info/request-body.adoc[]
+
+==== 응답
+include::{snippets}/user-controller-test/get-user-info/should-return-user-info/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/user-controller-test/get-user-info/should-return-user-info/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/user-controller-test/get-user-info/should-return-user-info/response-fields.adoc[]
+
+== 2. User 정보 수정 (PATCH /api/v1/user/me)
+
+=== 2.1 성공 – 유효한 토큰으로 닉네임 수정
+
+=== 요청
+include::{snippets}/user-controller-test/update-user-info/should-update-nickname-only/http-request.adoc[]
+
+=== 요청 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-nickname-only/request-body.adoc[]
+
+=== 응답
+include::{snippets}/user-controller-test/update-user-info/should-update-nickname-only/http-response.adoc[]
+
+=== 응답 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-nickname-only/response-body.adoc[]
+
+=== 응답 필드
+include::{snippets}/user-controller-test/update-user-info/should-update-nickname-only/response-fields.adoc[]
+
+=== 2.2 성공 – 유효한 토큰으로 성별 수정
+
+=== 요청
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-only/http-request.adoc[]
+
+=== 요청 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-only/request-body.adoc[]
+
+=== 응답
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-only/http-response.adoc[]
+
+=== 응답 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-only/response-body.adoc[]
+
+=== 응답 필드
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-only/response-fields.adoc[]
+
+=== 2.3 성공 – 유효한 토큰으로 성별 수정(NULL)
+
+=== 요청
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-to-null/http-request.adoc[]
+
+=== 요청 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-to-null/request-body.adoc[]
+
+=== 응답
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-to-null/http-response.adoc[]
+
+=== 응답 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-to-null/response-body.adoc[]
+
+=== 응답 필드
+include::{snippets}/user-controller-test/update-user-info/should-update-gender-to-null/response-fields.adoc[]
+
+=== 2.4 성공 – 유효한 토큰으로 생년월일 수정
+
+=== 요청
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-only/http-request.adoc[]
+
+=== 요청 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-only/request-body.adoc[]
+
+=== 응답
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-only/http-response.adoc[]
+
+=== 응답 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-only/response-body.adoc[]
+
+=== 응답 필드
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-only/response-fields.adoc[]
+
+=== 2.5 성공 – 유효한 토큰으로 생년월일 수정(NULL)
+
+=== 요청
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-to-null/http-request.adoc[]
+
+=== 요청 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-to-null/request-body.adoc[]
+
+=== 응답
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-to-null/http-response.adoc[]
+
+=== 응답 본문
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-to-null/response-body.adoc[]
+
+=== 응답 필드
+include::{snippets}/user-controller-test/update-user-info/should-update-birth-to-null/response-fields.adoc[]

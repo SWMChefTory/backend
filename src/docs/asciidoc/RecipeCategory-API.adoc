@@ -1,0 +1,24 @@
+[[RecipeCategory-API]]
+= RecipeCategory API
+
+== 레시피 카테고리 생성 (POST /api/v1/recipes/categories)
+
+=== 1.1 성공 – 레시피 카테고리 생성
+
+==== 요청
+include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/http-request.adoc[]
+
+==== 요청 본문
+include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/request-body.adoc[]
+
+==== 요청 필드
+include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/request-fields.adoc[]
+
+==== 응답
+include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/response-fields.adoc[]

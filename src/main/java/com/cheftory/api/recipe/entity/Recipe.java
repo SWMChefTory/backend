@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.entity;
 
-import com.cheftory.api.recipe.exception.CannotCreateException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -15,7 +14,6 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 public class Recipe {
     @Id
-    @UuidGenerator
     private UUID id;
 
     @Embedded
@@ -30,26 +28,25 @@ public class Recipe {
     private Integer count;
     private LocalDateTime createdAt;
 
-    private LocalDateTime captionCreatedAt;
-    private LocalDateTime ingredientsCreatedAt;
-    private LocalDateTime stepCreatedAt;
-
     public static Recipe preCompletedOf(VideoInfo videoInfo) {
         return Recipe.builder()
+                .id(UUID.randomUUID())
                 .videoInfo(videoInfo)
-                .status(RecipeStatus.PRE_COMPLETED)
+                .status(RecipeStatus.READY)
                 .count(0)
                 .createdAt(LocalDateTime.now())
                 .build();
     }
 
-    public void isBanned() {
-        if (status == RecipeStatus.NOT_COOK_URL) {
-            throw new CannotCreateException("Recipe not in cook url");
-        }
+    public Boolean isCompleted() {
+        return RecipeStatus.COMPLETED.equals(status);
     }
 
-    public String getVideoId() {
-        return null;
+    public Boolean isReady(){
+        return RecipeStatus.READY.equals(status);
+    }
+
+    public Boolean isBanned(){
+        return RecipeStatus.NOT_COOK_URL.equals(status);
     }
 }

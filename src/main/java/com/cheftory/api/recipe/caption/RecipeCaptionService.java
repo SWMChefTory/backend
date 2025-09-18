@@ -2,11 +2,10 @@ package com.cheftory.api.recipe.caption;
 
 import com.cheftory.api.recipe.caption.client.CaptionClient;
 import com.cheftory.api.recipe.caption.client.dto.ClientCaptionResponse;
-import com.cheftory.api.recipe.caption.dto.CaptionInfo;
 import com.cheftory.api.recipe.caption.entity.RecipeCaption;
-import com.cheftory.api.recipe.caption.helper.RecipeCaptionCreator;
-import com.cheftory.api.recipe.caption.helper.RecipeCaptionFinder;
-import com.cheftory.api.recipe.helper.RecipeFinder;
+import com.cheftory.api.recipe.caption.exception.CaptionErrorCode;
+import com.cheftory.api.recipe.caption.exception.RecipeCaptionException;
+import com.cheftory.api.recipe.caption.repository.RecipeCaptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,30 +15,32 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class RecipeCaptionService {
-    private final RecipeFinder recipeFinder;
-    private final CaptionClient captionClient;
-    private final RecipeCaptionCreator recipeCaptionCreator;
-    private final RecipeCaptionFinder recipeCaptionFinder;
 
-    @Transactional
-    public UUID create(UUID recipeId) {
-        String videoId = recipeFinder.findVideoId(recipeId);
+  private final CaptionClient captionClient;
+  private final RecipeCaptionRepository recipeCaptionRepository;
 
-        ClientCaptionResponse clientCaptionResponse = captionClient
-                .fetchCaption(videoId);
+  @Transactional
+  public UUID create(String videoId, UUID recipeId) {
 
-        RecipeCaption recipeCaption = RecipeCaption.from(
-                clientCaptionResponse.getCaptions()
-                , clientCaptionResponse.getLangCodeType()
-                , recipeId
+    RecipeCaption recipeCaption = captionClient
+        .fetchCaption(videoId).toRecipeCaption(recipeId);
+
+    return recipeCaptionRepository.save(recipeCaption).getId();
+  }
+
+  public RecipeCaption findByRecipeId(UUID recipeId) {
+    return recipeCaptionRepository
+        .findByRecipeId((recipeId))
+        .orElseThrow(() ->
+            new RecipeCaptionException(CaptionErrorCode.CAPTION_NOT_FOUND)
         );
+  }
 
-        return recipeCaptionCreator.create(recipeCaption);
-    }
-
-    public CaptionInfo getCaptionInfo(UUID captionId) {
-        RecipeCaption recipeCaption = recipeCaptionFinder.findById(captionId);
-        return CaptionInfo.from(recipeCaption.getLangCode(), recipeCaption.getSegments());
-    }
-
+  public RecipeCaption find(UUID captionId) {
+    return recipeCaptionRepository
+        .findById((captionId))
+        .orElseThrow(() ->
+            new RecipeCaptionException(CaptionErrorCode.CAPTION_NOT_FOUND)
+        );
+  }
 }
