@@ -3,9 +3,11 @@ package com.cheftory.api.recipeinfo.recipe;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cheftory.api.DbContextTest;
+import com.cheftory.api.recipeinfo.model.RecipeSort;
 import com.cheftory.api.recipeinfo.recipe.entity.ProcessStep;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
+import com.cheftory.api.recipeinfo.util.RecipePageRequest;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,7 +55,7 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         void thenRecipeIsSaved() {
           Optional<Recipe> foundRecipe = recipeRepository.findById(savedRecipe.getId());
-          
+
           assertThat(foundRecipe).isPresent();
           assertThat(foundRecipe.get().getId()).isEqualTo(savedRecipe.getId());
           assertThat(foundRecipe.get().getProcessStep()).isEqualTo(ProcessStep.READY);
@@ -91,7 +93,7 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         void thenSuccessRecipeIsSaved() {
           Optional<Recipe> foundRecipe = recipeRepository.findById(savedRecipe.getId());
-          
+
           assertThat(foundRecipe).isPresent();
           assertThat(foundRecipe.get().getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
           assertThat(foundRecipe.get().isSuccess()).isTrue();
@@ -127,7 +129,7 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         void thenFailedRecipeIsSaved() {
           Optional<Recipe> foundRecipe = recipeRepository.findById(savedRecipe.getId());
-          
+
           assertThat(foundRecipe).isPresent();
           assertThat(foundRecipe.get().getRecipeStatus()).isEqualTo(RecipeStatus.FAILED);
           assertThat(foundRecipe.get().isSuccess()).isFalse();
@@ -166,7 +168,7 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         void thenViewCountIsIncreased() {
           Optional<Recipe> updatedRecipe = recipeRepository.findById(savedRecipe.getId());
-          
+
           assertThat(updatedRecipe).isPresent();
           assertThat(updatedRecipe.get().getViewCount()).isEqualTo(1);
         }
@@ -187,7 +189,7 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         void thenViewCountIsIncreasedByThree() {
           Optional<Recipe> updatedRecipe = recipeRepository.findById(savedRecipe.getId());
-          
+
           assertThat(updatedRecipe).isPresent();
           assertThat(updatedRecipe.get().getViewCount()).isEqualTo(3);
         }
@@ -214,7 +216,7 @@ public class RecipeRepositoryTest extends DbContextTest {
         void thenNothingHappens() {
           // 예외가 발생하지 않고 정상적으로 처리되어야 함
           recipeRepository.increaseCount(nonExistentId);
-          
+
           Optional<Recipe> recipe = recipeRepository.findById(nonExistentId);
           assertThat(recipe).isEmpty();
         }
@@ -235,16 +237,16 @@ public class RecipeRepositoryTest extends DbContextTest {
       successRecipe1.success();
       Recipe successRecipe2 = Recipe.create();
       successRecipe2.success();
-      
+
       Recipe inProgressRecipe = Recipe.create();
-      
+
       Recipe failedRecipe = Recipe.create();
       failedRecipe.failed();
 
       savedRecipes = recipeRepository.saveAll(List.of(
           successRecipe1, successRecipe2, inProgressRecipe, failedRecipe
       ));
-      
+
       recipeIds = savedRecipes.stream().map(Recipe::getId).toList();
     }
 
@@ -385,10 +387,10 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         void thenReturnsAllRecipesWithGivenIds() {
           assertThat(foundRecipes).hasSize(3);
-          
+
           List<UUID> foundRecipeIds = foundRecipes.stream().map(Recipe::getId).toList();
           assertThat(foundRecipeIds).containsExactlyInAnyOrderElementsOf(savedRecipeIds);
-          
+
           // 각 상태가 모두 포함되는지 확인
           boolean hasInProgress = foundRecipes.stream()
               .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.IN_PROGRESS);
@@ -396,7 +398,7 @@ public class RecipeRepositoryTest extends DbContextTest {
               .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.SUCCESS);
           boolean hasFailed = foundRecipes.stream()
               .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.FAILED);
-          
+
           assertThat(hasInProgress).isTrue();
           assertThat(hasSuccess).isTrue();
           assertThat(hasFailed).isTrue();
@@ -436,7 +438,7 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         void thenReturnsOnlyExistingRecipes() {
           assertThat(foundRecipes).hasSize(2);
-          
+
           List<UUID> foundRecipeIds = foundRecipes.stream().map(Recipe::getId).toList();
           assertThat(foundRecipeIds).containsExactlyInAnyOrder(
               savedRecipeIds.get(0), savedRecipeIds.get(1));
@@ -464,6 +466,274 @@ public class RecipeRepositoryTest extends DbContextTest {
         void thenReturnsEmptyList() {
           assertThat(foundRecipes).isEmpty();
         }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("상태별 레시피 페이징 조회")
+  class FindByRecipeStatus {
+
+    @BeforeEach
+    void setUp() {
+      Recipe successRecipe1 = Recipe.create();
+      successRecipe1.success();
+      Recipe successRecipe2 = Recipe.create();
+      successRecipe2.success();
+      Recipe successRecipe3 = Recipe.create();
+      successRecipe3.success();
+      Recipe successRecipe4 = Recipe.create();
+      successRecipe4.success();
+      Recipe successRecipe5 = Recipe.create();
+      successRecipe5.success();
+
+      Recipe inProgressRecipe1 = Recipe.create();
+      Recipe inProgressRecipe2 = Recipe.create();
+
+      Recipe failedRecipe1 = Recipe.create();
+      failedRecipe1.failed();
+      Recipe failedRecipe2 = Recipe.create();
+      failedRecipe2.failed();
+
+      recipeRepository.saveAll(List.of(
+          successRecipe1, successRecipe2, successRecipe3, successRecipe4, successRecipe5,
+          inProgressRecipe1, inProgressRecipe2,
+          failedRecipe1, failedRecipe2
+      ));
+
+      recipeRepository.increaseCount(successRecipe1.getId());
+      recipeRepository.increaseCount(successRecipe1.getId());
+      recipeRepository.increaseCount(successRecipe2.getId());
+    }
+
+    @Nested
+    @DisplayName("Given - 다양한 상태의 레시피들이 저장되어 있을 때")
+    class GivenVariousStatusRecipes {
+
+      @Nested
+      @DisplayName("When - 성공 상태 레시피들을 페이징 조회하면")
+      class WhenFindSuccessRecipesWithPaging {
+
+        @Test
+        @DisplayName("Then - 성공 상태 레시피들만 반환된다")
+        void thenReturnsOnlySuccessRecipes() {
+          Pageable pageable = PageRequest.of(0, 10);
+
+          Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent()).isNotEmpty();
+          assertThat(result.isFirst()).isTrue();
+
+          result.getContent().forEach(recipe -> {
+            assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
+            assertThat(recipe.isSuccess()).isTrue();
+            assertThat(recipe.isFailed()).isFalse();
+          });
+        }
+
+        @Test
+        @DisplayName("Then - 페이지 크기만큼 제한되어 반환된다")
+        void thenReturnsLimitedByPageSize() {
+          Pageable pageable = PageRequest.of(0, 3);
+
+          Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent()).hasSize(3);
+          assertThat(result.isFirst()).isTrue();
+          assertThat(result.hasNext()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Then - 두 번째 페이지도 올바르게 반환된다")
+        void thenReturnsSecondPageCorrectly() {
+          Pageable pageable = PageRequest.of(1, 3);
+
+          Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.isFirst()).isFalse();
+          assertThat(result.hasPrevious()).isTrue();
+        }
+      }
+
+      @Nested
+      @DisplayName("When - 진행 중 상태 레시피들을 페이징 조회하면")
+      class WhenFindInProgressRecipesWithPaging {
+
+        @Test
+        @DisplayName("Then - 진행 중 상태 레시피들만 반환된다")
+        void thenReturnsOnlyInProgressRecipes() {
+          Pageable pageable = PageRequest.of(0, 10);
+
+          Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.IN_PROGRESS, pageable);
+
+          assertThat(result.getContent()).isNotEmpty();
+
+          result.getContent().forEach(recipe -> {
+            assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
+            assertThat(recipe.isSuccess()).isFalse();
+            assertThat(recipe.isFailed()).isFalse();
+          });
+        }
+      }
+
+      @Nested
+      @DisplayName("When - 실패 상태 레시피들을 페이징 조회하면")
+      class WhenFindFailedRecipesWithPaging {
+
+        @Test
+        @DisplayName("Then - 실패 상태 레시피들만 반환된다")
+        void thenReturnsOnlyFailedRecipes() {
+          Pageable pageable = PageRequest.of(0, 10);
+
+          Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.FAILED, pageable);
+
+          assertThat(result.getContent()).isNotEmpty();
+
+          result.getContent().forEach(recipe -> {
+            assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.FAILED);
+            assertThat(recipe.isSuccess()).isFalse();
+            assertThat(recipe.isFailed()).isTrue();
+          });
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 해당 상태의 레시피가 없을 때")
+    class GivenNoRecipesWithStatus {
+
+      @BeforeEach
+      void setUp() {
+        recipeRepository.deleteAll();
+      }
+
+      @Test
+      @DisplayName("When - 해당 상태로 조회하면 Then - 빈 페이지가 반환된다")
+      void whenFindByStatus_thenReturnsEmptyPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(0);
+        assertThat(result.getTotalPages()).isEqualTo(0);
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 잘못된 페이지 요청이 주어졌을 때")
+    class GivenInvalidPageRequest {
+
+      @Test
+      @DisplayName("When - 페이지 크기 0으로 조회하면 Then - IllegalArgumentException이 발생한다")
+      void whenFindWithZeroPageSize_thenThrowsIllegalArgumentException() {
+        org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> PageRequest.of(0, 0)
+        );
+      }
+
+      @Test
+      @DisplayName("When - 음수 페이지 크기로 조회하면 Then - IllegalArgumentException이 발생한다")
+      void whenFindWithNegativePageSize_thenThrowsIllegalArgumentException() {
+        org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> PageRequest.of(0, -1)
+        );
+      }
+
+      @Test
+      @DisplayName("When - 음수 페이지 번호로 조회하면 Then - IllegalArgumentException이 발생한다")
+      void whenFindWithNegativePageNumber_thenThrowsIllegalArgumentException() {
+        org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> PageRequest.of(-1, 10)
+        );
+      }
+
+      @Test
+      @DisplayName("When - 존재하지 않는 페이지를 조회하면 Then - 빈 페이지가 반환된다")
+      void whenFindNonExistentPage_thenReturnsEmptyPage() {
+        Pageable pageable = PageRequest.of(10, 10);
+
+        Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getNumber()).isEqualTo(10);
+        assertThat(result.isFirst()).isFalse();
+        assertThat(result.isLast()).isTrue();
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - RecipePageRequest를 사용할 때")
+    class GivenRecipePageRequest {
+
+      @Test
+      @DisplayName("When - RecipePageRequest.create로 조회수 내림차순 조회하면 Then - 조회수 순으로 정렬되어 반환된다")
+      void whenFindWithRecipePageRequestCountDesc_thenReturnsOrderedByViewCount() {
+        Pageable pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+
+        Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+
+        assertThat(result.getContent()).isNotEmpty();
+        assertThat(result.getSize()).isEqualTo(10);
+        
+        List<Recipe> recipes = result.getContent();
+        for (int i = 0; i < recipes.size() - 1; i++) {
+          assertThat(recipes.get(i).getViewCount())
+              .isGreaterThanOrEqualTo(recipes.get(i + 1).getViewCount());
+        }
+        
+        assertThat(recipes.get(0).getViewCount()).isGreaterThanOrEqualTo(2);
+      }
+
+      @Test
+      @DisplayName("When - RecipePageRequest.create로 1페이지 조회하면 Then - 두 번째 페이지가 반환된다")
+      void whenFindSecondPageWithRecipePageRequest_thenReturnsSecondPage() {
+        Pageable pageable = RecipePageRequest.create(1, RecipeSort.COUNT_DESC);
+
+        Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+
+        assertThat(result.getNumber()).isEqualTo(1);
+        assertThat(result.getSize()).isEqualTo(10);
+        assertThat(result.isFirst()).isFalse();
+        
+        result.getContent().forEach(recipe -> {
+          assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
+        });
+      }
+
+      @Test
+      @DisplayName("When - RecipePageRequest.create로 다른 상태 조회하면 Then - 해당 상태만 반환된다")
+      void whenFindInProgressWithRecipePageRequest_thenReturnsOnlyInProgress() {
+        Pageable pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+
+        Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.IN_PROGRESS, pageable);
+
+        assertThat(result.getContent()).isNotEmpty();
+        assertThat(result.getSize()).isEqualTo(10);
+        
+        result.getContent().forEach(recipe -> {
+          assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
+        });
+        
+        List<Recipe> recipes = result.getContent();
+        for (int i = 0; i < recipes.size() - 1; i++) {
+          assertThat(recipes.get(i).getViewCount())
+              .isGreaterThanOrEqualTo(recipes.get(i + 1).getViewCount());
+        }
+      }
+
+      @Test
+      @DisplayName("When - RecipePageRequest가 생성하는 Pageable 속성을 확인하면 Then - 올바른 설정이 적용된다")
+      void whenCreateRecipePageRequest_thenCorrectPageableProperties() {
+        Pageable pageable = RecipePageRequest.create(2, RecipeSort.COUNT_DESC);
+
+        assertThat(pageable.getPageNumber()).isEqualTo(2);
+        assertThat(pageable.getPageSize()).isEqualTo(10);
+        assertThat(pageable.getSort()).isEqualTo(RecipeSort.COUNT_DESC);
+        assertThat(pageable.getOffset()).isEqualTo(20);
       }
     }
   }
