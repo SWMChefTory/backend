@@ -22,12 +22,11 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
 
   @MockitoBean private Clock clock;
 
-  private LocalDateTime now;
+  private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
   @BeforeEach
   void setUp() {
-    now = LocalDateTime.now();
-    doReturn(now).when(clock).now();
+    doReturn(FIXED_TIME).when(clock).now();
   }
 
   @Nested
@@ -71,7 +70,7 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
           assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
           assertThat(results.getFirst().getStep()).isEqualTo(step);
           assertThat(results.getFirst().getDetail()).isEqualTo(detail);
-          assertThat(results.getFirst().getCreatedAt()).isEqualTo(now);
+          assertThat(results.getFirst().getCreatedAt()).isEqualTo(FIXED_TIME);
         }
       }
     }
@@ -115,7 +114,7 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
           assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
           assertThat(results.getFirst().getStep()).isEqualTo(step);
           assertThat(results.getFirst().getDetail()).isEqualTo(detail);
-          assertThat(results.getFirst().getCreatedAt()).isEqualTo(now);
+          assertThat(results.getFirst().getCreatedAt()).isEqualTo(FIXED_TIME);
         }
       }
     }

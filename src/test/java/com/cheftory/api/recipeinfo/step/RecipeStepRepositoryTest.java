@@ -39,17 +39,16 @@ public class RecipeStepRepositoryTest extends DbContextTest {
       private String descriptionText;
       private Double descriptionStart;
       private UUID recipeId;
-      private LocalDateTime fixedNow;
+      private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
       @BeforeEach
       void setUp() {
-        fixedNow = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
         subtitle = "Step 1";
         start = 0.0;
         descriptionText = "First, do this.";
         descriptionStart = 0.0;
         recipeId = UUID.randomUUID();
-        doReturn(fixedNow).when(clock).now();
+        doReturn(FIXED_TIME).when(clock).now();
       }
 
       @Nested
@@ -82,7 +81,7 @@ public class RecipeStepRepositoryTest extends DbContextTest {
           assertThat(savedStep.getSubtitle()).isEqualTo(subtitle);
           assertThat(savedStep.getStart()).isEqualTo(start);
           assertThat(savedStep.getRecipeId()).isEqualTo(recipeId);
-          assertThat(savedStep.getCreatedAt()).isEqualTo(fixedNow);
+          assertThat(savedStep.getCreatedAt()).isEqualTo(FIXED_TIME);
 
           assertThat(savedStep.getDetails()).hasSize(1);
           RecipeStep.Detail savedDetail = savedStep.getDetails().getFirst();

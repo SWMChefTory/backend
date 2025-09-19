@@ -37,7 +37,7 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
       private Integer cookTime;
       private Integer servings;
       private String description;
-      private LocalDateTime createdAt;
+      private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
       @BeforeEach
       void setUp() {
@@ -46,8 +46,7 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
         cookTime = 30;
         servings = 2;
         description = "맛있는 김치찌개 만들기";
-        createdAt = LocalDateTime.now();
-        doReturn(createdAt).when(clock).now();
+        doReturn(FIXED_TIME).when(clock).now();
       }
 
       @DisplayName("When - 레시피 상세 메타를 저장하면")
@@ -72,7 +71,7 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
           assertThat(foundMeta.get().getCookTime()).isEqualTo(30);
           assertThat(foundMeta.get().getServings()).isEqualTo(2);
           assertThat(foundMeta.get().getDescription()).isEqualTo("맛있는 김치찌개 만들기");
-          assertThat(foundMeta.get().getCreatedAt()).isEqualTo(createdAt);
+          assertThat(foundMeta.get().getCreatedAt()).isEqualTo(FIXED_TIME);
         }
       }
     }
@@ -83,13 +82,12 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
 
       private List<UUID> recipeIds;
       private List<RecipeDetailMeta> recipeDetailMetas;
-      private LocalDateTime createdAt;
+      private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
       @BeforeEach
       void setUp() {
         clock = mock(Clock.class);
-        createdAt = LocalDateTime.now();
-        doReturn(createdAt).when(clock).now();
+        doReturn(FIXED_TIME).when(clock).now();
 
         recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
         
@@ -123,7 +121,7 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
               .containsExactlyInAnyOrder(30, 15, 45);
           assertThat(foundMetas).extracting("servings")
               .containsExactlyInAnyOrder(2, 1, 4);
-          assertThat(foundMetas).extracting("createdAt").containsOnly(createdAt);
+          assertThat(foundMetas).extracting("createdAt").containsOnly(FIXED_TIME);
           
           foundMetas.forEach(meta -> {
             assertThat(meta.getRecipeId()).isIn(recipeIds);

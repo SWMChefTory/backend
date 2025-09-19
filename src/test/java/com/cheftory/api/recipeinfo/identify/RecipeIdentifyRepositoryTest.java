@@ -9,6 +9,7 @@ import com.cheftory.api._common.Clock;
 import jakarta.transaction.Transactional;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,12 +25,11 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
   @MockitoBean private Clock clock;
 
-  private LocalDateTime now;
+  private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
   @BeforeEach
   void setUp() {
-    now = LocalDateTime.now();
-    doReturn(now).when(clock).now();
+    doReturn(FIXED_TIME).when(clock).now();
   }
 
   @Nested
@@ -44,7 +44,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
       @BeforeEach
       void init() {
-        url = URI.create("https://www.youtube.com/watch?v=LOCK_" + now.toString());
+        url = URI.create("https://www.youtube.com/watch?v=LOCK_" + UUID.randomUUID());
       }
 
       @Nested
@@ -64,7 +64,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
         void thenPersistAndFind() {
           RecipeIdentify found = repository.findById(identifyUrl.getId()).orElseThrow();
           assertThat(found.getUrl()).isEqualTo(url);
-          assertThat(found.getCreatedAt()).isEqualTo(now);
+          assertThat(found.getCreatedAt()).isEqualTo(FIXED_TIME);
         }
       }
 
@@ -105,7 +105,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
       @BeforeEach
       void init() {
-        url = URI.create("https://example.com/video/LOCK_" + now.toString());
+        url = URI.create("https://example.com/video/LOCK_" + UUID.randomUUID());
         repository.save(RecipeIdentify.create(url, clock));
       }
 

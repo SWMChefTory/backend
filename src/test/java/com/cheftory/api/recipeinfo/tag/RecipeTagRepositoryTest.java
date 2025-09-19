@@ -21,12 +21,11 @@ public class RecipeTagRepositoryTest extends DbContextTest {
 
   @MockitoBean private Clock clock;
 
-  private LocalDateTime createdAt;
+  private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
   @BeforeEach
   void setUp() {
-    createdAt = LocalDateTime.now();
-    doReturn(createdAt).when(clock).now();
+    doReturn(FIXED_TIME).when(clock).now();
   }
 
   @Nested
@@ -43,7 +42,7 @@ public class RecipeTagRepositoryTest extends DbContextTest {
       void setUp() {
         recipeId = UUID.randomUUID();
         tag = "한식";
-        doReturn(createdAt).when(clock).now();
+        doReturn(FIXED_TIME).when(clock).now();
       }
 
       @Nested
@@ -65,7 +64,7 @@ public class RecipeTagRepositoryTest extends DbContextTest {
 
           assertThat(savedTag.getTag()).isEqualTo("한식");
           assertThat(savedTag.getRecipeId()).isEqualTo(recipeId);
-          assertThat(savedTag.getCreatedAt()).isEqualTo(createdAt);
+          assertThat(savedTag.getCreatedAt()).isEqualTo(FIXED_TIME);
         }
       }
     }

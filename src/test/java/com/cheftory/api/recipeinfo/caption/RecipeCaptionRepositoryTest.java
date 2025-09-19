@@ -60,26 +60,26 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
         @BeforeEach
         void setUp() {
           recipeCaption =
-              RecipeCaption.from(java.util.List.of(segment), langCodeType, recipeId, clock);
+              RecipeCaption.from(List.of(segment), langCodeType, recipeId, clock);
           recipeCaptionRepository.save(recipeCaption);
         }
 
         @DisplayName("Then - 레시피 자막이 저장된다")
-        @org.junit.jupiter.api.Test
+        @Test
         void thenRecipeCaptionIsSaved() {
-          RecipeCaption recipeCaption =
-              recipeCaptionRepository.findById(this.recipeCaption.getId()).orElse(null);
-          assertThat(recipeCaption).isNotNull();
-          assertThat(recipeCaption.getId()).isEqualTo(this.recipeCaption.getId());
-          assertThat(recipeCaption.getRecipeId()).isEqualTo(recipeId);
-          assertThat(recipeCaption.getLangCode()).isEqualTo(langCodeType);
-          assertThat(recipeCaption.getSegments()).isNotNull();
-          assertThat(recipeCaption.getSegments().size()).isEqualTo(1);
-          assertThat(recipeCaption.getSegments().getFirst().getText()).isEqualTo(segment.getText());
-          assertThat(recipeCaption.getSegments().getFirst().getStart())
+          RecipeCaption savedRecipeCaption =
+              recipeCaptionRepository.findById(recipeCaption.getId()).orElse(null);
+          assertNotNull(savedRecipeCaption);
+          assertThat(savedRecipeCaption.getId()).isEqualTo(recipeCaption.getId());
+          assertThat(savedRecipeCaption.getRecipeId()).isEqualTo(recipeId);
+          assertThat(savedRecipeCaption.getLangCode()).isEqualTo(langCodeType);
+          assertThat(savedRecipeCaption.getSegments()).isNotNull();
+          assertThat(savedRecipeCaption.getSegments().size()).isEqualTo(1);
+          assertThat(savedRecipeCaption.getSegments().getFirst().getText()).isEqualTo(segment.getText());
+          assertThat(savedRecipeCaption.getSegments().getFirst().getStart())
               .isEqualTo(segment.getStart());
-          assertThat(recipeCaption.getSegments().getFirst().getEnd()).isEqualTo(segment.getEnd());
-          assertThat(recipeCaption.getCreatedAt()).isEqualTo(now);
+          assertThat(savedRecipeCaption.getSegments().getFirst().getEnd()).isEqualTo(segment.getEnd());
+          assertThat(savedRecipeCaption.getCreatedAt()).isEqualTo(now);
         }
       }
     }
@@ -92,14 +92,13 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
     private RecipeCaption recipeCaption;
     private UUID recipeId;
     private Clock clock;
-    private LocalDateTime now;
+    private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
     @BeforeEach
     void setUp() {
       clock = mock(Clock.class);
       recipeId = UUID.randomUUID();
-      now = LocalDateTime.now();
-      doReturn(now).when(clock).now();
+      doReturn(FIXED_TIME).when(clock).now();
     }
 
     @Nested
@@ -133,7 +132,7 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
         assertThat(foundRecipeCaption.getSegments().getFirst().getText()).isEqualTo("Hello World");
         assertThat(foundRecipeCaption.getSegments().getFirst().getStart()).isEqualTo(0.0);
         assertThat(foundRecipeCaption.getSegments().getFirst().getEnd()).isEqualTo(2.0);
-        assertThat(foundRecipeCaption.getCreatedAt()).isEqualTo(now);
+        assertThat(foundRecipeCaption.getCreatedAt()).isEqualTo(FIXED_TIME);
       }
     }
 
@@ -168,7 +167,7 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
         assertThat(foundRecipeCaption.getSegments().getFirst().getText()).isEqualTo("Hello World");
         assertThat(foundRecipeCaption.getSegments().getFirst().getStart()).isEqualTo(0.0);
         assertThat(foundRecipeCaption.getSegments().getFirst().getEnd()).isEqualTo(2.0);
-        assertThat(foundRecipeCaption.getCreatedAt()).isEqualTo(now);
+        assertThat(foundRecipeCaption.getCreatedAt()).isEqualTo(FIXED_TIME);
       }
     }
   }

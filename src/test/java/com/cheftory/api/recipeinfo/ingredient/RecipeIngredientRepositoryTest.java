@@ -33,15 +33,14 @@ public class RecipeIngredientRepositoryTest extends DbContextTest {
 
       private UUID recipeId;
       private List<Ingredient> ingredients;
-      private LocalDateTime createdAt;
+      private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
       @BeforeEach
       void setUp() {
         clock = mock(Clock.class);
         recipeId = UUID.randomUUID();
         ingredients = List.of(new Ingredient("재료1", 100, "g"), new Ingredient("재료2", 200, "ml"));
-        createdAt = LocalDateTime.now();
-        doReturn(createdAt).when(clock).now();
+        doReturn(FIXED_TIME).when(clock).now();
       }
 
       @DisplayName("When - 레시피 재료를 저장하면")
@@ -75,7 +74,7 @@ public class RecipeIngredientRepositoryTest extends DbContextTest {
           assertThat(foundIngredients).extracting("name").containsExactlyInAnyOrder("재료1", "재료2");
           assertThat(foundIngredients).extracting("amount").containsExactlyInAnyOrder(100, 200);
           assertThat(foundIngredients).extracting("unit").containsExactlyInAnyOrder("g", "ml");
-          assertThat(foundIngredients).extracting("createdAt").containsOnly(createdAt);
+          assertThat(foundIngredients).extracting("createdAt").containsOnly(FIXED_TIME);
         }
       }
     }
@@ -90,15 +89,14 @@ public class RecipeIngredientRepositoryTest extends DbContextTest {
     class GivenSavedIngredients {
       private UUID recipeId;
       private List<Ingredient> ingredients;
-      private LocalDateTime createdAt;
+      private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
       @BeforeEach
       void setUp() {
         clock = mock(Clock.class);
         recipeId = UUID.randomUUID();
         ingredients = List.of(new Ingredient("재료1", 100, "g"), new Ingredient("재료2", 200, "ml"));
-        createdAt = LocalDateTime.now();
-        doReturn(createdAt).when(clock).now();
+        doReturn(FIXED_TIME).when(clock).now();
 
         List<RecipeIngredient> recipeIngredients =
             ingredients.stream()
@@ -136,7 +134,7 @@ public class RecipeIngredientRepositoryTest extends DbContextTest {
                 assertThat(ingredient.getName()).isIn("재료1", "재료2");
                 assertThat(ingredient.getAmount()).isIn(100, 200);
                 assertThat(ingredient.getUnit()).isIn("g", "ml");
-                assertThat(ingredient.getCreatedAt()).isEqualTo(createdAt);
+                assertThat(ingredient.getCreatedAt()).isEqualTo(FIXED_TIME);
               });
         }
       }

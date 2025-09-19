@@ -58,6 +58,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
         private YoutubeVideoInfo youtubeVideoInfo;
         private RecipeYoutubeMeta recipeYoutubeMeta;
         private UUID recipeId;
+        private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
         @BeforeEach
         void beforeEach() {
@@ -67,7 +68,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
           doReturn(title).when(youtubeVideoInfo).getTitle();
           doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
           doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
-          when(clock.now()).thenReturn(LocalDateTime.now());
+          doReturn(FIXED_TIME).when(clock).now();
           recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
         }
 
@@ -98,6 +99,8 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
     private YoutubeVideoInfo youtubeVideoInfo;
     private RecipeYoutubeMeta recipeYoutubeMeta;
     private UUID recipeId;
+    private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+
 
     @BeforeEach
     void setUp() {
@@ -114,7 +117,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
       doReturn(title).when(youtubeVideoInfo).getTitle();
       doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
       doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
-      when(clock.now()).thenReturn(LocalDateTime.now());
+      doReturn(FIXED_TIME).when(clock).now();
 
       recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
       repository.save(recipeYoutubeMeta);
@@ -184,6 +187,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
     private YoutubeVideoInfo youtubeVideoInfo2;
     private UUID recipeId1;
     private UUID recipeId2;
+    private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
     @BeforeEach
     void setUp() {
@@ -214,8 +218,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
       doReturn(title2).when(youtubeVideoInfo2).getTitle();
       doReturn(videoSeconds2).when(youtubeVideoInfo2).getVideoSeconds();
       doReturn(youtubeUri2.toUri()).when(youtubeVideoInfo2).getVideoUri();
-
-      when(clock.now()).thenReturn(LocalDateTime.now());
+      doReturn(FIXED_TIME).when(clock).now();
     }
 
     @DisplayName("When - 목록 조회한다면")
