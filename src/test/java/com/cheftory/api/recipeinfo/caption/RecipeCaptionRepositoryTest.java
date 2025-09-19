@@ -39,7 +39,7 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
       private LangCodeType langCodeType;
       private UUID recipeId;
       private Clock clock;
-      private LocalDateTime now;
+      private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
       @BeforeEach
       void setUp() {
@@ -47,8 +47,7 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
         segment = Segment.builder().text("Hello World").start(0.0).end(2.0).build();
         langCodeType = LangCodeType.ko;
         recipeId = UUID.randomUUID();
-        now = LocalDateTime.now();
-        doReturn(now).when(clock).now();
+        doReturn(FIXED_TIME).when(clock).now();
       }
 
       @Nested
@@ -79,7 +78,7 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
           assertThat(savedRecipeCaption.getSegments().getFirst().getStart())
               .isEqualTo(segment.getStart());
           assertThat(savedRecipeCaption.getSegments().getFirst().getEnd()).isEqualTo(segment.getEnd());
-          assertThat(savedRecipeCaption.getCreatedAt()).isEqualTo(now);
+          assertThat(savedRecipeCaption.getCreatedAt()).isEqualTo(FIXED_TIME);
         }
       }
     }

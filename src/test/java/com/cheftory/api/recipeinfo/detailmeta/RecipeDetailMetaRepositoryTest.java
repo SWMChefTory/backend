@@ -140,14 +140,13 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
     class GivenSavedRecipeDetailMeta {
       private UUID recipeId;
       private RecipeDetailMeta savedMeta;
-      private LocalDateTime createdAt;
+      private LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
       @BeforeEach
       void setUp() {
         clock = mock(Clock.class);
         recipeId = UUID.randomUUID();
-        createdAt = LocalDateTime.now();
-        doReturn(createdAt).when(clock).now();
+        doReturn(FIXED_TIME).when(clock).now();
 
         savedMeta = RecipeDetailMeta.create(25, 3, "된장찌개", clock, recipeId);
         recipeDetailMetaRepository.save(savedMeta);
@@ -172,7 +171,7 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
           assertThat(foundMeta.get().getCookTime()).isEqualTo(25);
           assertThat(foundMeta.get().getServings()).isEqualTo(3);
           assertThat(foundMeta.get().getDescription()).isEqualTo("된장찌개");
-          assertThat(foundMeta.get().getCreatedAt()).isEqualTo(createdAt);
+          assertThat(foundMeta.get().getCreatedAt()).isEqualTo(FIXED_TIME);
         }
       }
     }
