@@ -8,6 +8,4 @@ import org.springframework.transaction.annotation.Transactional;
 @Rollback(false)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @DataJpaTest
-public abstract class DbContextTest {
-
-}
+public abstract class DbContextTest {}

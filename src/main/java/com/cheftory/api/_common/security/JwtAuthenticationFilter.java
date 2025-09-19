@@ -1,7 +1,5 @@
 package com.cheftory.api._common.security;
 
-import com.cheftory.api.account.auth.exception.AuthErrorCode;
-import com.cheftory.api.account.auth.exception.AuthException;
 import com.cheftory.api.account.auth.jwt.TokenProvider;
 import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
 import jakarta.servlet.FilterChain;
@@ -29,11 +27,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       @NonNull HttpServletRequest request,
       @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain
-  ) throws ServletException, IOException {
+      @NonNull FilterChain filterChain)
+      throws ServletException, IOException {
     try {
       String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-      UUID userId = tokenProvider.getUserIdFromToken(BearerAuthorizationUtils.removePrefix(jwtToken));
+      UUID userId =
+          tokenProvider.getUserIdFromToken(BearerAuthorizationUtils.removePrefix(jwtToken));
 
       UsernamePasswordAuthenticationToken authentication =
           new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());

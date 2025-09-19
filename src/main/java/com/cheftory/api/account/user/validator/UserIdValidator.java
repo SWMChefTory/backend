@@ -1,6 +1,5 @@
 package com.cheftory.api.account.user.validator;
 
-
 import com.cheftory.api.account.user.UserService;
 import com.cheftory.api.account.user.exception.UserErrorCode;
 import jakarta.validation.ConstraintValidator;
@@ -21,7 +20,8 @@ public class UserIdValidator implements ConstraintValidator<ExistsUserId, UUID> 
 
     if (!exists) {
       context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate(UserErrorCode.USER_NOT_FOUND.name())
+      context
+          .buildConstraintViolationWithTemplate(UserErrorCode.USER_NOT_FOUND.name())
           .addConstraintViolation();
       return false;
     }

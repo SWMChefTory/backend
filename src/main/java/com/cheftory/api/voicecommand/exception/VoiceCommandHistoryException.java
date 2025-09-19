@@ -6,5 +6,4 @@ public class VoiceCommandHistoryException extends CheftoryException {
   public VoiceCommandHistoryException(VoiceCommandErrorCode errorCode) {
     super(errorCode);
   }
-
 }

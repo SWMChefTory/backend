@@ -1,21 +1,18 @@
 package com.cheftory.api.account.auth;
 
+import com.cheftory.api.account.auth.entity.Login;
 import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.exception.AuthException;
+import com.cheftory.api.account.auth.jwt.TokenProvider;
 import com.cheftory.api.account.auth.model.AuthTokens;
-import com.cheftory.api.account.auth.entity.Login;
+import com.cheftory.api.account.auth.repository.LoginRepository;
 import com.cheftory.api.account.auth.verifier.AppleTokenVerifier;
 import com.cheftory.api.account.auth.verifier.GoogleTokenVerifier;
-import com.cheftory.api.account.auth.jwt.TokenProvider;
-import com.cheftory.api.account.auth.repository.LoginRepository;
 import com.cheftory.api.account.user.entity.Provider;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.springframework.transaction.annotation.Propagation;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
@@ -67,8 +64,10 @@ public class AuthService {
   }
 
   private void updateRefreshToken(UUID userId, String oldRefreshToken, String newRefreshToken) {
-    Login log = loginRepository.findByUserIdAndRefreshToken(userId, oldRefreshToken)
-        .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+    Login log =
+        loginRepository
+            .findByUserIdAndRefreshToken(userId, oldRefreshToken)
+            .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
 
     LocalDateTime refreshTokenExpiredAt = jwtProvider.getExpiration(newRefreshToken);
     log.updateRefreshToken(newRefreshToken, refreshTokenExpiredAt);
@@ -76,8 +75,10 @@ public class AuthService {
   }
 
   public void deleteRefreshToken(UUID userId, String refreshToken) {
-    Login log = loginRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-        .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+    Login log =
+        loginRepository
+            .findByUserIdAndRefreshToken(userId, refreshToken)
+            .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
     loginRepository.delete(log);
   }
 }

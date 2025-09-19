@@ -11,16 +11,15 @@ public record UserInfo(
     @JsonProperty("date_of_birth") LocalDate dateOfBirth,
     @JsonProperty("terms_of_use_agreed_at") LocalDateTime termsOfUseAgreedAt,
     @JsonProperty("privacy_agreed_at") LocalDateTime privacyAgreedAt,
-    @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt
-) {
+    @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt) {
   public static UserInfo from(
       String nickname,
       Gender gender,
       LocalDate dateOfBirth,
       LocalDateTime termsOfUseAgreedAt,
       LocalDateTime privacyAgreedAt,
-      LocalDateTime marketingAgreedAt
-  ) {
-    return new UserInfo(nickname, gender, dateOfBirth, termsOfUseAgreedAt, privacyAgreedAt, marketingAgreedAt);
+      LocalDateTime marketingAgreedAt) {
+    return new UserInfo(
+        nickname, gender, dateOfBirth, termsOfUseAgreedAt, privacyAgreedAt, marketingAgreedAt);
   }
 }

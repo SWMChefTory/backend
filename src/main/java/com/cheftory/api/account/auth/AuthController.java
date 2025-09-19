@@ -1,9 +1,9 @@
 package com.cheftory.api.account.auth;
 
-import com.cheftory.api.account.auth.model.UserId;
 import com.cheftory.api.account.auth.dto.TokenReissueRequest;
 import com.cheftory.api.account.auth.dto.TokenReissueResponse;
 import com.cheftory.api.account.auth.model.AuthTokens;
+import com.cheftory.api.account.auth.model.UserId;
 import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -22,20 +22,16 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/papi/v1/auth/extract-user-id")
-  public ResponseEntity<UserId> loginWithOAuth(
-      @RequestHeader("Authorization") String accessToken
-  ) {
-    UUID userId = authService.extractUserIdFromToken(BearerAuthorizationUtils.removePrefix(accessToken));
+  public ResponseEntity<UserId> loginWithOAuth(@RequestHeader("Authorization") String accessToken) {
+    UUID userId =
+        authService.extractUserIdFromToken(BearerAuthorizationUtils.removePrefix(accessToken));
     return ResponseEntity.ok(new UserId(userId.toString()));
   }
 
   @PostMapping("/api/v1/auth/token/reissue")
-  public TokenReissueResponse reissueToken(
-      @RequestBody TokenReissueRequest request
-  ) {
-    AuthTokens authTokens = authService.reissue(
-        BearerAuthorizationUtils.removePrefix(request.refreshToken())
-    );
+  public TokenReissueResponse reissueToken(@RequestBody TokenReissueRequest request) {
+    AuthTokens authTokens =
+        authService.reissue(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
     return TokenReissueResponse.from(authTokens);
   }
 }

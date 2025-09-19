@@ -1,6 +1,5 @@
 package com.cheftory.api.account.auth;
 
-
 import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;
 import static com.cheftory.api.utils.RestDocsUtils.requestAccessTokenFields;
 import static com.cheftory.api.utils.RestDocsUtils.requestPreprocessor;
@@ -18,8 +17,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
-import com.cheftory.api.account.auth.AuthController;
-import com.cheftory.api.account.auth.AuthService;
 import com.cheftory.api.account.auth.dto.TokenReissueRequest;
 import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.exception.AuthException;
@@ -51,9 +48,7 @@ public class AuthControllerTest extends RestDocsTest {
     controller = new AuthController(authService);
     globalExceptionHandler = new GlobalExceptionHandler();
 
-    mockMvc = mockMvcBuilder(controller)
-        .withAdvice(globalExceptionHandler)
-        .build();
+    mockMvc = mockMvcBuilder(controller).withAdvice(globalExceptionHandler).build();
   }
 
   @Nested
@@ -78,24 +73,21 @@ public class AuthControllerTest extends RestDocsTest {
       @Test
       @DisplayName("사용자 ID를 성공적으로 반환한다")
       void shouldReturnUserId() {
-        var response = given()
-            .contentType(ContentType.JSON)
-            .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(validToken))
-            .when()
-            .post("/papi/v1/auth/extract-user-id")
-            .then()
-            .status(HttpStatus.OK)
-            .apply(
-                document(
-                    getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    requestAccessTokenFields(),
-                    responseFields(
-                        fieldWithPath("user_id").description("사용자 ID")
-                    )
-                )
-            );
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(validToken))
+                .when()
+                .post("/papi/v1/auth/extract-user-id")
+                .then()
+                .status(HttpStatus.OK)
+                .apply(
+                    document(
+                        getNestedClassPath(this.getClass()) + "/{method-name}",
+                        requestPreprocessor(),
+                        responsePreprocessor(),
+                        requestAccessTokenFields(),
+                        responseFields(fieldWithPath("user_id").description("사용자 ID"))));
         response.body("user_id", equalTo(userId.toString()));
         verify(authService).extractUserIdFromToken(validToken);
       }
@@ -112,34 +104,32 @@ public class AuthControllerTest extends RestDocsTest {
         invalidToken = "invalid.malformed.token";
 
         doThrow(new AuthException(AuthErrorCode.INVALID_TOKEN))
-            .when(authService).extractUserIdFromToken(invalidToken);
+            .when(authService)
+            .extractUserIdFromToken(invalidToken);
       }
 
       @Test
       @DisplayName("400 Bad Request 에러를 반환한다")
       void shouldReturnBadRequestError() {
-        var response = given()
-            .contentType(ContentType.JSON)
-            .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(invalidToken))
-            .when()
-            .post("/papi/v1/auth/extract-user-id")
-            .then()
-            .status(HttpStatus.BAD_REQUEST)
-            .apply(
-                document(
-                    getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    requestHeaders(
-                        headerWithName(HttpHeaders.AUTHORIZATION).description("유효하지 않은 토큰")
-                    ),
-                    responseFields(
-                        fieldWithPath("errorCode").description("에러 코드"),
-                        fieldWithPath("message").description("에러 메시지")
-                    ),
-                    responseErrorFields(AuthErrorCode.INVALID_TOKEN)
-                )
-            );
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(invalidToken))
+                .when()
+                .post("/papi/v1/auth/extract-user-id")
+                .then()
+                .status(HttpStatus.BAD_REQUEST)
+                .apply(
+                    document(
+                        getNestedClassPath(this.getClass()) + "/{method-name}",
+                        requestPreprocessor(),
+                        responsePreprocessor(),
+                        requestHeaders(
+                            headerWithName(HttpHeaders.AUTHORIZATION).description("유효하지 않은 토큰")),
+                        responseFields(
+                            fieldWithPath("errorCode").description("에러 코드"),
+                            fieldWithPath("message").description("에러 메시지")),
+                        responseErrorFields(AuthErrorCode.INVALID_TOKEN)));
         response.body("errorCode", equalTo(AuthErrorCode.INVALID_TOKEN.getErrorCode()));
         verify(authService).extractUserIdFromToken(invalidToken);
       }
@@ -152,20 +142,19 @@ public class AuthControllerTest extends RestDocsTest {
       @Test
       @DisplayName("400 Bad Request 에러를 반환한다")
       void shouldReturnBadRequestError() {
-        var response = given()
-            .contentType(ContentType.JSON)
-            .when()
-            .post("/papi/v1/auth/extract-user-id")
-            .then()
-            .status(HttpStatus.BAD_REQUEST)
-            .apply(
-                document(
-                    getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    responseErrorFields(GlobalErrorCode.MISSING_HEADER)
-                )
-            );
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/papi/v1/auth/extract-user-id")
+                .then()
+                .status(HttpStatus.BAD_REQUEST)
+                .apply(
+                    document(
+                        getNestedClassPath(this.getClass()) + "/{method-name}",
+                        requestPreprocessor(),
+                        responsePreprocessor(),
+                        responseErrorFields(GlobalErrorCode.MISSING_HEADER)));
         response.body("errorCode", equalTo(GlobalErrorCode.MISSING_HEADER.getErrorCode()));
       }
     }
@@ -181,30 +170,29 @@ public class AuthControllerTest extends RestDocsTest {
         expiredToken = "expired.jwt.token";
 
         doThrow(new AuthException(AuthErrorCode.EXPIRED_TOKEN))
-            .when(authService).extractUserIdFromToken(expiredToken);
+            .when(authService)
+            .extractUserIdFromToken(expiredToken);
       }
 
       @Test
       @DisplayName("400 Bad Request 에러를 반환한다")
       void shouldReturnBadRequestError() {
-        var response = given()
-            .contentType(ContentType.JSON)
-            .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(expiredToken))
-            .when()
-            .post("/papi/v1/auth/extract-user-id")
-            .then()
-            .status(HttpStatus.BAD_REQUEST)
-            .apply(
-                document(
-                    RestDocsUtils.getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    requestHeaders(
-                        headerWithName(HttpHeaders.AUTHORIZATION).description("만료된 토큰")
-                    ),
-                    responseErrorFields(AuthErrorCode.EXPIRED_TOKEN)
-                )
-            );
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(expiredToken))
+                .when()
+                .post("/papi/v1/auth/extract-user-id")
+                .then()
+                .status(HttpStatus.BAD_REQUEST)
+                .apply(
+                    document(
+                        RestDocsUtils.getNestedClassPath(this.getClass()) + "/{method-name}",
+                        requestPreprocessor(),
+                        responsePreprocessor(),
+                        requestHeaders(
+                            headerWithName(HttpHeaders.AUTHORIZATION).description("만료된 토큰")),
+                        responseErrorFields(AuthErrorCode.EXPIRED_TOKEN)));
         response.body("errorCode", equalTo(AuthErrorCode.EXPIRED_TOKEN.getErrorCode()));
         verify(authService).extractUserIdFromToken(expiredToken);
       }
@@ -250,15 +238,11 @@ public class AuthControllerTest extends RestDocsTest {
                     requestPreprocessor(),
                     responsePreprocessor(),
                     requestFields(
-                        fieldWithPath("refresh_token").description(
-                            "기존 리프레시 토큰 (Bearer prefix 포함)")
-                    ),
+                        fieldWithPath("refresh_token")
+                            .description("기존 리프레시 토큰 (Bearer prefix 포함)")),
                     responseFields(
                         fieldWithPath("access_token").description("재발급된 액세스 토큰"),
-                        fieldWithPath("refresh_token").description("재발급된 리프레시 토큰")
-                    )
-                )
-            )
+                        fieldWithPath("refresh_token").description("재발급된 리프레시 토큰"))))
             .body("access_token", equalTo("Bearer " + tokens.accessToken()))
             .body("refresh_token", equalTo("Bearer " + tokens.refreshToken()));
       }

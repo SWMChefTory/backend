@@ -1,5 +1,8 @@
 package com.cheftory.api.account;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
 import com.cheftory.api.account.auth.AuthService;
 import com.cheftory.api.account.auth.model.AuthTokens;
 import com.cheftory.api.account.model.LoginResult;
@@ -7,18 +10,14 @@ import com.cheftory.api.account.user.UserService;
 import com.cheftory.api.account.user.entity.Gender;
 import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.account.user.entity.User;
+import java.time.LocalDate;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
@@ -68,12 +67,15 @@ class AccountServiceTest {
   void signupWithOAuth_shouldReturnLoginResult() {
     // given
     doReturn(providerSub).when(authService).extractProviderSubFromIdToken(idToken, provider);
-    doReturn(user).when(userService).create(nickname, gender, dob, provider, providerSub, true, true, false);
+    doReturn(user)
+        .when(userService)
+        .create(nickname, gender, dob, provider, providerSub, true, true, false);
     doReturn(authTokens).when(authService).createAuthToken(userId);
     doNothing().when(authService).saveLoginSession(userId, authTokens.refreshToken());
 
     // when
-    LoginResult result = accountService.signupWithOAuth(idToken, provider, nickname, gender, dob, true, true, false);
+    LoginResult result =
+        accountService.signupWithOAuth(idToken, provider, nickname, gender, dob, true, true, false);
 
     // then
     assertThat(result.accessToken()).isEqualTo("access-token");

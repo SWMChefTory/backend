@@ -2,9 +2,8 @@ package com.cheftory.api.voicecommand.enums;
 
 import com.cheftory.api.voicecommand.exception.VoiceCommandErrorCode;
 import com.cheftory.api.voicecommand.exception.VoiceCommandHistoryException;
-import lombok.Getter;
-
 import java.util.Arrays;
+import lombok.Getter;
 
 @Getter
 public enum STTModel {
@@ -22,7 +21,9 @@ public enum STTModel {
     return Arrays.stream(values())
         .filter(model -> model.value.equals(value))
         .findFirst()
-        .orElseThrow(() -> new VoiceCommandHistoryException(
-            VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL));
+        .orElseThrow(
+            () ->
+                new VoiceCommandHistoryException(
+                    VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL));
   }
 }

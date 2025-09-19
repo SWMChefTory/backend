@@ -1,11 +1,10 @@
 package com.cheftory.api.account.auth.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Getter
@@ -42,8 +41,8 @@ public class Login {
   @Column(name = "user_id", nullable = false)
   private UUID userId;
 
-  public static Login create(UUID userId, String refreshToken,
-      LocalDateTime refreshTokenExpiredAt) {
+  public static Login create(
+      UUID userId, String refreshToken, LocalDateTime refreshTokenExpiredAt) {
     return Login.builder()
         .refreshToken(refreshToken)
         .refreshTokenExpiredAt(refreshTokenExpiredAt)

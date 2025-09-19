@@ -19,7 +19,6 @@ public class SecurityConfig {
   private final JwtAuthenticationEntryPoint entryPoint;
   private final JwtAuthenticationFilter filter;
 
-
   public SecurityConfig(JwtAuthenticationEntryPoint entryPoint, JwtAuthenticationFilter filter) {
     this.entryPoint = entryPoint;
     this.filter = filter;
@@ -27,23 +26,23 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+    http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(AbstractHttpConfigurer::disable)
-        .sessionManagement(sm ->
-            sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/papi/v1/**").permitAll()
-            .requestMatchers("/api/v1/account/**").permitAll()
-            .requestMatchers("/api/v1/auth/**").permitAll()
-            .requestMatchers("/docs/**").permitAll()
-            .anyRequest().authenticated()
-        )
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/papi/v1/**")
+                    .permitAll()
+                    .requestMatchers("/api/v1/account/**")
+                    .permitAll()
+                    .requestMatchers("/api/v1/auth/**")
+                    .permitAll()
+                    .requestMatchers("/docs/**")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .addFilterBefore(filter, BasicAuthenticationFilter.class)
-        .exceptionHandling(ex -> ex
-            .authenticationEntryPoint(entryPoint)
-        );
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint));
 
     return http.build();
   }
@@ -53,18 +52,12 @@ public class SecurityConfig {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOriginPatterns(List.of("*"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(List.of(
-        "Authorization",
-        "Content-Type",
-        "Accept",
-        "Origin",
-        "X-Requested-With"
-    ));
+    config.setAllowedHeaders(
+        List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
     config.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);
     return source;
   }
-  
 }
