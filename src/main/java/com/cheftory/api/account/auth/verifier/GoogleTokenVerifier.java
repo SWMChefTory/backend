@@ -4,15 +4,14 @@ import com.cheftory.api.account.auth.verifier.exception.VerificationErrorCode;
 import com.cheftory.api.account.auth.verifier.exception.VerificationException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 @Slf4j
@@ -34,23 +33,20 @@ public class GoogleTokenVerifier {
 
   private JsonNode getPayload(String idToken) {
     try {
-      URI uri = UriComponentsBuilder
-          .fromUriString("https://oauth2.googleapis.com/tokeninfo")
-          .queryParam("id_token", idToken)
-          .build()
-          .toUri();
+      URI uri =
+          UriComponentsBuilder.fromUriString("https://oauth2.googleapis.com/tokeninfo")
+              .queryParam("id_token", idToken)
+              .build()
+              .toUri();
 
-      HttpRequest request = HttpRequest.newBuilder()
-          .uri(uri)
-          .GET()
-          .build();
+      HttpRequest request = HttpRequest.newBuilder().uri(uri).GET().build();
 
       HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
       int status = response.statusCode();
       if (status < 200 || status >= 300) {
-        log.error("[GoogleTokenVerifier] 응답 실패 - statusCode: {}, body: {}", status,
-            response.body());
+        log.error(
+            "[GoogleTokenVerifier] 응답 실패 - statusCode: {}, body: {}", status, response.body());
         throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
       }
 

@@ -2,10 +2,9 @@ package com.cheftory.api.account.user.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.*;
 
 @Entity
 @Getter
@@ -15,8 +14,7 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 public class User {
 
-  @Id
-  private UUID id;
+  @Id private UUID id;
 
   @Column(nullable = false, length = 20)
   private String nickname;
@@ -59,8 +57,7 @@ public class User {
       LocalDate dateOfBirth,
       Provider provider,
       String providerSub,
-      boolean isMarketingAgreed
-  ) {
+      boolean isMarketingAgreed) {
     return User.builder()
         .id(UUID.randomUUID())
         .nickname(nickname)

@@ -1,20 +1,18 @@
 package com.cheftory.api.account;
 
-import com.cheftory.api.account.auth.model.AuthTokens;
 import com.cheftory.api.account.auth.AuthService;
+import com.cheftory.api.account.auth.model.AuthTokens;
 import com.cheftory.api.account.model.LoginResult;
 import com.cheftory.api.account.model.UserInfo;
-import com.cheftory.api.account.user.entity.Gender;
 import com.cheftory.api.account.user.UserService;
+import com.cheftory.api.account.user.entity.Gender;
 import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.account.user.entity.User;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -41,9 +39,7 @@ public class AccountService {
             user.getDateOfBirth(),
             user.getTermsOfUseAgreedAt(),
             user.getPrivacyAgreedAt(),
-            user.getMarketingAgreedAt()
-        )
-    );
+            user.getMarketingAgreedAt()));
   }
 
   public LoginResult signupWithOAuth(
@@ -54,10 +50,18 @@ public class AccountService {
       LocalDate dateOfBirth,
       boolean isTermsOfUseAgreed,
       boolean isPrivacyPolicyAgreed,
-      boolean isMarketingAgreed
-  ) {
+      boolean isMarketingAgreed) {
     String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
-    User user = userService.create(nickname, gender, dateOfBirth, provider, providerSub, isTermsOfUseAgreed, isPrivacyPolicyAgreed, isMarketingAgreed);
+    User user =
+        userService.create(
+            nickname,
+            gender,
+            dateOfBirth,
+            provider,
+            providerSub,
+            isTermsOfUseAgreed,
+            isPrivacyPolicyAgreed,
+            isMarketingAgreed);
 
     AuthTokens authTokens = authService.createAuthToken(user.getId());
     authService.saveLoginSession(user.getId(), authTokens.refreshToken());
@@ -71,9 +75,7 @@ public class AccountService {
             user.getDateOfBirth(),
             user.getTermsOfUseAgreedAt(),
             user.getPrivacyAgreedAt(),
-            user.getMarketingAgreedAt()
-        )
-    );
+            user.getMarketingAgreedAt()));
   }
 
   public void logout(String refreshToken) {

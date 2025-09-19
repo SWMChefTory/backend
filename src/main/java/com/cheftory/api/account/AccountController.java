@@ -5,7 +5,6 @@ import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
 import com.cheftory.api.account.dto.*;
 import com.cheftory.api.account.model.LoginResult;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,16 +29,16 @@ public class AccountController {
 
   @PostMapping("/signup/oauth")
   public LoginResponse signupWithOAuth(@RequestBody SignupRequest request) {
-    LoginResult result = accountService.signupWithOAuth(
-        request.idToken(),
-        request.provider(),
-        request.nickname(),
-        request.gender(),
-        request.dateOfBirth(),
-        request.isTermsOfUseAgreed(),
-        request.isPrivacyAgreed(),
-        request.isMarketingAgreed()
-    );
+    LoginResult result =
+        accountService.signupWithOAuth(
+            request.idToken(),
+            request.provider(),
+            request.nickname(),
+            request.gender(),
+            request.dateOfBirth(),
+            request.isTermsOfUseAgreed(),
+            request.isPrivacyAgreed(),
+            request.isMarketingAgreed());
     return LoginResponse.from(result);
   }
 
@@ -53,10 +52,5 @@ public class AccountController {
   public SuccessOnlyResponse delete(@RequestBody LogoutRequest request) {
     accountService.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
     return SuccessOnlyResponse.create();
-  }
-
-  @GetMapping("/error")
-  public void getError(@UserPrincipal UUID userId) {
-    throw new RuntimeException("error");
   }
 }

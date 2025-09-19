@@ -1,13 +1,12 @@
 package com.cheftory.api.account.auth.jwt.property;
 
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import javax.crypto.SecretKey;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 
 @Component
 @ConfigurationProperties(prefix = "jwt")

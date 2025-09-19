@@ -60,17 +60,22 @@ public class VoiceCommandHistoryServiceTest {
         @Test
         @DisplayName("Then - 올바른 파라미터로 Repository의 save가 호출되어야 한다")
         public void thenShouldCallRepositorySaveWithCorrectParameters() {
-          voiceCommandHistoryService.create(baseIntent, intent, userId, sttModel, intentModel, start, end);
+          voiceCommandHistoryService.create(
+              baseIntent, intent, userId, sttModel, intentModel, start, end);
 
-          verify(voiceCommandHistoryRepository).save(argThat(voiceCommand ->
-              voiceCommand.getTranscribe().equals(baseIntent) &&
-                  voiceCommand.getResult().equals(intent) &&
-                  voiceCommand.getUserId().equals(userId) &&
-                  voiceCommand.getSttModel().equals(STTModel.fromValue(sttModel)) &&
-                  voiceCommand.getIntentModel().equals(IntentModel.fromValue(intentModel))&&
-                  voiceCommand.getStart().equals(start)&&
-                  voiceCommand.getEnd().equals(end)
-          ));
+          verify(voiceCommandHistoryRepository)
+              .save(
+                  argThat(
+                      voiceCommand ->
+                          voiceCommand.getTranscribe().equals(baseIntent)
+                              && voiceCommand.getResult().equals(intent)
+                              && voiceCommand.getUserId().equals(userId)
+                              && voiceCommand.getSttModel().equals(STTModel.fromValue(sttModel))
+                              && voiceCommand
+                                  .getIntentModel()
+                                  .equals(IntentModel.fromValue(intentModel))
+                              && voiceCommand.getStart().equals(start)
+                              && voiceCommand.getEnd().equals(end)));
         }
       }
     }
@@ -105,8 +110,10 @@ public class VoiceCommandHistoryServiceTest {
         @Test
         @DisplayName("Then - 예외가 발생해야 한다")
         public void thenShouldThrowException() {
-          assertThatThrownBy(() ->
-              voiceCommandHistoryService.create(baseIntent, intent, userId, invalidSttModel, intentModel, start, end))
+          assertThatThrownBy(
+                  () ->
+                      voiceCommandHistoryService.create(
+                          baseIntent, intent, userId, invalidSttModel, intentModel, start, end))
               .isInstanceOf(VoiceCommandHistoryException.class);
         }
       }
@@ -142,8 +149,10 @@ public class VoiceCommandHistoryServiceTest {
         @Test
         @DisplayName("Then - 예외가 발생해야 한다")
         public void thenShouldThrowException() {
-          assertThatThrownBy(() ->
-              voiceCommandHistoryService.create(baseIntent, intent, userId, sttModel, invalidIntentModel,start, end ))
+          assertThatThrownBy(
+                  () ->
+                      voiceCommandHistoryService.create(
+                          baseIntent, intent, userId, sttModel, invalidIntentModel, start, end))
               .isInstanceOf(VoiceCommandHistoryException.class);
         }
       }

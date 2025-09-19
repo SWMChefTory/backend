@@ -6,14 +6,12 @@ import java.util.List;
 
 public interface ErrorMessage {
   String getErrorCode();
+
   String getMessage();
 
-
   static ErrorMessage resolveErrorCode(String codeName) {
-    List<Class<? extends Enum<?>>> enums = List.of(
-        UserErrorCode.class,
-        VoiceCommandErrorCode.class
-    );
+    List<Class<? extends Enum<?>>> enums =
+        List.of(UserErrorCode.class, VoiceCommandErrorCode.class);
 
     for (Class<? extends Enum<?>> enumClass : enums) {
       for (Enum<?> e : enumClass.getEnumConstants()) {

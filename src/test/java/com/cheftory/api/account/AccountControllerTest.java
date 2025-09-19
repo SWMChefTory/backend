@@ -9,7 +9,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
@@ -19,22 +18,20 @@ import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.exception.AuthException;
 import com.cheftory.api.account.dto.LoginRequest;
 import com.cheftory.api.account.dto.LogoutRequest;
-import com.cheftory.api.account.dto.SignupRequest;
 import com.cheftory.api.account.model.LoginResult;
 import com.cheftory.api.account.model.UserInfo;
+import com.cheftory.api.account.user.entity.Gender;
+import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.account.user.exception.UserErrorCode;
 import com.cheftory.api.account.user.exception.UserException;
 import com.cheftory.api.exception.GlobalErrorCode;
 import com.cheftory.api.exception.GlobalExceptionHandler;
-import com.cheftory.api.account.user.entity.Gender;
-import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -48,7 +45,6 @@ public class AccountControllerTest extends RestDocsTest {
   private AccountService accountService;
   private GlobalExceptionHandler globalExceptionHandler;
 
-  private final UUID fixedUserId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
   private final LocalDate validDateOfBirth = LocalDate.of(2000, 1, 1);
   private final LocalDateTime validTermsOfUseAgreedAt = LocalDateTime.of(2023, 1, 1, 0, 0);
   private final LocalDateTime validPrivacyAgreedAt = LocalDateTime.of(2023, 1, 1, 0, 0);
@@ -59,9 +55,7 @@ public class AccountControllerTest extends RestDocsTest {
     accountService = mock(AccountService.class);
     controller = new AccountController(accountService);
     globalExceptionHandler = new GlobalExceptionHandler();
-    mockMvc = mockMvcBuilder(controller)
-        .withAdvice(globalExceptionHandler)
-        .build();
+    mockMvc = mockMvcBuilder(controller).withAdvice(globalExceptionHandler).build();
   }
 
   @Nested
@@ -79,18 +73,17 @@ public class AccountControllerTest extends RestDocsTest {
       void setUp() {
         validIdToken = "valid-id-token";
         provider = Provider.APPLE;
-        LoginResult loginResult = new LoginResult(
-            "access-token",
-            "refresh-token",
-            new UserInfo(
-                "nickname",
-                Gender.MALE,
-                validDateOfBirth,
-                validTermsOfUseAgreedAt,
-                validPrivacyAgreedAt,
-                validMarketingAgreedAt
-            )
-        );
+        LoginResult loginResult =
+            new LoginResult(
+                "access-token",
+                "refresh-token",
+                new UserInfo(
+                    "nickname",
+                    Gender.MALE,
+                    validDateOfBirth,
+                    validTermsOfUseAgreedAt,
+                    validPrivacyAgreedAt,
+                    validMarketingAgreedAt));
 
         doReturn(loginResult).when(accountService).loginWithOAuth(validIdToken, provider);
       }
@@ -98,35 +91,37 @@ public class AccountControllerTest extends RestDocsTest {
       @Test
       @DisplayName("성공 - 액세스 토큰, 리프레시 토큰, 사용자 정보를 반환한다")
       void shouldLoginWithOAuth() {
-        var response = given()
-            .contentType(ContentType.JSON)
-            .body(new LoginRequest(validIdToken, provider))
-            .when()
-            .post("/api/v1/account/login/oauth")
-            .then()
-            .status(HttpStatus.OK)
-            .apply(
-                document(
-                    getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    requestFields(
-                        fieldWithPath("id_token").description("OAUTH ID 토큰"),
-                        fieldWithPath("provider").description("OAUTH 제공자(GOOGLE, APPLE, KAKAO)")
-                    ),
-                    responseFields(
-                        fieldWithPath("access_token").description("액세스 토큰"),
-                        fieldWithPath("refresh_token").description("리프레시 토큰"),
-                        fieldWithPath("user_info.nickname").description("닉네임"),
-                        fieldWithPath("user_info.gender").description("성별"),
-                        fieldWithPath("user_info.date_of_birth").description("생년월일"),
-                        fieldWithPath("user_info.terms_of_use_agreed_at").description("약관 동의 일시"),
-                        fieldWithPath("user_info.privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                        fieldWithPath("user_info.marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
-                    )
-                )
-            );
-        response.body("access_token", equalTo("Bearer access-token"))
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .body(new LoginRequest(validIdToken, provider))
+                .when()
+                .post("/api/v1/account/login/oauth")
+                .then()
+                .status(HttpStatus.OK)
+                .apply(
+                    document(
+                        getNestedClassPath(this.getClass()) + "/{method-name}",
+                        requestPreprocessor(),
+                        responsePreprocessor(),
+                        requestFields(
+                            fieldWithPath("id_token").description("OAUTH ID 토큰"),
+                            fieldWithPath("provider")
+                                .description("OAUTH 제공자(GOOGLE, APPLE, KAKAO)")),
+                        responseFields(
+                            fieldWithPath("access_token").description("액세스 토큰"),
+                            fieldWithPath("refresh_token").description("리프레시 토큰"),
+                            fieldWithPath("user_info.nickname").description("닉네임"),
+                            fieldWithPath("user_info.gender").description("성별"),
+                            fieldWithPath("user_info.date_of_birth").description("생년월일"),
+                            fieldWithPath("user_info.terms_of_use_agreed_at")
+                                .description("약관 동의 일시"),
+                            fieldWithPath("user_info.privacy_agreed_at")
+                                .description("개인정보 처리방침 동의 일시"),
+                            fieldWithPath("user_info.marketing_agreed_at")
+                                .description("마케팅 정보 수신 동의 일시"))));
+        response
+            .body("access_token", equalTo("Bearer access-token"))
             .body("refresh_token", equalTo("Bearer refresh-token"))
             .body("user_info.nickname", equalTo("nickname"))
             .body("user_info.gender", equalTo(Gender.MALE.name()))
@@ -156,21 +151,20 @@ public class AccountControllerTest extends RestDocsTest {
       @Test
       @DisplayName("실패 - INVALID_ID_TOKEN 예외를 던지고, AUTH_006 코드를 반환한다")
       void shouldReturnBadRequestError() {
-        var response = given()
-            .contentType(ContentType.JSON)
-            .body(new LoginRequest(invalidIdToken, provider))
-            .when()
-            .post("/api/v1/account/login/oauth")
-            .then()
-            .status(HttpStatus.BAD_REQUEST)
-            .apply(
-                document(
-                    getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    responseErrorFields(AuthErrorCode.INVALID_ID_TOKEN)
-                )
-            );
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .body(new LoginRequest(invalidIdToken, provider))
+                .when()
+                .post("/api/v1/account/login/oauth")
+                .then()
+                .status(HttpStatus.BAD_REQUEST)
+                .apply(
+                    document(
+                        getNestedClassPath(this.getClass()) + "/{method-name}",
+                        requestPreprocessor(),
+                        responsePreprocessor(),
+                        responseErrorFields(AuthErrorCode.INVALID_ID_TOKEN)));
         response.body("errorCode", equalTo(AuthErrorCode.INVALID_ID_TOKEN.getErrorCode()));
       }
     }
@@ -195,21 +189,20 @@ public class AccountControllerTest extends RestDocsTest {
       @Test
       @DisplayName("실패 - USER_NOT_FOUND 예외를 던지고, AUTH_004 코드를 반환한다")
       void shouldReturnUserNotFoundError() {
-        var response = given()
-            .contentType(ContentType.JSON)
-            .body(new LoginRequest(idToken, provider))
-            .when()
-            .post("/api/v1/account/login/oauth")
-            .then()
-            .status(HttpStatus.BAD_REQUEST)
-            .apply(
-                document(
-                    getNestedClassPath(this.getClass()) + "/{method-name}",
-                    requestPreprocessor(),
-                    responsePreprocessor(),
-                    responseErrorFields(UserErrorCode.USER_NOT_FOUND)
-                )
-            );
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .body(new LoginRequest(idToken, provider))
+                .when()
+                .post("/api/v1/account/login/oauth")
+                .then()
+                .status(HttpStatus.BAD_REQUEST)
+                .apply(
+                    document(
+                        getNestedClassPath(this.getClass()) + "/{method-name}",
+                        requestPreprocessor(),
+                        responsePreprocessor(),
+                        responseErrorFields(UserErrorCode.USER_NOT_FOUND)));
         response.body("errorCode", equalTo(UserErrorCode.USER_NOT_FOUND.getErrorCode()));
       }
     }
@@ -228,7 +221,6 @@ public class AccountControllerTest extends RestDocsTest {
       private String nickname;
       private Gender gender;
 
-
       @BeforeEach
       void setUp() {
         validToken = "valid-id-token";
@@ -236,21 +228,22 @@ public class AccountControllerTest extends RestDocsTest {
         nickname = "cheftory";
         gender = Gender.FEMALE;
 
-        LoginResult loginResult = new LoginResult(
-            "access-token",
-            "refresh-token",
-            new UserInfo(
-                nickname,
-                gender,
-                validDateOfBirth,
-                validTermsOfUseAgreedAt,
-                validPrivacyAgreedAt,
-                validMarketingAgreedAt
-            )
-        );
+        LoginResult loginResult =
+            new LoginResult(
+                "access-token",
+                "refresh-token",
+                new UserInfo(
+                    nickname,
+                    gender,
+                    validDateOfBirth,
+                    validTermsOfUseAgreedAt,
+                    validPrivacyAgreedAt,
+                    validMarketingAgreedAt));
 
-        doReturn(loginResult).when(accountService)
-            .signupWithOAuth(validToken, provider, nickname, gender, validDateOfBirth, true, true, true);
+        doReturn(loginResult)
+            .when(accountService)
+            .signupWithOAuth(
+                validToken, provider, nickname, gender, validDateOfBirth, true, true, true);
       }
 
       @Test
@@ -266,40 +259,44 @@ public class AccountControllerTest extends RestDocsTest {
         request.put("is_privacy_agreed", true);
         request.put("is_marketing_agreed", true);
 
-        var response = given()
-            .contentType(ContentType.JSON)
-            .body(request)
-            .when()
-            .post("/api/v1/account/signup/oauth")
-            .then()
-            .status(HttpStatus.OK)
-            .apply(document(
-                getNestedClassPath(this.getClass()) + "/{method-name}",
-                requestPreprocessor(),
-                responsePreprocessor(),
-                requestFields(
-                    fieldWithPath("id_token").description("OAUTH ID 토큰"),
-                    fieldWithPath("provider").description("OAUTH 제공자(GOOGLE, APPLE, KAKAO)"),
-                    fieldWithPath("nickname").description("닉네임"),
-                    fieldWithPath("gender").description("성별"),
-                    fieldWithPath("date_of_birth").description("생년월일"),
-                    fieldWithPath("is_terms_of_use_agreed").description("약관 동의 여부"),
-                    fieldWithPath("is_privacy_agreed").description("개인정보 처리방침 동의 여부"),
-                    fieldWithPath("is_marketing_agreed").description("마케팅 정보 수신 동의 여부")
-                ),
-                responseFields(
-                    fieldWithPath("access_token").description("액세스 토큰"),
-                    fieldWithPath("refresh_token").description("리프레시 토큰"),
-                    fieldWithPath("user_info.nickname").description("닉네임"),
-                    fieldWithPath("user_info.gender").description("성별"),
-                    fieldWithPath("user_info.date_of_birth").description("생년월일"),
-                    fieldWithPath("user_info.terms_of_use_agreed_at").description("약관 동의 일시"),
-                    fieldWithPath("user_info.privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                    fieldWithPath("user_info.marketing_agreed_at").description("마케팅 정보 수신 동의 일시")
-                )
-            ));
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when()
+                .post("/api/v1/account/signup/oauth")
+                .then()
+                .status(HttpStatus.OK)
+                .apply(
+                    document(
+                        getNestedClassPath(this.getClass()) + "/{method-name}",
+                        requestPreprocessor(),
+                        responsePreprocessor(),
+                        requestFields(
+                            fieldWithPath("id_token").description("OAUTH ID 토큰"),
+                            fieldWithPath("provider")
+                                .description("OAUTH 제공자(GOOGLE, APPLE, KAKAO)"),
+                            fieldWithPath("nickname").description("닉네임"),
+                            fieldWithPath("gender").description("성별"),
+                            fieldWithPath("date_of_birth").description("생년월일"),
+                            fieldWithPath("is_terms_of_use_agreed").description("약관 동의 여부"),
+                            fieldWithPath("is_privacy_agreed").description("개인정보 처리방침 동의 여부"),
+                            fieldWithPath("is_marketing_agreed").description("마케팅 정보 수신 동의 여부")),
+                        responseFields(
+                            fieldWithPath("access_token").description("액세스 토큰"),
+                            fieldWithPath("refresh_token").description("리프레시 토큰"),
+                            fieldWithPath("user_info.nickname").description("닉네임"),
+                            fieldWithPath("user_info.gender").description("성별"),
+                            fieldWithPath("user_info.date_of_birth").description("생년월일"),
+                            fieldWithPath("user_info.terms_of_use_agreed_at")
+                                .description("약관 동의 일시"),
+                            fieldWithPath("user_info.privacy_agreed_at")
+                                .description("개인정보 처리방침 동의 일시"),
+                            fieldWithPath("user_info.marketing_agreed_at")
+                                .description("마케팅 정보 수신 동의 일시"))));
 
-        response.body("access_token", equalTo("Bearer access-token"))
+        response
+            .body("access_token", equalTo("Bearer access-token"))
             .body("refresh_token", equalTo("Bearer refresh-token"))
             .body("user_info.nickname", equalTo(nickname))
             .body("user_info.gender", equalTo(gender.name()))
@@ -331,9 +328,7 @@ public class AccountControllerTest extends RestDocsTest {
                     getNestedClassPath(this.getClass()) + "/{method-name}",
                     requestPreprocessor(),
                     responsePreprocessor(),
-                    responseErrorFields(GlobalErrorCode.FIELD_REQUIRED)
-                )
-            );
+                    responseErrorFields(GlobalErrorCode.FIELD_REQUIRED)));
       }
     }
   }
@@ -354,26 +349,23 @@ public class AccountControllerTest extends RestDocsTest {
     void shouldLogoutSuccessfully() {
       var request = new LogoutRequest(refreshToken);
 
-      var response = given()
-          .contentType(ContentType.JSON)
-          .body(request)
-          .when()
-          .post("/api/v1/account/logout")
-          .then()
-          .status(HttpStatus.OK)
-          .apply(
-              document(
-                  getNestedClassPath(this.getClass()) + "/{method-name}",
-                  requestPreprocessor(),
-                  responsePreprocessor(),
-                  requestFields(
-                      fieldWithPath("refresh_token").description("로그아웃할 리프레시 토큰 (Bearer prefix 포함)")
-                  ),
-                  responseFields(
-                      fieldWithPath("message").description("성공 메시지")
-                  )
-              )
-          );
+      var response =
+          given()
+              .contentType(ContentType.JSON)
+              .body(request)
+              .when()
+              .post("/api/v1/account/logout")
+              .then()
+              .status(HttpStatus.OK)
+              .apply(
+                  document(
+                      getNestedClassPath(this.getClass()) + "/{method-name}",
+                      requestPreprocessor(),
+                      responsePreprocessor(),
+                      requestFields(
+                          fieldWithPath("refresh_token")
+                              .description("로그아웃할 리프레시 토큰 (Bearer prefix 포함)")),
+                      responseFields(fieldWithPath("message").description("성공 메시지"))));
 
       assertSuccessResponse(response);
       verify(accountService).logout("refresh-token");
@@ -396,26 +388,23 @@ public class AccountControllerTest extends RestDocsTest {
     void shouldDeleteAccountSuccessfully() {
       var request = new LogoutRequest(refreshToken);
 
-      var response = given()
-          .contentType(ContentType.JSON)
-          .body(request)
-          .when()
-          .delete("/api/v1/account")
-          .then()
-          .status(HttpStatus.OK)
-          .apply(
-              document(
-                  getNestedClassPath(this.getClass()) + "/{method-name}",
-                  requestPreprocessor(),
-                  responsePreprocessor(),
-                  requestFields(
-                      fieldWithPath("refresh_token").description("회원 탈퇴 요청의 리프레시 토큰 (Bearer prefix 포함)")
-                  ),
-                  responseFields(
-                      fieldWithPath("message").description("성공 메시지")
-                  )
-              )
-          );
+      var response =
+          given()
+              .contentType(ContentType.JSON)
+              .body(request)
+              .when()
+              .delete("/api/v1/account")
+              .then()
+              .status(HttpStatus.OK)
+              .apply(
+                  document(
+                      getNestedClassPath(this.getClass()) + "/{method-name}",
+                      requestPreprocessor(),
+                      responsePreprocessor(),
+                      requestFields(
+                          fieldWithPath("refresh_token")
+                              .description("회원 탈퇴 요청의 리프레시 토큰 (Bearer prefix 포함)")),
+                      responseFields(fieldWithPath("message").description("성공 메시지"))));
 
       assertSuccessResponse(response);
       verify(accountService).delete("refresh-token");

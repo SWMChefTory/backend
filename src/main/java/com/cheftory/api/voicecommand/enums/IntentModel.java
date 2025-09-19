@@ -21,7 +21,9 @@ public enum IntentModel {
     return Arrays.stream(values())
         .filter(model -> model.value.equals(value))
         .findFirst()
-        .orElseThrow(() -> new VoiceCommandHistoryException(
-            VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL));
+        .orElseThrow(
+            () ->
+                new VoiceCommandHistoryException(
+                    VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL));
   }
 }

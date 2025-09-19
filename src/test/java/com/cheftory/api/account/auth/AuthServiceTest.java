@@ -1,6 +1,9 @@
 package com.cheftory.api.account.auth;
 
-import com.cheftory.api.account.auth.AuthService;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
 import com.cheftory.api.account.auth.entity.Login;
 import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.exception.AuthException;
@@ -10,18 +13,13 @@ import com.cheftory.api.account.auth.repository.LoginRepository;
 import com.cheftory.api.account.auth.verifier.AppleTokenVerifier;
 import com.cheftory.api.account.auth.verifier.GoogleTokenVerifier;
 import com.cheftory.api.account.user.entity.Provider;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -30,8 +28,7 @@ class AuthServiceTest {
   @Mock AppleTokenVerifier appleVerifier;
   @Mock TokenProvider jwtProvider;
   @Mock LoginRepository loginRepository;
-  @InjectMocks
-  AuthService authService;
+  @InjectMocks AuthService authService;
 
   private final String idToken = "dummy-id-token";
   private final String refreshToken = "refresh-token";
@@ -61,23 +58,22 @@ class AuthServiceTest {
   void extractProviderSubFromIdToken_withInvalidToken_shouldThrow() {
     doThrow(RuntimeException.class).when(googleVerifier).getSubFromToken(idToken);
 
-    AuthException ex = assertThrows(AuthException.class, () ->
-        authService.extractProviderSubFromIdToken(idToken, Provider.GOOGLE)
-    );
+    AuthException ex =
+        assertThrows(
+            AuthException.class,
+            () -> authService.extractProviderSubFromIdToken(idToken, Provider.GOOGLE));
 
     assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
   }
-
 
   @Test
   void extractProviderSubFromIdToken_withUnsupportedProvider_shouldThrow() {
-    AuthException ex = assertThrows(AuthException.class, () ->
-        authService.extractProviderSubFromIdToken(idToken, null)
-    );
+    AuthException ex =
+        assertThrows(
+            AuthException.class, () -> authService.extractProviderSubFromIdToken(idToken, null));
 
     assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
   }
-
 
   @Test
   void createAuthToken_shouldReturnTokens() {
@@ -114,10 +110,10 @@ class AuthServiceTest {
     doReturn(userId).when(jwtProvider).getUserIdFromToken(refreshToken);
     doReturn(accessToken).when(jwtProvider).createAccessToken(userId);
     doReturn(newRefreshToken).when(jwtProvider).createRefreshToken(userId);
-    doReturn(Optional.of(existingLogin)).when(loginRepository)
+    doReturn(Optional.of(existingLogin))
+        .when(loginRepository)
         .findByUserIdAndRefreshToken(userId, refreshToken);
-    doReturn(LocalDateTime.now().plusDays(7))
-        .when(jwtProvider).getExpiration(newRefreshToken);
+    doReturn(LocalDateTime.now().plusDays(7)).when(jwtProvider).getExpiration(newRefreshToken);
 
     AuthTokens result = authService.reissue(refreshToken);
 
@@ -135,11 +131,11 @@ class AuthServiceTest {
     assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
   }
 
-
   @Test
   void deleteRefreshToken_shouldDeleteLogin() {
     Login login = Login.create(userId, refreshToken, LocalDateTime.now());
-    doReturn(Optional.of(login)).when(loginRepository)
+    doReturn(Optional.of(login))
+        .when(loginRepository)
         .findByUserIdAndRefreshToken(userId, refreshToken);
 
     authService.deleteRefreshToken(userId, refreshToken);
@@ -149,14 +145,14 @@ class AuthServiceTest {
 
   @Test
   void deleteRefreshToken_shouldThrowWhenNotFound() {
-    doReturn(Optional.empty()).when(loginRepository)
+    doReturn(Optional.empty())
+        .when(loginRepository)
         .findByUserIdAndRefreshToken(userId, refreshToken);
 
-    AuthException ex = assertThrows(AuthException.class, () ->
-        authService.deleteRefreshToken(userId, refreshToken)
-    );
+    AuthException ex =
+        assertThrows(
+            AuthException.class, () -> authService.deleteRefreshToken(userId, refreshToken));
 
     assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
   }
-
 }

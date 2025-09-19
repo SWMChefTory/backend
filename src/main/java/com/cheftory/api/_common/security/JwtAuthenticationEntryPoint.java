@@ -14,8 +14,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
   private final HandlerExceptionResolver resolver;
 
   public JwtAuthenticationEntryPoint(
-      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver
-  ) {
+      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
     this.resolver = resolver;
   }
 

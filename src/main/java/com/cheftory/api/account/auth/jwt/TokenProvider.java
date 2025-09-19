@@ -6,14 +6,13 @@ import com.cheftory.api.account.auth.jwt.property.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -24,18 +23,12 @@ public class TokenProvider {
 
   public String createAccessToken(UUID userId) {
     return createToken(
-        userId,
-        jwtProperties.getAccessTokenExpiration(),
-        jwtProperties.getAccessTokenType()
-    );
+        userId, jwtProperties.getAccessTokenExpiration(), jwtProperties.getAccessTokenType());
   }
 
   public String createRefreshToken(UUID userId) {
     return createToken(
-        userId,
-        jwtProperties.getRefreshTokenExpiration(),
-        jwtProperties.getRefreshTokenType()
-    );
+        userId, jwtProperties.getRefreshTokenExpiration(), jwtProperties.getRefreshTokenType());
   }
 
   private String createToken(UUID userId, long expirySeconds, String type) {
@@ -53,11 +46,12 @@ public class TokenProvider {
 
   public UUID getUserIdFromToken(String token) {
     try {
-      Claims claims = Jwts.parserBuilder()
-          .setSigningKey(jwtProperties.getSecretKey())
-          .build()
-          .parseClaimsJws(token)
-          .getBody();
+      Claims claims =
+          Jwts.parserBuilder()
+              .setSigningKey(jwtProperties.getSecretKey())
+              .build()
+              .parseClaimsJws(token)
+              .getBody();
 
       if (claims.getExpiration().before(new Date())) {
         throw new AuthException(AuthErrorCode.EXPIRED_TOKEN);
@@ -71,10 +65,7 @@ public class TokenProvider {
 
   public boolean isRefreshToken(String token) {
     try {
-      JwtParser parser = Jwts
-          .parserBuilder()
-          .setSigningKey(jwtProperties.getSecretKey())
-          .build();
+      JwtParser parser = Jwts.parserBuilder().setSigningKey(jwtProperties.getSecretKey()).build();
 
       Claims claims = parser.parseClaimsJws(token).getBody();
       String tokenType = claims.get("type", String.class);
@@ -87,17 +78,16 @@ public class TokenProvider {
 
   public LocalDateTime getExpiration(String token) {
     try {
-      Claims claims = Jwts.parserBuilder()
-          .setSigningKey(jwtProperties.getSecretKey())
-          .build()
-          .parseClaimsJws(token)
-          .getBody();
+      Claims claims =
+          Jwts.parserBuilder()
+              .setSigningKey(jwtProperties.getSecretKey())
+              .build()
+              .parseClaimsJws(token)
+              .getBody();
 
       Date expiration = claims.getExpiration();
 
-      return expiration.toInstant()
-          .atZone(ZoneId.systemDefault())
-          .toLocalDateTime();
+      return expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
     } catch (Exception e) {
       throw new AuthException(AuthErrorCode.INVALID_TOKEN);
