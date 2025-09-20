@@ -100,7 +100,8 @@ public class RecipeCaptionServiceTest {
         recipeId = UUID.randomUUID();
 
         doThrow(new CaptionClientException(CaptionClientErrorCode.NOT_COOK_VIDEO))
-            .when(captionClient).fetchCaption(videoId);
+            .when(captionClient)
+            .fetchCaption(videoId);
       }
 
       @Nested
@@ -132,7 +133,8 @@ public class RecipeCaptionServiceTest {
         recipeId = UUID.randomUUID();
 
         doThrow(new CaptionClientException(CaptionClientErrorCode.SERVER_ERROR))
-            .when(captionClient).fetchCaption(videoId);
+            .when(captionClient)
+            .fetchCaption(videoId);
       }
 
       @Nested
@@ -144,7 +146,8 @@ public class RecipeCaptionServiceTest {
         void thenThrowsCaptionCreateFailException() {
           assertThatThrownBy(() -> recipeCaptionService.create(videoId, recipeId))
               .isInstanceOf(RecipeCaptionException.class)
-              .hasFieldOrPropertyWithValue("errorMessage", RecipeCaptionErrorCode.CAPTION_CREATE_FAIL);
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", RecipeCaptionErrorCode.CAPTION_CREATE_FAIL);
 
           verify(captionClient).fetchCaption(videoId);
         }
@@ -167,7 +170,8 @@ public class RecipeCaptionServiceTest {
         recipeId = UUID.randomUUID();
         expectedCaption = mock(RecipeCaption.class);
         doReturn(Optional.of(expectedCaption))
-            .when(recipeCaptionRepository).findByRecipeId(recipeId);
+            .when(recipeCaptionRepository)
+            .findByRecipeId(recipeId);
       }
 
       @Test
@@ -259,9 +263,10 @@ public class RecipeCaptionServiceTest {
       // given
       UUID recipeId = UUID.randomUUID();
       Clock mockClock = mock(Clock.class);
-      
+
       // JSON으로부터 ClientCaptionResponse 생성
-      String jsonResponse = """
+      String jsonResponse =
+          """
           {
             "lang_code": "ko",
             "captions": [
@@ -278,9 +283,11 @@ public class RecipeCaptionServiceTest {
             ]
           }
           """;
-      
-      com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      ClientCaptionResponse clientResponse = objectMapper.readValue(jsonResponse, ClientCaptionResponse.class);
+
+      com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+          new com.fasterxml.jackson.databind.ObjectMapper();
+      ClientCaptionResponse clientResponse =
+          objectMapper.readValue(jsonResponse, ClientCaptionResponse.class);
 
       // when
       RecipeCaption result = clientResponse.toRecipeCaption(recipeId, mockClock);
@@ -304,16 +311,19 @@ public class RecipeCaptionServiceTest {
       // given
       UUID recipeId = UUID.randomUUID();
       Clock mockClock = mock(Clock.class);
-      
-      String jsonResponse = """
+
+      String jsonResponse =
+          """
           {
             "lang_code": "en",
             "captions": []
           }
           """;
-      
-      com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      ClientCaptionResponse clientResponse = objectMapper.readValue(jsonResponse, ClientCaptionResponse.class);
+
+      com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+          new com.fasterxml.jackson.databind.ObjectMapper();
+      ClientCaptionResponse clientResponse =
+          objectMapper.readValue(jsonResponse, ClientCaptionResponse.class);
 
       // when
       RecipeCaption result = clientResponse.toRecipeCaption(recipeId, mockClock);
@@ -331,8 +341,9 @@ public class RecipeCaptionServiceTest {
       // given
       UUID recipeId = UUID.randomUUID();
       Clock mockClock = mock(Clock.class);
-      
-      String jsonResponse = """
+
+      String jsonResponse =
+          """
           {
             "lang_code": "en",
             "captions": [
@@ -344,9 +355,11 @@ public class RecipeCaptionServiceTest {
             ]
           }
           """;
-      
-      com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      ClientCaptionResponse clientResponse = objectMapper.readValue(jsonResponse, ClientCaptionResponse.class);
+
+      com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+          new com.fasterxml.jackson.databind.ObjectMapper();
+      ClientCaptionResponse clientResponse =
+          objectMapper.readValue(jsonResponse, ClientCaptionResponse.class);
 
       // when
       RecipeCaption result = clientResponse.toRecipeCaption(recipeId, mockClock);

@@ -93,15 +93,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
     @DisplayName("Then - 레시피 생성 요청을 성공적으로 처리해야 한다")
     void thenShouldCreateRecipeSuccessfully() {
       var recipeId = UUID.randomUUID();
-      var requestBody = """
+      var requestBody =
+          """
           {
             "video_url": "https://www.youtube.com/watch?v=example"
           }
           """;
 
-      doReturn(recipeId)
-          .when(recipeInfoService)
-          .create(any(URI.class), any(UUID.class));
+      doReturn(recipeId).when(recipeInfoService).create(any(URI.class), any(UUID.class));
 
       var response =
           given()
@@ -118,17 +117,11 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                       requestPreprocessor(),
                       responsePreprocessor(),
                       requestAccessTokenFields(),
-                      requestFields(
-                          fieldWithPath("video_url").description("레시피 비디오 URL")
-                      ),
-                      responseFields(
-                          fieldWithPath("recipe_id").description("생성된 레시피 ID"
-                      )
-                  )
-              )
-          );
+                      requestFields(fieldWithPath("video_url").description("레시피 비디오 URL")),
+                      responseFields(fieldWithPath("recipe_id").description("생성된 레시피 ID"))));
 
-      verify(recipeInfoService).create(URI.create("https://www.youtube.com/watch?v=example"), userId);
+      verify(recipeInfoService)
+          .create(URI.create("https://www.youtube.com/watch?v=example"), userId);
 
       var responseBody = response.extract().jsonPath();
       assertThat(responseBody.getUUID("recipe_id")).isEqualTo(recipeId);

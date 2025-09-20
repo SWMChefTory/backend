@@ -184,19 +184,15 @@ public class RecipeDetailServiceTest {
     @DisplayName("ClientRecipeDetailResponse.toRecipeDetail() - 정상 변환")
     void shouldConvertToRecipeDetailCorrectly() {
       // given
-      List<ClientRecipeDetailResponse.Ingredient> ingredients = List.of(
-          new ClientRecipeDetailResponse.Ingredient("김치", 200, "g"),
-          new ClientRecipeDetailResponse.Ingredient("돼지고기", 150, "g"),
-          new ClientRecipeDetailResponse.Ingredient("두부", 1, "모")
-      );
-      
-      ClientRecipeDetailResponse clientResponse = new ClientRecipeDetailResponse(
-          "맛있는 김치찌개 만들기",
-          ingredients,
-          List.of("한식", "찌개", "김치"),
-          2,
-          30
-      );
+      List<ClientRecipeDetailResponse.Ingredient> ingredients =
+          List.of(
+              new ClientRecipeDetailResponse.Ingredient("김치", 200, "g"),
+              new ClientRecipeDetailResponse.Ingredient("돼지고기", 150, "g"),
+              new ClientRecipeDetailResponse.Ingredient("두부", 1, "모"));
+
+      ClientRecipeDetailResponse clientResponse =
+          new ClientRecipeDetailResponse(
+              "맛있는 김치찌개 만들기", ingredients, List.of("한식", "찌개", "김치"), 2, 30);
 
       // when
       RecipeDetail result = clientResponse.toRecipeDetail();
@@ -219,13 +215,8 @@ public class RecipeDetailServiceTest {
     @DisplayName("ClientRecipeDetailResponse.toRecipeDetail() - 빈 재료 목록")
     void shouldConvertWithEmptyIngredients() {
       // given
-      ClientRecipeDetailResponse clientResponse = new ClientRecipeDetailResponse(
-          "간단한 레시피",
-          List.of(),
-          List.of("간단"),
-          1,
-          5
-      );
+      ClientRecipeDetailResponse clientResponse =
+          new ClientRecipeDetailResponse("간단한 레시피", List.of(), List.of("간단"), 1, 5);
 
       // when
       RecipeDetail result = clientResponse.toRecipeDetail();
@@ -243,32 +234,31 @@ public class RecipeDetailServiceTest {
     @DisplayName("ClientRecipeDetailResponse.toRecipeDetail() - null 재료 처리는 예외 발생")
     void shouldThrowExceptionWithNullIngredients() {
       // given
-      ClientRecipeDetailResponse clientResponse = new ClientRecipeDetailResponse(
-          "테스트 설명",
-          null,  // null ingredients는 NullPointerException 발생
-          List.of("테스트"),
-          1,
-          5
-      );
+      ClientRecipeDetailResponse clientResponse =
+          new ClientRecipeDetailResponse(
+              "테스트 설명",
+              null, // null ingredients는 NullPointerException 발생
+              List.of("테스트"),
+              1,
+              5);
 
       // when & then
       org.junit.jupiter.api.Assertions.assertThrows(
-          NullPointerException.class, 
-          () -> clientResponse.toRecipeDetail()
-      );
+          NullPointerException.class, () -> clientResponse.toRecipeDetail());
     }
 
     @Test
     @DisplayName("ClientRecipeDetailResponse.toRecipeDetail() - null이 아닌 필드들 정상 처리")
     void shouldHandlePartialNullValues() {
       // given
-      ClientRecipeDetailResponse clientResponse = new ClientRecipeDetailResponse(
-          null,  // description은 null 허용
-          List.of(),  // 빈 리스트는 허용
-          null,  // tags는 null 허용
-          null,  // servings는 null 허용
-          null   // cookTime은 null 허용
-      );
+      ClientRecipeDetailResponse clientResponse =
+          new ClientRecipeDetailResponse(
+              null, // description은 null 허용
+              List.of(), // 빈 리스트는 허용
+              null, // tags는 null 허용
+              null, // servings는 null 허용
+              null // cookTime은 null 허용
+              );
 
       // when
       RecipeDetail result = clientResponse.toRecipeDetail();

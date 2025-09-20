@@ -243,9 +243,9 @@ public class RecipeRepositoryTest extends DbContextTest {
       Recipe failedRecipe = Recipe.create();
       failedRecipe.failed();
 
-      savedRecipes = recipeRepository.saveAll(List.of(
-          successRecipe1, successRecipe2, inProgressRecipe, failedRecipe
-      ));
+      savedRecipes =
+          recipeRepository.saveAll(
+              List.of(successRecipe1, successRecipe2, inProgressRecipe, failedRecipe));
 
       recipeIds = savedRecipes.stream().map(Recipe::getId).toList();
     }
@@ -262,8 +262,8 @@ public class RecipeRepositoryTest extends DbContextTest {
 
         @BeforeEach
         void setUp() {
-          notFailedRecipes = recipeRepository.findRecipesByIdInAndRecipeStatusNot(
-              recipeIds, RecipeStatus.FAILED);
+          notFailedRecipes =
+              recipeRepository.findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED);
         }
 
         @DisplayName("Then - 실패 상태가 아닌 레시피들만 반환된다")
@@ -271,18 +271,21 @@ public class RecipeRepositoryTest extends DbContextTest {
         void thenReturnsRecipesNotFailed() {
           assertThat(notFailedRecipes).hasSize(3);
 
-          notFailedRecipes.forEach(recipe -> {
-            assertThat(recipe.getRecipeStatus()).isNotEqualTo(RecipeStatus.FAILED);
-            assertThat(recipe.isFailed()).isFalse();
-          });
+          notFailedRecipes.forEach(
+              recipe -> {
+                assertThat(recipe.getRecipeStatus()).isNotEqualTo(RecipeStatus.FAILED);
+                assertThat(recipe.isFailed()).isFalse();
+              });
 
           // 성공 상태와 진행 중 상태만 포함되어야 함
-          long successCount = notFailedRecipes.stream()
-              .filter(recipe -> recipe.getRecipeStatus() == RecipeStatus.SUCCESS)
-              .count();
-          long inProgressCount = notFailedRecipes.stream()
-              .filter(recipe -> recipe.getRecipeStatus() == RecipeStatus.IN_PROGRESS)
-              .count();
+          long successCount =
+              notFailedRecipes.stream()
+                  .filter(recipe -> recipe.getRecipeStatus() == RecipeStatus.SUCCESS)
+                  .count();
+          long inProgressCount =
+              notFailedRecipes.stream()
+                  .filter(recipe -> recipe.getRecipeStatus() == RecipeStatus.IN_PROGRESS)
+                  .count();
 
           assertThat(successCount).isEqualTo(2);
           assertThat(inProgressCount).isEqualTo(1);
@@ -297,8 +300,9 @@ public class RecipeRepositoryTest extends DbContextTest {
 
         @BeforeEach
         void setUp() {
-          notInProgressRecipes = recipeRepository.findRecipesByIdInAndRecipeStatusNot(
-              recipeIds, RecipeStatus.IN_PROGRESS);
+          notInProgressRecipes =
+              recipeRepository.findRecipesByIdInAndRecipeStatusNot(
+                  recipeIds, RecipeStatus.IN_PROGRESS);
         }
 
         @DisplayName("Then - 진행 중 상태가 아닌 레시피들만 반환된다")
@@ -306,17 +310,20 @@ public class RecipeRepositoryTest extends DbContextTest {
         void thenReturnsRecipesNotInProgress() {
           assertThat(notInProgressRecipes).hasSize(3);
 
-          notInProgressRecipes.forEach(recipe -> {
-            assertThat(recipe.getRecipeStatus()).isNotEqualTo(RecipeStatus.IN_PROGRESS);
-          });
+          notInProgressRecipes.forEach(
+              recipe -> {
+                assertThat(recipe.getRecipeStatus()).isNotEqualTo(RecipeStatus.IN_PROGRESS);
+              });
 
           // 성공 상태와 실패 상태만 포함되어야 함
-          long successCount = notInProgressRecipes.stream()
-              .filter(recipe -> recipe.getRecipeStatus() == RecipeStatus.SUCCESS)
-              .count();
-          long failedCount = notInProgressRecipes.stream()
-              .filter(recipe -> recipe.getRecipeStatus() == RecipeStatus.FAILED)
-              .count();
+          long successCount =
+              notInProgressRecipes.stream()
+                  .filter(recipe -> recipe.getRecipeStatus() == RecipeStatus.SUCCESS)
+                  .count();
+          long failedCount =
+              notInProgressRecipes.stream()
+                  .filter(recipe -> recipe.getRecipeStatus() == RecipeStatus.FAILED)
+                  .count();
 
           assertThat(successCount).isEqualTo(2);
           assertThat(failedCount).isEqualTo(1);
@@ -336,8 +343,8 @@ public class RecipeRepositoryTest extends DbContextTest {
 
         @BeforeEach
         void setUp() {
-          recipes = recipeRepository.findRecipesByIdInAndRecipeStatusNot(
-              List.of(), RecipeStatus.FAILED);
+          recipes =
+              recipeRepository.findRecipesByIdInAndRecipeStatusNot(List.of(), RecipeStatus.FAILED);
         }
 
         @DisplayName("Then - 빈 목록이 반환된다")
@@ -392,12 +399,15 @@ public class RecipeRepositoryTest extends DbContextTest {
           assertThat(foundRecipeIds).containsExactlyInAnyOrderElementsOf(savedRecipeIds);
 
           // 각 상태가 모두 포함되는지 확인
-          boolean hasInProgress = foundRecipes.stream()
-              .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.IN_PROGRESS);
-          boolean hasSuccess = foundRecipes.stream()
-              .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.SUCCESS);
-          boolean hasFailed = foundRecipes.stream()
-              .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.FAILED);
+          boolean hasInProgress =
+              foundRecipes.stream()
+                  .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.IN_PROGRESS);
+          boolean hasSuccess =
+              foundRecipes.stream()
+                  .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.SUCCESS);
+          boolean hasFailed =
+              foundRecipes.stream()
+                  .anyMatch(recipe -> recipe.getRecipeStatus() == RecipeStatus.FAILED);
 
           assertThat(hasInProgress).isTrue();
           assertThat(hasSuccess).isTrue();
@@ -415,12 +425,9 @@ public class RecipeRepositoryTest extends DbContextTest {
       @BeforeEach
       void setUp() {
         // 저장된 ID 2개 + 존재하지 않는 ID 2개
-        mixedIds = List.of(
-            savedRecipeIds.get(0),
-            savedRecipeIds.get(1),
-            UUID.randomUUID(),
-            UUID.randomUUID()
-        );
+        mixedIds =
+            List.of(
+                savedRecipeIds.get(0), savedRecipeIds.get(1), UUID.randomUUID(), UUID.randomUUID());
       }
 
       @Nested
@@ -440,8 +447,8 @@ public class RecipeRepositoryTest extends DbContextTest {
           assertThat(foundRecipes).hasSize(2);
 
           List<UUID> foundRecipeIds = foundRecipes.stream().map(Recipe::getId).toList();
-          assertThat(foundRecipeIds).containsExactlyInAnyOrder(
-              savedRecipeIds.get(0), savedRecipeIds.get(1));
+          assertThat(foundRecipeIds)
+              .containsExactlyInAnyOrder(savedRecipeIds.get(0), savedRecipeIds.get(1));
         }
       }
     }
@@ -495,11 +502,17 @@ public class RecipeRepositoryTest extends DbContextTest {
       Recipe failedRecipe2 = Recipe.create();
       failedRecipe2.failed();
 
-      recipeRepository.saveAll(List.of(
-          successRecipe1, successRecipe2, successRecipe3, successRecipe4, successRecipe5,
-          inProgressRecipe1, inProgressRecipe2,
-          failedRecipe1, failedRecipe2
-      ));
+      recipeRepository.saveAll(
+          List.of(
+              successRecipe1,
+              successRecipe2,
+              successRecipe3,
+              successRecipe4,
+              successRecipe5,
+              inProgressRecipe1,
+              inProgressRecipe2,
+              failedRecipe1,
+              failedRecipe2));
 
       recipeRepository.increaseCount(successRecipe1.getId());
       recipeRepository.increaseCount(successRecipe1.getId());
@@ -524,11 +537,14 @@ public class RecipeRepositoryTest extends DbContextTest {
           assertThat(result.getContent()).isNotEmpty();
           assertThat(result.isFirst()).isTrue();
 
-          result.getContent().forEach(recipe -> {
-            assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
-            assertThat(recipe.isSuccess()).isTrue();
-            assertThat(recipe.isFailed()).isFalse();
-          });
+          result
+              .getContent()
+              .forEach(
+                  recipe -> {
+                    assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
+                    assertThat(recipe.isSuccess()).isTrue();
+                    assertThat(recipe.isFailed()).isFalse();
+                  });
         }
 
         @Test
@@ -564,15 +580,19 @@ public class RecipeRepositoryTest extends DbContextTest {
         void thenReturnsOnlyInProgressRecipes() {
           Pageable pageable = PageRequest.of(0, 10);
 
-          Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.IN_PROGRESS, pageable);
+          Page<Recipe> result =
+              recipeRepository.findByRecipeStatus(RecipeStatus.IN_PROGRESS, pageable);
 
           assertThat(result.getContent()).isNotEmpty();
 
-          result.getContent().forEach(recipe -> {
-            assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
-            assertThat(recipe.isSuccess()).isFalse();
-            assertThat(recipe.isFailed()).isFalse();
-          });
+          result
+              .getContent()
+              .forEach(
+                  recipe -> {
+                    assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
+                    assertThat(recipe.isSuccess()).isFalse();
+                    assertThat(recipe.isFailed()).isFalse();
+                  });
         }
       }
 
@@ -589,11 +609,14 @@ public class RecipeRepositoryTest extends DbContextTest {
 
           assertThat(result.getContent()).isNotEmpty();
 
-          result.getContent().forEach(recipe -> {
-            assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.FAILED);
-            assertThat(recipe.isSuccess()).isFalse();
-            assertThat(recipe.isFailed()).isTrue();
-          });
+          result
+              .getContent()
+              .forEach(
+                  recipe -> {
+                    assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.FAILED);
+                    assertThat(recipe.isSuccess()).isFalse();
+                    assertThat(recipe.isFailed()).isTrue();
+                  });
         }
       }
     }
@@ -628,27 +651,21 @@ public class RecipeRepositoryTest extends DbContextTest {
       @DisplayName("When - 페이지 크기 0으로 조회하면 Then - IllegalArgumentException이 발생한다")
       void whenFindWithZeroPageSize_thenThrowsIllegalArgumentException() {
         org.junit.jupiter.api.Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> PageRequest.of(0, 0)
-        );
+            IllegalArgumentException.class, () -> PageRequest.of(0, 0));
       }
 
       @Test
       @DisplayName("When - 음수 페이지 크기로 조회하면 Then - IllegalArgumentException이 발생한다")
       void whenFindWithNegativePageSize_thenThrowsIllegalArgumentException() {
         org.junit.jupiter.api.Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> PageRequest.of(0, -1)
-        );
+            IllegalArgumentException.class, () -> PageRequest.of(0, -1));
       }
 
       @Test
       @DisplayName("When - 음수 페이지 번호로 조회하면 Then - IllegalArgumentException이 발생한다")
       void whenFindWithNegativePageNumber_thenThrowsIllegalArgumentException() {
         org.junit.jupiter.api.Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> PageRequest.of(-1, 10)
-        );
+            IllegalArgumentException.class, () -> PageRequest.of(-1, 10));
       }
 
       @Test
@@ -678,13 +695,13 @@ public class RecipeRepositoryTest extends DbContextTest {
 
         assertThat(result.getContent()).isNotEmpty();
         assertThat(result.getSize()).isEqualTo(10);
-        
+
         List<Recipe> recipes = result.getContent();
         for (int i = 0; i < recipes.size() - 1; i++) {
           assertThat(recipes.get(i).getViewCount())
               .isGreaterThanOrEqualTo(recipes.get(i + 1).getViewCount());
         }
-        
+
         assertThat(recipes.get(0).getViewCount()).isGreaterThanOrEqualTo(2);
       }
 
@@ -698,10 +715,13 @@ public class RecipeRepositoryTest extends DbContextTest {
         assertThat(result.getNumber()).isEqualTo(1);
         assertThat(result.getSize()).isEqualTo(10);
         assertThat(result.isFirst()).isFalse();
-        
-        result.getContent().forEach(recipe -> {
-          assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
-        });
+
+        result
+            .getContent()
+            .forEach(
+                recipe -> {
+                  assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
+                });
       }
 
       @Test
@@ -709,15 +729,19 @@ public class RecipeRepositoryTest extends DbContextTest {
       void whenFindInProgressWithRecipePageRequest_thenReturnsOnlyInProgress() {
         Pageable pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
 
-        Page<Recipe> result = recipeRepository.findByRecipeStatus(RecipeStatus.IN_PROGRESS, pageable);
+        Page<Recipe> result =
+            recipeRepository.findByRecipeStatus(RecipeStatus.IN_PROGRESS, pageable);
 
         assertThat(result.getContent()).isNotEmpty();
         assertThat(result.getSize()).isEqualTo(10);
-        
-        result.getContent().forEach(recipe -> {
-          assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
-        });
-        
+
+        result
+            .getContent()
+            .forEach(
+                recipe -> {
+                  assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
+                });
+
         List<Recipe> recipes = result.getContent();
         for (int i = 0; i < recipes.size() - 1; i++) {
           assertThat(recipes.get(i).getViewCount())

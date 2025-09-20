@@ -44,9 +44,7 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
     controller = new RecipeCaptionController(recipeCaptionService);
     exceptionHandler = new GlobalExceptionHandler();
 
-    mockMvc = mockMvcBuilder(controller)
-        .withAdvice(exceptionHandler)
-        .build();
+    mockMvc = mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
   }
 
   @Nested
@@ -75,28 +73,28 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           recipeCaption = mock(RecipeCaption.class);
 
           // 한국어 자막 세그먼트 생성
-          List<RecipeCaption.Segment> segments = List.of(
-              RecipeCaption.Segment.builder()
-                  .text("안녕하세요, 오늘은 김치찌개를 만들어보겠습니다")
-                  .start(0.0)
-                  .end(3.5)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("먼저 김치 200그램을 준비해주세요")
-                  .start(3.5)
-                  .end(7.0)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("돼지고기 150그램도 함께 준비합니다")
-                  .start(7.0)
-                  .end(10.5)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("팬에 기름을 두르고 김치를 볶아주세요")
-                  .start(10.5)
-                  .end(14.0)
-                  .build()
-          );
+          List<RecipeCaption.Segment> segments =
+              List.of(
+                  RecipeCaption.Segment.builder()
+                      .text("안녕하세요, 오늘은 김치찌개를 만들어보겠습니다")
+                      .start(0.0)
+                      .end(3.5)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("먼저 김치 200그램을 준비해주세요")
+                      .start(3.5)
+                      .end(7.0)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("돼지고기 150그램도 함께 준비합니다")
+                      .start(7.0)
+                      .end(10.5)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("팬에 기름을 두르고 김치를 볶아주세요")
+                      .start(10.5)
+                      .end(14.0)
+                      .build());
 
           doReturn(segments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.ko).when(recipeCaption).getLangCode();
@@ -106,61 +104,56 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
         @Test
         @DisplayName("Then - 한국어 자막을 성공적으로 반환해야 한다")
         void thenShouldReturnKoreanCaption() {
-          var response = given()
-              .contentType(ContentType.JSON)
-              .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
-              .then()
-              .status(HttpStatus.OK)
-              .body("captions", hasSize(4))
-              .apply(document(
-                  getNestedClassPath(this.getClass()) + "/{method-name}",
-                  requestPreprocessor(),
-                  responsePreprocessor(),
-                  pathParameters(
-                      parameterWithName("recipeId").description("조회할 레시피 ID")
-                  ),
-                  responseFields(
-                      fieldWithPath("lang_code").description("자막 언어 코드 (ko: 한국어, en: 영어)"),
-                      fieldWithPath("captions").description("자막 세그먼트 목록"),
-                      fieldWithPath("captions[].start").description("자막 시작 시간(초)"),
-                      fieldWithPath("captions[].end").description("자막 종료 시간(초)"),
-                      fieldWithPath("captions[].text").description("자막 텍스트")
-                  )
-              ));
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("captions", hasSize(4))
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          pathParameters(parameterWithName("recipeId").description("조회할 레시피 ID")),
+                          responseFields(
+                              fieldWithPath("lang_code").description("자막 언어 코드 (ko: 한국어, en: 영어)"),
+                              fieldWithPath("captions").description("자막 세그먼트 목록"),
+                              fieldWithPath("captions[].start").description("자막 시작 시간(초)"),
+                              fieldWithPath("captions[].end").description("자막 종료 시간(초)"),
+                              fieldWithPath("captions[].text").description("자막 텍스트"))));
 
           verify(recipeCaptionService).findByRecipeId(recipeId);
 
           var responseBody = response.extract().jsonPath();
-          
+
           // 언어 코드 검증
           assertThat(responseBody.getString("lang_code")).isEqualTo("ko");
-          
+
           // 자막 세그먼트 수 검증
           assertThat(responseBody.getList("captions")).hasSize(4);
-          
+
           // 첫 번째 세그먼트 검증
           assertThat(responseBody.getDouble("captions[0].start")).isEqualTo(0.0);
           assertThat(responseBody.getDouble("captions[0].end")).isEqualTo(3.5);
           assertThat(responseBody.getString("captions[0].text"))
               .isEqualTo("안녕하세요, 오늘은 김치찌개를 만들어보겠습니다");
-          
+
           // 두 번째 세그먼트 검증
           assertThat(responseBody.getDouble("captions[1].start")).isEqualTo(3.5);
           assertThat(responseBody.getDouble("captions[1].end")).isEqualTo(7.0);
-          assertThat(responseBody.getString("captions[1].text"))
-              .isEqualTo("먼저 김치 200그램을 준비해주세요");
-          
+          assertThat(responseBody.getString("captions[1].text")).isEqualTo("먼저 김치 200그램을 준비해주세요");
+
           // 세 번째 세그먼트 검증
           assertThat(responseBody.getDouble("captions[2].start")).isEqualTo(7.0);
           assertThat(responseBody.getDouble("captions[2].end")).isEqualTo(10.5);
-          assertThat(responseBody.getString("captions[2].text"))
-              .isEqualTo("돼지고기 150그램도 함께 준비합니다");
-          
+          assertThat(responseBody.getString("captions[2].text")).isEqualTo("돼지고기 150그램도 함께 준비합니다");
+
           // 네 번째 세그먼트 검증
           assertThat(responseBody.getDouble("captions[3].start")).isEqualTo(10.5);
           assertThat(responseBody.getDouble("captions[3].end")).isEqualTo(14.0);
-          assertThat(responseBody.getString("captions[3].text"))
-              .isEqualTo("팬에 기름을 두르고 김치를 볶아주세요");
+          assertThat(responseBody.getString("captions[3].text")).isEqualTo("팬에 기름을 두르고 김치를 볶아주세요");
         }
       }
 
@@ -175,23 +168,23 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           recipeCaption = mock(RecipeCaption.class);
 
           // 영어 자막 세그먼트 생성
-          List<RecipeCaption.Segment> segments = List.of(
-              RecipeCaption.Segment.builder()
-                  .text("Hello, today we're going to make kimchi stew")
-                  .start(0.0)
-                  .end(4.0)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("First, prepare 200 grams of kimchi")
-                  .start(4.0)
-                  .end(7.5)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("Also prepare 150 grams of pork")
-                  .start(7.5)
-                  .end(10.0)
-                  .build()
-          );
+          List<RecipeCaption.Segment> segments =
+              List.of(
+                  RecipeCaption.Segment.builder()
+                      .text("Hello, today we're going to make kimchi stew")
+                      .start(0.0)
+                      .end(4.0)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("First, prepare 200 grams of kimchi")
+                      .start(4.0)
+                      .end(7.5)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("Also prepare 150 grams of pork")
+                      .start(7.5)
+                      .end(10.0)
+                      .build());
 
           doReturn(segments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.en).when(recipeCaption).getLangCode();
@@ -201,23 +194,24 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
         @Test
         @DisplayName("Then - 영어 자막을 성공적으로 반환해야 한다")
         void thenShouldReturnEnglishCaption() {
-          var response = given()
-              .contentType(ContentType.JSON)
-              .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
-              .then()
-              .status(HttpStatus.OK)
-              .body("captions", hasSize(3));
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("captions", hasSize(3));
 
           verify(recipeCaptionService).findByRecipeId(recipeId);
 
           var responseBody = response.extract().jsonPath();
-          
+
           // 언어 코드 검증
           assertThat(responseBody.getString("lang_code")).isEqualTo("en");
-          
+
           // 자막 세그먼트 수 검증
           assertThat(responseBody.getList("captions")).hasSize(3);
-          
+
           // 영어 텍스트 검증
           assertThat(responseBody.getString("captions[0].text"))
               .isEqualTo("Hello, today we're going to make kimchi stew");
@@ -239,13 +233,9 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           recipeCaption = mock(RecipeCaption.class);
 
           // 단일 세그먼트
-          List<RecipeCaption.Segment> segments = List.of(
-              RecipeCaption.Segment.builder()
-                  .text("간단한 요리 설명입니다")
-                  .start(0.0)
-                  .end(5.0)
-                  .build()
-          );
+          List<RecipeCaption.Segment> segments =
+              List.of(
+                  RecipeCaption.Segment.builder().text("간단한 요리 설명입니다").start(0.0).end(5.0).build());
 
           doReturn(segments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.ko).when(recipeCaption).getLangCode();
@@ -255,17 +245,18 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
         @Test
         @DisplayName("Then - 단일 자막 세그먼트를 성공적으로 반환해야 한다")
         void thenShouldReturnSingleSegmentCaption() {
-          var response = given()
-              .contentType(ContentType.JSON)
-              .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
-              .then()
-              .status(HttpStatus.OK)
-              .body("captions", hasSize(1));
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("captions", hasSize(1));
 
           verify(recipeCaptionService).findByRecipeId(recipeId);
 
           var responseBody = response.extract().jsonPath();
-          
+
           assertThat(responseBody.getString("lang_code")).isEqualTo("ko");
           assertThat(responseBody.getList("captions")).hasSize(1);
           assertThat(responseBody.getDouble("captions[0].start")).isEqualTo(0.0);
@@ -293,7 +284,8 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
         @BeforeEach
         void setUp() {
           doThrow(new RecipeCaptionException(RecipeCaptionErrorCode.CAPTION_NOT_FOUND))
-              .when(recipeCaptionService).findByRecipeId(any(UUID.class));
+              .when(recipeCaptionService)
+              .findByRecipeId(any(UUID.class));
         }
 
         @Test
@@ -332,52 +324,52 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           recipeCaption = mock(RecipeCaption.class);
 
           // 복잡한 요리 과정의 자막 세그먼트들
-          List<RecipeCaption.Segment> segments = List.of(
-              // 인트로
-              RecipeCaption.Segment.builder()
-                  .text("오늘은 전통 한식인 불고기를 만들어보겠습니다")
-                  .start(0.0)
-                  .end(4.0)
-                  .build(),
-              // 재료 소개
-              RecipeCaption.Segment.builder()
-                  .text("소고기 400그램, 양파 1개, 당근 반개를 준비해주세요")
-                  .start(4.0)
-                  .end(8.5)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("간장 3큰술, 설탕 1큰술, 참기름 1큰술도 필요합니다")
-                  .start(8.5)
-                  .end(13.0)
-                  .build(),
-              // 조리 과정
-              RecipeCaption.Segment.builder()
-                  .text("먼저 소고기를 얇게 썰어서 양념에 재워주세요")
-                  .start(13.0)
-                  .end(17.5)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("양파와 당근도 적당한 크기로 썰어줍니다")
-                  .start(17.5)
-                  .end(21.0)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("팬에 고기를 넣고 중불에서 볶아주세요")
-                  .start(21.0)
-                  .end(25.0)
-                  .build(),
-              RecipeCaption.Segment.builder()
-                  .text("고기가 익으면 야채를 넣고 함께 볶습니다")
-                  .start(25.0)
-                  .end(29.0)
-                  .build(),
-              // 마무리
-              RecipeCaption.Segment.builder()
-                  .text("마지막으로 참기름을 뿌리고 접시에 담아내면 완성입니다")
-                  .start(29.0)
-                  .end(33.5)
-                  .build()
-          );
+          List<RecipeCaption.Segment> segments =
+              List.of(
+                  // 인트로
+                  RecipeCaption.Segment.builder()
+                      .text("오늘은 전통 한식인 불고기를 만들어보겠습니다")
+                      .start(0.0)
+                      .end(4.0)
+                      .build(),
+                  // 재료 소개
+                  RecipeCaption.Segment.builder()
+                      .text("소고기 400그램, 양파 1개, 당근 반개를 준비해주세요")
+                      .start(4.0)
+                      .end(8.5)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("간장 3큰술, 설탕 1큰술, 참기름 1큰술도 필요합니다")
+                      .start(8.5)
+                      .end(13.0)
+                      .build(),
+                  // 조리 과정
+                  RecipeCaption.Segment.builder()
+                      .text("먼저 소고기를 얇게 썰어서 양념에 재워주세요")
+                      .start(13.0)
+                      .end(17.5)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("양파와 당근도 적당한 크기로 썰어줍니다")
+                      .start(17.5)
+                      .end(21.0)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("팬에 고기를 넣고 중불에서 볶아주세요")
+                      .start(21.0)
+                      .end(25.0)
+                      .build(),
+                  RecipeCaption.Segment.builder()
+                      .text("고기가 익으면 야채를 넣고 함께 볶습니다")
+                      .start(25.0)
+                      .end(29.0)
+                      .build(),
+                  // 마무리
+                  RecipeCaption.Segment.builder()
+                      .text("마지막으로 참기름을 뿌리고 접시에 담아내면 완성입니다")
+                      .start(29.0)
+                      .end(33.5)
+                      .build());
 
           doReturn(segments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.ko).when(recipeCaption).getLangCode();
@@ -387,37 +379,34 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
         @Test
         @DisplayName("Then - 모든 복잡한 자막 세그먼트들을 성공적으로 반환해야 한다")
         void thenShouldReturnAllComplexCaptionSegments() {
-          var response = given()
-              .contentType(ContentType.JSON)
-              .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
-              .then()
-              .status(HttpStatus.OK)
-              .body("captions", hasSize(8));
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("captions", hasSize(8));
 
           verify(recipeCaptionService).findByRecipeId(recipeId);
 
           var responseBody = response.extract().jsonPath();
-          
+
           // 전체 세그먼트 수 검증
           assertThat(responseBody.getList("captions")).hasSize(8);
           assertThat(responseBody.getString("lang_code")).isEqualTo("ko");
-          
+
           // 시간 순서 검증 (각 세그먼트가 이전 세그먼트 종료 시간과 연결되는지)
           assertThat(responseBody.getDouble("captions[0].start")).isEqualTo(0.0);
           assertThat(responseBody.getDouble("captions[0].end")).isEqualTo(4.0);
           assertThat(responseBody.getDouble("captions[1].start")).isEqualTo(4.0);
           assertThat(responseBody.getDouble("captions[1].end")).isEqualTo(8.5);
-          
+
           // 특정 단계별 텍스트 검증
-          assertThat(responseBody.getString("captions[0].text"))
-              .contains("불고기를 만들어보겠습니다");
-          assertThat(responseBody.getString("captions[1].text"))
-              .contains("소고기 400그램");
-          assertThat(responseBody.getString("captions[3].text"))
-              .contains("소고기를 얇게 썰어서");
-          assertThat(responseBody.getString("captions[7].text"))
-              .contains("완성입니다");
-          
+          assertThat(responseBody.getString("captions[0].text")).contains("불고기를 만들어보겠습니다");
+          assertThat(responseBody.getString("captions[1].text")).contains("소고기 400그램");
+          assertThat(responseBody.getString("captions[3].text")).contains("소고기를 얇게 썰어서");
+          assertThat(responseBody.getString("captions[7].text")).contains("완성입니다");
+
           // 마지막 세그먼트 시간 검증
           assertThat(responseBody.getDouble("captions[7].start")).isEqualTo(29.0);
           assertThat(responseBody.getDouble("captions[7].end")).isEqualTo(33.5);
@@ -457,17 +446,18 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
         @Test
         @DisplayName("Then - 빈 자막 목록을 반환해야 한다")
         void thenShouldReturnEmptyCaptionList() {
-          var response = given()
-              .contentType(ContentType.JSON)
-              .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
-              .then()
-              .status(HttpStatus.OK)
-              .body("captions", hasSize(0));
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/papi/v1/recipes/{recipeId}/caption", recipeId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("captions", hasSize(0));
 
           verify(recipeCaptionService).findByRecipeId(recipeId);
 
           var responseBody = response.extract().jsonPath();
-          
+
           assertThat(responseBody.getString("lang_code")).isEqualTo("ko");
           assertThat(responseBody.getList("captions")).isEmpty();
         }

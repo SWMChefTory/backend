@@ -106,7 +106,8 @@ public class RecipeDetailMetaServiceTest {
         servings = 1;
         description = "간단한 계란찜";
 
-        when(recipeDetailMetaRepository.save(any(RecipeDetailMeta.class))).thenReturn(mock(RecipeDetailMeta.class));
+        when(recipeDetailMetaRepository.save(any(RecipeDetailMeta.class)))
+            .thenReturn(mock(RecipeDetailMeta.class));
       }
 
       @Test
@@ -205,14 +206,13 @@ public class RecipeDetailMetaServiceTest {
         UUID recipeId3 = UUID.randomUUID();
         recipeIds = List.of(recipeId1, recipeId2, recipeId3);
 
-        expectedMetas = List.of(
-            createMockRecipeDetailMeta(recipeId1, 30, 2, "김치찌개"),
-            createMockRecipeDetailMeta(recipeId2, 15, 1, "계란찜"),
-            createMockRecipeDetailMeta(recipeId3, 45, 4, "불고기")
-        );
+        expectedMetas =
+            List.of(
+                createMockRecipeDetailMeta(recipeId1, 30, 2, "김치찌개"),
+                createMockRecipeDetailMeta(recipeId2, 15, 1, "계란찜"),
+                createMockRecipeDetailMeta(recipeId3, 45, 4, "불고기"));
 
-        when(recipeDetailMetaRepository.findAllByRecipeIdIn(recipeIds))
-            .thenReturn(expectedMetas);
+        when(recipeDetailMetaRepository.findAllByRecipeIdIn(recipeIds)).thenReturn(expectedMetas);
       }
 
       @Test
@@ -224,11 +224,14 @@ public class RecipeDetailMetaServiceTest {
         // then
         assertThat(result).hasSize(3);
         assertThat(result).containsExactlyElementsOf(expectedMetas);
-        assertThat(result).extracting(RecipeDetailMeta::getDescription)
+        assertThat(result)
+            .extracting(RecipeDetailMeta::getDescription)
             .containsExactlyInAnyOrder("김치찌개", "계란찜", "불고기");
-        assertThat(result).extracting(RecipeDetailMeta::getCookTime)
+        assertThat(result)
+            .extracting(RecipeDetailMeta::getCookTime)
             .containsExactlyInAnyOrder(30, 15, 45);
-        assertThat(result).extracting(RecipeDetailMeta::getServings)
+        assertThat(result)
+            .extracting(RecipeDetailMeta::getServings)
             .containsExactlyInAnyOrder(2, 1, 4);
 
         verify(recipeDetailMetaRepository).findAllByRecipeIdIn(recipeIds);
@@ -284,7 +287,8 @@ public class RecipeDetailMetaServiceTest {
     }
   }
 
-  private RecipeDetailMeta createMockRecipeDetailMeta(UUID recipeId, Integer cookTime, Integer servings, String description) {
+  private RecipeDetailMeta createMockRecipeDetailMeta(
+      UUID recipeId, Integer cookTime, Integer servings, String description) {
     RecipeDetailMeta meta = mock(RecipeDetailMeta.class);
     UUID metaId = UUID.randomUUID();
 

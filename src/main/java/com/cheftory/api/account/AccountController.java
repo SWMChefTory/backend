@@ -1,14 +1,11 @@
 package com.cheftory.api.account;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
-import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
 import com.cheftory.api.account.dto.*;
 import com.cheftory.api.account.model.LoginResult;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -136,8 +136,9 @@ public class RecipeStepServiceTest {
       // given
       UUID recipeId = UUID.randomUUID();
       Clock mockClock = mock(Clock.class);
-      
-      String jsonResponse = """
+
+      String jsonResponse =
+          """
           {
             "steps": [
               {
@@ -167,9 +168,11 @@ public class RecipeStepServiceTest {
             ]
           }
           """;
-      
-      com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      ClientRecipeStepsResponse clientResponse = objectMapper.readValue(jsonResponse, ClientRecipeStepsResponse.class);
+
+      com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+          new com.fasterxml.jackson.databind.ObjectMapper();
+      ClientRecipeStepsResponse clientResponse =
+          objectMapper.readValue(jsonResponse, ClientRecipeStepsResponse.class);
 
       // when
       List<RecipeStep> result = clientResponse.toRecipeSteps(recipeId, mockClock);
@@ -177,7 +180,7 @@ public class RecipeStepServiceTest {
       // then
       assertThat(result).isNotNull();
       assertThat(result).hasSize(2);
-      
+
       // 첫 번째 단계 검증
       RecipeStep firstStep = result.get(0);
       assertThat(firstStep.getStepOrder()).isEqualTo(1);
@@ -189,7 +192,7 @@ public class RecipeStepServiceTest {
       assertThat(firstStep.getDetails().get(0).getStart()).isEqualTo(10.5);
       assertThat(firstStep.getDetails().get(1).getText()).isEqualTo("도구를 정리합니다");
       assertThat(firstStep.getDetails().get(1).getStart()).isEqualTo(11.0);
-      
+
       // 두 번째 단계 검증
       RecipeStep secondStep = result.get(1);
       assertThat(secondStep.getStepOrder()).isEqualTo(2);
@@ -207,15 +210,18 @@ public class RecipeStepServiceTest {
       // given
       UUID recipeId = UUID.randomUUID();
       Clock mockClock = mock(Clock.class);
-      
-      String jsonResponse = """
+
+      String jsonResponse =
+          """
           {
             "steps": []
           }
           """;
-      
-      com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      ClientRecipeStepsResponse clientResponse = objectMapper.readValue(jsonResponse, ClientRecipeStepsResponse.class);
+
+      com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+          new com.fasterxml.jackson.databind.ObjectMapper();
+      ClientRecipeStepsResponse clientResponse =
+          objectMapper.readValue(jsonResponse, ClientRecipeStepsResponse.class);
 
       // when
       List<RecipeStep> result = clientResponse.toRecipeSteps(recipeId, mockClock);
@@ -231,8 +237,9 @@ public class RecipeStepServiceTest {
       // given
       UUID recipeId = UUID.randomUUID();
       Clock mockClock = mock(Clock.class);
-      
-      String jsonResponse = """
+
+      String jsonResponse =
+          """
           {
             "steps": [
               {
@@ -256,9 +263,11 @@ public class RecipeStepServiceTest {
             ]
           }
           """;
-      
-      com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      ClientRecipeStepsResponse clientResponse = objectMapper.readValue(jsonResponse, ClientRecipeStepsResponse.class);
+
+      com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+          new com.fasterxml.jackson.databind.ObjectMapper();
+      ClientRecipeStepsResponse clientResponse =
+          objectMapper.readValue(jsonResponse, ClientRecipeStepsResponse.class);
 
       // when
       List<RecipeStep> result = clientResponse.toRecipeSteps(recipeId, mockClock);
@@ -266,7 +275,7 @@ public class RecipeStepServiceTest {
       // then
       assertThat(result).isNotNull();
       assertThat(result).hasSize(1);
-      
+
       RecipeStep step = result.get(0);
       assertThat(step.getStepOrder()).isEqualTo(1);
       assertThat(step.getSubtitle()).isEqualTo("유일한 단계");
@@ -284,8 +293,9 @@ public class RecipeStepServiceTest {
       // given
       UUID recipeId = UUID.randomUUID();
       Clock mockClock = mock(Clock.class);
-      
-      String jsonResponse = """
+
+      String jsonResponse =
+          """
           {
             "steps": [
               {
@@ -296,9 +306,11 @@ public class RecipeStepServiceTest {
             ]
           }
           """;
-      
-      com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      ClientRecipeStepsResponse clientResponse = objectMapper.readValue(jsonResponse, ClientRecipeStepsResponse.class);
+
+      com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+          new com.fasterxml.jackson.databind.ObjectMapper();
+      ClientRecipeStepsResponse clientResponse =
+          objectMapper.readValue(jsonResponse, ClientRecipeStepsResponse.class);
 
       // when
       List<RecipeStep> result = clientResponse.toRecipeSteps(recipeId, mockClock);
@@ -306,7 +318,7 @@ public class RecipeStepServiceTest {
       // then
       assertThat(result).isNotNull();
       assertThat(result).hasSize(1);
-      
+
       RecipeStep step = result.get(0);
       assertThat(step.getStepOrder()).isEqualTo(1);
       assertThat(step.getSubtitle()).isEqualTo("설명 없는 단계");

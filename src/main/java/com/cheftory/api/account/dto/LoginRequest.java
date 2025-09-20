@@ -6,5 +6,4 @@ import jakarta.validation.constraints.NotNull;
 
 public record LoginRequest(
     @JsonProperty("id_token") @NotNull String idToken,
-    @JsonProperty("provider") @NotNull Provider provider) {
-}
+    @JsonProperty("provider") @NotNull Provider provider) {}

@@ -72,7 +72,9 @@ public class RecipeInfoService {
   public UUID create(URI uri, UUID userId) {
     try {
       List<UUID> recipeIds =
-          recipeYoutubeMetaService.getByUrl(uri).stream().map(RecipeYoutubeMeta::getId).toList();
+          recipeYoutubeMetaService.getByUrl(uri).stream()
+              .map(RecipeYoutubeMeta::getRecipeId)
+              .toList();
       Recipe recipe = recipeService.findNotFailed(recipeIds);
       recipeViewStatusService.create(userId, recipe.getId());
       return recipe.getId();
@@ -103,9 +105,12 @@ public class RecipeInfoService {
     } catch (RecipeInfoException e) {
       if (e.getErrorMessage() == RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING) {
         List<UUID> recipeIds =
-            recipeYoutubeMetaService.getByUrl(uri).stream().map(RecipeYoutubeMeta::getId).toList();
+            recipeYoutubeMetaService.getByUrl(uri).stream()
+                .map(RecipeYoutubeMeta::getRecipeId)
+                .toList();
         Recipe recipe = recipeService.findNotFailed(recipeIds);
         recipeViewStatusService.create(userId, recipe.getId());
+        return recipe.getId();
       }
       throw e;
     }

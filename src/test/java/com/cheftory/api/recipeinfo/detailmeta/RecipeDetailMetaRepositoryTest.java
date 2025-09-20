@@ -57,15 +57,17 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
 
         @BeforeEach
         void setUp() {
-          recipeDetailMeta = RecipeDetailMeta.create(cookTime, servings, description, clock, recipeId);
+          recipeDetailMeta =
+              RecipeDetailMeta.create(cookTime, servings, description, clock, recipeId);
           recipeDetailMetaRepository.save(recipeDetailMeta);
         }
 
         @DisplayName("Then - 레시피 상세 메타가 저장된다")
         @Test
         void thenRecipeDetailMetaSaved() {
-          Optional<RecipeDetailMeta> foundMeta = recipeDetailMetaRepository.findByRecipeId(recipeId);
-          
+          Optional<RecipeDetailMeta> foundMeta =
+              recipeDetailMetaRepository.findByRecipeId(recipeId);
+
           assertThat(foundMeta).isPresent();
           assertThat(foundMeta.get().getRecipeId()).isEqualTo(recipeId);
           assertThat(foundMeta.get().getCookTime()).isEqualTo(30);
@@ -90,12 +92,12 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
         doReturn(FIXED_TIME).when(clock).now();
 
         recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-        
-        recipeDetailMetas = List.of(
-            RecipeDetailMeta.create(30, 2, "김치찌개", clock, recipeIds.get(0)),
-            RecipeDetailMeta.create(15, 1, "계란찜", clock, recipeIds.get(1)),
-            RecipeDetailMeta.create(45, 4, "불고기", clock, recipeIds.get(2))
-        );
+
+        recipeDetailMetas =
+            List.of(
+                RecipeDetailMeta.create(30, 2, "김치찌개", clock, recipeIds.get(0)),
+                RecipeDetailMeta.create(15, 1, "계란찜", clock, recipeIds.get(1)),
+                RecipeDetailMeta.create(45, 4, "불고기", clock, recipeIds.get(2)));
 
         recipeDetailMetaRepository.saveAll(recipeDetailMetas);
       }
@@ -115,17 +117,17 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
         @Test
         void thenRecipeDetailMetasAreFound() {
           assertThat(foundMetas).hasSize(3);
-          assertThat(foundMetas).extracting("description")
+          assertThat(foundMetas)
+              .extracting("description")
               .containsExactlyInAnyOrder("김치찌개", "계란찜", "불고기");
-          assertThat(foundMetas).extracting("cookTime")
-              .containsExactlyInAnyOrder(30, 15, 45);
-          assertThat(foundMetas).extracting("servings")
-              .containsExactlyInAnyOrder(2, 1, 4);
+          assertThat(foundMetas).extracting("cookTime").containsExactlyInAnyOrder(30, 15, 45);
+          assertThat(foundMetas).extracting("servings").containsExactlyInAnyOrder(2, 1, 4);
           assertThat(foundMetas).extracting("createdAt").containsOnly(FIXED_TIME);
-          
-          foundMetas.forEach(meta -> {
-            assertThat(meta.getRecipeId()).isIn(recipeIds);
-          });
+
+          foundMetas.forEach(
+              meta -> {
+                assertThat(meta.getRecipeId()).isIn(recipeIds);
+              });
         }
       }
     }
@@ -223,14 +225,14 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
         existingRecipeId1 = UUID.randomUUID();
         existingRecipeId2 = UUID.randomUUID();
         nonExistentRecipeId = UUID.randomUUID();
-        
+
         mixedRecipeIds = List.of(existingRecipeId1, existingRecipeId2, nonExistentRecipeId);
 
         // 2개만 저장
-        List<RecipeDetailMeta> existingMetas = List.of(
-            RecipeDetailMeta.create(20, 2, "미역국", clock, existingRecipeId1),
-            RecipeDetailMeta.create(35, 3, "갈비탕", clock, existingRecipeId2)
-        );
+        List<RecipeDetailMeta> existingMetas =
+            List.of(
+                RecipeDetailMeta.create(20, 2, "미역국", clock, existingRecipeId1),
+                RecipeDetailMeta.create(35, 3, "갈비탕", clock, existingRecipeId2));
         recipeDetailMetaRepository.saveAll(existingMetas);
       }
 
@@ -249,12 +251,11 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
         @Test
         void thenOnlyExistingMetasAreReturned() {
           assertThat(foundMetas).hasSize(2);
-          assertThat(foundMetas).extracting("description")
-              .containsExactlyInAnyOrder("미역국", "갈비탕");
-          assertThat(foundMetas).extracting("recipeId")
+          assertThat(foundMetas).extracting("description").containsExactlyInAnyOrder("미역국", "갈비탕");
+          assertThat(foundMetas)
+              .extracting("recipeId")
               .containsExactlyInAnyOrder(existingRecipeId1, existingRecipeId2);
-          assertThat(foundMetas).extracting("recipeId")
-              .doesNotContain(nonExistentRecipeId);
+          assertThat(foundMetas).extracting("recipeId").doesNotContain(nonExistentRecipeId);
         }
       }
     }

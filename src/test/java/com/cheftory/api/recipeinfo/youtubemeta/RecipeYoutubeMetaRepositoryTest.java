@@ -3,7 +3,6 @@ package com.cheftory.api.recipeinfo.youtubemeta;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
@@ -100,7 +99,6 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
     private RecipeYoutubeMeta recipeYoutubeMeta;
     private UUID recipeId;
     private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-
 
     @BeforeEach
     void setUp() {

@@ -58,8 +58,7 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
 
         @BeforeEach
         void setUp() {
-          recipeCaption =
-              RecipeCaption.from(List.of(segment), langCodeType, recipeId, clock);
+          recipeCaption = RecipeCaption.from(List.of(segment), langCodeType, recipeId, clock);
           recipeCaptionRepository.save(recipeCaption);
         }
 
@@ -74,10 +73,12 @@ public class RecipeCaptionRepositoryTest extends DbContextTest {
           assertThat(savedRecipeCaption.getLangCode()).isEqualTo(langCodeType);
           assertThat(savedRecipeCaption.getSegments()).isNotNull();
           assertThat(savedRecipeCaption.getSegments().size()).isEqualTo(1);
-          assertThat(savedRecipeCaption.getSegments().getFirst().getText()).isEqualTo(segment.getText());
+          assertThat(savedRecipeCaption.getSegments().getFirst().getText())
+              .isEqualTo(segment.getText());
           assertThat(savedRecipeCaption.getSegments().getFirst().getStart())
               .isEqualTo(segment.getStart());
-          assertThat(savedRecipeCaption.getSegments().getFirst().getEnd()).isEqualTo(segment.getEnd());
+          assertThat(savedRecipeCaption.getSegments().getFirst().getEnd())
+              .isEqualTo(segment.getEnd());
           assertThat(savedRecipeCaption.getCreatedAt()).isEqualTo(FIXED_TIME);
         }
       }
