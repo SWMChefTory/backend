@@ -31,7 +31,9 @@ public record RecentRecipesResponse(
       @JsonProperty("recipe_title") String recipeTitle,
       @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
       @JsonProperty("video_id") String videoId,
-      @JsonProperty("video_seconds") Integer videoSeconds) {
+      @JsonProperty("video_seconds") Integer videoSeconds,
+      @JsonProperty("recipe_status") String recipeStatus)
+  {
     public static RecentRecipeResponse from(RecipeHistory info) {
       return new RecentRecipeResponse(
           info.getRecipeViewStatus().getViewedAt(),
@@ -40,7 +42,8 @@ public record RecentRecipesResponse(
           info.getYoutubeMeta().getTitle(),
           info.getYoutubeMeta().getThumbnailUrl(),
           info.getYoutubeMeta().getVideoId(),
-          info.getYoutubeMeta().getVideoSeconds());
+          info.getYoutubeMeta().getVideoSeconds(),
+          info.getRecipe().getRecipeStatus().name());
     }
   }
 }

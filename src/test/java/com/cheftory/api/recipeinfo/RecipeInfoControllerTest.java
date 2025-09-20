@@ -173,6 +173,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(meta).when(recentRecipe).getYoutubeMeta();
 
           doReturn(recipeId).when(recipe).getId();
+          doReturn(RecipeStatus.IN_PROGRESS).when(recipe).getRecipeStatus();
           doReturn("Sample Recipe Title").when(meta).getTitle();
           doReturn("sample_video_id").when(meta).getVideoId();
           doReturn(URI.create("https://example.com/thumbnail.jpg")).when(meta).getThumbnailUrl();
@@ -225,6 +226,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
+                              enumFields("recent_recipes[].recipe_status", "레시피의 현재 상태: ", RecipeStatus.class),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
           verify(recipeInfoService).findRecents(userId, page);
@@ -248,6 +250,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
           assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
+          assertThat(responseBody.getString("recent_recipes[0].recipe_status"))
+              .isEqualTo(RecipeStatus.IN_PROGRESS.name());
         }
       }
     }
