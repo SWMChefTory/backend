@@ -1,10 +1,14 @@
-package com.cheftory.api.recipeinfo.progress;
+package com.cheftory.api.recipeinfo.model;
 
+import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
+import com.cheftory.api.recipeinfo.progress.RecipeProgressStep;
+import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record RecipeProgressResponse(
-    @JsonProperty("recipe_progress_statuses") List<ProgressStatus> progressStatuses) {
+    @JsonProperty("recipe_progress_statuses") List<ProgressStatus> progressStatuses,
+    @JsonProperty("recipe_status") RecipeStatus recipeStatus) {
 
   public record ProgressStatus(
       @JsonProperty("progress_detail") RecipeProgressDetail progressDetail,
@@ -15,12 +19,13 @@ public record RecipeProgressResponse(
     }
   }
 
-  public static RecipeProgressResponse of(List<RecipeProgress> recipeProgresses) {
+  public static RecipeProgressResponse of(RecipeProgressStatus recipeProgressStatus) {
     List<ProgressStatus> progressStatuses =
-        recipeProgresses.stream()
+        recipeProgressStatus.getProgresses().stream()
             .map(progress -> ProgressStatus.of(progress.getDetail(), progress.getStep()))
             .toList();
 
-    return new RecipeProgressResponse(progressStatuses);
+    return new RecipeProgressResponse(
+        progressStatuses, recipeProgressStatus.getRecipe().getRecipeStatus());
   }
 }

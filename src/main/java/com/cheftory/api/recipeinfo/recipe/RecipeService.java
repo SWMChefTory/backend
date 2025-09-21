@@ -97,4 +97,10 @@ public class RecipeService {
   public boolean exists(UUID recipeId) {
     return recipeRepository.existsById(recipeId);
   }
+
+  public Recipe find(UUID recipeId) {
+    return recipeRepository
+        .findById(recipeId)
+        .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
+  }
 }

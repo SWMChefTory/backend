@@ -24,7 +24,11 @@ import com.cheftory.api.recipeinfo.model.CountRecipeCategory;
 import com.cheftory.api.recipeinfo.model.FullRecipeInfo;
 import com.cheftory.api.recipeinfo.model.RecipeHistory;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
+import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
+import com.cheftory.api.recipeinfo.progress.RecipeProgress;
+import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressService;
+import com.cheftory.api.recipeinfo.progress.RecipeProgressStep;
 import com.cheftory.api.recipeinfo.recipe.RecipeService;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
@@ -844,6 +848,243 @@ public class RecipeInfoServiceTest {
           assertThat(result).isEmpty();
           verify(recipeCategoryService).findUsers(userId);
           verify(recipeViewStatusService).countByCategories(List.of());
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 진행 상황 조회")
+  class FindRecipeProgress {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+    class GivenValidRecipeId {
+
+      private UUID recipeId;
+      private Recipe recipe;
+      private List<RecipeProgress> progresses;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+
+        RecipeProgress progress1 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+        doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+        RecipeProgress progress2 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+        doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+        RecipeProgress progress3 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.FINISHED).when(progress3).getStep();
+        doReturn(RecipeProgressDetail.FINISHED).when(progress3).getDetail();
+
+        progresses = List.of(progress1, progress2, progress3);
+
+        doReturn(progresses).when(recipeProgressService).finds(recipeId);
+        doReturn(recipe).when(recipeService).find(recipeId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenFindingRecipeProgress {
+
+        @Test
+        @DisplayName("Then - 레시피 진행 상황을 반환해야 한다")
+        void thenShouldReturnRecipeProgress() {
+          RecipeProgressStatus result = recipeInfoService.findRecipeProgress(recipeId);
+
+          assertThat(result).isNotNull();
+          verify(recipeProgressService).finds(recipeId);
+          verify(recipeService).find(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 진행 상황이 없는 레시피 ID가 주어졌을 때")
+    class GivenRecipeIdWithNoProgress {
+
+      private UUID recipeId;
+      private Recipe recipe;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        recipe = createMockRecipe(recipeId, RecipeStatus.IN_PROGRESS);
+
+        doReturn(List.of()).when(recipeProgressService).finds(recipeId);
+        doReturn(recipe).when(recipeService).find(recipeId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenFindingRecipeProgress {
+
+        @Test
+        @DisplayName("Then - 빈 진행 상황과 레시피를 반환해야 한다")
+        void thenShouldReturnEmptyProgressWithRecipe() {
+          RecipeProgressStatus result = recipeInfoService.findRecipeProgress(recipeId);
+
+          assertThat(result).isNotNull();
+          verify(recipeProgressService).finds(recipeId);
+          verify(recipeService).find(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
+    class GivenNonExistentRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+
+        doThrow(new RecipeInfoException(RecipeErrorCode.RECIPE_NOT_FOUND))
+            .when(recipeService)
+            .find(recipeId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenFindingRecipeProgress {
+
+        @Test
+        @DisplayName("Then - RECIPE_NOT_FOUND 예외가 발생해야 한다")
+        void thenShouldThrowRecipeNotFoundException() {
+          assertThatThrownBy(() -> recipeInfoService.findRecipeProgress(recipeId))
+              .isInstanceOf(RecipeInfoException.class)
+              .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_FOUND);
+
+          verify(recipeService).find(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 브리핑을 포함한 진행 상황이 있는 레시피 ID가 주어졌을 때")
+    class GivenRecipeIdWithBriefingProgress {
+
+      private UUID recipeId;
+      private Recipe recipe;
+      private List<RecipeProgress> progresses;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+
+        RecipeProgress progress1 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+        doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+        RecipeProgress progress2 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+        doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+        RecipeProgress progress3 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.BRIEFING).when(progress3).getStep();
+        doReturn(RecipeProgressDetail.BRIEFING).when(progress3).getDetail();
+
+        RecipeProgress progress4 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.STEP).when(progress4).getStep();
+        doReturn(RecipeProgressDetail.STEP).when(progress4).getDetail();
+
+        progresses = List.of(progress1, progress2, progress3, progress4);
+
+        doReturn(progresses).when(recipeProgressService).finds(recipeId);
+        doReturn(recipe).when(recipeService).find(recipeId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenFindingRecipeProgress {
+
+        @Test
+        @DisplayName("Then - 브리핑을 포함한 진행 상황을 반환해야 한다")
+        void thenShouldReturnProgressWithBriefing() {
+          RecipeProgressStatus result = recipeInfoService.findRecipeProgress(recipeId);
+
+          assertThat(result).isNotNull();
+          verify(recipeProgressService).finds(recipeId);
+          verify(recipeService).find(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 복잡한 다단계 진행 상황이 있는 레시피 ID가 주어졌을 때")
+    class GivenRecipeIdWithComplexProgress {
+
+      private UUID recipeId;
+      private Recipe recipe;
+      private List<RecipeProgress> progresses;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+
+        // 모든 Detail 타입을 포함한 복잡한 진행 상황
+        RecipeProgress progress1 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+        doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+        RecipeProgress progress2 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+        doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+        RecipeProgress progress3 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.DETAIL).when(progress3).getStep();
+        doReturn(RecipeProgressDetail.TAG).when(progress3).getDetail();
+
+        RecipeProgress progress4 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.DETAIL).when(progress4).getStep();
+        doReturn(RecipeProgressDetail.DETAIL_META).when(progress4).getDetail();
+
+        RecipeProgress progress5 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.DETAIL).when(progress5).getStep();
+        doReturn(RecipeProgressDetail.INGREDIENT).when(progress5).getDetail();
+
+        RecipeProgress progress6 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.BRIEFING).when(progress6).getStep();
+        doReturn(RecipeProgressDetail.BRIEFING).when(progress6).getDetail();
+
+        RecipeProgress progress7 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.STEP).when(progress7).getStep();
+        doReturn(RecipeProgressDetail.STEP).when(progress7).getDetail();
+
+        RecipeProgress progress8 = mock(RecipeProgress.class);
+        doReturn(RecipeProgressStep.FINISHED).when(progress8).getStep();
+        doReturn(RecipeProgressDetail.FINISHED).when(progress8).getDetail();
+
+        progresses =
+            List.of(
+                progress1, progress2, progress3, progress4, progress5, progress6, progress7,
+                progress8);
+
+        doReturn(progresses).when(recipeProgressService).finds(recipeId);
+        doReturn(recipe).when(recipeService).find(recipeId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenFindingRecipeProgress {
+
+        @Test
+        @DisplayName("Then - 모든 복잡한 진행 단계를 포함한 상황을 반환해야 한다")
+        void thenShouldReturnComplexProgress() {
+          RecipeProgressStatus result = recipeInfoService.findRecipeProgress(recipeId);
+
+          assertThat(result).isNotNull();
+          verify(recipeProgressService).finds(recipeId);
+          verify(recipeService).find(recipeId);
         }
       }
     }

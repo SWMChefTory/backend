@@ -12,6 +12,8 @@ import com.cheftory.api.recipeinfo.model.RecipeCreateRequest;
 import com.cheftory.api.recipeinfo.model.RecipeCreateResponse;
 import com.cheftory.api.recipeinfo.model.RecipeHistory;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
+import com.cheftory.api.recipeinfo.model.RecipeProgressResponse;
+import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.model.RecommendRecipesResponse;
 import com.cheftory.api.recipeinfo.model.UnCategorizedRecipesResponse;
 import jakarta.validation.constraints.Min;
@@ -62,9 +64,9 @@ public class RecipeInfoController {
     return RecommendRecipesResponse.from(recipes);
   }
 
-  @GetMapping("/categorized/{recipe_category_id}")
+  @GetMapping("/categorized/{recipeCategoryId}")
   public CategorizedRecipesResponse getCategorizedRecipes(
-      @PathVariable("recipe_category_id") UUID categoryId,
+      @PathVariable("recipeCategoryId") UUID categoryId,
       @UserPrincipal UUID userId,
       @RequestParam(defaultValue = "0") @Min(0) Integer page) {
     Page<RecipeHistory> infos = recipeInfoService.findCategorized(userId, categoryId, page);
@@ -78,9 +80,9 @@ public class RecipeInfoController {
     return UnCategorizedRecipesResponse.from(infos);
   }
 
-  @DeleteMapping("/categories/{recipe_category_id}")
+  @DeleteMapping("/categories/{recipeCategoryId}")
   public SuccessOnlyResponse deleteRecipeCategory(
-      @PathVariable("recipe_category_id") UUID recipeCategoryId) {
+      @PathVariable("recipeCategoryId") UUID recipeCategoryId) {
     recipeInfoService.deleteCategory(recipeCategoryId);
     return SuccessOnlyResponse.create();
   }
@@ -89,5 +91,11 @@ public class RecipeInfoController {
   public CountRecipeCategoriesResponse getRecipeCategories(@UserPrincipal UUID userId) {
     List<CountRecipeCategory> categories = recipeInfoService.findCategories(userId);
     return CountRecipeCategoriesResponse.from(categories);
+  }
+
+  @GetMapping("/progress/{recipeId}")
+  public RecipeProgressResponse getRecipeProgress(@PathVariable("recipeId") UUID recipeId) {
+    RecipeProgressStatus progressStatus = recipeInfoService.findRecipeProgress(recipeId);
+    return RecipeProgressResponse.of(progressStatus);
   }
 }
