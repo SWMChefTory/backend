@@ -6,6 +6,7 @@ public enum RecipeProgressDetail {
   TAG,
   DETAIL_META,
   INGREDIENT,
+  BRIEFING,
   STEP,
   FINISHED
 }

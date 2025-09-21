@@ -8,6 +8,7 @@ import com.cheftory.api.recipeinfo.recipe.entity.ProcessStep;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -758,6 +759,150 @@ public class RecipeRepositoryTest extends DbContextTest {
         assertThat(pageable.getPageSize()).isEqualTo(10);
         assertThat(pageable.getSort()).isEqualTo(RecipeSort.COUNT_DESC);
         assertThat(pageable.getOffset()).isEqualTo(20);
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 존재 여부 확인")
+  class ExistsById {
+
+    @Nested
+    @DisplayName("Given - 저장된 레시피가 있을 때")
+    class GivenSavedRecipe {
+
+      private Recipe savedRecipe;
+
+      @BeforeEach
+      void setUp() {
+        Recipe recipe = Recipe.create();
+        savedRecipe = recipeRepository.save(recipe);
+      }
+
+      @Nested
+      @DisplayName("When - 저장된 레시피 ID로 존재 여부를 확인하면")
+      class WhenCheckingExistenceWithSavedId {
+
+        @Test
+        @DisplayName("Then - true가 반환된다")
+        void thenReturnTrue() {
+          boolean exists = recipeRepository.existsById(savedRecipe.getId());
+
+          assertThat(exists).isTrue();
+        }
+      }
+
+      @Nested
+      @DisplayName("When - 다른 상태의 레시피들이 존재할 때")
+      class WhenDifferentStatusRecipesExist {
+
+        private Recipe successRecipe;
+        private Recipe failedRecipe;
+
+        @BeforeEach
+        void setUp() {
+          Recipe recipe1 = Recipe.create();
+          recipe1.success();
+          successRecipe = recipeRepository.save(recipe1);
+
+          Recipe recipe2 = Recipe.create();
+          recipe2.failed();
+          failedRecipe = recipeRepository.save(recipe2);
+        }
+
+        @Test
+        @DisplayName("Then - 모든 상태의 레시피가 존재하는 것으로 확인된다")
+        void thenAllStatusRecipesExist() {
+          assertThat(recipeRepository.existsById(savedRecipe.getId())).isTrue(); // IN_PROGRESS
+          assertThat(recipeRepository.existsById(successRecipe.getId())).isTrue(); // SUCCESS
+          assertThat(recipeRepository.existsById(failedRecipe.getId())).isTrue(); // FAILED
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
+    class GivenNonExistentRecipeId {
+
+      private UUID nonExistentId;
+
+      @BeforeEach
+      void setUp() {
+        nonExistentId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 존재하지 않는 ID로 존재 여부를 확인하면")
+      class WhenCheckingExistenceWithNonExistentId {
+
+        @Test
+        @DisplayName("Then - false가 반환된다")
+        void thenReturnFalse() {
+          boolean exists = recipeRepository.existsById(nonExistentId);
+
+          assertThat(exists).isFalse();
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("Repository 성능 및 엣지 케이스")
+  class PerformanceAndEdgeCases {
+
+    @Nested
+    @DisplayName("Given - 대량의 레시피가 저장되어 있을 때")
+    class GivenLargeNumberOfRecipes {
+
+      @BeforeEach
+      void setUp() {
+        List<Recipe> recipes = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+          Recipe recipe = Recipe.create();
+          if (i % 3 == 0) {
+            recipe.success();
+          } else if (i % 5 == 0) {
+            recipe.failed();
+          }
+          recipes.add(recipe);
+        }
+        recipeRepository.saveAll(recipes);
+      }
+
+      @Nested
+      @DisplayName("When - 대량 데이터에서 상태별 조회를 하면")
+      class WhenQueryingLargeDataSet {
+
+        @Test
+        @DisplayName("Then - 성능 저하 없이 정상 조회된다")
+        void thenPerformsWellWithLargeDataSet() {
+          long startTime = System.currentTimeMillis();
+
+          Pageable pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+          Page<Recipe> successRecipes =
+              recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+          Page<Recipe> inProgressRecipes =
+              recipeRepository.findByRecipeStatus(RecipeStatus.IN_PROGRESS, pageable);
+          Page<Recipe> failedRecipes =
+              recipeRepository.findByRecipeStatus(RecipeStatus.FAILED, pageable);
+
+          long endTime = System.currentTimeMillis();
+          long executionTime = endTime - startTime;
+
+          // 성능 검증 (1초 이내 완료되어야 함)
+          assertThat(executionTime).isLessThan(1000);
+
+          // 결과 검증
+          assertThat(successRecipes.getContent()).isNotEmpty();
+          assertThat(inProgressRecipes.getContent()).isNotEmpty();
+          assertThat(failedRecipes.getContent()).isNotEmpty();
+
+          long totalRecipes =
+              successRecipes.getTotalElements()
+                  + inProgressRecipes.getTotalElements()
+                  + failedRecipes.getTotalElements();
+          assertThat(totalRecipes).isEqualTo(100);
+        }
       }
     }
   }

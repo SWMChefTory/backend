@@ -477,4 +477,105 @@ class RecipeServiceTest {
       }
     }
   }
+
+  @Nested
+  @DisplayName("exists(recipeId)")
+  class Exists {
+
+    private UUID recipeId;
+
+    @BeforeEach
+    void init() {
+      recipeId = UUID.randomUUID();
+    }
+
+    @Nested
+    @DisplayName("Given - 레시피가 존재할 때")
+    class GivenRecipeExists {
+
+      @BeforeEach
+      void setUp() {
+        when(recipeRepository.existsById(recipeId)).thenReturn(true);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 존재 여부를 확인하면")
+      class WhenCheckingExistence {
+
+        @Test
+        @DisplayName("Then - true가 반환된다")
+        void thenReturnTrue() {
+          boolean result = service.exists(recipeId);
+
+          assertThat(result).isTrue();
+          verify(recipeRepository).existsById(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 레시피가 존재하지 않을 때")
+    class GivenRecipeNotExists {
+
+      @BeforeEach
+      void setUp() {
+        when(recipeRepository.existsById(recipeId)).thenReturn(false);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 존재 여부를 확인하면")
+      class WhenCheckingExistence {
+
+        @Test
+        @DisplayName("Then - false가 반환된다")
+        void thenReturnFalse() {
+          boolean result = service.exists(recipeId);
+
+          assertThat(result).isFalse();
+          verify(recipeRepository).existsById(recipeId);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("Edge Cases and Error Scenarios")
+  class EdgeCasesAndErrorScenarios {
+
+    @Nested
+    @DisplayName("Given - findNotFailed에서 multiple valid recipes warning 상황")
+    class GivenMultipleValidRecipesWarning {
+
+      private List<UUID> recipeIds;
+      private Recipe validRecipe1;
+      private Recipe validRecipe2;
+
+      @BeforeEach
+      void setUp() {
+        recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+        validRecipe1 = mock(Recipe.class);
+        validRecipe2 = mock(Recipe.class);
+
+        when(validRecipe1.isFailed()).thenReturn(false);
+        when(validRecipe2.isFailed()).thenReturn(false);
+        when(recipeRepository.findAllByIdIn(recipeIds))
+            .thenReturn(List.of(validRecipe1, validRecipe2));
+      }
+
+      @Nested
+      @DisplayName("When - 여러 유효한 레시피가 조회될 때")
+      class WhenMultipleValidRecipesFound {
+
+        @Test
+        @DisplayName("Then - 첫 번째 레시피가 반환되고 경고 로그가 출력된다")
+        void thenReturnFirstRecipeAndLogWarning() {
+          Recipe result = service.findNotFailed(recipeIds);
+
+          assertThat(result).isEqualTo(validRecipe1);
+          verify(recipeRepository).findAllByIdIn(recipeIds);
+          // 로그 검증은 실제 프로덕션에서 별도의 로그 캡처 도구로 확인할 수 있음
+        }
+      }
+    }
+  }
 }

@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.step;
 
+import com.cheftory.api.recipeinfo.recipe.validator.ExistsRecipeId;
 import com.cheftory.api.recipeinfo.step.dto.RecipeStepsResponse;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
 import java.util.List;
@@ -18,7 +19,7 @@ public class RecipeStepController {
   public final RecipeStepService recipeStepService;
 
   @GetMapping("/{recipeId}/steps")
-  public RecipeStepsResponse getRecipeSteps(@PathVariable UUID recipeId) {
+  public RecipeStepsResponse getRecipeSteps(@PathVariable @ExistsRecipeId UUID recipeId) {
     List<RecipeStep> recipesStep = recipeStepService.finds(recipeId);
     return RecipeStepsResponse.from(recipesStep);
   }

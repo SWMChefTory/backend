@@ -4,6 +4,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefingService;
+import com.cheftory.api.recipeinfo.briefing.exception.RecipeBriefingErrorCode;
+import com.cheftory.api.recipeinfo.briefing.exception.RecipeBriefingException;
 import com.cheftory.api.recipeinfo.caption.RecipeCaptionService;
 import com.cheftory.api.recipeinfo.caption.entity.RecipeCaption;
 import com.cheftory.api.recipeinfo.caption.exception.RecipeCaptionErrorCode;
@@ -43,6 +46,7 @@ class AsyncRecipeInfoCreationServiceTest {
   private RecipeDetailService recipeDetailService;
   private RecipeYoutubeMetaService recipeYoutubeMetaService;
   private RecipeIdentifyService recipeIdentifyService;
+  private RecipeBriefingService recipeBriefingService;
 
   private Executor directExecutor;
 
@@ -60,6 +64,7 @@ class AsyncRecipeInfoCreationServiceTest {
     recipeDetailService = mock(RecipeDetailService.class);
     recipeYoutubeMetaService = mock(RecipeYoutubeMetaService.class);
     recipeIdentifyService = mock(RecipeIdentifyService.class);
+    recipeBriefingService = mock(RecipeBriefingService.class);
 
     directExecutor = Runnable::run;
 
@@ -75,6 +80,7 @@ class AsyncRecipeInfoCreationServiceTest {
             recipeDetailService,
             recipeYoutubeMetaService,
             recipeIdentifyService,
+            recipeBriefingService,
             directExecutor);
   }
 
@@ -154,6 +160,10 @@ class AsyncRecipeInfoCreationServiceTest {
           verify(recipeStepService).create(recipeId, caption);
           verify(recipeProgressService)
               .create(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+
+          verify(recipeBriefingService).create(videoId, recipeId);
+          verify(recipeProgressService)
+              .create(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
 
           // 마무리 처리 검증
           verify(recipeService).success(recipeId);
@@ -265,6 +275,79 @@ class AsyncRecipeInfoCreationServiceTest {
             verify(recipeService, never()).success(any());
             verify(recipeDetailService, never()).getRecipeDetails(any(), any());
             verify(recipeStepService, never()).create(any(), any());
+          }
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("BRIEFING_CREATE_FAIL 예외")
+    class BriefingCreateFailException {
+
+      @Nested
+      @DisplayName("Given - 브리핑 생성이 실패할 때")
+      class GivenBriefingCreationFail {
+
+        private UUID recipeId;
+        private String videoId;
+        private URI videoUrl;
+        private UUID captionId;
+        private RecipeCaption caption;
+        private RecipeDetail detail;
+
+        @BeforeEach
+        void setUp() {
+          recipeId = UUID.randomUUID();
+          videoId = "briefing-fail";
+          videoUrl = URI.create("https://youtu.be/briefing-fail");
+          captionId = UUID.randomUUID();
+          caption = mock(RecipeCaption.class);
+          detail = mock(RecipeDetail.class);
+
+          // RecipeDetail mock 설정
+          doReturn(List.of()).when(detail).ingredients();
+          doReturn(List.of()).when(detail).tags();
+          doReturn(15).when(detail).cookTime();
+          doReturn(2).when(detail).servings();
+          doReturn("설명").when(detail).description();
+
+          // 캡션까지는 성공
+          doReturn(captionId).when(recipeCaptionService).create(videoId, recipeId);
+          doReturn(caption).when(recipeCaptionService).find(captionId);
+          doReturn(detail).when(recipeDetailService).getRecipeDetails(videoId, caption);
+
+          // 브리핑 생성 실패
+          doThrow(new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL))
+              .when(recipeBriefingService)
+              .create(videoId, recipeId);
+        }
+
+        @Nested
+        @DisplayName("When - create 메소드를 호출하면")
+        class WhenCreateMethodCalled {
+
+          @Test
+          @DisplayName("Then - 실패 처리되고 ban 처리는 되지 않는다")
+          void thenFailedProcessedWithoutBan() {
+            // When
+            sut.create(recipeId, videoId, videoUrl);
+
+            // Then
+            verify(recipeService).failed(recipeId);
+            verify(recipeIdentifyService).delete(videoUrl);
+
+            // Ban 처리는 되지 않아야 함
+            verify(recipeYoutubeMetaService, never()).ban(any());
+
+            // 성공 관련 메소드들은 호출되지 않아야 함
+            verify(recipeService, never()).success(any());
+
+            // 캡션과 디테일은 정상 처리되어야 함
+            verify(recipeCaptionService).create(videoId, recipeId);
+            verify(recipeDetailService).getRecipeDetails(videoId, caption);
+
+            // 하지만 브리핑은 실패해야 함
+            verify(recipeBriefingService).create(videoId, recipeId);
           }
         }
       }

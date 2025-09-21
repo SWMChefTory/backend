@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.detailmeta;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -11,6 +12,8 @@ import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaRepository;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
+import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaErrorCode;
+import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -151,15 +154,14 @@ public class RecipeDetailMetaServiceTest {
       @DisplayName("When - 상세 메타를 조회하면 Then - 해당 메타가 반환된다")
       void whenFindByRecipeId_thenReturnsMetaData() {
         // when
-        Optional<RecipeDetailMeta> result = recipeDetailMetaService.find(recipeId);
+        RecipeDetailMeta result = recipeDetailMetaService.find(recipeId);
 
         // then
-        assertThat(result).isPresent();
-        assertThat(result.get()).isEqualTo(expectedMeta);
-        assertThat(result.get().getRecipeId()).isEqualTo(recipeId);
-        assertThat(result.get().getCookTime()).isEqualTo(30);
-        assertThat(result.get().getServings()).isEqualTo(2);
-        assertThat(result.get().getDescription()).isEqualTo("김치찌개");
+        assertThat(result).isEqualTo(expectedMeta);
+        assertThat(result.getRecipeId()).isEqualTo(recipeId);
+        assertThat(result.getCookTime()).isEqualTo(30);
+        assertThat(result.getServings()).isEqualTo(2);
+        assertThat(result.getDescription()).isEqualTo("김치찌개");
 
         verify(recipeDetailMetaRepository).findByRecipeId(recipeId);
       }
@@ -177,14 +179,12 @@ public class RecipeDetailMetaServiceTest {
       }
 
       @Test
-      @DisplayName("When - 상세 메타를 조회하면 Then - 빈 Optional이 반환된다")
+      @DisplayName("When - 상세 메타를 조회하면 Then - 예외가 발생한다")
       void whenFindByRecipeId_thenReturnsEmptyOptional() {
-        // when
-        Optional<RecipeDetailMeta> result = recipeDetailMetaService.find(recipeId);
-
-        // then
-        assertThat(result).isEmpty();
-        verify(recipeDetailMetaRepository).findByRecipeId(recipeId);
+        assertThatThrownBy(() -> recipeDetailMetaService.find(recipeId))
+            .isInstanceOf(RecipeDetailMetaException.class)
+            .hasFieldOrPropertyWithValue(
+                "errorMessage", RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND);
       }
     }
   }

@@ -41,9 +41,9 @@ public class RecipeInfoController {
     return RecipeCreateResponse.from(recipeId);
   }
 
-  @GetMapping("/{recipe_id}")
+  @GetMapping("/{recipeId}")
   public FullRecipeResponse getFullRecipeResponse(
-      @PathVariable("recipe_id") UUID recipeId, @UserPrincipal UUID userId) {
+      @PathVariable("recipeId") UUID recipeId, @UserPrincipal UUID userId) {
     FullRecipeInfo info = recipeInfoService.findFullRecipe(recipeId, userId);
     return FullRecipeResponse.of(info);
   }

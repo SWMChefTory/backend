@@ -16,6 +16,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.recipeinfo.recipe.RecipeService;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
@@ -32,16 +33,21 @@ import org.springframework.http.HttpStatus;
 public class RecipeStepControllerTest extends RestDocsTest {
 
   private RecipeStepService recipeStepService;
+  private RecipeService recipeService;
   private RecipeStepController controller;
   private GlobalExceptionHandler exceptionHandler;
 
   @BeforeEach
   void setUp() {
     recipeStepService = mock(RecipeStepService.class);
+    recipeService = mock(RecipeService.class);
     controller = new RecipeStepController(recipeStepService);
     exceptionHandler = new GlobalExceptionHandler();
-
-    mockMvc = mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
+    mockMvc =
+        mockMvcBuilder(controller)
+            .withAdvice(exceptionHandler)
+            .withValidator(RecipeService.class, recipeService)
+            .build();
   }
 
   @Nested
@@ -103,6 +109,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
 
           recipeSteps = List.of(step1, step2);
           doReturn(recipeSteps).when(recipeStepService).finds(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -207,6 +214,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
 
           recipeSteps = List.of(singleStep);
           doReturn(recipeSteps).when(recipeStepService).finds(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -253,6 +261,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
         @BeforeEach
         void setUp() {
           doReturn(Collections.emptyList()).when(recipeStepService).finds(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -288,6 +297,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
         @BeforeEach
         void setUp() {
           doReturn(Collections.emptyList()).when(recipeStepService).finds(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -373,6 +383,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
 
           complexRecipeSteps = List.of(step1, step2, step3);
           doReturn(complexRecipeSteps).when(recipeStepService).finds(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test

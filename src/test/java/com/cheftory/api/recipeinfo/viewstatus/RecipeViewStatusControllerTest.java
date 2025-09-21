@@ -21,6 +21,7 @@ import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipeinfo.category.RecipeCategoryService;
 import com.cheftory.api.recipeinfo.category.exception.RecipeCategoryErrorCode;
+import com.cheftory.api.recipeinfo.recipe.RecipeService;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Map;
@@ -38,6 +39,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
 
   private RecipeViewStatusController controller;
   private RecipeViewStatusService recipeViewStatusService;
+  private RecipeService recipeService;
   private RecipeCategoryService recipeCategoryService;
   private GlobalExceptionHandler exceptionHandler;
   private UserArgumentResolver userArgumentResolver;
@@ -46,6 +48,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
   void setUp() {
     recipeViewStatusService = mock(RecipeViewStatusService.class);
     recipeCategoryService = mock(RecipeCategoryService.class);
+    recipeService = mock(RecipeService.class);
     exceptionHandler = new GlobalExceptionHandler();
     userArgumentResolver = new UserArgumentResolver();
     controller = new RecipeViewStatusController(recipeViewStatusService);
@@ -53,6 +56,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
     mockMvc =
         mockMvcBuilder(controller)
             .withValidator(RecipeCategoryService.class, recipeCategoryService)
+            .withValidator(RecipeService.class, recipeService)
             .withAdvice(exceptionHandler)
             .withArgumentResolver(userArgumentResolver)
             .build();
@@ -93,6 +97,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
           doNothing()
               .when(recipeViewStatusService)
               .updateCategory(any(UUID.class), any(UUID.class), any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -105,7 +110,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
                   .header("Authorization", "Bearer accessToken")
                   .body(request)
                   .when()
-                  .put("/api/v1/recipes/{recipe_id}/categories", recipeId)
+                  .put("/api/v1/recipes/{recipeId}/categories", recipeId)
                   .then()
                   .status(HttpStatus.OK)
                   .apply(
@@ -114,7 +119,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
                           requestPreprocessor(),
                           responsePreprocessor(),
                           requestAccessTokenFields(),
-                          pathParameters(parameterWithName("recipe_id").description("레시피 ID")),
+                          pathParameters(parameterWithName("recipeId").description("레시피 ID")),
                           requestFields(
                               fieldWithPath("category_id").description("레시피 조회 상태 카테고리 ID")),
                           responseSuccessFields()));
@@ -158,7 +163,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
             .header("Authorization", "Bearer accessToken")
             .body(request)
             .when()
-            .put("/api/v1/recipes/{recipe_id}/categories", recipeId)
+            .put("/api/v1/recipes/{recipeId}/categories", recipeId)
             .then()
             .status(HttpStatus.BAD_REQUEST)
             .apply(
@@ -167,7 +172,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
                     requestPreprocessor(),
                     responsePreprocessor(),
                     requestAccessTokenFields(),
-                    pathParameters(parameterWithName("recipe_id").description("레시피 ID")),
+                    pathParameters(parameterWithName("recipeId").description("레시피 ID")),
                     requestFields(fieldWithPath("category_id").description("레시피 조회 상태 카테고리 ID")),
                     responseErrorFields(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND)));
       }
@@ -193,6 +198,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         doNothing().when(recipeViewStatusService).delete(any(UUID.class), any(UUID.class));
+        doReturn(true).when(recipeService).exists(any(UUID.class));
       }
 
       @Nested
@@ -207,7 +213,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
               .attribute("userId", userId)
               .header("Authorization", "Bearer accessToken")
               .when()
-              .delete("/api/v1/recipes/{recipe_id}", recipeId)
+              .delete("/api/v1/recipes/{recipeId}", recipeId)
               .then()
               .status(HttpStatus.OK)
               .apply(
@@ -216,7 +222,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
                       requestPreprocessor(),
                       responsePreprocessor(),
                       requestAccessTokenFields(),
-                      pathParameters(parameterWithName("recipe_id").description("레시피 ID")),
+                      pathParameters(parameterWithName("recipeId").description("레시피 ID")),
                       responseSuccessFields()));
           verify(recipeViewStatusService).delete(userId, recipeId);
         }

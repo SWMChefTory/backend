@@ -21,6 +21,7 @@ import com.cheftory.api.recipeinfo.caption.entity.LangCodeType;
 import com.cheftory.api.recipeinfo.caption.entity.RecipeCaption;
 import com.cheftory.api.recipeinfo.caption.exception.RecipeCaptionErrorCode;
 import com.cheftory.api.recipeinfo.caption.exception.RecipeCaptionException;
+import com.cheftory.api.recipeinfo.recipe.RecipeService;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.springframework.http.HttpStatus;
 public class RecipeCaptionControllerTest extends RestDocsTest {
 
   private RecipeCaptionService recipeCaptionService;
+  private RecipeService recipeService;
   private RecipeCaptionController controller;
   private GlobalExceptionHandler exceptionHandler;
 
@@ -43,8 +45,12 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
     recipeCaptionService = mock(RecipeCaptionService.class);
     controller = new RecipeCaptionController(recipeCaptionService);
     exceptionHandler = new GlobalExceptionHandler();
-
-    mockMvc = mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
+    recipeService = mock(RecipeService.class);
+    mockMvc =
+        mockMvcBuilder(controller)
+            .withAdvice(exceptionHandler)
+            .withValidator(RecipeService.class, recipeService)
+            .build();
   }
 
   @Nested
@@ -99,6 +105,7 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           doReturn(segments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.ko).when(recipeCaption).getLangCode();
           doReturn(recipeCaption).when(recipeCaptionService).findByRecipeId(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -189,6 +196,7 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           doReturn(segments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.en).when(recipeCaption).getLangCode();
           doReturn(recipeCaption).when(recipeCaptionService).findByRecipeId(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -240,6 +248,7 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           doReturn(segments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.ko).when(recipeCaption).getLangCode();
           doReturn(recipeCaption).when(recipeCaptionService).findByRecipeId(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -286,6 +295,7 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           doThrow(new RecipeCaptionException(RecipeCaptionErrorCode.CAPTION_NOT_FOUND))
               .when(recipeCaptionService)
               .findByRecipeId(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -374,6 +384,7 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           doReturn(segments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.ko).when(recipeCaption).getLangCode();
           doReturn(recipeCaption).when(recipeCaptionService).findByRecipeId(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
@@ -441,6 +452,7 @@ public class RecipeCaptionControllerTest extends RestDocsTest {
           doReturn(emptySegments).when(recipeCaption).getSegments();
           doReturn(LangCodeType.ko).when(recipeCaption).getLangCode();
           doReturn(recipeCaption).when(recipeCaptionService).findByRecipeId(any(UUID.class));
+          doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
         @Test
