@@ -45,26 +45,23 @@ public class RecipeBriefingRepositoryTest extends DbContextTest {
       void setUp() {
         recipeId = UUID.randomUUID();
         anotherRecipeId = UUID.randomUUID();
-        briefingContents = List.of(
-            "이 요리는 매우 맛있습니다",
-            "조리 시간이 30분 정도 걸립니다",
-            "초보자도 쉽게 따라할 수 있어요"
-        );
+        briefingContents = List.of("이 요리는 매우 맛있습니다", "조리 시간이 30분 정도 걸립니다", "초보자도 쉽게 따라할 수 있어요");
 
-        briefingContents.forEach(content -> {
-          RecipeBriefing briefing = RecipeBriefing.create(recipeId, content, clock);
-          recipeBriefingRepository.save(briefing);
-        });
+        briefingContents.forEach(
+            content -> {
+              RecipeBriefing briefing = RecipeBriefing.create(recipeId, content, clock);
+              recipeBriefingRepository.save(briefing);
+            });
 
-        RecipeBriefing anotherRecipeBriefing = RecipeBriefing.create(
-            anotherRecipeId, "다른 레시피의 브리핑", clock);
+        RecipeBriefing anotherRecipeBriefing =
+            RecipeBriefing.create(anotherRecipeId, "다른 레시피의 브리핑", clock);
         recipeBriefingRepository.save(anotherRecipeBriefing);
       }
 
       @Nested
       @DisplayName("When - 특정 레시피 ID로 브리핑 목록을 조회하면")
       class WhenFindAllByRecipeId {
-        
+
         private List<RecipeBriefing> results;
 
         @BeforeEach
@@ -76,26 +73,23 @@ public class RecipeBriefingRepositoryTest extends DbContextTest {
         @Test
         void shouldReturnOnlyTargetRecipeBriefings() {
           assertThat(results).hasSize(3);
-          
-          results.forEach(briefing -> {
-            assertThat(briefing.getRecipeId()).isEqualTo(recipeId);
-            assertThat(briefing.getCreatedAt()).isEqualTo(FIXED_TIME);
-          });
 
-          List<String> actualContents = results.stream()
-              .map(RecipeBriefing::getContent)
-              .toList();
-          
+          results.forEach(
+              briefing -> {
+                assertThat(briefing.getRecipeId()).isEqualTo(recipeId);
+                assertThat(briefing.getCreatedAt()).isEqualTo(FIXED_TIME);
+              });
+
+          List<String> actualContents = results.stream().map(RecipeBriefing::getContent).toList();
+
           assertThat(actualContents).containsExactlyInAnyOrderElementsOf(briefingContents);
         }
 
         @DisplayName("Then - 다른 레시피의 브리핑은 포함되지 않는다")
         @Test
         void shouldNotIncludeOtherRecipeBriefings() {
-          List<UUID> resultRecipeIds = results.stream()
-              .map(RecipeBriefing::getRecipeId)
-              .distinct()
-              .toList();
+          List<UUID> resultRecipeIds =
+              results.stream().map(RecipeBriefing::getRecipeId).distinct().toList();
 
           assertThat(resultRecipeIds).hasSize(1);
           assertThat(resultRecipeIds.get(0)).isEqualTo(recipeId);
@@ -113,10 +107,10 @@ public class RecipeBriefingRepositoryTest extends DbContextTest {
       @BeforeEach
       void setUp() {
         nonExistentRecipeId = UUID.randomUUID();
-        
+
         UUID anotherRecipeId = UUID.randomUUID();
-        RecipeBriefing anotherBriefing = RecipeBriefing.create(
-            anotherRecipeId, "다른 레시피의 브리핑", clock);
+        RecipeBriefing anotherBriefing =
+            RecipeBriefing.create(anotherRecipeId, "다른 레시피의 브리핑", clock);
         recipeBriefingRepository.save(anotherBriefing);
       }
 
@@ -127,8 +121,9 @@ public class RecipeBriefingRepositoryTest extends DbContextTest {
         @DisplayName("Then - 빈 목록이 반환된다")
         @Test
         void shouldReturnEmptyList() {
-          List<RecipeBriefing> results = recipeBriefingRepository.findAllByRecipeId(nonExistentRecipeId);
-          
+          List<RecipeBriefing> results =
+              recipeBriefingRepository.findAllByRecipeId(nonExistentRecipeId);
+
           assertThat(results).isEmpty();
         }
       }
@@ -171,24 +166,17 @@ public class RecipeBriefingRepositoryTest extends DbContextTest {
         @Test
         void shouldReturnAllBriefings() {
           List<RecipeBriefing> results = recipeBriefingRepository.findAllByRecipeId(recipeId);
-          
-          assertThat(results).hasSize(3);
-          
-          List<String> contents = results.stream()
-              .map(RecipeBriefing::getContent)
-              .toList();
-          
-          assertThat(contents).containsExactlyInAnyOrder(
-              "첫 번째 브리핑", "두 번째 브리핑", "세 번째 브리핑"
-          );
 
-          List<LocalDateTime> createdTimes = results.stream()
-              .map(RecipeBriefing::getCreatedAt)
-              .toList();
-          
-          assertThat(createdTimes).containsExactlyInAnyOrder(
-              firstTime, secondTime, thirdTime
-          );
+          assertThat(results).hasSize(3);
+
+          List<String> contents = results.stream().map(RecipeBriefing::getContent).toList();
+
+          assertThat(contents).containsExactlyInAnyOrder("첫 번째 브리핑", "두 번째 브리핑", "세 번째 브리핑");
+
+          List<LocalDateTime> createdTimes =
+              results.stream().map(RecipeBriefing::getCreatedAt).toList();
+
+          assertThat(createdTimes).containsExactlyInAnyOrder(firstTime, secondTime, thirdTime);
         }
       }
     }
@@ -221,7 +209,7 @@ public class RecipeBriefingRepositoryTest extends DbContextTest {
         @Test
         void shouldSaveBriefingSuccessfully() {
           RecipeBriefing savedBriefing = recipeBriefingRepository.save(briefing);
-          
+
           assertThat(savedBriefing).isNotNull();
           assertThat(savedBriefing.getId()).isEqualTo(briefing.getId());
           assertThat(savedBriefing.getRecipeId()).isEqualTo(recipeId);

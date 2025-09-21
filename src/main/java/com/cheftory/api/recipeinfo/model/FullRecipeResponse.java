@@ -26,8 +26,7 @@ public record FullRecipeResponse(
     @JsonProperty("view_status") ViewStatus viewStatus,
     @JsonProperty("recipe_detail_meta") DetailMeta detailMeta,
     @JsonProperty("recipe_tags") List<Tag> tags,
-    @JsonProperty("recipe_briefings") List<Briefing> briefings
-) {
+    @JsonProperty("recipe_briefings") List<Briefing> briefings) {
 
   public static FullRecipeResponse of(FullRecipeInfo fullRecipeInfo) {
     return new FullRecipeResponse(
@@ -41,8 +40,7 @@ public record FullRecipeResponse(
             ? DetailMeta.from(fullRecipeInfo.getRecipeDetailMeta())
             : null,
         fullRecipeInfo.getRecipeTags().stream().map(Tag::from).toList(),
-        fullRecipeInfo.getRecipeBriefings().stream().map(Briefing::from).toList()
-    );
+        fullRecipeInfo.getRecipeBriefings().stream().map(Briefing::from).toList());
   }
 
   private record DetailMeta(
@@ -79,8 +77,7 @@ public record FullRecipeResponse(
     }
   }
 
-  private record Briefing(
-      @JsonProperty("content") String content) {
+  private record Briefing(@JsonProperty("content") String content) {
     public static Briefing from(RecipeBriefing briefing) {
       return new Briefing(briefing.getContent());
     }

@@ -227,7 +227,10 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
-                              enumFields("recent_recipes[].recipe_status", "레시피의 현재 상태: ", RecipeStatus.class),
+                              enumFields(
+                                  "recent_recipes[].recipe_status",
+                                  "레시피의 현재 상태: ",
+                                  RecipeStatus.class),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
           verify(recipeInfoService).findRecents(userId, page);
@@ -439,7 +442,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("video_info.video_seconds")
                                   .description("레시피 비디오 재생 시간"),
-
                               fieldWithPath("recipe_ingredient").description("레시피 재료 목록"),
                               fieldWithPath("recipe_ingredient[].name").description("재료 이름"),
                               fieldWithPath("recipe_ingredient[].amount").description("재료 양"),
@@ -487,10 +489,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .optional(),
                               fieldWithPath("recipe_tags").description("레시피 태그 목록"),
                               fieldWithPath("recipe_tags[].name").description("태그 이름"),
-
                               fieldWithPath("recipe_briefings").description("레시피 브리핑 목록"),
-                              fieldWithPath("recipe_briefings[].content").description("브리핑 내용")
-                          )));
+                              fieldWithPath("recipe_briefings[].content").description("브리핑 내용"))));
 
           verify(recipeInfoService).findFullRecipe(recipeId, userId);
 
@@ -535,7 +535,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .isEqualTo(RecipeProgressStep.FINISHED.name());
           assertThat(responseBody.getString("recipe_progresses[0].detail"))
               .isEqualTo(RecipeProgressDetail.FINISHED.name());
-          assertThat(responseBody.getString("recipe_briefings[0].content")).isEqualTo("이 요리는 맛있습니다");
+          assertThat(responseBody.getString("recipe_briefings[0].content"))
+              .isEqualTo("이 요리는 맛있습니다");
         }
       }
     }

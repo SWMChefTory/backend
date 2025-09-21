@@ -35,7 +35,8 @@ public class RecipeBriefingServiceTest {
     briefingClient = mock(BriefingClient.class);
     recipeBriefingRepository = mock(RecipeBriefingRepository.class);
     clock = mock(Clock.class);
-    recipeBriefingService = new RecipeBriefingService(briefingClient, recipeBriefingRepository, clock);
+    recipeBriefingService =
+        new RecipeBriefingService(briefingClient, recipeBriefingRepository, clock);
   }
 
   @DisplayName("레시피 브리핑 생성")
@@ -54,12 +55,9 @@ public class RecipeBriefingServiceTest {
       void setUp() {
         videoId = "valid-video-id";
         recipeId = UUID.randomUUID();
-        
+
         briefingClientResponse = mock(BriefingClientResponse.class);
-        recipeBriefings = List.of(
-            mock(RecipeBriefing.class),
-            mock(RecipeBriefing.class)
-        );
+        recipeBriefings = List.of(mock(RecipeBriefing.class), mock(RecipeBriefing.class));
 
         doReturn(briefingClientResponse).when(briefingClient).fetchBriefing(videoId);
         doReturn(recipeBriefings).when(briefingClientResponse).toRecipeBriefing(recipeId, clock);
@@ -74,7 +72,7 @@ public class RecipeBriefingServiceTest {
         @DisplayName("Then - 브리핑이 성공적으로 생성된다")
         void thenCreatesBriefingSuccessfully() {
           recipeBriefingService.create(videoId, recipeId);
-          
+
           verify(briefingClient).fetchBriefing(videoId);
           verify(briefingClientResponse).toRecipeBriefing(recipeId, clock);
           verify(recipeBriefingRepository).saveAll(recipeBriefings);
@@ -108,7 +106,8 @@ public class RecipeBriefingServiceTest {
         void thenThrowsBriefingCreateFailException() {
           assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
               .isInstanceOf(RecipeBriefingException.class)
-              .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
 
           verify(briefingClient).fetchBriefing(videoId);
         }
@@ -128,13 +127,15 @@ public class RecipeBriefingServiceTest {
       void setUp() {
         videoId = "valid-video-id";
         recipeId = UUID.randomUUID();
-        
+
         briefingClientResponse = mock(BriefingClientResponse.class);
         recipeBriefings = List.of(mock(RecipeBriefing.class));
 
         doReturn(briefingClientResponse).when(briefingClient).fetchBriefing(videoId);
         doReturn(recipeBriefings).when(briefingClientResponse).toRecipeBriefing(recipeId, clock);
-        doThrow(new RuntimeException("Database error")).when(recipeBriefingRepository).saveAll(anyList());
+        doThrow(new RuntimeException("Database error"))
+            .when(recipeBriefingRepository)
+            .saveAll(anyList());
       }
 
       @Nested
@@ -146,7 +147,8 @@ public class RecipeBriefingServiceTest {
         void thenThrowsBriefingCreateFailException() {
           assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
               .isInstanceOf(RecipeBriefingException.class)
-              .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
 
           verify(briefingClient).fetchBriefing(videoId);
           verify(briefingClientResponse).toRecipeBriefing(recipeId, clock);
@@ -169,20 +171,15 @@ public class RecipeBriefingServiceTest {
       @BeforeEach
       void setUp() {
         recipeId = UUID.randomUUID();
-        expectedBriefings = List.of(
-            mock(RecipeBriefing.class),
-            mock(RecipeBriefing.class)
-        );
-        doReturn(expectedBriefings)
-            .when(recipeBriefingRepository)
-            .findAllByRecipeId(recipeId);
+        expectedBriefings = List.of(mock(RecipeBriefing.class), mock(RecipeBriefing.class));
+        doReturn(expectedBriefings).when(recipeBriefingRepository).findAllByRecipeId(recipeId);
       }
 
       @Test
       @DisplayName("When - 브리핑 목록을 조회하면 Then - 해당 브리핑 목록이 반환된다")
       void whenFindsByRecipeId_thenReturnsBriefings() {
         List<RecipeBriefing> result = recipeBriefingService.finds(recipeId);
-        
+
         assertThat(result).isEqualTo(expectedBriefings);
         assertThat(result).hasSize(2);
         verify(recipeBriefingRepository).findAllByRecipeId(recipeId);
@@ -204,7 +201,7 @@ public class RecipeBriefingServiceTest {
       @DisplayName("When - 브리핑 목록을 조회하면 Then - 빈 목록이 반환된다")
       void whenFindsByRecipeId_thenReturnsEmptyList() {
         List<RecipeBriefing> result = recipeBriefingService.finds(recipeId);
-        
+
         assertThat(result).isEmpty();
         verify(recipeBriefingRepository).findAllByRecipeId(recipeId);
       }
@@ -248,11 +245,12 @@ public class RecipeBriefingServiceTest {
       assertThat(result.get(0).getContent()).isEqualTo("이 요리는 매우 맛있습니다");
       assertThat(result.get(1).getContent()).isEqualTo("조리 시간이 30분 정도 걸립니다");
       assertThat(result.get(2).getContent()).isEqualTo("초보자도 쉽게 따라할 수 있어요");
-      
+
       // 모든 RecipeBriefing이 같은 recipeId를 가지는지 확인
-      result.forEach(briefing -> {
-        assertThat(briefing.getRecipeId()).isEqualTo(recipeId);
-      });
+      result.forEach(
+          briefing -> {
+            assertThat(briefing.getRecipeId()).isEqualTo(recipeId);
+          });
     }
 
     @Test

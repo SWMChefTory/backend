@@ -1,6 +1,5 @@
 package com.cheftory.api.recipeinfo.briefing.client;
 
-import com.cheftory.api.recipeinfo.briefing.client.dto.BriefingClientErrorResponse;
 import com.cheftory.api.recipeinfo.briefing.client.dto.BriefingClientRequest;
 import com.cheftory.api.recipeinfo.briefing.client.dto.BriefingClientResponse;
 import com.cheftory.api.recipeinfo.briefing.client.exception.BriefingClientErrorCode;

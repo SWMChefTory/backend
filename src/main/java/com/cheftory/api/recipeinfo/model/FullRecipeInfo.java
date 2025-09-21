@@ -36,8 +36,7 @@ public class FullRecipeInfo {
       RecipeYoutubeMeta recipeYoutubeMeta,
       RecipeViewStatus recipeViewStatus,
       Recipe recipe,
-      List<RecipeBriefing> recipeBriefings
-      ) {
+      List<RecipeBriefing> recipeBriefings) {
     return FullRecipeInfo.builder()
         .recipeYoutubeMeta(recipeYoutubeMeta)
         .recipeIngredients(recipeIngredients)

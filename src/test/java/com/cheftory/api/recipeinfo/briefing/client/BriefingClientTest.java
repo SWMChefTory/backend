@@ -32,13 +32,11 @@ public class BriefingClientTest {
   void setUp() throws IOException {
     mockWebServer = new MockWebServer();
     mockWebServer.start();
-    
+
     objectMapper = new ObjectMapper();
-    
-    WebClient webClient = WebClient.builder()
-        .baseUrl(mockWebServer.url("/").toString())
-        .build();
-    
+
+    WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+
     briefingClient = new BriefingClient(webClient);
   }
 
@@ -68,20 +66,15 @@ public class BriefingClientTest {
 
         @BeforeEach
         void setUp() throws Exception {
-          BriefingClientResponse expectedResponse = new BriefingClientResponse(
-              List.of(
-                  "이 요리는 매우 맛있습니다",
-                  "조리 시간이 30분 정도 걸립니다",
-                  "초보자도 쉽게 따라할 수 있어요"
-              )
-          );
+          BriefingClientResponse expectedResponse =
+              new BriefingClientResponse(
+                  List.of("이 요리는 매우 맛있습니다", "조리 시간이 30분 정도 걸립니다", "초보자도 쉽게 따라할 수 있어요"));
 
           mockWebServer.enqueue(
               new MockResponse()
                   .setResponseCode(200)
                   .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody(objectMapper.writeValueAsString(expectedResponse))
-          );
+                  .setBody(objectMapper.writeValueAsString(expectedResponse)));
         }
 
         @DisplayName("Then - 브리핑 응답이 성공적으로 반환된다")
@@ -91,11 +84,8 @@ public class BriefingClientTest {
 
           assertThat(result).isNotNull();
           assertThat(result.briefings()).hasSize(3);
-          assertThat(result.briefings()).containsExactly(
-              "이 요리는 매우 맛있습니다",
-              "조리 시간이 30분 정도 걸립니다",
-              "초보자도 쉽게 따라할 수 있어요"
-          );
+          assertThat(result.briefings())
+              .containsExactly("이 요리는 매우 맛있습니다", "조리 시간이 30분 정도 걸립니다", "초보자도 쉽게 따라할 수 있어요");
 
           // 요청이 올바르게 전송되었는지 확인
           RecordedRequest recordedRequest = mockWebServer.takeRequest();
@@ -122,8 +112,7 @@ public class BriefingClientTest {
               new MockResponse()
                   .setResponseCode(200)
                   .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody(objectMapper.writeValueAsString(expectedResponse))
-          );
+                  .setBody(objectMapper.writeValueAsString(expectedResponse)));
         }
 
         @DisplayName("Then - 빈 브리핑 목록이 반환된다")
@@ -176,8 +165,7 @@ public class BriefingClientTest {
               new MockResponse()
                   .setResponseCode(500)
                   .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody("{\"error\":\"Internal Server Error\"}")
-          );
+                  .setBody("{\"error\":\"Internal Server Error\"}"));
         }
 
         @DisplayName("Then - BriefingClientException이 발생한다")
@@ -199,8 +187,7 @@ public class BriefingClientTest {
               new MockResponse()
                   .setResponseCode(400)
                   .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody("{\"error\":\"Bad Request\"}")
-          );
+                  .setBody("{\"error\":\"Bad Request\"}"));
         }
 
         @DisplayName("Then - BriefingClientException이 발생한다")
@@ -241,13 +228,12 @@ public class BriefingClientTest {
       @BeforeEach
       void setUp() {
         videoId = "invalid-json-video-id";
-        
+
         mockWebServer.enqueue(
             new MockResponse()
                 .setResponseCode(200)
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody("{ invalid json }")
-        );
+                .setBody("{ invalid json }"));
       }
 
       @Nested
@@ -273,25 +259,22 @@ public class BriefingClientTest {
     @Test
     void shouldSendCorrectRequestFormat() throws Exception {
       String videoId = "test-video-123";
-      
+
       // 성공 응답 모킹
-      BriefingClientResponse mockResponse = new BriefingClientResponse(
-          List.of("테스트 브리핑")
-      );
-      
+      BriefingClientResponse mockResponse = new BriefingClientResponse(List.of("테스트 브리핑"));
+
       mockWebServer.enqueue(
           new MockResponse()
               .setResponseCode(200)
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(objectMapper.writeValueAsString(mockResponse))
-      );
+              .setBody(objectMapper.writeValueAsString(mockResponse)));
 
       // 요청 실행
       briefingClient.fetchBriefing(videoId);
 
       // 요청 검증
       RecordedRequest recordedRequest = mockWebServer.takeRequest();
-      
+
       assertThat(recordedRequest.getMethod()).isEqualTo("POST");
       assertThat(recordedRequest.getPath()).isEqualTo("/briefings");
       assertThat(recordedRequest.getHeader(HttpHeaders.CONTENT_TYPE))
@@ -300,7 +283,7 @@ public class BriefingClientTest {
       // 요청 본문이 올바른 JSON 형식인지 확인
       String requestBody = recordedRequest.getBody().readUtf8();
       assertThat(requestBody).isNotEmpty();
-      
+
       // JSON 파싱 가능한지 확인
       ObjectMapper mapper = new ObjectMapper();
       var requestJson = mapper.readTree(requestBody);

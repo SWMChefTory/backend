@@ -1,6 +1,5 @@
 package com.cheftory.api.recipeinfo;
 
-import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.briefing.RecipeBriefingService;
 import com.cheftory.api.recipeinfo.briefing.exception.RecipeBriefingErrorCode;
 import com.cheftory.api.recipeinfo.caption.RecipeCaptionService;

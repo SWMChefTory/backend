@@ -55,7 +55,9 @@ public class RecipeProgressServiceTest {
                       recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY),
                   RecipeProgress.create(
                       recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.CAPTION));
-          doReturn(recipeProgress).when(recipeProgressRepository).findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
+          doReturn(recipeProgress)
+              .when(recipeProgressRepository)
+              .findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
         }
 
         @DisplayName("Then - 해당 레시피의 진행 상황 목록이 반환된다")
@@ -71,7 +73,8 @@ public class RecipeProgressServiceTest {
         @Test
         void shouldCallRepositoryWithSortParameter() {
           recipeProgressService.finds(recipeId);
-          verify(recipeProgressRepository).findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
+          verify(recipeProgressRepository)
+              .findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
         }
       }
     }
@@ -91,16 +94,22 @@ public class RecipeProgressServiceTest {
       @BeforeEach
       void setUp() {
         recipeId = UUID.randomUUID();
-        
+
         // 시간 순서대로 정렬된 RecipeProgress 목록 생성
-        sortedRecipeProgress = List.of(
-            RecipeProgress.create(recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY),
-            RecipeProgress.create(recipeId, clock, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION),
-            RecipeProgress.create(recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP),
-            RecipeProgress.create(recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED)
-        );
-        
-        doReturn(sortedRecipeProgress).when(recipeProgressRepository).findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
+        sortedRecipeProgress =
+            List.of(
+                RecipeProgress.create(
+                    recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY),
+                RecipeProgress.create(
+                    recipeId, clock, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION),
+                RecipeProgress.create(
+                    recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP),
+                RecipeProgress.create(
+                    recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED));
+
+        doReturn(sortedRecipeProgress)
+            .when(recipeProgressRepository)
+            .findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
       }
 
       @Nested
@@ -111,15 +120,16 @@ public class RecipeProgressServiceTest {
         @Test
         void shouldReturnRecipeProgressListSortedByCreatedAtAsc() {
           List<RecipeProgress> results = recipeProgressService.finds(recipeId);
-          
+
           assert results.size() == 4;
           assert results.get(0).getStep() == RecipeProgressStep.READY;
           assert results.get(1).getStep() == RecipeProgressStep.CAPTION;
           assert results.get(2).getStep() == RecipeProgressStep.STEP;
           assert results.get(3).getStep() == RecipeProgressStep.FINISHED;
-          
+
           // Repository 메서드가 올바른 정렬 파라미터와 함께 호출되는지 확인
-          verify(recipeProgressRepository).findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
+          verify(recipeProgressRepository)
+              .findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
         }
       }
     }

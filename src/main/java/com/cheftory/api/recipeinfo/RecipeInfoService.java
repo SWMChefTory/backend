@@ -143,8 +143,7 @@ public class RecipeInfoService {
           youtubeMeta,
           viewStatus,
           recipe,
-          briefings
-      );
+          briefings);
     } catch (RecipeInfoException e) {
       if (e.getErrorMessage() == RecipeErrorCode.RECIPE_NOT_FOUND) {
         throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
@@ -289,6 +288,7 @@ public class RecipeInfoService {
                 CountRecipeCategory.of(category, countMap.getOrDefault(category.getId(), 0)))
         .toList();
   }
+
   public void deleteCategory(UUID categoryId) {
     recipeViewStatusService.deleteCategories(categoryId);
     recipeCategoryService.delete(categoryId);

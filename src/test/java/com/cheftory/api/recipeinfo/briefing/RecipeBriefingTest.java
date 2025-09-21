@@ -19,7 +19,7 @@ public class RecipeBriefingTest {
     UUID recipeId = UUID.randomUUID();
     String content = "이 요리는 매우 맛있습니다";
     LocalDateTime fixedTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-    
+
     Clock mockClock = mock(Clock.class);
     doReturn(fixedTime).when(mockClock).now();
 
@@ -39,7 +39,7 @@ public class RecipeBriefingTest {
     UUID secondRecipeId = UUID.randomUUID();
     String content = "조리 시간이 30분 정도 걸립니다";
     LocalDateTime fixedTime = LocalDateTime.of(2024, 2, 1, 15, 30, 0);
-    
+
     Clock mockClock = mock(Clock.class);
     doReturn(fixedTime).when(mockClock).now();
 
@@ -58,11 +58,12 @@ public class RecipeBriefingTest {
   void shouldCreateWithLongContent() {
     // given
     UUID recipeId = UUID.randomUUID();
-    String longContent = "이 요리는 정말 맛있고 건강한 재료들로 만들어진 요리입니다. " +
-        "조리 시간은 약 45분 정도 소요되며, 초보자도 쉽게 따라할 수 있는 레시피입니다. " +
-        "특히 이 요리의 특징은 영양가가 높고 칼로리가 낮다는 점입니다.";
+    String longContent =
+        "이 요리는 정말 맛있고 건강한 재료들로 만들어진 요리입니다. "
+            + "조리 시간은 약 45분 정도 소요되며, 초보자도 쉽게 따라할 수 있는 레시피입니다. "
+            + "특히 이 요리의 특징은 영양가가 높고 칼로리가 낮다는 점입니다.";
     LocalDateTime fixedTime = LocalDateTime.of(2024, 5, 1, 19, 45, 30);
-    
+
     Clock mockClock = mock(Clock.class);
     doReturn(fixedTime).when(mockClock).now();
 

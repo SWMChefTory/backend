@@ -32,8 +32,7 @@ public record RecentRecipesResponse(
       @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
       @JsonProperty("video_id") String videoId,
       @JsonProperty("video_seconds") Integer videoSeconds,
-      @JsonProperty("recipe_status") String recipeStatus)
-  {
+      @JsonProperty("recipe_status") String recipeStatus) {
     public static RecentRecipeResponse from(RecipeHistory info) {
       return new RecentRecipeResponse(
           info.getRecipeViewStatus().getViewedAt(),

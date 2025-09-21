@@ -66,7 +66,6 @@ class AsyncRecipeInfoCreationServiceTest {
     recipeIdentifyService = mock(RecipeIdentifyService.class);
     recipeBriefingService = mock(RecipeBriefingService.class);
 
-
     directExecutor = Runnable::run;
 
     sut =
@@ -346,7 +345,7 @@ class AsyncRecipeInfoCreationServiceTest {
             // 캡션과 디테일은 정상 처리되어야 함
             verify(recipeCaptionService).create(videoId, recipeId);
             verify(recipeDetailService).getRecipeDetails(videoId, caption);
-            
+
             // 하지만 브리핑은 실패해야 함
             verify(recipeBriefingService).create(videoId, recipeId);
           }
