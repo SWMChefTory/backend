@@ -17,6 +17,7 @@ import com.cheftory.api.recipeinfo.model.CountRecipeCategory;
 import com.cheftory.api.recipeinfo.model.FullRecipeInfo;
 import com.cheftory.api.recipeinfo.model.RecipeHistory;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
+import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressService;
 import com.cheftory.api.recipeinfo.recipe.RecipeService;
@@ -293,5 +294,11 @@ public class RecipeInfoService {
   public void deleteCategory(UUID categoryId) {
     recipeViewStatusService.deleteCategories(categoryId);
     recipeCategoryService.delete(categoryId);
+  }
+
+  public RecipeProgressStatus findRecipeProgress(UUID recipeId) {
+    List<RecipeProgress> progresses = recipeProgressService.finds(recipeId);
+    Recipe recipe = recipeService.find(recipeId);
+    return RecipeProgressStatus.of(recipe, progresses);
   }
 }

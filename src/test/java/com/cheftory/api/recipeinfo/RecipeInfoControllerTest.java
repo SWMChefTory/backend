@@ -29,6 +29,7 @@ import com.cheftory.api.recipeinfo.model.CountRecipeCategory;
 import com.cheftory.api.recipeinfo.model.FullRecipeInfo;
 import com.cheftory.api.recipeinfo.model.RecipeHistory;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
+import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressStep;
@@ -1294,6 +1295,394 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
             verify(recipeInfoService).findCategories(userId);
           }
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 진행 상황 조회")
+  class GetRecipeProgress {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+    class GivenValidRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenRequestingRecipeProgress {
+
+        private RecipeProgressStatus progressStatus;
+        private Recipe recipe;
+        private List<RecipeProgress> progresses;
+
+        @BeforeEach
+        void setUp() {
+          recipe = mock(Recipe.class);
+          doReturn(RecipeStatus.SUCCESS).when(recipe).getRecipeStatus();
+
+          RecipeProgress progress1 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+          doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+          RecipeProgress progress2 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+          doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+          RecipeProgress progress3 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.FINISHED).when(progress3).getStep();
+          doReturn(RecipeProgressDetail.FINISHED).when(progress3).getDetail();
+
+          progresses = List.of(progress1, progress2, progress3);
+
+          progressStatus = mock(RecipeProgressStatus.class);
+          doReturn(recipe).when(progressStatus).getRecipe();
+          doReturn(progresses).when(progressStatus).getProgresses();
+
+          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Then - 레시피 진행 상황을 성공적으로 반환해야 한다")
+        void thenShouldReturnRecipeProgress() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/api/v1/recipes/progress/{recipeId}", recipeId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          pathParameters(parameterWithName("recipeId").description("조회할 레시피 ID")),
+                          responseFields(
+                              enumFields("recipe_status", "레시피의 현재 상태: ", RecipeStatus.class),
+                              fieldWithPath("recipe_progress_statuses").description("레시피 진행 상황 목록"),
+                              enumFields(
+                                  "recipe_progress_statuses[].progress_step",
+                                  "현재 진행 상태",
+                                  RecipeProgressStep.class),
+                              enumFields(
+                                  "recipe_progress_statuses[].progress_detail",
+                                  "현재 진행 상세 내용",
+                                  RecipeProgressDetail.class))));
+
+          verify(recipeInfoService).findRecipeProgress(recipeId);
+
+          var responseBody = response.extract().jsonPath();
+
+          assertThat(responseBody.getString("recipe_status")).isEqualTo("SUCCESS");
+          assertThat(responseBody.getList("recipe_progress_statuses")).hasSize(3);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 진행 중인 레시피 ID가 주어졌을 때")
+    class GivenInProgressRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenRequestingRecipeProgress {
+
+        private RecipeProgressStatus progressStatus;
+        private Recipe recipe;
+        private List<RecipeProgress> progresses;
+
+        @BeforeEach
+        void setUp() {
+          recipe = mock(Recipe.class);
+          doReturn(RecipeStatus.IN_PROGRESS).when(recipe).getRecipeStatus();
+
+          RecipeProgress progress1 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+          doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+          RecipeProgress progress2 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+          doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+          progresses = List.of(progress1, progress2);
+
+          progressStatus = mock(RecipeProgressStatus.class);
+          doReturn(recipe).when(progressStatus).getRecipe();
+          doReturn(progresses).when(progressStatus).getProgresses();
+
+          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Then - 부분적인 진행 상황을 성공적으로 반환해야 한다")
+        void thenShouldReturnPartialProgress() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/api/v1/recipes/progress/{recipeId}", recipeId)
+                  .then()
+                  .status(HttpStatus.OK);
+
+          verify(recipeInfoService).findRecipeProgress(recipeId);
+
+          var responseBody = response.extract().jsonPath();
+
+          assertThat(responseBody.getString("recipe_status")).isEqualTo("IN_PROGRESS");
+          assertThat(responseBody.getList("recipe_progress_statuses")).hasSize(2);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 시작되지 않은 레시피 ID가 주어졌을 때")
+    class GivenNotStartedRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenRequestingRecipeProgress {
+
+        private RecipeProgressStatus progressStatus;
+        private Recipe recipe;
+
+        @BeforeEach
+        void setUp() {
+          recipe = mock(Recipe.class);
+          doReturn(RecipeStatus.IN_PROGRESS).when(recipe).getRecipeStatus();
+
+          progressStatus = mock(RecipeProgressStatus.class);
+          doReturn(recipe).when(progressStatus).getRecipe();
+          doReturn(List.of()).when(progressStatus).getProgresses();
+
+          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Then - 빈 진행 상황 목록을 반환해야 한다")
+        void thenShouldReturnEmptyProgress() {
+          given()
+              .contentType(ContentType.JSON)
+              .get("/api/v1/recipes/progress/{recipeId}", recipeId)
+              .then()
+              .status(HttpStatus.OK)
+              .body("recipe_progress_statuses", hasSize(0));
+
+          verify(recipeInfoService).findRecipeProgress(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 브리핑 포함된 레시피 ID가 주어졌을 때")
+    class GivenRecipeIdWithBriefing {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenRequestingRecipeProgress {
+
+        private RecipeProgressStatus progressStatus;
+        private Recipe recipe;
+        private List<RecipeProgress> progresses;
+
+        @BeforeEach
+        void setUp() {
+          recipe = mock(Recipe.class);
+          doReturn(RecipeStatus.SUCCESS).when(recipe).getRecipeStatus();
+
+          RecipeProgress progress1 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+          doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+          RecipeProgress progress2 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+          doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+          RecipeProgress progress3 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.BRIEFING).when(progress3).getStep();
+          doReturn(RecipeProgressDetail.BRIEFING).when(progress3).getDetail();
+
+          RecipeProgress progress4 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.STEP).when(progress4).getStep();
+          doReturn(RecipeProgressDetail.STEP).when(progress4).getDetail();
+
+          progresses = List.of(progress1, progress2, progress3, progress4);
+
+          progressStatus = mock(RecipeProgressStatus.class);
+          doReturn(recipe).when(progressStatus).getRecipe();
+          doReturn(progresses).when(progressStatus).getProgresses();
+
+          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Then - 브리핑을 포함한 진행 상황을 성공적으로 반환해야 한다")
+        void thenShouldReturnProgressWithBriefing() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/api/v1/recipes/progress/{recipeId}", recipeId)
+                  .then()
+                  .status(HttpStatus.OK);
+
+          verify(recipeInfoService).findRecipeProgress(recipeId);
+
+          var responseBody = response.extract().jsonPath();
+
+          assertThat(responseBody.getList("recipe_progress_statuses")).hasSize(4);
+
+          boolean hasBriefingStep = false;
+          for (int i = 0; i < 4; i++) {
+            String step =
+                responseBody.getString("recipe_progress_statuses[" + i + "].progress_step");
+            String detail =
+                responseBody.getString("recipe_progress_statuses[" + i + "].progress_detail");
+            if ("BRIEFING".equals(step) && "BRIEFING".equals(detail)) {
+              hasBriefingStep = true;
+              break;
+            }
+          }
+          assertThat(hasBriefingStep).isTrue();
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 복잡한 다단계 진행을 가진 레시피 ID가 주어졌을 때")
+    class GivenComplexMultiStepProgressRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 진행 상황을 조회한다면")
+      class WhenRequestingRecipeProgress {
+
+        private RecipeProgressStatus progressStatus;
+        private Recipe recipe;
+        private List<RecipeProgress> progresses;
+
+        @BeforeEach
+        void setUp() {
+          recipe = mock(Recipe.class);
+          doReturn(RecipeStatus.SUCCESS).when(recipe).getRecipeStatus();
+
+          // 모든 Detail 타입을 포함한 복잡한 진행 상황
+          RecipeProgress progress1 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+          doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+          RecipeProgress progress2 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+          doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+          RecipeProgress progress3 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.DETAIL).when(progress3).getStep();
+          doReturn(RecipeProgressDetail.TAG).when(progress3).getDetail();
+
+          RecipeProgress progress4 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.DETAIL).when(progress4).getStep();
+          doReturn(RecipeProgressDetail.DETAIL_META).when(progress4).getDetail();
+
+          RecipeProgress progress5 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.DETAIL).when(progress5).getStep();
+          doReturn(RecipeProgressDetail.INGREDIENT).when(progress5).getDetail();
+
+          RecipeProgress progress6 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.BRIEFING).when(progress6).getStep();
+          doReturn(RecipeProgressDetail.BRIEFING).when(progress6).getDetail();
+
+          RecipeProgress progress7 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.STEP).when(progress7).getStep();
+          doReturn(RecipeProgressDetail.STEP).when(progress7).getDetail();
+
+          RecipeProgress progress8 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.FINISHED).when(progress8).getStep();
+          doReturn(RecipeProgressDetail.FINISHED).when(progress8).getDetail();
+
+          progresses =
+              List.of(
+                  progress1, progress2, progress3, progress4, progress5, progress6, progress7,
+                  progress8);
+
+          progressStatus = mock(RecipeProgressStatus.class);
+          doReturn(recipe).when(progressStatus).getRecipe();
+          doReturn(progresses).when(progressStatus).getProgresses();
+
+          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Then - 모든 복잡한 진행 단계들을 성공적으로 반환해야 한다")
+        void thenShouldReturnAllComplexProgressSteps() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/api/v1/recipes/progress/{recipeId}", recipeId)
+                  .then()
+                  .status(HttpStatus.OK);
+
+          verify(recipeInfoService).findRecipeProgress(recipeId);
+
+          var responseBody = response.extract().jsonPath();
+
+          // 전체 진행 단계 수 검증
+          assertThat(responseBody.getList("recipe_progress_statuses")).hasSize(8);
+
+          // 시작과 끝 검증
+          assertThat(responseBody.getString("recipe_progress_statuses[0].progress_step"))
+              .isEqualTo("READY");
+          assertThat(responseBody.getString("recipe_progress_statuses[0].progress_detail"))
+              .isEqualTo("READY");
+
+          assertThat(responseBody.getString("recipe_progress_statuses[7].progress_step"))
+              .isEqualTo("FINISHED");
+          assertThat(responseBody.getString("recipe_progress_statuses[7].progress_detail"))
+              .isEqualTo("FINISHED");
+
+          // DETAIL 단계의 다양한 세부 사항들 확인
+          List<String> detailSteps = List.of("TAG", "DETAIL_META", "INGREDIENT");
+          int detailCount = 0;
+          for (int i = 0; i < 8; i++) {
+            String step =
+                responseBody.getString("recipe_progress_statuses[" + i + "].progress_step");
+            String detail =
+                responseBody.getString("recipe_progress_statuses[" + i + "].progress_detail");
+            if ("DETAIL".equals(step) && detailSteps.contains(detail)) {
+              detailCount++;
+            }
+          }
+          assertThat(detailCount).isEqualTo(3); // TAG, DETAIL_META, INGREDIENT
         }
       }
     }
