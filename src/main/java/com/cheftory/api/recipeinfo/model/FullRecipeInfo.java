@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.model;
 
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
@@ -24,6 +25,7 @@ public class FullRecipeInfo {
   private RecipeViewStatus recipeViewStatus;
   private RecipeYoutubeMeta recipeYoutubeMeta;
   private Recipe recipe;
+  private List<RecipeBriefing> recipeBriefings;
 
   public static FullRecipeInfo of(
       List<RecipeStep> recipeSteps,
@@ -33,7 +35,9 @@ public class FullRecipeInfo {
       List<RecipeTag> recipeTags,
       RecipeYoutubeMeta recipeYoutubeMeta,
       RecipeViewStatus recipeViewStatus,
-      Recipe recipe) {
+      Recipe recipe,
+      List<RecipeBriefing> recipeBriefings
+      ) {
     return FullRecipeInfo.builder()
         .recipeYoutubeMeta(recipeYoutubeMeta)
         .recipeIngredients(recipeIngredients)
@@ -43,6 +47,7 @@ public class FullRecipeInfo {
         .recipeProgresses(recipeProgresses)
         .recipeViewStatus(recipeViewStatus)
         .recipe(recipe)
+        .recipeBriefings(recipeBriefings)
         .build();
   }
 }

@@ -1,5 +1,7 @@
 package com.cheftory.api.recipeinfo;
 
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefingService;
 import com.cheftory.api.recipeinfo.category.RecipeCategory;
 import com.cheftory.api.recipeinfo.category.RecipeCategoryService;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
@@ -60,6 +62,7 @@ public class RecipeInfoService {
   private final RecipeProgressService recipeProgressService;
   private final RecipeTagService recipeTagService;
   private final RecipeIdentifyService recipeIdentifyService;
+  private final RecipeBriefingService recipeBriefingService;
   private final RecipeService recipeService;
 
   /**
@@ -127,6 +130,7 @@ public class RecipeInfoService {
       Optional<RecipeDetailMeta> detailMeta = recipeDetailMetaService.find(recipeId);
       List<RecipeProgress> progresses = recipeProgressService.finds(recipeId);
       List<RecipeTag> tags = recipeTagService.finds(recipeId);
+      List<RecipeBriefing> briefings = recipeBriefingService.finds(recipeId);
       RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.find(recipeId);
       RecipeViewStatus viewStatus = recipeViewStatusService.find(userId, recipeId);
 
@@ -138,7 +142,9 @@ public class RecipeInfoService {
           tags,
           youtubeMeta,
           viewStatus,
-          recipe);
+          recipe,
+          briefings
+      );
     } catch (RecipeInfoException e) {
       if (e.getErrorMessage() == RecipeErrorCode.RECIPE_NOT_FOUND) {
         throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
@@ -283,7 +289,6 @@ public class RecipeInfoService {
                 CountRecipeCategory.of(category, countMap.getOrDefault(category.getId(), 0)))
         .toList();
   }
-
   public void deleteCategory(UUID categoryId) {
     recipeViewStatusService.deleteCategories(categoryId);
     recipeCategoryService.delete(categoryId);

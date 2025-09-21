@@ -59,6 +59,7 @@ class RecipeProgressTest {
       case CAPTION -> RecipeProgressStep.CAPTION;
       case STEP -> RecipeProgressStep.STEP;
       case FINISHED -> RecipeProgressStep.FINISHED;
+      case BRIEFING -> RecipeProgressStep.BRIEFING;
       case TAG, DETAIL_META, INGREDIENT -> RecipeProgressStep.DETAIL;
     };
   }
@@ -70,6 +71,7 @@ class RecipeProgressTest {
       case DETAIL -> RecipeProgressDetail.DETAIL_META;
       case STEP -> RecipeProgressDetail.STEP;
       case FINISHED -> RecipeProgressDetail.FINISHED;
+      case BRIEFING -> RecipeProgressDetail.BRIEFING;
     };
   }
 }

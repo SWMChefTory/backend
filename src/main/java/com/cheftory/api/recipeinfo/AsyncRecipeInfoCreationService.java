@@ -1,5 +1,8 @@
 package com.cheftory.api.recipeinfo;
 
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefingService;
+import com.cheftory.api.recipeinfo.briefing.exception.RecipeBriefingErrorCode;
 import com.cheftory.api.recipeinfo.caption.RecipeCaptionService;
 import com.cheftory.api.recipeinfo.caption.entity.RecipeCaption;
 import com.cheftory.api.recipeinfo.caption.exception.RecipeCaptionErrorCode;
@@ -40,6 +43,7 @@ public class AsyncRecipeInfoCreationService {
   private final RecipeDetailService recipeDetailService;
   private final RecipeYoutubeMetaService recipeYoutubeMetaService;
   private final RecipeIdentifyService recipeIdentifyService;
+  private final RecipeBriefingService recipeBriefingService;
   private final Executor recipeInfoCreateExecutor;
 
   @Async("recipeInfoCreateExecutor")
@@ -61,7 +65,14 @@ public class AsyncRecipeInfoCreationService {
               },
               recipeInfoCreateExecutor);
 
-      CompletableFuture.allOf(detailFuture, stepFuture).join();
+      CompletableFuture<Void> briefingFuture =
+          CompletableFuture.runAsync(
+              () -> {
+                progressBriefing(recipeId, videoId);
+              },
+              recipeInfoCreateExecutor);
+
+      CompletableFuture.allOf(detailFuture, stepFuture, briefingFuture).join();
 
       finalizeRecipe(recipeId);
     } catch (RecipeInfoException e) {
@@ -72,6 +83,10 @@ public class AsyncRecipeInfoCreationService {
       }
       if (e.getErrorMessage() == RecipeCaptionErrorCode.CAPTION_CREATE_FAIL) {
         log.error("레시피 생성에 실패했습니다. - 영상 정보 없음", e);
+        failedRecipe(recipeId);
+      }
+      if (e.getErrorMessage() == RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL) {
+        log.error("레시피 생성에 실패했습니다. - 브리핑 생성 실패", e);
         failedRecipe(recipeId);
       }
     } catch (Exception e) {
@@ -109,6 +124,12 @@ public class AsyncRecipeInfoCreationService {
     recipeProgressService.create(
         recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
     return recipeCaptionService.find(captionId);
+  }
+
+  private void progressBriefing(UUID recipeId, String videoId) {
+    recipeBriefingService.create(videoId, recipeId);
+    recipeProgressService.create(
+        recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
   }
 
   private void finalizeRecipe(UUID recipeId) {

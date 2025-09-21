@@ -21,6 +21,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 
 import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.category.RecipeCategory;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
@@ -327,13 +328,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       class WhenRequestingRecipeDetail {
 
         private FullRecipeInfo fullRecipe;
-        private RecipeYoutubeMeta youtubeMeta; // YoutubeVideoInfo -> RecipeYoutubeMeta로 변경
-        private List<RecipeIngredient> ingredients; // RecipeAnalysis -> List<RecipeIngredient>로 변경
+        private RecipeYoutubeMeta youtubeMeta;
+        private List<RecipeIngredient> ingredients;
         private RecipeViewStatus viewStatus;
-        private List<RecipeStep> recipeSteps; // 단일 객체에서 List로 변경
-        private RecipeDetailMeta detailMeta; // 새로 추가
-        private List<RecipeTag> tags; // 새로 추가
-        private List<RecipeProgress> progresses; // 새로 추가
+        private List<RecipeStep> recipeSteps;
+        private RecipeDetailMeta detailMeta;
+        private List<RecipeTag> tags;
+        private List<RecipeProgress> progresses;
+        private List<RecipeBriefing> briefings;
         private Recipe recipe;
         private UUID viewStatusId;
         private UUID stepId;
@@ -341,15 +343,13 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         @BeforeEach
         void setUp() {
           fullRecipe = mock(FullRecipeInfo.class);
-          recipe = mock(Recipe.class); // Recipe 객체 모킹
+          recipe = mock(Recipe.class);
           youtubeMeta = mock(RecipeYoutubeMeta.class);
           viewStatus = mock(RecipeViewStatus.class);
 
-          // Recipe 모킹 (RecipeStatus를 가지고 있음)
           doReturn(RecipeStatus.SUCCESS).when(recipe).getRecipeStatus();
           doReturn(recipe).when(fullRecipe).getRecipe();
 
-          // RecipeYoutubeMeta 모킹
           doReturn("sample_video_id").when(youtubeMeta).getVideoId();
           doReturn("Sample Recipe Title").when(youtubeMeta).getTitle();
           doReturn(URI.create("https://example.com/thumbnail.jpg"))
@@ -357,20 +357,17 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .getThumbnailUrl();
           doReturn(120).when(youtubeMeta).getVideoSeconds();
 
-          // RecipeIngredient 모킹
           RecipeIngredient ingredient = mock(RecipeIngredient.class);
           doReturn("토마토").when(ingredient).getName();
           doReturn(2).when(ingredient).getAmount();
           doReturn("개").when(ingredient).getUnit();
           ingredients = List.of(ingredient);
 
-          // RecipeDetailMeta 모킹
           detailMeta = mock(RecipeDetailMeta.class);
           doReturn("맛있는 토마토 요리입니다").when(detailMeta).getDescription();
           doReturn(2).when(detailMeta).getServings();
           doReturn(30).when(detailMeta).getCookTime();
 
-          // RecipeStep 모킹
           RecipeStep recipeStep = mock(RecipeStep.class);
           var stepDetail = RecipeStep.Detail.builder().text("Step 1 detail").start(0.0).build();
 
@@ -382,18 +379,19 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn("Step 1 Title").when(recipeStep).getSubtitle();
           recipeSteps = List.of(recipeStep);
 
-          // RecipeTag 모킹
           RecipeTag tag = mock(RecipeTag.class);
           doReturn("한식").when(tag).getTag();
           tags = List.of(tag);
 
-          // RecipeProgress 모킹
+          RecipeBriefing recipeBriefing = mock(RecipeBriefing.class);
+          doReturn("이 요리는 맛있습니다").when(recipeBriefing).getContent();
+          briefings = List.of(recipeBriefing);
+
           RecipeProgress progress = mock(RecipeProgress.class);
           doReturn(RecipeProgressStep.FINISHED).when(progress).getStep();
           doReturn(RecipeProgressDetail.FINISHED).when(progress).getDetail();
           progresses = List.of(progress);
 
-          // FullRecipeInfo 모킹
           doReturn(youtubeMeta).when(fullRecipe).getRecipeYoutubeMeta();
           doReturn(ingredients).when(fullRecipe).getRecipeIngredients();
           doReturn(recipeSteps).when(fullRecipe).getRecipeSteps();
@@ -401,8 +399,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(detailMeta).when(fullRecipe).getRecipeDetailMeta();
           doReturn(tags).when(fullRecipe).getRecipeTags();
           doReturn(progresses).when(fullRecipe).getRecipeProgresses();
+          doReturn(briefings).when(fullRecipe).getRecipeBriefings();
 
-          // ViewStatus 모킹
           viewStatusId = UUID.randomUUID();
           doReturn(viewStatusId).when(viewStatus).getId();
           doReturn(LocalDateTime.of(2024, 1, 15, 10, 30, 0)).when(viewStatus).getViewedAt();
@@ -442,7 +440,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("video_info.video_seconds")
                                   .description("레시피 비디오 재생 시간"),
 
-                              // 새로운 구조에 맞게 수정
                               fieldWithPath("recipe_ingredient").description("레시피 재료 목록"),
                               fieldWithPath("recipe_ingredient[].name").description("재료 이름"),
                               fieldWithPath("recipe_ingredient[].amount").description("재료 양"),
@@ -488,14 +485,17 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("recipe_detail_meta.cookingTime")
                                   .description("조리 시간(분)")
                                   .optional(),
-                              fieldWithPath("tags").description("레시피 태그 목록"),
-                              fieldWithPath("tags[].name").description("태그 이름"))));
+                              fieldWithPath("recipe_tags").description("레시피 태그 목록"),
+                              fieldWithPath("recipe_tags[].name").description("태그 이름"),
+
+                              fieldWithPath("recipe_briefings").description("레시피 브리핑 목록"),
+                              fieldWithPath("recipe_briefings[].content").description("브리핑 내용")
+                          )));
 
           verify(recipeInfoService).findFullRecipe(recipeId, userId);
 
           var responseBody = response.extract().jsonPath();
 
-          // 기본 정보 검증
           assertThat(responseBody.getString("recipe_status"))
               .isEqualTo(RecipeStatus.SUCCESS.name());
           assertThat(responseBody.getString("video_info.video_id")).isEqualTo("sample_video_id");
@@ -505,7 +505,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getInt("video_info.video_seconds")).isEqualTo(120);
 
-          // view_status 검증
           assertThat(responseBody.getUUID("view_status.id")).isEqualTo(viewStatusId);
           assertThat(responseBody.getString("view_status.viewed_at"))
               .isEqualTo("2024-01-15T10:30:00");
@@ -513,7 +512,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("view_status.created_at"))
               .isEqualTo("2024-01-14T10:30:00");
 
-          // recipe_steps 검증
           assertThat(responseBody.getUUID("recipe_steps[0].id")).isEqualTo(stepId);
           assertThat(responseBody.getInt("recipe_steps[0].step_order")).isEqualTo(1);
           assertThat(responseBody.getString("recipe_steps[0].subtitle")).isEqualTo("Step 1 Title");
@@ -522,25 +520,22 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getDouble("recipe_steps[0].details[0].start")).isEqualTo(0.0);
           assertThat(responseBody.getDouble("recipe_steps[0].start_time")).isEqualTo(0.0);
 
-          // recipe_ingredient 검증
           assertThat(responseBody.getString("recipe_ingredient[0].name")).isEqualTo("토마토");
           assertThat(responseBody.getInt("recipe_ingredient[0].amount")).isEqualTo(2);
           assertThat(responseBody.getString("recipe_ingredient[0].unit")).isEqualTo("개");
 
-          // recipe_detail_meta 검증
           assertThat(responseBody.getString("recipe_detail_meta.description"))
               .isEqualTo("맛있는 토마토 요리입니다");
           assertThat(responseBody.getInt("recipe_detail_meta.servings")).isEqualTo(2);
           assertThat(responseBody.getInt("recipe_detail_meta.cookingTime")).isEqualTo(30);
 
-          // tags 검증
-          assertThat(responseBody.getString("tags[0].name")).isEqualTo("한식");
+          assertThat(responseBody.getString("recipe_tags[0].name")).isEqualTo("한식");
 
-          // recipe_progresses 검증
           assertThat(responseBody.getString("recipe_progresses[0].step"))
               .isEqualTo(RecipeProgressStep.FINISHED.name());
           assertThat(responseBody.getString("recipe_progresses[0].detail"))
               .isEqualTo(RecipeProgressDetail.FINISHED.name());
+          assertThat(responseBody.getString("recipe_briefings[0].content")).isEqualTo("이 요리는 맛있습니다");
         }
       }
     }
@@ -624,11 +619,9 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           youtubeMeta = mock(RecipeYoutubeMeta.class);
           pageable = Pageable.ofSize(10);
 
-          // Recipe 모킹
           doReturn(recipeId).when(recipe).getId();
           doReturn(100).when(recipe).getViewCount(); // getCount() -> getViewCount()로 변경
 
-          // RecipeYoutubeMeta 모킹
           doReturn("Sample Recipe Title").when(youtubeMeta).getTitle();
           doReturn("sample_video_id").when(youtubeMeta).getVideoId();
           doReturn(URI.create("https://example.com/thumbnail.jpg"))
@@ -636,7 +629,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .getThumbnailUrl();
           doReturn(URI.create("https://example.com/video")).when(youtubeMeta).getVideoUri();
 
-          // RecipeOverview 모킹
           doReturn(recipe).when(recipeOverview).getRecipe();
           doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
 
@@ -979,7 +971,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           youtubeMeta = mock(RecipeYoutubeMeta.class); // 변경된 타입
           viewStatus = mock(RecipeViewStatus.class);
 
-          // RecipeHistory 구조에 맞춰 수정
           doReturn(recipe).when(unCategorizedRecipe).getRecipe();
           doReturn(viewStatus).when(unCategorizedRecipe).getRecipeViewStatus();
           doReturn(youtubeMeta).when(unCategorizedRecipe).getYoutubeMeta(); // 새로운 메서드
@@ -1047,7 +1038,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
           verify(recipeInfoService).findUnCategorized(userId, page);
 
-          // 응답 검증 추가
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getUUID("unCategorized_recipes[0].recipe_id"))
               .isEqualTo(recipeId);

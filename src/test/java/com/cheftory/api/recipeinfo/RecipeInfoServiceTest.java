@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefingService;
 import com.cheftory.api.recipeinfo.category.RecipeCategory;
 import com.cheftory.api.recipeinfo.category.RecipeCategoryService;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
@@ -66,6 +67,7 @@ public class RecipeInfoServiceTest {
   private RecipeProgressService recipeProgressService;
   private RecipeTagService recipeTagService;
   private RecipeIdentifyService recipeIdentifyService;
+  private RecipeBriefingService recipeBriefingService;
   private AsyncRecipeInfoCreationService asyncRecipeCreationService;
   private RecipeInfoService recipeInfoService;
 
@@ -81,6 +83,7 @@ public class RecipeInfoServiceTest {
     recipeProgressService = mock(RecipeProgressService.class);
     recipeTagService = mock(RecipeTagService.class);
     recipeIdentifyService = mock(RecipeIdentifyService.class);
+    recipeBriefingService = mock(RecipeBriefingService.class);
     asyncRecipeCreationService = mock(AsyncRecipeInfoCreationService.class);
 
     recipeInfoService =
@@ -95,6 +98,7 @@ public class RecipeInfoServiceTest {
             recipeProgressService,
             recipeTagService,
             recipeIdentifyService,
+            recipeBriefingService,
             recipeService);
   }
 
@@ -917,6 +921,7 @@ public class RecipeInfoServiceTest {
     doReturn(Optional.empty()).when(recipeDetailMetaService).find(recipeId);
     doReturn(Collections.emptyList()).when(recipeProgressService).finds(recipeId);
     doReturn(Collections.emptyList()).when(recipeTagService).finds(recipeId);
+    doReturn(Collections.emptyList()).when(recipeBriefingService).finds(recipeId);
 
     RecipeYoutubeMeta youtubeMeta =
         createMockRecipeYoutubeMeta(UUID.randomUUID(), "테스트 영상", recipeId);

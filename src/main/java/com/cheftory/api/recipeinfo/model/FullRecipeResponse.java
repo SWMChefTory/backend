@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.model;
 
+import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
@@ -24,7 +25,9 @@ public record FullRecipeResponse(
     @JsonProperty("recipe_steps") List<Step> recipeSteps,
     @JsonProperty("view_status") ViewStatus viewStatus,
     @JsonProperty("recipe_detail_meta") DetailMeta detailMeta,
-    @JsonProperty("tags") List<Tag> tags) {
+    @JsonProperty("recipe_tags") List<Tag> tags,
+    @JsonProperty("recipe_briefings") List<Briefing> briefings
+) {
 
   public static FullRecipeResponse of(FullRecipeInfo fullRecipeInfo) {
     return new FullRecipeResponse(
@@ -37,7 +40,9 @@ public record FullRecipeResponse(
         fullRecipeInfo.getRecipeDetailMeta() != null
             ? DetailMeta.from(fullRecipeInfo.getRecipeDetailMeta())
             : null,
-        fullRecipeInfo.getRecipeTags().stream().map(Tag::from).toList());
+        fullRecipeInfo.getRecipeTags().stream().map(Tag::from).toList(),
+        fullRecipeInfo.getRecipeBriefings().stream().map(Briefing::from).toList()
+    );
   }
 
   private record DetailMeta(
@@ -71,6 +76,13 @@ public record FullRecipeResponse(
       @JsonProperty("unit") String unit) {
     public static Ingredient from(RecipeIngredient ingredient) {
       return new Ingredient(ingredient.getName(), ingredient.getAmount(), ingredient.getUnit());
+    }
+  }
+
+  private record Briefing(
+      @JsonProperty("content") String content) {
+    public static Briefing from(RecipeBriefing briefing) {
+      return new Briefing(briefing.getContent());
     }
   }
 
