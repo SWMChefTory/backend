@@ -93,4 +93,8 @@ public class RecipeService {
     recipe.failed();
     return recipeRepository.save(recipe);
   }
+
+  public boolean exists(UUID recipeId) {
+    return recipeRepository.existsById(recipeId);
+  }
 }

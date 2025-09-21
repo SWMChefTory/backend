@@ -1,8 +1,9 @@
 package com.cheftory.api.recipeinfo.detailMeta;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaErrorCode;
+import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +16,11 @@ public class RecipeDetailMetaService {
   private final RecipeDetailMetaRepository recipeDetailMetaRepository;
   private final Clock clock;
 
-  public Optional<RecipeDetailMeta> find(UUID recipeId) {
-    return recipeDetailMetaRepository.findByRecipeId(recipeId);
+  public RecipeDetailMeta find(UUID recipeId) {
+    return recipeDetailMetaRepository
+        .findByRecipeId(recipeId)
+        .orElseThrow(
+            () -> new RecipeDetailMetaException(RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND));
   }
 
   public List<RecipeDetailMeta> findIn(List<UUID> recipeIds) {

@@ -2,6 +2,7 @@ package com.cheftory.api.recipeinfo.viewstatus;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.recipeinfo.recipe.validator.ExistsRecipeId;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/recipes/{recipe_id}")
+@RequestMapping("/api/v1/recipes/{recipeId}")
 public class RecipeViewStatusController {
   private final RecipeViewStatusService recipeViewStatusService;
 
   @PutMapping("/categories")
   public SuccessOnlyResponse updateViewStatusCategory(
       @RequestBody @Valid RecipeViewStatusRequest.UpdateCategory request,
-      @PathVariable("recipe_id") UUID recipeId,
+      @PathVariable("recipeId") @ExistsRecipeId UUID recipeId,
       @UserPrincipal UUID userId) {
     recipeViewStatusService.updateCategory(userId, recipeId, request.categoryId());
     return SuccessOnlyResponse.create();
@@ -29,7 +30,7 @@ public class RecipeViewStatusController {
 
   @DeleteMapping("")
   public SuccessOnlyResponse deleteViewStatus(
-      @PathVariable("recipe_id") UUID recipeId, @UserPrincipal UUID userId) {
+      @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
     recipeViewStatusService.delete(userId, recipeId);
     return SuccessOnlyResponse.create();
   }

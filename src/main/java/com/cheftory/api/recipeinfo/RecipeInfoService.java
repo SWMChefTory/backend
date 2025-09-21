@@ -6,6 +6,7 @@ import com.cheftory.api.recipeinfo.category.RecipeCategory;
 import com.cheftory.api.recipeinfo.category.RecipeCategoryService;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
+import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaErrorCode;
 import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipeinfo.exception.RecipeInfoException;
 import com.cheftory.api.recipeinfo.identify.RecipeIdentifyService;
@@ -37,7 +38,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -127,7 +127,7 @@ public class RecipeInfoService {
       Recipe recipe = recipeService.findSuccess(recipeId);
       List<RecipeStep> steps = recipeStepService.finds(recipeId);
       List<RecipeIngredient> ingredients = recipeIngredientService.finds(recipeId);
-      Optional<RecipeDetailMeta> detailMeta = recipeDetailMetaService.find(recipeId);
+      RecipeDetailMeta detailMeta = recipeDetailMetaService.find(recipeId);
       List<RecipeProgress> progresses = recipeProgressService.finds(recipeId);
       List<RecipeTag> tags = recipeTagService.finds(recipeId);
       List<RecipeBriefing> briefings = recipeBriefingService.finds(recipeId);
@@ -137,7 +137,7 @@ public class RecipeInfoService {
       return FullRecipeInfo.of(
           steps,
           ingredients,
-          detailMeta.orElse(null),
+          detailMeta,
           progresses,
           tags,
           youtubeMeta,
@@ -145,7 +145,8 @@ public class RecipeInfoService {
           recipe,
           briefings);
     } catch (RecipeInfoException e) {
-      if (e.getErrorMessage() == RecipeErrorCode.RECIPE_NOT_FOUND) {
+      if (e.getErrorMessage() == RecipeErrorCode.RECIPE_NOT_FOUND
+          || e.getErrorMessage() == RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND) {
         throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
       }
       if (e.getErrorMessage() == RecipeErrorCode.RECIPE_FAILED) {

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import io.restassured.module.mockmvc.specification.MockMvcRequestSpecification;
+import java.util.HashMap;
+import java.util.Map;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +22,6 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
-import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -79,7 +80,7 @@ public abstract class RestDocsTest {
     private Object advice;
     private Converter<String, ?> customConverter;
     private HandlerMethodArgumentResolver argumentResolver;
-    private Validator validator;
+    private final Map<Class<?>, Object> validatorServices = new HashMap<>();
 
     public MockMvcBuilder(Object controller, RestDocumentationContextProvider restDocumentation) {
       this.controller = controller;
@@ -102,16 +103,12 @@ public abstract class RestDocsTest {
     }
 
     public <T> MockMvcBuilder withValidator(Class<T> serviceClass, T serviceInstance) {
-      GenericApplicationContext ctx = new GenericApplicationContext();
-      ctx.registerBean(serviceClass, () -> serviceInstance);
-      ctx.refresh();
+      this.validatorServices.put(serviceClass, serviceInstance);
+      return this;
+    }
 
-      LocalValidatorFactoryBean validatorFactoryBean = new LocalValidatorFactoryBean();
-      validatorFactoryBean.setConstraintValidatorFactory(
-          new SpringConstraintValidatorFactory(ctx.getAutowireCapableBeanFactory()));
-      validatorFactoryBean.afterPropertiesSet();
-
-      this.validator = validatorFactoryBean;
+    public MockMvcBuilder withValidators(Map<Class<?>, Object> services) {
+      this.validatorServices.putAll(services);
       return this;
     }
 
@@ -128,8 +125,25 @@ public abstract class RestDocsTest {
         builder.setControllerAdvice(advice);
       }
 
-      if (validator != null) {
-        builder.setValidator(validator);
+      // 여러 validator 서비스들이 등록된 경우에만 validator 설정
+      if (!validatorServices.isEmpty()) {
+        GenericApplicationContext ctx = new GenericApplicationContext();
+
+        // 모든 서비스들을 ApplicationContext에 등록
+        validatorServices.forEach(
+            (serviceClass, serviceInstance) -> {
+              @SuppressWarnings("unchecked")
+              Class<Object> clazz = (Class<Object>) serviceClass;
+              ctx.registerBean(clazz, () -> serviceInstance);
+            });
+        ctx.refresh();
+
+        LocalValidatorFactoryBean validatorFactoryBean = new LocalValidatorFactoryBean();
+        validatorFactoryBean.setConstraintValidatorFactory(
+            new SpringConstraintValidatorFactory(ctx.getAutowireCapableBeanFactory()));
+        validatorFactoryBean.afterPropertiesSet();
+
+        builder.setValidator(validatorFactoryBean);
       }
 
       if (customConverter != null) {

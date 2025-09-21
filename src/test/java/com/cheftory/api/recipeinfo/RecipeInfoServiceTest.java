@@ -43,7 +43,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -918,7 +917,7 @@ public class RecipeInfoServiceTest {
   private void setupFullRecipeInfoMocks(UUID recipeId, UUID userId, Recipe recipe) {
     doReturn(Collections.emptyList()).when(recipeStepService).finds(recipeId);
     doReturn(Collections.emptyList()).when(recipeIngredientService).finds(recipeId);
-    doReturn(Optional.empty()).when(recipeDetailMetaService).find(recipeId);
+    doReturn(mock(RecipeDetailMeta.class)).when(recipeDetailMetaService).find(recipeId);
     doReturn(Collections.emptyList()).when(recipeProgressService).finds(recipeId);
     doReturn(Collections.emptyList()).when(recipeTagService).finds(recipeId);
     doReturn(Collections.emptyList()).when(recipeBriefingService).finds(recipeId);

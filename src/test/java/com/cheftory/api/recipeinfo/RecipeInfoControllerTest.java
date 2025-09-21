@@ -423,7 +423,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .contentType(ContentType.JSON)
                   .attribute("userId", userId.toString())
                   .header("Authorization", "Bearer accessToken")
-                  .get("/api/v1/recipes/{recipe_id}", recipeId)
+                  .get("/api/v1/recipes/{recipeId}", recipeId)
                   .then()
                   .status(HttpStatus.OK)
                   .apply(
@@ -432,7 +432,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                           requestPreprocessor(),
                           responsePreprocessor(),
                           requestAccessTokenFields(),
-                          pathParameters(parameterWithName("recipe_id").description("조회할 레시피 ID")),
+                          pathParameters(parameterWithName("recipeId").description("조회할 레시피 ID")),
                           responseFields(
                               enumFields("recipe_status", "레시피의 현재 상태: ", RecipeStatus.class),
                               fieldWithPath("video_info").description("레시피 비디오 정보"),
@@ -572,7 +572,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .contentType(ContentType.JSON)
               .attribute("userId", userId.toString())
               .header("Authorization", "Bearer accessToken")
-              .get("/api/v1/recipes/{recipe_id}", recipeId)
+              .get("/api/v1/recipes/{recipeId}", recipeId)
               .then()
               .status(HttpStatus.BAD_REQUEST);
 
