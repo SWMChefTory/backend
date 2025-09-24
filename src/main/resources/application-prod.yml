@@ -9,17 +9,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.MySQLDialect
+      ddl-auto: none
     properties:
       hibernate:
-        show_sql: true
-        format_sql: true
-
+        show_sql: false
+        format_sql: false
 
 logging:
   level:
-    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    root: INFO
+    org.hibernate.SQL: WARN
 
 youtube:
   api-token: ${YOUTUBE_API_KEY}
