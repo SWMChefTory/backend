@@ -28,23 +28,20 @@ public class UserController {
         user.getDateOfBirth(),
         user.getTermsOfUseAgreedAt(),
         user.getPrivacyAgreedAt(),
-        user.getMarketingAgreedAt()
-    );
+        user.getMarketingAgreedAt());
   }
 
   @PatchMapping("/me")
   public UserResponse updateMyInfo(
-      @UserPrincipal UUID userId,
-      @RequestBody UpdateUserResponse request
-  ) {
-    User user = userService.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
+      @UserPrincipal UUID userId, @RequestBody UpdateUserResponse request) {
+    User user =
+        userService.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
     return new UserResponse(
         user.getNickname(),
         user.getGender(),
         user.getDateOfBirth(),
         user.getTermsOfUseAgreedAt(),
         user.getPrivacyAgreedAt(),
-        user.getMarketingAgreedAt()
-    );
+        user.getMarketingAgreedAt());
   }
 }

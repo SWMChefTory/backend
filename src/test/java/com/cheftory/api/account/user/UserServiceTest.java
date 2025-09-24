@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
-import org.openapitools.jackson.nullable.JsonNullable;
 
 @DisplayName("UserService")
 class UserServiceTest {
@@ -43,8 +42,8 @@ class UserServiceTest {
       @Test
       @DisplayName("Then - 새 유저를 저장하고 ID를 반환해야 한다")
       void thenShouldSaveUserAndReturnId() {
-        when(userRepository.findByProviderAndProviderSubAndUserStatus(provider, providerSub,
-            UserStatus.ACTIVE))
+        when(userRepository.findByProviderAndProviderSubAndUserStatus(
+                provider, providerSub, UserStatus.ACTIVE))
             .thenReturn(Optional.empty());
 
         UUID generatedId = UUID.randomUUID();
@@ -53,7 +52,8 @@ class UserServiceTest {
 
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        User user1 = userService.create(nickname, gender, birth, provider, providerSub, true, true, false);
+        User user1 =
+            userService.create(nickname, gender, birth, provider, providerSub, true, true, false);
 
         verify(userRepository).save(any(User.class));
         Assertions.assertEquals(generatedId, user1.getId());
@@ -69,14 +69,17 @@ class UserServiceTest {
       void thenShouldThrowUserAlreadyExist() {
         // Given
         User existing = User.create(nickname, gender, birth, provider, providerSub, true);
-        when(userRepository.findByProviderAndProviderSubAndUserStatus(provider, providerSub,
-            UserStatus.ACTIVE))
+        when(userRepository.findByProviderAndProviderSubAndUserStatus(
+                provider, providerSub, UserStatus.ACTIVE))
             .thenReturn(Optional.of(existing));
 
         // When
-        UserException ex = assertThrows(UserException.class, () ->
-            userService.create(nickname, gender, birth, provider, providerSub, true, true, false)
-        );
+        UserException ex =
+            assertThrows(
+                UserException.class,
+                () ->
+                    userService.create(
+                        nickname, gender, birth, provider, providerSub, true, true, false));
 
         // Then
         assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_ALREADY_EXIST);
@@ -119,9 +122,7 @@ class UserServiceTest {
             .thenReturn(Optional.empty());
 
         // When
-        UserException ex = assertThrows(UserException.class, () ->
-            userService.get(userId)
-        );
+        UserException ex = assertThrows(UserException.class, () -> userService.get(userId));
 
         // Then
         assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
@@ -156,12 +157,7 @@ class UserServiceTest {
             .findByIdAndUserStatus(id, UserStatus.ACTIVE);
 
         // when: 닉네임만 전달 (다른 필드는 미제공)
-        userService.update(
-            id,
-            newNickname,
-            oldGender,
-            oldBirth
-        );
+        userService.update(id, newNickname, oldGender, oldBirth);
 
         // then
         Assertions.assertEquals(newNickname, user.getNickname());
@@ -180,12 +176,7 @@ class UserServiceTest {
             .findByIdAndUserStatus(id, UserStatus.ACTIVE);
 
         // when: 성별만 전달
-        userService.update(
-            id,
-            oldNickname,
-            newGender,
-            oldBirth
-        );
+        userService.update(id, oldNickname, newGender, oldBirth);
 
         // then
         Assertions.assertEquals(oldNickname, user.getNickname());
@@ -203,12 +194,7 @@ class UserServiceTest {
             .when(userRepository)
             .findByIdAndUserStatus(id, UserStatus.ACTIVE);
 
-        userService.update(
-            id,
-            oldNickname,
-            null,
-            oldBirth
-        );
+        userService.update(id, oldNickname, null, oldBirth);
 
         Assertions.assertEquals(oldNickname, user.getNickname());
         Assertions.assertNull(user.getGender());
@@ -226,12 +212,7 @@ class UserServiceTest {
             .findByIdAndUserStatus(id, UserStatus.ACTIVE);
 
         // when: 생년월일만 전달
-        userService.update(
-            id,
-            oldNickname,
-            oldGender,
-            newBirth
-        );
+        userService.update(id, oldNickname, oldGender, newBirth);
 
         // then
         Assertions.assertEquals(oldNickname, user.getNickname());
@@ -248,12 +229,7 @@ class UserServiceTest {
             .when(userRepository)
             .findByIdAndUserStatus(id, UserStatus.ACTIVE);
 
-        userService.update(
-            id,
-            oldNickname,
-            oldGender,
-            null
-        );
+        userService.update(id, oldNickname, oldGender, null);
 
         Assertions.assertEquals(oldNickname, user.getNickname());
         Assertions.assertEquals(oldNickname, user.getNickname());
@@ -275,7 +251,8 @@ class UserServiceTest {
       @Test
       @DisplayName("Then - 유저 상태를 DELETED로 변경해야 한다")
       void thenShouldMarkUserAsDeleted() {
-        User user = User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub", true);
+        User user =
+            User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub", true);
         when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
             .thenReturn(Optional.of(user));
 
@@ -298,9 +275,7 @@ class UserServiceTest {
             .thenReturn(Optional.empty());
 
         // When
-        UserException ex = assertThrows(UserException.class, () ->
-            userService.deleteUser(userId)
-        );
+        UserException ex = assertThrows(UserException.class, () -> userService.deleteUser(userId));
 
         // Then
         assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_NOT_FOUND);

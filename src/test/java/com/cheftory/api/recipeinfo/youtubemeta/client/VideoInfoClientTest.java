@@ -1,0 +1,205 @@
+package com.cheftory.api.recipeinfo.youtubemeta.client;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
+import java.io.IOException;
+import java.net.URI;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
+@DisplayName("VideoInfoClient")
+public class VideoInfoClientTest {
+
+  private MockWebServer mockWebServer;
+  private VideoInfoClient videoInfoClient;
+  private static final String YOUTUBE_API_KEY = "test-api-key";
+
+  @BeforeEach
+  void setUp() throws IOException {
+    mockWebServer = new MockWebServer();
+    mockWebServer.start();
+
+    WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+
+    videoInfoClient = new VideoInfoClient(webClient);
+    ReflectionTestUtils.setField(videoInfoClient, "YOUTUBE_KEY", YOUTUBE_API_KEY);
+  }
+
+  @AfterEach
+  void tearDown() throws IOException {
+    mockWebServer.shutdown();
+  }
+
+  @DisplayName("비디오 정보 조회")
+  @Nested
+  class FetchVideoInfo {
+
+    @Nested
+    @DisplayName("Given - 유효한 YouTube URL이 주어졌을 때")
+    class GivenValidYoutubeUrl {
+
+      private UriComponents validUrl;
+      private String videoId;
+
+      @BeforeEach
+      void setUp() {
+        videoId = "dQw4w9WgXcQ";
+        validUrl =
+            UriComponentsBuilder.fromUriString("https://www.youtube.com/watch")
+                .queryParam("v", videoId)
+                .build();
+      }
+
+      @Nested
+      @DisplayName("When - YouTube API가 성공 응답을 반환하면")
+      class WhenYoutubeApiReturnsSuccess {
+
+        @BeforeEach
+        void setUp() {
+          String responseBody =
+              """
+              {
+                "items": [
+                  {
+                    "snippet": {
+                      "title": "맛있는 김치찌개 만들기",
+                      "thumbnails": {
+                        "default": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg",
+                          "width": 120,
+                          "height": 90
+                        },
+                        "medium": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+                          "width": 320,
+                          "height": 180
+                        },
+                        "high": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+                          "width": 480,
+                          "height": 360
+                        },
+                        "maxres": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+                          "width": 1280,
+                          "height": 720
+                        }
+                      }
+                    },
+                    "contentDetails": {
+                      "duration": "PT10M30S"
+                    }
+                  }
+                ]
+              }
+              """;
+
+          mockWebServer.enqueue(
+              new MockResponse()
+                  .setResponseCode(200)
+                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .setBody(responseBody));
+        }
+
+        @Test
+        @DisplayName("Then - 비디오 정보가 정상적으로 반환된다")
+        void thenReturnsYoutubeVideoInfo() throws InterruptedException {
+          YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(validUrl);
+
+          assertThat(result).isNotNull();
+          assertThat(result.getVideoUri()).isEqualTo(validUrl.toUri());
+          assertThat(result.getTitle()).isEqualTo("맛있는 김치찌개 만들기");
+          assertThat(result.getThumbnailUrl())
+              .isEqualTo(URI.create("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"));
+          assertThat(result.getVideoSeconds()).isEqualTo(630); // 10분 30초 = 630초
+          assertThat(result.getVideoId()).isEqualTo(videoId);
+
+          RecordedRequest recordedRequest = mockWebServer.takeRequest();
+          assertThat(recordedRequest.getMethod()).isEqualTo("GET");
+          assertThat(recordedRequest.getPath())
+              .contains("/videos")
+              .contains("id=" + videoId)
+              .contains("key=" + YOUTUBE_API_KEY)
+              .contains("part=snippet,contentDetails");
+        }
+      }
+
+      @Nested
+      @DisplayName("When - YouTube API가 짧은 동영상 정보를 반환하면")
+      class WhenYoutubeApiReturnsShortVideo {
+
+        @BeforeEach
+        void setUp() {
+          String responseBody =
+              """
+              {
+                "items": [
+                  {
+                    "snippet": {
+                      "title": "30초 요리 팁",
+                      "thumbnails": {
+                        "default": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg",
+                          "width": 120,
+                          "height": 90
+                        },
+                        "medium": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+                          "width": 320,
+                          "height": 180
+                        },
+                        "high": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+                          "width": 480,
+                          "height": 360
+                        },
+                        "maxres": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+                          "width": 1280,
+                          "height": 720
+                        }
+                      }
+                    },
+                    "contentDetails": {
+                      "duration": "PT30S"
+                    }
+                  }
+                ]
+              }
+              """;
+
+          mockWebServer.enqueue(
+              new MockResponse()
+                  .setResponseCode(200)
+                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .setBody(responseBody));
+        }
+
+        @Test
+        @DisplayName("Then - 짧은 동영상 정보가 정상적으로 반환된다")
+        void thenReturnsShortVideoInfo() {
+          // when
+          YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(validUrl);
+
+          // then
+          assertThat(result).isNotNull();
+          assertThat(result.getTitle()).isEqualTo("30초 요리 팁");
+          assertThat(result.getVideoSeconds()).isEqualTo(30);
+        }
+      }
+    }
+  }
+}

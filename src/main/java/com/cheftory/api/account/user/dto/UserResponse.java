@@ -11,7 +11,4 @@ public record UserResponse(
     @JsonProperty("date_of_birth") LocalDate dateOfBirth,
     @JsonProperty("terms_of_use_agreed_at") LocalDateTime termsOfUseAgreedAt,
     @JsonProperty("privacy_agreed_at") LocalDateTime privacyAgreedAt,
-    @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt
-) {
-
-}
+    @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt) {}

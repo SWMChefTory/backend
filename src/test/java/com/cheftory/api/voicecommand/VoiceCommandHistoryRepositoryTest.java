@@ -1,5 +1,7 @@
 package com.cheftory.api.voicecommand;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api.voicecommand.enums.IntentModel;
 import com.cheftory.api.voicecommand.enums.STTModel;
@@ -11,13 +13,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.assertj.core.api.Assertions.*;
-
 @DisplayName("VoiceCommand Repository")
 public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
 
-  @Autowired
-  private VoiceCommandHistoryRepository repository;
+  @Autowired private VoiceCommandHistoryRepository repository;
 
   @Nested
   @DisplayName("음성 명령 기록 저장")
@@ -45,7 +44,9 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
         intentModel = "GPT4.1";
         start = 1;
         end = 2;
-        voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId, start, end);
+        voiceCommandHistory =
+            VoiceCommandHistory.create(
+                sttModel, baseIntent, intentModel, intent, userId, start, end);
       }
 
       @Nested
@@ -69,7 +70,8 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 모든 필드가 보존되어야 한다")
         public void thenAllFieldsShouldBePreserved() {
-          VoiceCommandHistory found = repository.findById(savedVoiceCommandHistory.getId()).orElseThrow();
+          VoiceCommandHistory found =
+              repository.findById(savedVoiceCommandHistory.getId()).orElseThrow();
 
           assertThat(found.getTranscribe()).isEqualTo(baseIntent);
           assertThat(found.getResult()).isEqualTo(intent);
@@ -111,7 +113,9 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
         start = 1;
         end = 2;
 
-        VoiceCommandHistory voiceCommandHistory = VoiceCommandHistory.create(sttModel, baseIntent, intentModel, intent, userId, start, end);
+        VoiceCommandHistory voiceCommandHistory =
+            VoiceCommandHistory.create(
+                sttModel, baseIntent, intentModel, intent, userId, start, end);
         savedVoiceCommandHistory = repository.save(voiceCommandHistory);
       }
 
@@ -122,7 +126,8 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 올바른 데이터를 반환해야 한다")
         public void thenShouldReturnCorrectData() {
-          VoiceCommandHistory found = repository.findById(savedVoiceCommandHistory.getId()).orElseThrow();
+          VoiceCommandHistory found =
+              repository.findById(savedVoiceCommandHistory.getId()).orElseThrow();
 
           assertThat(found.getId()).isEqualTo(savedVoiceCommandHistory.getId());
           assertThat(found.getTranscribe()).isEqualTo(baseIntent);

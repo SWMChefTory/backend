@@ -20,15 +20,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 public class SecurityControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @Autowired
-  private TokenProvider tokenProvider;
+  @Autowired private TokenProvider tokenProvider;
 
   @Test
   void 인증_없으면_400_예외처리() throws Exception {
-    mockMvc.perform(get("/api/security/failed"))
+    mockMvc
+        .perform(get("/api/security/failed"))
         .andExpect(status().is4xxClientError())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.message").value(AuthErrorCode.INVALID_TOKEN.getMessage()))
@@ -39,16 +38,17 @@ public class SecurityControllerTest {
   void 인증_있으면_200() throws Exception {
     UUID userId = UUID.randomUUID();
     String validJwt = tokenProvider.createAccessToken(userId);
-    String header =  "Bearer " + validJwt;
-    mockMvc.perform(get("/api/security/success")
-            .header(HttpHeaders.AUTHORIZATION, header))
+    String header = "Bearer " + validJwt;
+    mockMvc
+        .perform(get("/api/security/success").header(HttpHeaders.AUTHORIZATION, header))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").value(userId.toString()));
   }
 
   @Test
   void 프라이빗_URL_항상_200() throws Exception {
-    mockMvc.perform(get("/papi/v1/security/success"))
+    mockMvc
+        .perform(get("/papi/v1/security/success"))
         .andExpect(status().isOk())
         .andExpect(content().string("success"));
   }
@@ -57,8 +57,9 @@ public class SecurityControllerTest {
   void 계정_생성_항상_200() throws Exception {
     UUID userId = UUID.randomUUID();
     String validJwt = tokenProvider.createAccessToken(userId);
-    mockMvc.perform(get("/api/v1/account/security/success")
-            .header(HttpHeaders.AUTHORIZATION, validJwt))
+    mockMvc
+        .perform(
+            get("/api/v1/account/security/success").header(HttpHeaders.AUTHORIZATION, validJwt))
         .andExpect(status().isOk())
         .andExpect(content().string("success"));
   }

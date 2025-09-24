@@ -8,13 +8,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 @Documented
 @Constraint(validatedBy = UserIdValidator.class)
-@Target({ ElementType.FIELD })
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExistsUserId {
   String message() default "존재하지 않는 유저 ID입니다.";
+
   Class<?>[] groups() default {};
+
   Class<? extends Payload>[] payload() default {};
 }

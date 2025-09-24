@@ -1,20 +1,28 @@
 services:
   proxy-server:
-    image: cheftory-proxy-server:latest
+    image: cheftory-proxy-server-dev:latest
     ports:
       - "8080"
     depends_on:
       - mysql
     env_file:
-      - ../.env
+      - .env
 
     #.env 파일을 읽어서 환경변수로 지정
     environment:
       SPRING_PROFILES_ACTIVE: dev
       DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      AI_RECIPE_SUMMARY_HOST: ${AI_RECIPE_SUMMARY_HOST}
+      AI_RECIPE_SUMMARY_PORT: ${AI_RECIPE_SUMMARY_PORT}
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
-      SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
-      DATABASE_PORT: 3306
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
     networks:
       - cheftory_network
     restart: always
@@ -41,5 +49,5 @@ services:
 
 networks:
   cheftory_network:
-    name: cheftory_network
+    name: dev_cheftory_network
     driver: bridge

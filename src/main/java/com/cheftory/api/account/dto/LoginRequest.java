@@ -6,10 +6,4 @@ import jakarta.validation.constraints.NotNull;
 
 public record LoginRequest(
     @JsonProperty("id_token") @NotNull String idToken,
-    @JsonProperty("provider") @NotNull Provider provider
-) {
-
-  public static LoginRequest of(String idToken, Provider provider) {
-    return new LoginRequest(idToken, provider);
-  }
-}
+    @JsonProperty("provider") @NotNull Provider provider) {}

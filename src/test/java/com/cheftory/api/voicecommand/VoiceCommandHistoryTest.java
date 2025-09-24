@@ -1,5 +1,7 @@
 package com.cheftory.api.voicecommand;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.cheftory.api.voicecommand.enums.IntentModel;
 import com.cheftory.api.voicecommand.enums.STTModel;
 import com.cheftory.api.voicecommand.exception.VoiceCommandErrorCode;
@@ -11,8 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.*;
 
 @DisplayName("VoiceCommand Entity")
 public class VoiceCommandHistoryTest {
@@ -54,7 +54,9 @@ public class VoiceCommandHistoryTest {
 
         @BeforeEach
         void beforeEach() {
-          voiceCommandHistory = VoiceCommandHistory.create(sttModel, transcribe, intentGPT4Model, result, userId, start, end);
+          voiceCommandHistory =
+              VoiceCommandHistory.create(
+                  sttModel, transcribe, intentGPT4Model, result, userId, start, end);
         }
 
         @Test
@@ -81,7 +83,9 @@ public class VoiceCommandHistoryTest {
 
         @BeforeEach
         void beforeEach() {
-          voiceCommandHistory = VoiceCommandHistory.create(sttModel, transcribe, intentNLUModel, result, userId, start, end);
+          voiceCommandHistory =
+              VoiceCommandHistory.create(
+                  sttModel, transcribe, intentNLUModel, result, userId, start, end);
         }
 
         @Test
@@ -128,13 +132,23 @@ public class VoiceCommandHistoryTest {
         @Test
         @DisplayName("Then - STT 모델 예외가 발생해야 한다")
         public void thenShouldThrowSttModelException() {
-          assertThatThrownBy(() ->
-              VoiceCommandHistory.create(invalidSttModel, transcribe, validIntentModel, result, userId, start, end)
-          ).isInstanceOf(VoiceCommandHistoryException.class)
-              .satisfies(ex -> {
-                VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
-                assertThat(exception.getErrorMessage()).isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL);
-              });
+          assertThatThrownBy(
+                  () ->
+                      VoiceCommandHistory.create(
+                          invalidSttModel,
+                          transcribe,
+                          validIntentModel,
+                          result,
+                          userId,
+                          start,
+                          end))
+              .isInstanceOf(VoiceCommandHistoryException.class)
+              .satisfies(
+                  ex -> {
+                    VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
+                    assertThat(exception.getErrorMessage())
+                        .isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL);
+                  });
         }
       }
     }
@@ -169,13 +183,23 @@ public class VoiceCommandHistoryTest {
         @Test
         @DisplayName("Then - Intent 모델 예외가 발생해야 한다")
         public void thenShouldThrowIntentModelException() {
-          assertThatThrownBy(() ->
-              VoiceCommandHistory.create(validSttModel, transcribe, invalidIntentModel, result, userId, start, end)
-          ).isInstanceOf(VoiceCommandHistoryException.class)
-              .satisfies(ex -> {
-                VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
-                assertThat(exception.getErrorMessage()).isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL);
-              });
+          assertThatThrownBy(
+                  () ->
+                      VoiceCommandHistory.create(
+                          validSttModel,
+                          transcribe,
+                          invalidIntentModel,
+                          result,
+                          userId,
+                          start,
+                          end))
+              .isInstanceOf(VoiceCommandHistoryException.class)
+              .satisfies(
+                  ex -> {
+                    VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
+                    assertThat(exception.getErrorMessage())
+                        .isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL);
+                  });
         }
       }
     }

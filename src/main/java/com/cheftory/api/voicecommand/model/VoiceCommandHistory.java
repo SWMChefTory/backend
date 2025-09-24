@@ -21,8 +21,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 public class VoiceCommandHistory {
-  @Id
-  private UUID id;
+  @Id private UUID id;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -44,10 +43,10 @@ public class VoiceCommandHistory {
   @Column(nullable = false)
   private LocalDateTime createdAt;
 
-  @Column(nullable = false, name="start_time")
+  @Column(nullable = false, name = "start_time")
   private Integer start;
 
-  @Column(nullable = false, name="end_time")
+  @Column(nullable = false, name = "end_time")
   private Integer end;
 
   public static VoiceCommandHistory create(
@@ -57,8 +56,7 @@ public class VoiceCommandHistory {
       String result,
       UUID userId,
       Integer start,
-      Integer end
-  ) {
+      Integer end) {
     return new VoiceCommandHistory(
         UUID.randomUUID(),
         STTModel.fromValue(sttModel),
@@ -68,7 +66,6 @@ public class VoiceCommandHistory {
         userId,
         LocalDateTime.now(),
         start,
-        end
-    );
+        end);
   }
 }

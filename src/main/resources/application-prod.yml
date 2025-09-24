@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: api
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN
+
+youtube:
+  api-token: ${YOUTUBE_API_KEY}
+
+ai-recipe-summary:
+  url: http://${AI_RECIPE_SUMMARY_HOST}:${AI_RECIPE_SUMMARY_PORT}
+
+jwt:
+  secret: ${JWT_SECRET}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+  access-token-type: ${JWT_ACCESS_TOKEN_TYPE}
+  refresh-token-type: ${JWT_REFRESH_TOKEN_TYPE}
+
+apple:
+  client-id: ${APPLE_CLIENT_ID}
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  send-default-pii: true

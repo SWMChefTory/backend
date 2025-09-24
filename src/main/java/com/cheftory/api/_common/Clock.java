@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Clock {
-  public LocalDateTime now(){
+  public LocalDateTime now() {
     ZonedDateTime now = ZonedDateTime.now();
     ZonedDateTime seoulTime = now.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
     return seoulTime.toLocalDateTime();

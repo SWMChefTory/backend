@@ -11,14 +11,13 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
 import java.net.URI;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -63,7 +62,10 @@ public class AppleTokenVerifier {
       JWK jwk = jwkSet.getKeyByKeyId(header.getKeyID());
 
       if (!(jwk instanceof RSAKey rsaKey)) {
-        log.error("[AppleTokenVerifier] 공개키 타입 오류 - kid: {}, alg: {}", header.getKeyID(), header.getAlgorithm());
+        log.error(
+            "[AppleTokenVerifier] 공개키 타입 오류 - kid: {}, alg: {}",
+            header.getKeyID(),
+            header.getAlgorithm());
         throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
       }
 
