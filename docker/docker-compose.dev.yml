@@ -3,6 +3,7 @@ services:
     image: cheftory-proxy-server-dev:latest
     ports:
       - "8080"
+      - "8081"
     depends_on:
       - mysql
     env_file:

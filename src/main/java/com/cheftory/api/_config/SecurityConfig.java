@@ -39,6 +39,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/docs/**")
                     .permitAll()
+                    .requestMatchers("/actuator/**")
+                    .permitAll()
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(filter, BasicAuthenticationFilter.class)
