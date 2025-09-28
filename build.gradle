@@ -85,6 +85,9 @@ dependencies {
 	testImplementation 'io.rest-assured:spring-mock-mvc'
 	testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	runtimeOnly  'io.micrometer:micrometer-registry-prometheus'
 }
 
 def snippetsDir = file("build/generated-snippets")
