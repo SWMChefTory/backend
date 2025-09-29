@@ -1,5 +1,6 @@
 package com.cheftory.api._config;
 
+import io.micrometer.observation.ObservationRegistry;
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,6 +16,12 @@ public class WebclientConfig {
   @Value("${ai-recipe-summary.url}")
   private String recipeServerUrl;
 
+  private final ObservationRegistry observationRegistry;
+
+  public WebclientConfig(ObservationRegistry observationRegistry) {
+    this.observationRegistry = observationRegistry;
+  }
+
   @Bean
   @Qualifier("recipeCreateClient")
   public WebClient webClientForRecipeServer() {
@@ -27,6 +34,7 @@ public class WebclientConfig {
     return WebClient.builder()
         .baseUrl(recipeServerUrl)
         .clientConnector(new ReactorClientHttpConnector(httpClient))
+        .observationRegistry(observationRegistry)
         .build();
   }
 
@@ -42,6 +50,7 @@ public class WebclientConfig {
     return WebClient.builder()
         .baseUrl("https://www.googleapis.com/youtube/v3")
         .clientConnector(new ReactorClientHttpConnector(httpClient))
+        .observationRegistry(observationRegistry)
         .build();
   }
 }
