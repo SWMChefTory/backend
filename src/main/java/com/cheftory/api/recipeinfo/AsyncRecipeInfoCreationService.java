@@ -21,9 +21,9 @@ import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaService;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +43,7 @@ public class AsyncRecipeInfoCreationService {
   private final RecipeYoutubeMetaService recipeYoutubeMetaService;
   private final RecipeIdentifyService recipeIdentifyService;
   private final RecipeBriefingService recipeBriefingService;
-  private final Executor recipeInfoCreateExecutor;
+  private final AsyncTaskExecutor recipeInfoCreateExecutor;
 
   @Async("recipeInfoCreateExecutor")
   public void create(UUID recipeId, String videoId, URI videoUrl) {
