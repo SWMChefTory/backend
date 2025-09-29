@@ -32,6 +32,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
+import org.springframework.core.task.AsyncTaskExecutor;
 
 @DisplayName("AsyncRecipeInfoCreationService 테스트")
 class AsyncRecipeInfoCreationServiceTest {
@@ -48,7 +49,7 @@ class AsyncRecipeInfoCreationServiceTest {
   private RecipeIdentifyService recipeIdentifyService;
   private RecipeBriefingService recipeBriefingService;
 
-  private Executor directExecutor;
+  private AsyncTaskExecutor directExecutor;
 
   private AsyncRecipeInfoCreationService sut;
 

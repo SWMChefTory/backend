@@ -1,23 +1,26 @@
 package com.cheftory.api._config;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.support.TaskExecutorAdapter;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableAsync
 public class AsyncConfig {
 
-  @Bean(name = "recipeInfoCreateExecutor")
-  public Executor recipeInfoCreateExecutor() {
-    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize(5);
-    executor.setMaxPoolSize(10);
-    executor.setQueueCapacity(50);
-    executor.setThreadNamePrefix("Recipe-Async-");
-    executor.initialize();
-    return executor;
+  @Bean
+  public TomcatProtocolHandlerCustomizer<?> protocolHandlerVirtualThreadExecutorCustomizer() {
+    return protocolHandler -> {
+      protocolHandler.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+    };
+  }
+
+  @Bean("recipeInfoCreateExecutor")
+  public AsyncTaskExecutor asyncTaskExecutor() {
+    return new TaskExecutorAdapter(Executors.newVirtualThreadPerTaskExecutor());
   }
 }
