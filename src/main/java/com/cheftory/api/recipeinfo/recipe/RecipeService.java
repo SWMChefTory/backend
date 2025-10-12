@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.recipe;
 
+import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.model.RecipeSort;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class RecipeService {
   private final RecipeRepository recipeRepository;
+  private final Clock clock;
 
   public Recipe findSuccess(UUID recipeId) {
 
@@ -59,7 +61,7 @@ public class RecipeService {
   }
 
   public UUID create() {
-    Recipe recipe = Recipe.create();
+    Recipe recipe = Recipe.create(clock);
     recipeRepository.save(recipe);
     return recipe.getId();
   }
@@ -81,7 +83,7 @@ public class RecipeService {
         recipeRepository
             .findById(recipeId)
             .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
-    recipe.success();
+    recipe.success(clock);
     return recipeRepository.save(recipe);
   }
 
@@ -90,7 +92,7 @@ public class RecipeService {
         recipeRepository
             .findById(recipeId)
             .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
-    recipe.failed();
+    recipe.failed(clock);
     return recipeRepository.save(recipe);
   }
 

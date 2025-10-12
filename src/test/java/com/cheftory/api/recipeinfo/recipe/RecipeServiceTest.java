@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.model.RecipeSort;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
@@ -24,11 +25,13 @@ class RecipeServiceTest {
 
   private RecipeService service;
   private RecipeRepository recipeRepository;
+  private Clock clock;
 
   @BeforeEach
   void setUp() {
     recipeRepository = mock(RecipeRepository.class);
-    service = new RecipeService(recipeRepository);
+    clock = mock(Clock.class);
+    service = new RecipeService(recipeRepository, clock);
   }
 
   @Nested
@@ -378,7 +381,7 @@ class RecipeServiceTest {
 
           assertThat(result).isEqualTo(recipe);
           verify(recipeRepository).findById(recipeId);
-          verify(recipe).success();
+          verify(recipe).success(clock);
           verify(recipeRepository).save(recipe);
         }
       }
@@ -445,7 +448,7 @@ class RecipeServiceTest {
 
           assertThat(result).isEqualTo(recipe);
           verify(recipeRepository).findById(recipeId);
-          verify(recipe).failed();
+          verify(recipe).failed(clock);
           verify(recipeRepository).save(recipe);
         }
       }
