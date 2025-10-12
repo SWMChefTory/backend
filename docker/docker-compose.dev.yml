@@ -24,6 +24,7 @@ services:
       JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
       JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
       APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
+      TZ: Asia/Seoul
     networks:
       - cheftory_network
     restart: always

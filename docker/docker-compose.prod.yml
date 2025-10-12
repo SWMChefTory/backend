@@ -26,6 +26,7 @@ services:
       APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
       SENTRY_DSN: ${SENTRY_DSN}
       SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
+      TZ: Asia/Seoul
     networks:
       - cheftory_network
     restart: always
