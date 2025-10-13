@@ -774,7 +774,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         private Page<RecipeHistory> categorizedRecipes;
         private RecipeHistory categorizedRecipe;
         private Recipe recipe;
-        private RecipeYoutubeMeta youtubeMeta; // YoutubeVideoInfo -> RecipeYoutubeMeta로 변경
+        private RecipeYoutubeMeta youtubeMeta;
+        private RecipeDetailMeta recipeDetailMeta;
         private RecipeViewStatus viewStatus;
         private UUID recipeId;
         private Integer page;
@@ -787,13 +788,15 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           categorizedRecipe = mock(RecipeHistory.class);
           recipe = mock(Recipe.class);
-          youtubeMeta = mock(RecipeYoutubeMeta.class); // 변경된 타입
+          youtubeMeta = mock(RecipeYoutubeMeta.class);
+          recipeDetailMeta = mock(RecipeDetailMeta.class);
           viewStatus = mock(RecipeViewStatus.class);
 
           // RecipeHistory 구조에 맞춰 수정
           doReturn(recipe).when(categorizedRecipe).getRecipe();
           doReturn(viewStatus).when(categorizedRecipe).getRecipeViewStatus();
-          doReturn(youtubeMeta).when(categorizedRecipe).getYoutubeMeta(); // 새로운 메서드
+          doReturn(youtubeMeta).when(categorizedRecipe).getYoutubeMeta();
+          doReturn(recipeDetailMeta).when(categorizedRecipe).getRecipeDetailMeta();
 
           doReturn(recipeId).when(recipe).getId();
           doReturn("Categorized Recipe Title").when(youtubeMeta).getTitle();
@@ -802,6 +805,11 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .when(youtubeMeta)
               .getThumbnailUrl();
           doReturn(180).when(youtubeMeta).getVideoSeconds();
+
+          doReturn(30).when(recipeDetailMeta).getCookTime();
+          doReturn(2).when(recipeDetailMeta).getServings();
+          doReturn("Categorized Recipe Description").when(recipeDetailMeta).getDescription();
+          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(recipeDetailMeta).getCreatedAt();
 
           doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(viewStatus).getViewedAt();
           doReturn(90).when(viewStatus).getLastPlaySeconds();
@@ -857,6 +865,13 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 재생 시간"),
                               fieldWithPath("categorized_recipes[].category_id")
                                   .description("레시피 카테고리 ID"),
+                              fieldWithPath("categorized_recipes[].description")
+                                  .description("레시피 설명"),
+                              fieldWithPath("categorized_recipes[].servings").description("레시피 인분"),
+                              fieldWithPath("categorized_recipes[].cook_time")
+                                  .description("레시피 조리 시간(분)"),
+                              fieldWithPath("categorized_recipes[].created_at")
+                                  .description("레시피 생성 시간"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -879,6 +894,12 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("categorized_recipes[0].last_play_seconds")).isEqualTo(90);
           assertThat(responseBody.getUUID("categorized_recipes[0].category_id"))
               .isEqualTo(categoryId);
+          assertThat(responseBody.getString("categorized_recipes[0].description"))
+              .isEqualTo("Categorized Recipe Description");
+          assertThat(responseBody.getInt("categorized_recipes[0].servings")).isEqualTo(2);
+          assertThat(responseBody.getInt("categorized_recipes[0].cook_time")).isEqualTo(30);
+          assertThat(responseBody.getString("categorized_recipes[0].created_at"))
+              .isEqualTo("2024-01-20T14:30:00");
         }
       }
     }
@@ -957,7 +978,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         private Page<RecipeHistory> unCategorizedRecipes;
         private RecipeHistory unCategorizedRecipe;
         private Recipe recipe;
-        private RecipeYoutubeMeta youtubeMeta; // YoutubeVideoInfo -> RecipeYoutubeMeta로 변경
+        private RecipeYoutubeMeta youtubeMeta;
+        private RecipeDetailMeta recipeDetailMeta;
         private RecipeViewStatus viewStatus;
         private UUID recipeId;
         private Integer page;
@@ -970,12 +992,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           unCategorizedRecipe = mock(RecipeHistory.class);
           recipe = mock(Recipe.class);
-          youtubeMeta = mock(RecipeYoutubeMeta.class); // 변경된 타입
+          youtubeMeta = mock(RecipeYoutubeMeta.class);
+          recipeDetailMeta = mock(RecipeDetailMeta.class);
           viewStatus = mock(RecipeViewStatus.class);
 
           doReturn(recipe).when(unCategorizedRecipe).getRecipe();
           doReturn(viewStatus).when(unCategorizedRecipe).getRecipeViewStatus();
-          doReturn(youtubeMeta).when(unCategorizedRecipe).getYoutubeMeta(); // 새로운 메서드
+          doReturn(youtubeMeta).when(unCategorizedRecipe).getYoutubeMeta();
+          doReturn(recipeDetailMeta).when(unCategorizedRecipe).getRecipeDetailMeta();
 
           doReturn(recipeId).when(recipe).getId();
           doReturn("Uncategorized Recipe Title").when(youtubeMeta).getTitle();
@@ -984,6 +1008,11 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .when(youtubeMeta)
               .getThumbnailUrl();
           doReturn(240).when(youtubeMeta).getVideoSeconds();
+
+          doReturn(30).when(recipeDetailMeta).getCookTime();
+          doReturn(2).when(recipeDetailMeta).getServings();
+          doReturn("Uncategorized Recipe Description").when(recipeDetailMeta).getDescription();
+          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(recipeDetailMeta).getCreatedAt();
 
           doReturn(LocalDateTime.of(2024, 1, 25, 16, 45, 0)).when(viewStatus).getViewedAt();
           doReturn(150).when(viewStatus).getLastPlaySeconds();
@@ -1033,6 +1062,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 ID"),
                               fieldWithPath("unCategorized_recipes[].video_seconds")
                                   .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("unCategorized_recipes[].description")
+                                  .description("레시피 설명"),
+                              fieldWithPath("unCategorized_recipes[].servings")
+                                  .description("레시피 인분"),
+                              fieldWithPath("unCategorized_recipes[].cook_time")
+                                  .description("레시피 조리 시간(분)"),
+                              fieldWithPath("unCategorized_recipes[].created_at")
+                                  .description("레시피 생성 시간"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -1054,6 +1091,12 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .isEqualTo("2024-01-25T16:45:00");
           assertThat(responseBody.getInt("unCategorized_recipes[0].last_play_seconds"))
               .isEqualTo(150);
+          assertThat(responseBody.getString("unCategorized_recipes[0].description"))
+              .isEqualTo("Uncategorized Recipe Description");
+          assertThat(responseBody.getInt("unCategorized_recipes[0].servings")).isEqualTo(2);
+          assertThat(responseBody.getInt("unCategorized_recipes[0].cook_time")).isEqualTo(30);
+          assertThat(responseBody.getString("unCategorized_recipes[0].created_at"))
+              .isEqualTo("2024-01-20T14:30:00");
         }
       }
     }

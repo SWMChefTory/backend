@@ -31,7 +31,11 @@ public record UnCategorizedRecipesResponse(
       @JsonProperty("recipe_title") String recipeTitle,
       @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
       @JsonProperty("video_id") String videoId,
-      @JsonProperty("video_seconds") Integer videoSeconds) {
+      @JsonProperty("video_seconds") Integer videoSeconds,
+      @JsonProperty("description") String description,
+      @JsonProperty("cook_time") Integer cookTime,
+      @JsonProperty("servings") Integer servings,
+      @JsonProperty("created_at") LocalDateTime createdAt) {
     public static UnCategorizedRecipe from(RecipeHistory info) {
       return new UnCategorizedRecipe(
           info.getRecipeViewStatus().getViewedAt(),
@@ -40,7 +44,11 @@ public record UnCategorizedRecipesResponse(
           info.getYoutubeMeta().getTitle(),
           info.getYoutubeMeta().getThumbnailUrl(),
           info.getYoutubeMeta().getVideoId(),
-          info.getYoutubeMeta().getVideoSeconds());
+          info.getYoutubeMeta().getVideoSeconds(),
+          info.getRecipeDetailMeta().getDescription(),
+          info.getRecipeDetailMeta().getCookTime(),
+          info.getRecipeDetailMeta().getServings(),
+          info.getRecipeDetailMeta().getCreatedAt());
     }
   }
 }

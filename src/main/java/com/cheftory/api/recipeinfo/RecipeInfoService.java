@@ -247,11 +247,16 @@ public class RecipeInfoService {
             .collect(
                 Collectors.toMap(RecipeYoutubeMeta::getRecipeId, Function.identity(), (a, b) -> a));
 
+    Map<UUID, RecipeDetailMeta> detailMetaMap =
+        recipeDetailMetaService.findIn(recipeIds).stream()
+            .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
+
     List<RecipeHistory> histories =
         viewStatuses.getContent().stream()
             .map(
                 viewStatus -> {
                   UUID recipeId = viewStatus.getRecipeId();
+
                   Recipe recipe = recipeMap.get(recipeId);
                   if (recipe == null) {
                     log.warn(
@@ -260,12 +265,16 @@ public class RecipeInfoService {
                         viewStatus.getUserId());
                     return null;
                   }
-                  RecipeYoutubeMeta meta = youtubeMetaMap.get(recipeId);
-                  if (meta == null) {
+
+                  RecipeYoutubeMeta youtubeMeta = youtubeMetaMap.get(recipeId);
+                  if (youtubeMeta == null) {
                     log.warn("히스토리: 유튜브 메타 엔티티 누락 recipeId={}", recipeId);
                     return null;
                   }
-                  return RecipeHistory.of(recipe, viewStatus, meta);
+
+                  RecipeDetailMeta detailMeta = detailMetaMap.get(recipeId);
+
+                  return RecipeHistory.of(recipe, viewStatus, youtubeMeta, detailMeta);
                 })
             .filter(Objects::nonNull)
             .toList();

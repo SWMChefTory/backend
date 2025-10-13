@@ -33,7 +33,11 @@ public record CategorizedRecipesResponse(
       @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
       @JsonProperty("video_id") String videoId,
       @JsonProperty("video_seconds") Integer videoSeconds,
-      @JsonProperty("category_id") UUID categoryId) {
+      @JsonProperty("category_id") UUID categoryId,
+      @JsonProperty("description") String description,
+      @JsonProperty("cook_time") Integer cookTime,
+      @JsonProperty("servings") Integer servings,
+      @JsonProperty("created_at") LocalDateTime createdAt) {
     public static CategorizedRecipe from(RecipeHistory info) {
       return new CategorizedRecipe(
           info.getRecipeViewStatus().getViewedAt(),
@@ -43,7 +47,11 @@ public record CategorizedRecipesResponse(
           info.getYoutubeMeta().getThumbnailUrl(),
           info.getYoutubeMeta().getVideoId(),
           info.getYoutubeMeta().getVideoSeconds(),
-          info.getRecipeViewStatus().getRecipeCategoryId());
+          info.getRecipeViewStatus().getRecipeCategoryId(),
+          info.getRecipeDetailMeta().getDescription(),
+          info.getRecipeDetailMeta().getCookTime(),
+          info.getRecipeDetailMeta().getServings(),
+          info.getRecipeDetailMeta().getCreatedAt());
     }
   }
 }
