@@ -1,10 +1,14 @@
 package com.cheftory.api.recipeinfo.recipe;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
+import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.recipe.entity.ProcessStep;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,6 +16,14 @@ import org.junit.jupiter.api.Test;
 
 @DisplayName("RecipeTest")
 public class RecipeTest {
+
+  private Clock clock;
+
+  @BeforeEach
+  void setUp() {
+    clock = mock(Clock.class);
+    doReturn(LocalDateTime.now()).when(clock).now();
+  }
 
   @Nested
   @DisplayName("레시피 생성")
@@ -29,7 +41,7 @@ public class RecipeTest {
 
         @BeforeEach
         void setUp() {
-          recipe = Recipe.create();
+          recipe = Recipe.create(clock);
         }
 
         @DisplayName("Then - 레시피가 생성된다")
@@ -40,7 +52,7 @@ public class RecipeTest {
           assertThat(recipe.getProcessStep()).isEqualTo(ProcessStep.READY);
           assertThat(recipe.getViewCount()).isEqualTo(0);
           assertThat(recipe.getCreatedAt()).isNotNull();
-          assertThat(recipe.getUpdatedAt()).isNull();
+          assertThat(recipe.getUpdatedAt()).isNotNull();
           assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
         }
       }
@@ -59,7 +71,7 @@ public class RecipeTest {
 
       @BeforeEach
       void setUp() {
-        recipe = Recipe.create();
+        recipe = Recipe.create(clock);
       }
 
       @Nested
@@ -68,7 +80,7 @@ public class RecipeTest {
 
         @BeforeEach
         void setUp() {
-          recipe.success();
+          recipe.success(clock);
         }
 
         @DisplayName("Then - 레시피 상태가 성공으로 변경된다")
@@ -86,7 +98,7 @@ public class RecipeTest {
 
         @BeforeEach
         void setUp() {
-          recipe.failed();
+          recipe.failed(clock);
         }
 
         @DisplayName("Then - 레시피 상태가 실패로 변경된다")

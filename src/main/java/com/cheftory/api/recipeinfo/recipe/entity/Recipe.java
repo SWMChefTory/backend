@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.recipe.entity;
 
+import com.cheftory.api._common.Clock;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -26,21 +27,24 @@ public class Recipe {
   @Enumerated(EnumType.STRING)
   private RecipeStatus recipeStatus;
 
-  public static Recipe create() {
+  public static Recipe create(Clock clock) {
     return Recipe.builder()
         .id(UUID.randomUUID())
         .processStep(ProcessStep.READY)
         .recipeStatus(RecipeStatus.IN_PROGRESS)
         .viewCount(0)
-        .createdAt(LocalDateTime.now())
+        .createdAt(clock.now())
+        .updatedAt(clock.now())
         .build();
   }
 
-  public void success() {
+  public void success(Clock clock) {
+    this.updatedAt = clock.now();
     this.recipeStatus = RecipeStatus.SUCCESS;
   }
 
-  public void failed() {
+  public void failed(Clock clock) {
+    this.updatedAt = clock.now();
     this.recipeStatus = RecipeStatus.FAILED;
   }
 

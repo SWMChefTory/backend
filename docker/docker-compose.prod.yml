@@ -3,6 +3,7 @@ services:
     image: cheftory-proxy-server:latest
     ports:
       - "8080"
+      - "8081"
     depends_on:
       - mysql
     env_file:
@@ -25,6 +26,7 @@ services:
       APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
       SENTRY_DSN: ${SENTRY_DSN}
       SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
+      TZ: Asia/Seoul
     networks:
       - cheftory_network
     restart: always

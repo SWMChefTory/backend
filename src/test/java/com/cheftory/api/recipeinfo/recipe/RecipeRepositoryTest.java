@@ -1,13 +1,16 @@
 package com.cheftory.api.recipeinfo.recipe;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 
 import com.cheftory.api.DbContextTest;
+import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.model.RecipeSort;
 import com.cheftory.api.recipeinfo.recipe.entity.ProcessStep;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,11 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @DisplayName("RecipeRepositoryTest")
 public class RecipeRepositoryTest extends DbContextTest {
 
   @Autowired private RecipeRepository recipeRepository;
+  @MockitoBean private Clock clock;
 
   @Nested
   @DisplayName("레시피 저장")
@@ -38,7 +43,8 @@ public class RecipeRepositoryTest extends DbContextTest {
 
       @BeforeEach
       void setUp() {
-        recipe = Recipe.create();
+        doReturn(LocalDateTime.now()).when(clock).now();
+        recipe = Recipe.create(clock);
       }
 
       @Nested
@@ -75,8 +81,9 @@ public class RecipeRepositoryTest extends DbContextTest {
 
       @BeforeEach
       void setUp() {
-        recipe = Recipe.create();
-        recipe.success();
+        doReturn(LocalDateTime.now()).when(clock).now();
+        recipe = Recipe.create(clock);
+        recipe.success(clock);
       }
 
       @Nested
@@ -111,8 +118,9 @@ public class RecipeRepositoryTest extends DbContextTest {
 
       @BeforeEach
       void setUp() {
-        recipe = Recipe.create();
-        recipe.failed();
+        doReturn(LocalDateTime.now()).when(clock).now();
+        recipe = Recipe.create(clock);
+        recipe.failed(clock);
       }
 
       @Nested
@@ -152,7 +160,8 @@ public class RecipeRepositoryTest extends DbContextTest {
 
       @BeforeEach
       void setUp() {
-        Recipe recipe = Recipe.create();
+        doReturn(LocalDateTime.now()).when(clock).now();
+        Recipe recipe = Recipe.create(clock);
         savedRecipe = recipeRepository.save(recipe);
       }
 
@@ -234,15 +243,16 @@ public class RecipeRepositoryTest extends DbContextTest {
 
     @BeforeEach
     void setUp() {
-      Recipe successRecipe1 = Recipe.create();
-      successRecipe1.success();
-      Recipe successRecipe2 = Recipe.create();
-      successRecipe2.success();
+      doReturn(LocalDateTime.now()).when(clock).now();
+      Recipe successRecipe1 = Recipe.create(clock);
+      successRecipe1.success(clock);
+      Recipe successRecipe2 = Recipe.create(clock);
+      successRecipe2.success(clock);
 
-      Recipe inProgressRecipe = Recipe.create();
+      Recipe inProgressRecipe = Recipe.create(clock);
 
-      Recipe failedRecipe = Recipe.create();
-      failedRecipe.failed();
+      Recipe failedRecipe = Recipe.create(clock);
+      failedRecipe.failed(clock);
 
       savedRecipes =
           recipeRepository.saveAll(
@@ -366,11 +376,12 @@ public class RecipeRepositoryTest extends DbContextTest {
 
     @BeforeEach
     void setUp() {
-      Recipe recipe1 = Recipe.create();
-      Recipe recipe2 = Recipe.create();
-      recipe2.success();
-      Recipe recipe3 = Recipe.create();
-      recipe3.failed();
+      doReturn(LocalDateTime.now()).when(clock).now();
+      Recipe recipe1 = Recipe.create(clock);
+      Recipe recipe2 = Recipe.create(clock);
+      recipe2.success(clock);
+      Recipe recipe3 = Recipe.create(clock);
+      recipe3.failed(clock);
 
       savedRecipes = recipeRepository.saveAll(List.of(recipe1, recipe2, recipe3));
       savedRecipeIds = savedRecipes.stream().map(Recipe::getId).toList();
@@ -484,24 +495,25 @@ public class RecipeRepositoryTest extends DbContextTest {
 
     @BeforeEach
     void setUp() {
-      Recipe successRecipe1 = Recipe.create();
-      successRecipe1.success();
-      Recipe successRecipe2 = Recipe.create();
-      successRecipe2.success();
-      Recipe successRecipe3 = Recipe.create();
-      successRecipe3.success();
-      Recipe successRecipe4 = Recipe.create();
-      successRecipe4.success();
-      Recipe successRecipe5 = Recipe.create();
-      successRecipe5.success();
+      doReturn(LocalDateTime.now()).when(clock).now();
+      Recipe successRecipe1 = Recipe.create(clock);
+      successRecipe1.success(clock);
+      Recipe successRecipe2 = Recipe.create(clock);
+      successRecipe2.success(clock);
+      Recipe successRecipe3 = Recipe.create(clock);
+      successRecipe3.success(clock);
+      Recipe successRecipe4 = Recipe.create(clock);
+      successRecipe4.success(clock);
+      Recipe successRecipe5 = Recipe.create(clock);
+      successRecipe5.success(clock);
 
-      Recipe inProgressRecipe1 = Recipe.create();
-      Recipe inProgressRecipe2 = Recipe.create();
+      Recipe inProgressRecipe1 = Recipe.create(clock);
+      Recipe inProgressRecipe2 = Recipe.create(clock);
 
-      Recipe failedRecipe1 = Recipe.create();
-      failedRecipe1.failed();
-      Recipe failedRecipe2 = Recipe.create();
-      failedRecipe2.failed();
+      Recipe failedRecipe1 = Recipe.create(clock);
+      failedRecipe1.failed(clock);
+      Recipe failedRecipe2 = Recipe.create(clock);
+      failedRecipe2.failed(clock);
 
       recipeRepository.saveAll(
           List.of(
@@ -775,7 +787,8 @@ public class RecipeRepositoryTest extends DbContextTest {
 
       @BeforeEach
       void setUp() {
-        Recipe recipe = Recipe.create();
+        doReturn(LocalDateTime.now()).when(clock).now();
+        Recipe recipe = Recipe.create(clock);
         savedRecipe = recipeRepository.save(recipe);
       }
 
@@ -801,12 +814,13 @@ public class RecipeRepositoryTest extends DbContextTest {
 
         @BeforeEach
         void setUp() {
-          Recipe recipe1 = Recipe.create();
-          recipe1.success();
+          doReturn(LocalDateTime.now()).when(clock).now();
+          Recipe recipe1 = Recipe.create(clock);
+          recipe1.success(clock);
           successRecipe = recipeRepository.save(recipe1);
 
-          Recipe recipe2 = Recipe.create();
-          recipe2.failed();
+          Recipe recipe2 = Recipe.create(clock);
+          recipe2.failed(clock);
           failedRecipe = recipeRepository.save(recipe2);
         }
 
@@ -856,13 +870,14 @@ public class RecipeRepositoryTest extends DbContextTest {
 
       @BeforeEach
       void setUp() {
+        doReturn(LocalDateTime.now()).when(clock).now();
         List<Recipe> recipes = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
-          Recipe recipe = Recipe.create();
+          Recipe recipe = Recipe.create(clock);
           if (i % 3 == 0) {
-            recipe.success();
+            recipe.success(clock);
           } else if (i % 5 == 0) {
-            recipe.failed();
+            recipe.failed(clock);
           }
           recipes.add(recipe);
         }
