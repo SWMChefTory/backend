@@ -15,6 +15,7 @@ spotless {
 		removeUnusedImports()
 		trimTrailingWhitespace()
 		endWithNewline()
+		targetExclude 'src/main/resources/static/docs/**'
 	}
 }
 
