@@ -45,10 +45,10 @@ public record UnCategorizedRecipesResponse(
           info.getYoutubeMeta().getThumbnailUrl(),
           info.getYoutubeMeta().getVideoId(),
           info.getYoutubeMeta().getVideoSeconds(),
-          info.getRecipeDetailMeta().getDescription(),
-          info.getRecipeDetailMeta().getCookTime(),
-          info.getRecipeDetailMeta().getServings(),
-          info.getRecipeDetailMeta().getCreatedAt());
+          info.getRecipeDetailMeta() != null ? info.getRecipeDetailMeta().getDescription() : null,
+          info.getRecipeDetailMeta() != null ? info.getRecipeDetailMeta().getCookTime() : null,
+          info.getRecipeDetailMeta() != null ? info.getRecipeDetailMeta().getServings() : null,
+          info.getRecipeDetailMeta() != null ? info.getRecipeDetailMeta().getCreatedAt() : null);
     }
   }
 }

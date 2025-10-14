@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.lang.Nullable;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
@@ -22,7 +23,7 @@ public class RecipeHistory {
       Recipe recipe,
       RecipeViewStatus recipeViewStatus,
       RecipeYoutubeMeta youtubeMeta,
-      RecipeDetailMeta recipeDetailMeta) {
+      @Nullable RecipeDetailMeta recipeDetailMeta) {
     return RecipeHistory.builder()
         .recipe(recipe)
         .recipeViewStatus(recipeViewStatus)
