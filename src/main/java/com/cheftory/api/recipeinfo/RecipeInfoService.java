@@ -254,6 +254,10 @@ public class RecipeInfoService {
         recipeDetailMetaService.getIn(recipeIds).stream()
             .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
 
+    Map<UUID, List<RecipeTag>> tagsMap =
+        recipeTagService.findIn(recipeIds).stream()
+            .collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+
     List<RecipeHistory> histories =
         viewStatuses.getContent().stream()
             .map(
@@ -276,8 +280,10 @@ public class RecipeInfoService {
                   }
 
                   RecipeDetailMeta detailMeta = detailMetaMap.get(recipeId);
+                  List<RecipeTag> tags =
+                      tagsMap.getOrDefault(recipe.getId(), Collections.emptyList());
 
-                  return RecipeHistory.of(recipe, viewStatus, youtubeMeta, detailMeta);
+                  return RecipeHistory.of(recipe, viewStatus, youtubeMeta, detailMeta, tags);
                 })
             .filter(Objects::nonNull)
             .toList();
