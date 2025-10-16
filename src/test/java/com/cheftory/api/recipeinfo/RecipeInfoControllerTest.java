@@ -6,7 +6,9 @@ import static com.cheftory.api.utils.RestDocsUtils.requestAccessTokenFields;
 import static com.cheftory.api.utils.RestDocsUtils.requestPreprocessor;
 import static com.cheftory.api.utils.RestDocsUtils.responsePreprocessor;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatObject;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -879,7 +881,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
           verify(recipeInfoService).findCategorized(userId, categoryId, page);
 
-          // 응답 검증 추가
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getUUID("categorized_recipes[0].recipe_id")).isEqualTo(recipeId);
           assertThat(responseBody.getString("categorized_recipes[0].recipe_title"))
@@ -900,6 +901,76 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("categorized_recipes[0].cook_time")).isEqualTo(30);
           assertThat(responseBody.getString("categorized_recipes[0].created_at"))
               .isEqualTo("2024-01-20T14:30:00");
+        }
+
+        @Test
+        @DisplayName("Then - DetailMeta가 null이면 해당 필드는 null로 내려간다")
+        void thenDetailMetaNullShouldReturnNullFields() {
+          // DetailMeta를 null로 응답
+          doReturn(null).when(categorizedRecipe).getRecipeDetailMeta();
+
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
+                  .param("page", page)
+                  .get("/api/v1/recipes/categorized/{recipe_category_id}", categoryId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("categorized_recipes", hasSize(categorizedRecipes.getContent().size()))
+                  .body("categorized_recipes[0].description", nullValue())
+                  .body("categorized_recipes[0].servings", nullValue())
+                  .body("categorized_recipes[0].cook_time", nullValue())
+                  .body("categorized_recipes[0].created_at", nullValue())
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          requestAccessTokenFields(),
+                          queryParameters(
+                              parameterWithName("page")
+                                  .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional()),
+                          responseFields(
+                              fieldWithPath("categorized_recipes").description("미분류 레시피 목록"),
+                              fieldWithPath("categorized_recipes[].viewed_at")
+                                  .description("레시피 접근 시간"),
+                              fieldWithPath("categorized_recipes[].last_play_seconds")
+                                  .description("레시피 마지막 재생 시간"),
+                              fieldWithPath("categorized_recipes[].recipe_id")
+                                  .description("레시피 ID"),
+                              fieldWithPath("categorized_recipes[].recipe_title")
+                                  .description("레시피 제목"),
+                              fieldWithPath("categorized_recipes[].video_thumbnail_url")
+                                  .description("레시피 비디오 썸네일 URL"),
+                              fieldWithPath("categorized_recipes[].video_id")
+                                  .description("레시피 비디오 ID"),
+                              fieldWithPath("categorized_recipes[].video_seconds")
+                                  .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("categorized_recipes[].category_id")
+                                  .description("레시피 카테고리 ID"),
+                              fieldWithPath("categorized_recipes[].description")
+                                  .description("레시피 설명 (nullable)"),
+                              fieldWithPath("categorized_recipes[].servings")
+                                  .description("레시피 인분 (nullable)"),
+                              fieldWithPath("categorized_recipes[].cook_time")
+                                  .description("레시피 조리 시간(분) (nullable)"),
+                              fieldWithPath("categorized_recipes[].created_at")
+                                  .description("레시피 생성 시간 (nullable)"),
+                              fieldWithPath("current_page").description("현재 페이지 번호"),
+                              fieldWithPath("total_pages").description("전체 페이지 수"),
+                              fieldWithPath("total_elements").description("전체 요소 수"),
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+
+          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+
+          var responseBody = response.extract().jsonPath();
+          assertThatObject(responseBody.get("categorized_recipes[0].description")).isNull();
+          assertThatObject(responseBody.get("categorized_recipes[0].servings")).isNull();
+          assertThatObject(responseBody.get("categorized_recipes[0].cook_time")).isNull();
+          assertThatObject(responseBody.get("categorized_recipes[0].created_at")).isNull();
         }
       }
     }
@@ -1097,6 +1168,74 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("unCategorized_recipes[0].cook_time")).isEqualTo(30);
           assertThat(responseBody.getString("unCategorized_recipes[0].created_at"))
               .isEqualTo("2024-01-20T14:30:00");
+        }
+
+        @Test
+        @DisplayName("Then - DetailMeta가 null이면 해당 필드는 null로 내려간다")
+        void thenDetailMetaNullShouldReturnNullFields() {
+          // DetailMeta를 null로 응답
+          doReturn(null).when(unCategorizedRecipe).getRecipeDetailMeta();
+
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
+                  .param("page", page)
+                  .get("/api/v1/recipes/uncategorized")
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("unCategorized_recipes", hasSize(unCategorizedRecipes.getContent().size()))
+                  .body("unCategorized_recipes[0].description", nullValue())
+                  .body("unCategorized_recipes[0].servings", nullValue())
+                  .body("unCategorized_recipes[0].cook_time", nullValue())
+                  .body("unCategorized_recipes[0].created_at", nullValue())
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          requestAccessTokenFields(),
+                          queryParameters(
+                              parameterWithName("page")
+                                  .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional()),
+                          responseFields(
+                              fieldWithPath("unCategorized_recipes").description("미분류 레시피 목록"),
+                              fieldWithPath("unCategorized_recipes[].viewed_at")
+                                  .description("레시피 접근 시간"),
+                              fieldWithPath("unCategorized_recipes[].last_play_seconds")
+                                  .description("레시피 마지막 재생 시간"),
+                              fieldWithPath("unCategorized_recipes[].recipe_id")
+                                  .description("레시피 ID"),
+                              fieldWithPath("unCategorized_recipes[].recipe_title")
+                                  .description("레시피 제목"),
+                              fieldWithPath("unCategorized_recipes[].video_thumbnail_url")
+                                  .description("레시피 비디오 썸네일 URL"),
+                              fieldWithPath("unCategorized_recipes[].video_id")
+                                  .description("레시피 비디오 ID"),
+                              fieldWithPath("unCategorized_recipes[].video_seconds")
+                                  .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("unCategorized_recipes[].description")
+                                  .description("레시피 설명 (nullable)"),
+                              fieldWithPath("unCategorized_recipes[].servings")
+                                  .description("레시피 인분 (nullable)"),
+                              fieldWithPath("unCategorized_recipes[].cook_time")
+                                  .description("레시피 조리 시간(분) (nullable)"),
+                              fieldWithPath("unCategorized_recipes[].created_at")
+                                  .description("레시피 생성 시간 (nullable)"),
+                              fieldWithPath("current_page").description("현재 페이지 번호"),
+                              fieldWithPath("total_pages").description("전체 페이지 수"),
+                              fieldWithPath("total_elements").description("전체 요소 수"),
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+
+          verify(recipeInfoService).findUnCategorized(userId, page);
+
+          var responseBody = response.extract().jsonPath();
+          assertThatObject(responseBody.get("unCategorized_recipes[0].description")).isNull();
+          assertThatObject(responseBody.get("unCategorized_recipes[0].servings")).isNull();
+          assertThatObject(responseBody.get("unCategorized_recipes[0].cook_time")).isNull();
+          assertThatObject(responseBody.get("unCategorized_recipes[0].created_at")).isNull();
         }
       }
     }
