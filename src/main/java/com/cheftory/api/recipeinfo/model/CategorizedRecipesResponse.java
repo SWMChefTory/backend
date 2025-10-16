@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.model;
 
+import com.cheftory.api.recipeinfo.tag.RecipeTag;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -37,7 +38,8 @@ public record CategorizedRecipesResponse(
       @JsonProperty("description") String description,
       @JsonProperty("cook_time") Integer cookTime,
       @JsonProperty("servings") Integer servings,
-      @JsonProperty("created_at") LocalDateTime createdAt) {
+      @JsonProperty("created_at") LocalDateTime createdAt,
+      @JsonProperty("tags") List<Tag> tags) {
     public static CategorizedRecipe from(RecipeHistory info) {
       return new CategorizedRecipe(
           info.getRecipeViewStatus().getViewedAt(),
@@ -48,10 +50,17 @@ public record CategorizedRecipesResponse(
           info.getYoutubeMeta().getVideoId(),
           info.getYoutubeMeta().getVideoSeconds(),
           info.getRecipeViewStatus().getRecipeCategoryId(),
-          info.getRecipeDetailMeta() != null ? info.getRecipeDetailMeta().getDescription() : null,
-          info.getRecipeDetailMeta() != null ? info.getRecipeDetailMeta().getCookTime() : null,
-          info.getRecipeDetailMeta() != null ? info.getRecipeDetailMeta().getServings() : null,
-          info.getRecipeDetailMeta() != null ? info.getRecipeDetailMeta().getCreatedAt() : null);
+          info.getDetailMeta() != null ? info.getDetailMeta().getDescription() : null,
+          info.getDetailMeta() != null ? info.getDetailMeta().getCookTime() : null,
+          info.getDetailMeta() != null ? info.getDetailMeta().getServings() : null,
+          info.getDetailMeta() != null ? info.getDetailMeta().getCreatedAt() : null,
+          info.getTags() != null ? info.getTags().stream().map(Tag::from).toList() : null);
+    }
+  }
+
+  private record Tag(@JsonProperty("name") String name) {
+    public static Tag from(RecipeTag tag) {
+      return new Tag(tag.getTag());
     }
   }
 }

@@ -2,8 +2,10 @@ package com.cheftory.api.recipeinfo.model;
 
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
+import com.cheftory.api.recipeinfo.tag.RecipeTag;
 import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,18 +19,21 @@ public class RecipeHistory {
   private Recipe recipe;
   private RecipeViewStatus recipeViewStatus;
   private RecipeYoutubeMeta youtubeMeta;
-  private RecipeDetailMeta recipeDetailMeta;
+  private RecipeDetailMeta detailMeta;
+  private List<RecipeTag> tags;
 
   public static RecipeHistory of(
       Recipe recipe,
       RecipeViewStatus recipeViewStatus,
       RecipeYoutubeMeta youtubeMeta,
-      @Nullable RecipeDetailMeta recipeDetailMeta) {
+      @Nullable RecipeDetailMeta detailMeta,
+      @Nullable List<RecipeTag> tags) {
     return RecipeHistory.builder()
         .recipe(recipe)
         .recipeViewStatus(recipeViewStatus)
         .youtubeMeta(youtubeMeta)
-        .recipeDetailMeta(recipeDetailMeta)
+        .detailMeta(detailMeta)
+        .tags(tags)
         .build();
   }
 }

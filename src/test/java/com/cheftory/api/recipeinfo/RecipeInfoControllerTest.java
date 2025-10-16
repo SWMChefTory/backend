@@ -778,6 +778,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         private Recipe recipe;
         private RecipeYoutubeMeta youtubeMeta;
         private RecipeDetailMeta recipeDetailMeta;
+        private List<RecipeTag> tags;
         private RecipeViewStatus viewStatus;
         private UUID recipeId;
         private Integer page;
@@ -794,11 +795,10 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           recipeDetailMeta = mock(RecipeDetailMeta.class);
           viewStatus = mock(RecipeViewStatus.class);
 
-          // RecipeHistory 구조에 맞춰 수정
           doReturn(recipe).when(categorizedRecipe).getRecipe();
           doReturn(viewStatus).when(categorizedRecipe).getRecipeViewStatus();
           doReturn(youtubeMeta).when(categorizedRecipe).getYoutubeMeta();
-          doReturn(recipeDetailMeta).when(categorizedRecipe).getRecipeDetailMeta();
+          doReturn(recipeDetailMeta).when(categorizedRecipe).getDetailMeta();
 
           doReturn(recipeId).when(recipe).getId();
           doReturn("Categorized Recipe Title").when(youtubeMeta).getTitle();
@@ -813,10 +813,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn("Categorized Recipe Description").when(recipeDetailMeta).getDescription();
           doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(recipeDetailMeta).getCreatedAt();
 
+          RecipeTag tag = mock(RecipeTag.class);
+          doReturn("한식").when(tag).getTag();
+          tags = List.of(tag);
+
           doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(viewStatus).getViewedAt();
           doReturn(90).when(viewStatus).getLastPlaySeconds();
           doReturn(categoryId).when(viewStatus).getRecipeCategoryId();
-
+          doReturn(tags).when(categorizedRecipe).getTags();
           categorizedRecipes = new PageImpl<>(List.of(categorizedRecipe), pageable, 1);
           doReturn(categorizedRecipes)
               .when(recipeInfoService)
@@ -874,6 +878,9 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 조리 시간(분)"),
                               fieldWithPath("categorized_recipes[].created_at")
                                   .description("레시피 생성 시간"),
+                              fieldWithPath("categorized_recipes[].tags").description("레시피 태그 목록"),
+                              fieldWithPath("categorized_recipes[].tags[].name")
+                                  .description("태그 이름"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -901,13 +908,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("categorized_recipes[0].cook_time")).isEqualTo(30);
           assertThat(responseBody.getString("categorized_recipes[0].created_at"))
               .isEqualTo("2024-01-20T14:30:00");
+          assertThat(responseBody.getString("categorized_recipes[0].tags[0].name")).isEqualTo("한식");
         }
 
         @Test
         @DisplayName("Then - DetailMeta가 null이면 해당 필드는 null로 내려간다")
         void thenDetailMetaNullShouldReturnNullFields() {
           // DetailMeta를 null로 응답
-          doReturn(null).when(categorizedRecipe).getRecipeDetailMeta();
+          doReturn(null).when(categorizedRecipe).getDetailMeta();
 
           var response =
               given()
@@ -959,6 +967,9 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 조리 시간(분) (nullable)"),
                               fieldWithPath("categorized_recipes[].created_at")
                                   .description("레시피 생성 시간 (nullable)"),
+                              fieldWithPath("categorized_recipes[].tags").description("레시피 태그 목록"),
+                              fieldWithPath("categorized_recipes[].tags[].name")
+                                  .description("태그 이름"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -971,6 +982,71 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThatObject(responseBody.get("categorized_recipes[0].servings")).isNull();
           assertThatObject(responseBody.get("categorized_recipes[0].cook_time")).isNull();
           assertThatObject(responseBody.get("categorized_recipes[0].created_at")).isNull();
+        }
+
+        @Test
+        @DisplayName("Then - Tags가 null이면 해당 필드는 null로 내려간다")
+        void thenTagsNullShouldReturnNullFields() {
+          // Tags를 null로 응답
+          doReturn(null).when(categorizedRecipe).getTags();
+
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
+                  .param("page", page)
+                  .get("/api/v1/recipes/categorized/{recipe_category_id}", categoryId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("categorized_recipes", hasSize(categorizedRecipes.getContent().size()))
+                  .body("categorized_recipes[0].tags", nullValue())
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          requestAccessTokenFields(),
+                          queryParameters(
+                              parameterWithName("page")
+                                  .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional()),
+                          responseFields(
+                              fieldWithPath("categorized_recipes").description("미분류 레시피 목록"),
+                              fieldWithPath("categorized_recipes[].viewed_at")
+                                  .description("레시피 접근 시간"),
+                              fieldWithPath("categorized_recipes[].last_play_seconds")
+                                  .description("레시피 마지막 재생 시간"),
+                              fieldWithPath("categorized_recipes[].recipe_id")
+                                  .description("레시피 ID"),
+                              fieldWithPath("categorized_recipes[].recipe_title")
+                                  .description("레시피 제목"),
+                              fieldWithPath("categorized_recipes[].video_thumbnail_url")
+                                  .description("레시피 비디오 썸네일 URL"),
+                              fieldWithPath("categorized_recipes[].video_id")
+                                  .description("레시피 비디오 ID"),
+                              fieldWithPath("categorized_recipes[].video_seconds")
+                                  .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("categorized_recipes[].category_id")
+                                  .description("레시피 카테고리 ID"),
+                              fieldWithPath("categorized_recipes[].description")
+                                  .description("레시피 설명 (nullable)"),
+                              fieldWithPath("categorized_recipes[].servings")
+                                  .description("레시피 인분 (nullable)"),
+                              fieldWithPath("categorized_recipes[].cook_time")
+                                  .description("레시피 조리 시간(분) (nullable)"),
+                              fieldWithPath("categorized_recipes[].created_at")
+                                  .description("레시피 생성 시간 (nullable)"),
+                              fieldWithPath("categorized_recipes[].tags").description("레시피 태그 목록"),
+                              fieldWithPath("current_page").description("현재 페이지 번호"),
+                              fieldWithPath("total_pages").description("전체 페이지 수"),
+                              fieldWithPath("total_elements").description("전체 요소 수"),
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+
+          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+
+          var responseBody = response.extract().jsonPath();
+          assertThatObject(responseBody.get("categorized_recipes[0].tags")).isNull();
         }
       }
     }
@@ -1050,7 +1126,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         private RecipeHistory unCategorizedRecipe;
         private Recipe recipe;
         private RecipeYoutubeMeta youtubeMeta;
-        private RecipeDetailMeta recipeDetailMeta;
+        private RecipeDetailMeta detailMeta;
+        private List<RecipeTag> tags;
         private RecipeViewStatus viewStatus;
         private UUID recipeId;
         private Integer page;
@@ -1064,13 +1141,17 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           unCategorizedRecipe = mock(RecipeHistory.class);
           recipe = mock(Recipe.class);
           youtubeMeta = mock(RecipeYoutubeMeta.class);
-          recipeDetailMeta = mock(RecipeDetailMeta.class);
+          detailMeta = mock(RecipeDetailMeta.class);
+          RecipeTag tag = mock(RecipeTag.class);
+          doReturn("한식").when(tag).getTag();
+          tags = List.of(tag);
           viewStatus = mock(RecipeViewStatus.class);
 
           doReturn(recipe).when(unCategorizedRecipe).getRecipe();
           doReturn(viewStatus).when(unCategorizedRecipe).getRecipeViewStatus();
           doReturn(youtubeMeta).when(unCategorizedRecipe).getYoutubeMeta();
-          doReturn(recipeDetailMeta).when(unCategorizedRecipe).getRecipeDetailMeta();
+          doReturn(detailMeta).when(unCategorizedRecipe).getDetailMeta();
+          doReturn(tags).when(unCategorizedRecipe).getTags();
 
           doReturn(recipeId).when(recipe).getId();
           doReturn("Uncategorized Recipe Title").when(youtubeMeta).getTitle();
@@ -1080,10 +1161,10 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .getThumbnailUrl();
           doReturn(240).when(youtubeMeta).getVideoSeconds();
 
-          doReturn(30).when(recipeDetailMeta).getCookTime();
-          doReturn(2).when(recipeDetailMeta).getServings();
-          doReturn("Uncategorized Recipe Description").when(recipeDetailMeta).getDescription();
-          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(recipeDetailMeta).getCreatedAt();
+          doReturn(30).when(detailMeta).getCookTime();
+          doReturn(2).when(detailMeta).getServings();
+          doReturn("Uncategorized Recipe Description").when(detailMeta).getDescription();
+          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(detailMeta).getCreatedAt();
 
           doReturn(LocalDateTime.of(2024, 1, 25, 16, 45, 0)).when(viewStatus).getViewedAt();
           doReturn(150).when(viewStatus).getLastPlaySeconds();
@@ -1141,6 +1222,10 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 조리 시간(분)"),
                               fieldWithPath("unCategorized_recipes[].created_at")
                                   .description("레시피 생성 시간"),
+                              fieldWithPath("unCategorized_recipes[].tags")
+                                  .description("레시피 태그 목록"),
+                              fieldWithPath("unCategorized_recipes[].tags[].name")
+                                  .description("태그 이름"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -1168,13 +1253,15 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("unCategorized_recipes[0].cook_time")).isEqualTo(30);
           assertThat(responseBody.getString("unCategorized_recipes[0].created_at"))
               .isEqualTo("2024-01-20T14:30:00");
+          assertThat(responseBody.getString("unCategorized_recipes[0].tags[0].name"))
+              .isEqualTo("한식");
         }
 
         @Test
         @DisplayName("Then - DetailMeta가 null이면 해당 필드는 null로 내려간다")
         void thenDetailMetaNullShouldReturnNullFields() {
           // DetailMeta를 null로 응답
-          doReturn(null).when(unCategorizedRecipe).getRecipeDetailMeta();
+          doReturn(null).when(unCategorizedRecipe).getDetailMeta();
 
           var response =
               given()
@@ -1224,6 +1311,10 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 조리 시간(분) (nullable)"),
                               fieldWithPath("unCategorized_recipes[].created_at")
                                   .description("레시피 생성 시간 (nullable)"),
+                              fieldWithPath("unCategorized_recipes[].tags")
+                                  .description("레시피 태그 목록"),
+                              fieldWithPath("unCategorized_recipes[].tags[].name")
+                                  .description("태그 이름"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -1236,6 +1327,70 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThatObject(responseBody.get("unCategorized_recipes[0].servings")).isNull();
           assertThatObject(responseBody.get("unCategorized_recipes[0].cook_time")).isNull();
           assertThatObject(responseBody.get("unCategorized_recipes[0].created_at")).isNull();
+        }
+
+        @Test
+        @DisplayName("Then - Tags가 null이면 해당 필드는 null로 내려간다")
+        void thenTagsNullShouldReturnNullFields() {
+          // Tags를 null로 응답
+          doReturn(null).when(unCategorizedRecipe).getTags();
+
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
+                  .param("page", page)
+                  .get("/api/v1/recipes/uncategorized")
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("unCategorized_recipes", hasSize(unCategorizedRecipes.getContent().size()))
+                  .body("unCategorized_recipes[0].tags", nullValue())
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          requestAccessTokenFields(),
+                          queryParameters(
+                              parameterWithName("page")
+                                  .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional()),
+                          responseFields(
+                              fieldWithPath("unCategorized_recipes").description("미분류 레시피 목록"),
+                              fieldWithPath("unCategorized_recipes[].viewed_at")
+                                  .description("레시피 접근 시간"),
+                              fieldWithPath("unCategorized_recipes[].last_play_seconds")
+                                  .description("레시피 마지막 재생 시간"),
+                              fieldWithPath("unCategorized_recipes[].recipe_id")
+                                  .description("레시피 ID"),
+                              fieldWithPath("unCategorized_recipes[].recipe_title")
+                                  .description("레시피 제목"),
+                              fieldWithPath("unCategorized_recipes[].video_thumbnail_url")
+                                  .description("레시피 비디오 썸네일 URL"),
+                              fieldWithPath("unCategorized_recipes[].video_id")
+                                  .description("레시피 비디오 ID"),
+                              fieldWithPath("unCategorized_recipes[].video_seconds")
+                                  .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("unCategorized_recipes[].description")
+                                  .description("레시피 설명 (nullable)"),
+                              fieldWithPath("unCategorized_recipes[].servings")
+                                  .description("레시피 인분 (nullable)"),
+                              fieldWithPath("unCategorized_recipes[].cook_time")
+                                  .description("레시피 조리 시간(분) (nullable)"),
+                              fieldWithPath("unCategorized_recipes[].created_at")
+                                  .description("레시피 생성 시간 (nullable)"),
+                              fieldWithPath("unCategorized_recipes[].tags")
+                                  .description("레시피 태그 목록"),
+                              fieldWithPath("current_page").description("현재 페이지 번호"),
+                              fieldWithPath("total_pages").description("전체 페이지 수"),
+                              fieldWithPath("total_elements").description("전체 요소 수"),
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+
+          verify(recipeInfoService).findUnCategorized(userId, page);
+
+          var responseBody = response.extract().jsonPath();
+          assertThatObject(responseBody.get("unCategorized_recipes[0].tags")).isNull();
         }
       }
     }
