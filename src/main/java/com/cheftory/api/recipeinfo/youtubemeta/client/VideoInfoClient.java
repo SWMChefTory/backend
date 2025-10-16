@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.youtubemeta.client;
 
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
 import java.net.URI;
 import java.util.Objects;
@@ -7,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponents;
 
 @Component
 public class VideoInfoClient {
@@ -20,8 +20,8 @@ public class VideoInfoClient {
   @Value("${youtube.api-token}")
   private String YOUTUBE_KEY;
 
-  public YoutubeVideoInfo fetchVideoInfo(UriComponents url) {
-    String videoId = url.getQueryParams().getFirst("v");
+  public YoutubeVideoInfo fetchVideoInfo(YoutubeUri youtubeUri) {
+    String videoId = youtubeUri.getVideoId();
 
     YoutubeVideoResponse youtubeVideoResponse =
         webClient
@@ -41,7 +41,7 @@ public class VideoInfoClient {
     Objects.requireNonNull(youtubeVideoResponse, "비디오 응답이 null 입니다.");
 
     return YoutubeVideoInfo.from(
-        url,
+        youtubeUri,
         youtubeVideoResponse.getTitle(),
         URI.create(youtubeVideoResponse.getThumbnailUri()),
         youtubeVideoResponse.getSecondsDuration().intValue());

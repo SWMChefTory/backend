@@ -121,7 +121,7 @@ public class RecipeStepServiceTest {
     @DisplayName("레시피 단계들을 조회한다")
     @Test
     void thenRecipeStepsFetched() {
-      recipeStepService.finds(recipeId);
+      recipeStepService.gets(recipeId);
       verify(recipeStepRepository).findAllByRecipeId(recipeId, RecipeStepSort.STEP_ORDER_ASC);
     }
   }

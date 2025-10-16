@@ -26,34 +26,30 @@ public class RecipeYoutubeMetaServiceTest {
 
   private RecipeYoutubeMetaService recipeYoutubeMetaService;
   private RecipeYoutubeMetaRepository recipeYoutubeMetaRepository;
-  private YoutubeUrlNormalizer youtubeUrlNormalizer;
   private VideoInfoClient videoInfoClient;
   private Clock clock;
 
   @BeforeEach
   public void setUp() {
     recipeYoutubeMetaRepository = mock(RecipeYoutubeMetaRepository.class);
-    youtubeUrlNormalizer = mock(YoutubeUrlNormalizer.class);
     videoInfoClient = mock(VideoInfoClient.class);
     clock = mock(Clock.class);
     recipeYoutubeMetaService =
         new RecipeYoutubeMetaService(
-            recipeYoutubeMetaRepository, youtubeUrlNormalizer, videoInfoClient, clock);
+            recipeYoutubeMetaRepository, videoInfoClient, clock);
   }
 
   @Nested
   @DisplayName("유튜브 메타 정보 생성")
   class CreateYoutubeMeta {
 
-    private UriComponents youtubeUri;
     private String title;
     private Integer videoSeconds;
     private URI youtubeThumbnailUrl;
+    private YoutubeUri youtubeUri = mock(YoutubeUri.class);
 
     @BeforeEach
     void setUp() {
-      youtubeUri =
-          UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=test").build();
       title = "Sample Video";
       youtubeThumbnailUrl =
           UriComponentsBuilder.fromUriString("https://img.youtube.com/vi/test/default.jpg")
@@ -109,6 +105,7 @@ public class RecipeYoutubeMetaServiceTest {
     private UriComponents normalizedUri;
     private RecipeYoutubeMeta meta1;
     private RecipeYoutubeMeta meta2;
+    private YoutubeUri youtubeUri;
 
     @BeforeEach
     void setUp() {
@@ -117,6 +114,7 @@ public class RecipeYoutubeMetaServiceTest {
           UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=test").build();
       meta1 = mock(RecipeYoutubeMeta.class);
       meta2 = mock(RecipeYoutubeMeta.class);
+      youtubeUri = mock(YoutubeUri.class);
     }
 
     @Nested
@@ -124,9 +122,7 @@ public class RecipeYoutubeMetaServiceTest {
     class GivenValidUrl {
 
       @BeforeEach
-      void setUp() {
-        doReturn(normalizedUri).when(youtubeUrlNormalizer).normalize(any(UriComponents.class));
-      }
+      void setUp() {}
 
       @Test
       @DisplayName("Then - 해당 URL에 매핑된 RecipeYoutubeMeta 리스트를 반환한다.")
@@ -147,7 +143,7 @@ public class RecipeYoutubeMetaServiceTest {
       void thenReturnEmptyListIfNone() {
         doReturn(java.util.List.of())
             .when(recipeYoutubeMetaRepository)
-            .findAllByVideoUri(normalizedUri.toUri());
+            .findAllByVideoUri(any(URI.class));
 
         var result = recipeYoutubeMetaService.getByUrl(originalUri);
 
@@ -160,7 +156,7 @@ public class RecipeYoutubeMetaServiceTest {
       void thenThrowRecipeBannedIfAnyBanned() {
         doReturn(java.util.List.of(meta1, meta2))
             .when(recipeYoutubeMetaRepository)
-            .findAllByVideoUri(normalizedUri.toUri());
+            .findAllByVideoUri(any(URI.class));
         doReturn(false).when(meta1).isBanned();
         doReturn(true).when(meta2).isBanned();
 
@@ -192,14 +188,11 @@ public class RecipeYoutubeMetaServiceTest {
   class GetVideoInfoByUrl {
 
     private URI originalUri;
-    private UriComponents normalizedUri;
     private YoutubeVideoInfo youtubeVideoInfo;
 
     @BeforeEach
     void setUp() {
       originalUri = URI.create("https://www.youtube.com/watch?v=test");
-      normalizedUri =
-          UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=test").build();
       youtubeVideoInfo = mock(YoutubeVideoInfo.class);
     }
 
@@ -209,8 +202,7 @@ public class RecipeYoutubeMetaServiceTest {
 
       @BeforeEach
       void setUp() {
-        doReturn(normalizedUri).when(youtubeUrlNormalizer).normalize(any(UriComponents.class));
-        doReturn(youtubeVideoInfo).when(videoInfoClient).fetchVideoInfo(normalizedUri);
+        doReturn(youtubeVideoInfo).when(videoInfoClient).fetchVideoInfo(any(YoutubeUri.class));
       }
 
       @Nested
@@ -233,8 +225,7 @@ public class RecipeYoutubeMetaServiceTest {
 
         @BeforeEach
         void setUp() {
-          doReturn(normalizedUri).when(youtubeUrlNormalizer).normalize(any(UriComponents.class));
-          doReturn(null).when(videoInfoClient).fetchVideoInfo(normalizedUri);
+          doReturn(null).when(videoInfoClient).fetchVideoInfo(any(YoutubeUri.class));
         }
 
         @Nested
@@ -279,7 +270,7 @@ public class RecipeYoutubeMetaServiceTest {
         @Test
         @DisplayName("Then - 해당 Recipe ID에 매핑된 RecipeYoutubeMeta를 반환한다.")
         void thenReturnRecipeYoutubeMeta() {
-          RecipeYoutubeMeta result = recipeYoutubeMetaService.find(recipeId);
+          RecipeYoutubeMeta result = recipeYoutubeMetaService.get(recipeId);
 
           assertThat(result).isNotNull();
           assertThat(result).isEqualTo(recipeYoutubeMeta);
@@ -300,7 +291,7 @@ public class RecipeYoutubeMetaServiceTest {
         @Test
         @DisplayName("Then - YoutubeMetaException 예외가 발생한다.")
         void thenThrowYoutubeMetaException() {
-          assertThatThrownBy(() -> recipeYoutubeMetaService.find(recipeId))
+          assertThatThrownBy(() -> recipeYoutubeMetaService.get(recipeId))
               .isInstanceOf(YoutubeMetaException.class)
               .hasFieldOrPropertyWithValue(
                   "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
@@ -339,7 +330,7 @@ public class RecipeYoutubeMetaServiceTest {
           @Test
           @DisplayName("Then - 해당 리스트에 매핑된 RecipeYoutubeMeta 리스트를 반환한다")
           void thenReturnRecipeYoutubeMetaList() {
-            var result = recipeYoutubeMetaService.findsByRecipes(java.util.List.of(recipeId));
+            var result = recipeYoutubeMetaService.getByRecipes(java.util.List.of(recipeId));
 
             assertThat(result).isNotNull();
             assertThat(result).isNotEmpty();
@@ -366,7 +357,7 @@ public class RecipeYoutubeMetaServiceTest {
           @Test
           @DisplayName("Then - 빈 리스트를 반환한다")
           void thenReturnEmptyList() {
-            var result = recipeYoutubeMetaService.findsByRecipes(java.util.List.of());
+            var result = recipeYoutubeMetaService.getByRecipes(java.util.List.of());
 
             assertThat(result).isNotNull();
             assertThat(result).isEmpty();

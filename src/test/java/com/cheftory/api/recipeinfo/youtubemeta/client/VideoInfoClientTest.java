@@ -1,7 +1,10 @@
 package com.cheftory.api.recipeinfo.youtubemeta.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
 import java.io.IOException;
 import java.net.URI;
@@ -17,8 +20,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @DisplayName("VideoInfoClient")
 public class VideoInfoClientTest {
@@ -51,16 +52,13 @@ public class VideoInfoClientTest {
     @DisplayName("Given - 유효한 YouTube URL이 주어졌을 때")
     class GivenValidYoutubeUrl {
 
-      private UriComponents validUrl;
+      private YoutubeUri youtubeUri;
       private String videoId;
 
       @BeforeEach
       void setUp() {
         videoId = "dQw4w9WgXcQ";
-        validUrl =
-            UriComponentsBuilder.fromUriString("https://www.youtube.com/watch")
-                .queryParam("v", videoId)
-                .build();
+        youtubeUri = mock(YoutubeUri.class);
       }
 
       @Nested
@@ -112,15 +110,19 @@ public class VideoInfoClientTest {
                   .setResponseCode(200)
                   .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                   .setBody(responseBody));
+
+          doReturn(videoId).when(youtubeUri).getVideoId();
+          doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
+              .when(youtubeUri).getNormalizedUrl();
         }
 
         @Test
         @DisplayName("Then - 비디오 정보가 정상적으로 반환된다")
         void thenReturnsYoutubeVideoInfo() throws InterruptedException {
-          YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(validUrl);
+          YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
           assertThat(result).isNotNull();
-          assertThat(result.getVideoUri()).isEqualTo(validUrl.toUri());
+          assertThat(result.getVideoUri()).isEqualTo(youtubeUri.getNormalizedUrl());
           assertThat(result.getTitle()).isEqualTo("맛있는 김치찌개 만들기");
           assertThat(result.getThumbnailUrl())
               .isEqualTo(URI.create("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"));
@@ -186,13 +188,16 @@ public class VideoInfoClientTest {
                   .setResponseCode(200)
                   .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                   .setBody(responseBody));
+          doReturn(videoId).when(youtubeUri).getVideoId();
+          doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
+              .when(youtubeUri).getNormalizedUrl();
         }
 
         @Test
         @DisplayName("Then - 짧은 동영상 정보가 정상적으로 반환된다")
         void thenReturnsShortVideoInfo() {
           // when
-          YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(validUrl);
+          YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
           // then
           assertThat(result).isNotNull();

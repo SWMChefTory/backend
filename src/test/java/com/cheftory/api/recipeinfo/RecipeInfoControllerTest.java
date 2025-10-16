@@ -188,7 +188,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           recentRecipes = new PageImpl<>(List.of(recentRecipe), pageable, 1);
           doReturn(recentRecipes)
               .when(recipeInfoService)
-              .findRecents(any(UUID.class), any(Integer.class));
+              .getRecents(any(UUID.class), any(Integer.class));
         }
 
         @Test
@@ -236,7 +236,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   RecipeStatus.class),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findRecents(userId, page);
+          verify(recipeInfoService).getRecents(userId, page);
 
           var responseBody = response.extract().jsonPath();
           var recentRecipesList = responseBody.getList("recent_recipes");
@@ -288,7 +288,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         void setUp() {
           doReturn(new PageImpl<>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .findRecents(userId, page);
+              .getRecents(userId, page);
         }
 
         @Test
@@ -304,7 +304,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recent_recipes", hasSize(0));
 
-          verify(recipeInfoService).findRecents(userId, page);
+          verify(recipeInfoService).getRecents(userId, page);
         }
       }
     }
@@ -415,7 +415,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
           doReturn(fullRecipe)
               .when(recipeInfoService)
-              .findFullRecipe(any(UUID.class), any(UUID.class));
+              .getFullRecipe(any(UUID.class), any(UUID.class));
         }
 
         @Test
@@ -495,7 +495,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("recipe_briefings").description("레시피 브리핑 목록"),
                               fieldWithPath("recipe_briefings[].content").description("브리핑 내용"))));
 
-          verify(recipeInfoService).findFullRecipe(recipeId, userId);
+          verify(recipeInfoService).getFullRecipe(recipeId, userId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -565,7 +565,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
         @BeforeEach
         void setUp() {
-          doReturn(null).when(recipeInfoService).findFullRecipe(recipeId, userId);
+          doReturn(null).when(recipeInfoService).getFullRecipe(recipeId, userId);
         }
 
         @Test
@@ -579,7 +579,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .then()
               .status(HttpStatus.BAD_REQUEST);
 
-          verify(recipeInfoService).findFullRecipe(recipeId, userId);
+          verify(recipeInfoService).getFullRecipe(recipeId, userId);
         }
       }
     }
@@ -637,7 +637,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
 
           recipes = new PageImpl<>(List.of(recipeOverview), pageable, 1);
-          doReturn(recipes).when(recipeInfoService).findPopulars(any(Integer.class));
+          doReturn(recipes).when(recipeInfoService).getPopulars(any(Integer.class));
         }
 
         @Test
@@ -679,7 +679,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findPopulars(page);
+          verify(recipeInfoService).getPopulars(page);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("recommend_recipes")).hasSize(1);
@@ -728,7 +728,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeOverview>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .findPopulars(any(Integer.class));
+              .getPopulars(any(Integer.class));
         }
 
         @Test
@@ -744,7 +744,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recommend_recipes", hasSize(0));
 
-          verify(recipeInfoService).findPopulars(page);
+          verify(recipeInfoService).getPopulars(page);
         }
       }
     }
@@ -820,7 +820,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           categorizedRecipes = new PageImpl<>(List.of(categorizedRecipe), pageable, 1);
           doReturn(categorizedRecipes)
               .when(recipeInfoService)
-              .findCategorized(any(UUID.class), any(UUID.class), any(Integer.class));
+              .getCategorized(any(UUID.class), any(UUID.class), any(Integer.class));
         }
 
         @Test
@@ -879,7 +879,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+          verify(recipeInfoService).getCategorized(userId, categoryId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getUUID("categorized_recipes[0].recipe_id")).isEqualTo(recipeId);
@@ -964,7 +964,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+          verify(recipeInfoService).getCategorized(userId, categoryId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThatObject(responseBody.get("categorized_recipes[0].description")).isNull();
@@ -1003,7 +1003,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeHistory>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .findCategorized(userId, categoryId, page);
+              .getCategorized(userId, categoryId, page);
         }
 
         @Test
@@ -1019,7 +1019,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("categorized_recipes", hasSize(0));
 
-          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+          verify(recipeInfoService).getCategorized(userId, categoryId, page);
         }
       }
     }
@@ -1091,7 +1091,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           unCategorizedRecipes = new PageImpl<>(List.of(unCategorizedRecipe), pageable, 1);
           doReturn(unCategorizedRecipes)
               .when(recipeInfoService)
-              .findUnCategorized(any(UUID.class), any(Integer.class));
+              .getUnCategorized(any(UUID.class), any(Integer.class));
         }
 
         @Test
@@ -1146,7 +1146,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findUnCategorized(userId, page);
+          verify(recipeInfoService).getUnCategorized(userId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getUUID("unCategorized_recipes[0].recipe_id"))
@@ -1229,7 +1229,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findUnCategorized(userId, page);
+          verify(recipeInfoService).getUnCategorized(userId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThatObject(responseBody.get("unCategorized_recipes[0].description")).isNull();
@@ -1266,7 +1266,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeHistory>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .findUnCategorized(userId, page);
+              .getUnCategorized(userId, page);
         }
 
         @Test
@@ -1282,7 +1282,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("unCategorized_recipes", hasSize(0));
 
-          verify(recipeInfoService).findUnCategorized(userId, page);
+          verify(recipeInfoService).getUnCategorized(userId, page);
         }
       }
     }
@@ -1401,7 +1401,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
             doReturn(5).when(categoryWithCount).getCount();
 
             categories = List.of(categoryWithCount);
-            doReturn(categories).when(recipeInfoService).findCategories(any(UUID.class));
+            doReturn(categories).when(recipeInfoService).getCategories(any(UUID.class));
           }
 
           @Test
@@ -1428,7 +1428,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                 fieldWithPath("categories[].count").description("해당 카테고리의 레시피 수"),
                                 fieldWithPath("categories[].name").description("카테고리 이름"))));
 
-            verify(recipeInfoService).findCategories(userId);
+            verify(recipeInfoService).getCategories(userId);
 
             var responseBody = response.extract().jsonPath();
             var categoriesList = responseBody.getList("categories");
@@ -1460,7 +1460,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
           @BeforeEach
           void setUp() {
-            doReturn(List.of()).when(recipeInfoService).findCategories(userId);
+            doReturn(List.of()).when(recipeInfoService).getCategories(userId);
           }
 
           @Test
@@ -1475,7 +1475,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                 .status(HttpStatus.OK)
                 .body("categories", hasSize(0));
 
-            verify(recipeInfoService).findCategories(userId);
+            verify(recipeInfoService).getCategories(userId);
           }
         }
       }
@@ -1528,7 +1528,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(progresses).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1558,7 +1558,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   "현재 진행 상세 내용",
                                   RecipeProgressDetail.class))));
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -1606,7 +1606,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(progresses).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1619,7 +1619,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .then()
                   .status(HttpStatus.OK);
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -1656,7 +1656,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(List.of()).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1669,7 +1669,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recipe_progress_statuses", hasSize(0));
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
         }
       }
     }
@@ -1720,7 +1720,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(progresses).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1733,7 +1733,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .then()
                   .status(HttpStatus.OK);
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -1821,7 +1821,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(progresses).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1834,7 +1834,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .then()
                   .status(HttpStatus.OK);
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
 
           var responseBody = response.extract().jsonPath();
 

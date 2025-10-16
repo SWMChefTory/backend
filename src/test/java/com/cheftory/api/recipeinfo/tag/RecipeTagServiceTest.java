@@ -101,7 +101,7 @@ public class RecipeTagServiceTest {
 
         doReturn(mockTags).when(recipeTagRepository).findAllByRecipeId(recipeId);
 
-        List<RecipeTag> result = recipeTagService.finds(recipeId);
+        List<RecipeTag> result = recipeTagService.gets(recipeId);
 
         assertThat(result).hasSize(2);
         assertThat(result).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛");
@@ -123,7 +123,7 @@ public class RecipeTagServiceTest {
             .when(recipeTagRepository)
             .findAllByRecipeId(nonExistentRecipeId);
 
-        List<RecipeTag> result = recipeTagService.finds(nonExistentRecipeId);
+        List<RecipeTag> result = recipeTagService.gets(nonExistentRecipeId);
 
         assertThat(result).isEmpty();
         verify(recipeTagRepository).findAllByRecipeId(nonExistentRecipeId);
@@ -150,7 +150,7 @@ public class RecipeTagServiceTest {
 
       doReturn(mockTags).when(recipeTagRepository).findAllByRecipeIdIn(recipeIds);
 
-      List<RecipeTag> result = recipeTagService.findIn(recipeIds);
+      List<RecipeTag> result = recipeTagService.getIn(recipeIds);
 
       assertThat(result).hasSize(3);
       assertThat(result).extracting(RecipeTag::getRecipeId).containsOnly(recipeId1, recipeId2);

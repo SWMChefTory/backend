@@ -15,6 +15,7 @@ import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressResponse;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.model.RecommendRecipesResponse;
+import com.cheftory.api.recipeinfo.model.SearchedRecipesResponse;
 import com.cheftory.api.recipeinfo.model.UnCategorizedRecipesResponse;
 import jakarta.validation.constraints.Min;
 import java.util.List;
@@ -46,21 +47,21 @@ public class RecipeInfoController {
   @GetMapping("/{recipeId}")
   public FullRecipeResponse getFullRecipeResponse(
       @PathVariable("recipeId") UUID recipeId, @UserPrincipal UUID userId) {
-    FullRecipeInfo info = recipeInfoService.findFullRecipe(recipeId, userId);
+    FullRecipeInfo info = recipeInfoService.getFullRecipe(recipeId, userId);
     return FullRecipeResponse.of(info);
   }
 
   @GetMapping("/recent")
   public RecentRecipesResponse getRecentInfos(
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistory> infos = recipeInfoService.findRecents(userId, page);
+    Page<RecipeHistory> infos = recipeInfoService.getRecents(userId, page);
     return RecentRecipesResponse.from(infos);
   }
 
   @GetMapping("/recommend")
   public RecommendRecipesResponse getRecommendedRecipes(
       @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeOverview> recipes = recipeInfoService.findPopulars(page);
+    Page<RecipeOverview> recipes = recipeInfoService.getPopulars(page);
     return RecommendRecipesResponse.from(recipes);
   }
 
@@ -69,14 +70,14 @@ public class RecipeInfoController {
       @PathVariable("recipeCategoryId") UUID categoryId,
       @UserPrincipal UUID userId,
       @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistory> infos = recipeInfoService.findCategorized(userId, categoryId, page);
+    Page<RecipeHistory> infos = recipeInfoService.getCategorized(userId, categoryId, page);
     return CategorizedRecipesResponse.from(infos);
   }
 
   @GetMapping("/uncategorized")
   public UnCategorizedRecipesResponse getUnCategorizedRecipes(
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistory> infos = recipeInfoService.findUnCategorized(userId, page);
+    Page<RecipeHistory> infos = recipeInfoService.getUnCategorized(userId, page);
     return UnCategorizedRecipesResponse.from(infos);
   }
 
@@ -89,13 +90,13 @@ public class RecipeInfoController {
 
   @GetMapping("/categories")
   public CountRecipeCategoriesResponse getRecipeCategories(@UserPrincipal UUID userId) {
-    List<CountRecipeCategory> categories = recipeInfoService.findCategories(userId);
+    List<CountRecipeCategory> categories = recipeInfoService.getCategories(userId);
     return CountRecipeCategoriesResponse.from(categories);
   }
 
   @GetMapping("/progress/{recipeId}")
   public RecipeProgressResponse getRecipeProgress(@PathVariable("recipeId") UUID recipeId) {
-    RecipeProgressStatus progressStatus = recipeInfoService.findRecipeProgress(recipeId);
+    RecipeProgressStatus progressStatus = recipeInfoService.getRecipeProgress(recipeId);
     return RecipeProgressResponse.of(progressStatus);
   }
 }

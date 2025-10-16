@@ -225,7 +225,7 @@ public class RecipeCaptionServiceTest {
       @Test
       @DisplayName("When - 자막을 조회하면 Then - 해당 자막이 반환된다")
       void whenFindById_thenReturnsCaption() {
-        RecipeCaption result = recipeCaptionService.find(captionId);
+        RecipeCaption result = recipeCaptionService.get(captionId);
         assertThat(result).isEqualTo(expectedCaption);
         verify(recipeCaptionRepository).findById(captionId);
       }
@@ -245,7 +245,7 @@ public class RecipeCaptionServiceTest {
       @Test
       @DisplayName("When - 자막을 조회하면 Then - RecipeCaptionException이 발생한다")
       void whenFindById_thenThrowsException() {
-        assertThatThrownBy(() -> recipeCaptionService.find(captionId))
+        assertThatThrownBy(() -> recipeCaptionService.get(captionId))
             .isInstanceOf(RecipeCaptionException.class)
             .hasFieldOrPropertyWithValue("errorMessage", RecipeCaptionErrorCode.CAPTION_NOT_FOUND);
         verify(recipeCaptionRepository).findById(captionId);

@@ -154,7 +154,7 @@ public class RecipeDetailMetaServiceTest {
       @DisplayName("When - 상세 메타를 조회하면 Then - 해당 메타가 반환된다")
       void whenFindByRecipeId_thenReturnsMetaData() {
         // when
-        RecipeDetailMeta result = recipeDetailMetaService.find(recipeId);
+        RecipeDetailMeta result = recipeDetailMetaService.get(recipeId);
 
         // then
         assertThat(result).isEqualTo(expectedMeta);
@@ -181,7 +181,7 @@ public class RecipeDetailMetaServiceTest {
       @Test
       @DisplayName("When - 상세 메타를 조회하면 Then - 예외가 발생한다")
       void whenFindByRecipeId_thenReturnsEmptyOptional() {
-        assertThatThrownBy(() -> recipeDetailMetaService.find(recipeId))
+        assertThatThrownBy(() -> recipeDetailMetaService.get(recipeId))
             .isInstanceOf(RecipeDetailMetaException.class)
             .hasFieldOrPropertyWithValue(
                 "errorMessage", RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND);
@@ -219,7 +219,7 @@ public class RecipeDetailMetaServiceTest {
       @DisplayName("When - 여러 상세 메타를 조회하면 Then - 모든 메타가 반환된다")
       void whenFindByMultipleRecipeIds_thenReturnsAllMetas() {
         // when
-        List<RecipeDetailMeta> result = recipeDetailMetaService.findIn(recipeIds);
+        List<RecipeDetailMeta> result = recipeDetailMetaService.getIn(recipeIds);
 
         // then
         assertThat(result).hasSize(3);
@@ -254,7 +254,7 @@ public class RecipeDetailMetaServiceTest {
       @DisplayName("When - 여러 상세 메타를 조회하면 Then - 빈 목록이 반환된다")
       void whenFindByNonExistingIds_thenReturnsEmptyList() {
         // when
-        List<RecipeDetailMeta> result = recipeDetailMetaService.findIn(recipeIds);
+        List<RecipeDetailMeta> result = recipeDetailMetaService.getIn(recipeIds);
 
         // then
         assertThat(result).isEmpty();
@@ -278,7 +278,7 @@ public class RecipeDetailMetaServiceTest {
       @DisplayName("When - 빈 목록으로 조회하면 Then - 빈 목록이 반환된다")
       void whenFindByEmptyList_thenReturnsEmptyList() {
         // when
-        List<RecipeDetailMeta> result = recipeDetailMetaService.findIn(emptyRecipeIds);
+        List<RecipeDetailMeta> result = recipeDetailMetaService.getIn(emptyRecipeIds);
 
         // then
         assertThat(result).isEmpty();

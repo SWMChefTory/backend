@@ -14,7 +14,7 @@ public class RecipeProgressService {
   private final RecipeProgressRepository recipeProgressRepository;
   private final Clock clock;
 
-  public List<RecipeProgress> finds(UUID recipeId) {
+  public List<RecipeProgress> gets(UUID recipeId) {
     return recipeProgressRepository.findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
   }
 
