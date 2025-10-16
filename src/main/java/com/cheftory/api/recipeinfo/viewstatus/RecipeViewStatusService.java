@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+// 사용자의 시청 상태,
 public class RecipeViewStatusService {
   private final RecipeViewStatusRepository recipeViewStatusRepository;
   private final Clock clock;
@@ -27,7 +28,7 @@ public class RecipeViewStatusService {
   }
 
   @Transactional
-  public RecipeViewStatus find(UUID userId, UUID recipeId) {
+  public RecipeViewStatus get(UUID userId, UUID recipeId) {
     RecipeViewStatus recipeViewStatus =
         recipeViewStatusRepository
             .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)
@@ -65,19 +66,19 @@ public class RecipeViewStatusService {
     recipeViewStatusRepository.save(recipeViewStatus);
   }
 
-  public Page<RecipeViewStatus> findCategories(UUID userId, UUID categoryId, Integer page) {
+  public Page<RecipeViewStatus> getCategories(UUID userId, UUID categoryId, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
     return recipeViewStatusRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
         userId, categoryId, RecipeViewState.ACTIVE, pageable);
   }
 
-  public Page<RecipeViewStatus> findUnCategories(UUID userId, Integer page) {
+  public Page<RecipeViewStatus> getUnCategories(UUID userId, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
     return recipeViewStatusRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
         userId, null, RecipeViewState.ACTIVE, pageable);
   }
 
-  public Page<RecipeViewStatus> findRecentUsers(UUID userId, Integer page) {
+  public Page<RecipeViewStatus> getRecentUsers(UUID userId, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
     return recipeViewStatusRepository.findByUserIdAndStatus(
         userId, RecipeViewState.ACTIVE, pageable);

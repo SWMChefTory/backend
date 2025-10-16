@@ -64,7 +64,7 @@ class RecipeServiceTest {
         @Test
         @DisplayName("Then - 레시피가 반환되고 조회수가 증가한다")
         void thenReturnRecipeAndIncreaseCount() {
-          Recipe result = service.findSuccess(recipeId);
+          Recipe result = service.getSuccess(recipeId);
 
           assertThat(result).isEqualTo(recipe);
           verify(recipeRepository).findById(recipeId);
@@ -92,7 +92,7 @@ class RecipeServiceTest {
         @DisplayName("Then - RECIPE_FAILED 예외가 발생한다")
         void thenThrowsRecipeFailedException() {
           RecipeException ex =
-              assertThrows(RecipeException.class, () -> service.findSuccess(recipeId));
+              assertThrows(RecipeException.class, () -> service.getSuccess(recipeId));
 
           assertThat(ex.getErrorMessage().getErrorCode())
               .isEqualTo(RecipeErrorCode.RECIPE_FAILED.getErrorCode());
@@ -119,7 +119,7 @@ class RecipeServiceTest {
         @DisplayName("Then - RECIPE_NOT_FOUND 예외가 발생한다")
         void thenThrowsRecipeNotFoundException() {
           RecipeException ex =
-              assertThrows(RecipeException.class, () -> service.findSuccess(recipeId));
+              assertThrows(RecipeException.class, () -> service.getSuccess(recipeId));
 
           assertThat(ex.getErrorMessage().getErrorCode())
               .isEqualTo(RecipeErrorCode.RECIPE_NOT_FOUND.getErrorCode());
@@ -165,7 +165,7 @@ class RecipeServiceTest {
         @Test
         @DisplayName("Then - 유효한 레시피가 반환된다")
         void thenReturnValidRecipe() {
-          Recipe result = service.findNotFailed(recipeIds);
+          Recipe result = service.getNotFailed(recipeIds);
 
           assertThat(result).isEqualTo(validRecipe);
           verify(recipeRepository).findAllByIdIn(recipeIds);
@@ -195,7 +195,7 @@ class RecipeServiceTest {
         @DisplayName("Then - RECIPE_FAILED 예외가 발생한다")
         void thenThrowsRecipeFailedException() {
           RecipeException ex =
-              assertThrows(RecipeException.class, () -> service.findNotFailed(recipeIds));
+              assertThrows(RecipeException.class, () -> service.getNotFailed(recipeIds));
 
           assertThat(ex.getErrorMessage().getErrorCode())
               .isEqualTo(RecipeErrorCode.RECIPE_FAILED.getErrorCode());
@@ -220,7 +220,7 @@ class RecipeServiceTest {
         @DisplayName("Then - RECIPE_NOT_FOUND 예외가 발생한다")
         void thenThrowsRecipeNotFoundException() {
           RecipeException ex =
-              assertThrows(RecipeException.class, () -> service.findNotFailed(recipeIds));
+              assertThrows(RecipeException.class, () -> service.getNotFailed(recipeIds));
 
           assertThat(ex.getErrorMessage().getErrorCode())
               .isEqualTo(RecipeErrorCode.RECIPE_NOT_FOUND.getErrorCode());
@@ -292,7 +292,7 @@ class RecipeServiceTest {
         @Test
         @DisplayName("Then - 실패하지 않은 레시피 목록이 반환된다")
         void thenReturnNotFailedRecipes() {
-          List<Recipe> result = service.findsNotFailed(recipeIds);
+          List<Recipe> result = service.getsNotFailed(recipeIds);
 
           assertThat(result).isEqualTo(notFailedRecipes);
           verify(recipeRepository)
@@ -337,7 +337,7 @@ class RecipeServiceTest {
         @Test
         @DisplayName("Then - 성공 레시피 페이지가 반환된다")
         void thenReturnSuccessRecipePage() {
-          Page<Recipe> result = service.findsSuccess(page);
+          Page<Recipe> result = service.getPopulars(page);
 
           assertThat(result).isEqualTo(expectedPage);
           verify(recipeRepository)
@@ -572,7 +572,7 @@ class RecipeServiceTest {
         @Test
         @DisplayName("Then - 첫 번째 레시피가 반환되고 경고 로그가 출력된다")
         void thenReturnFirstRecipeAndLogWarning() {
-          Recipe result = service.findNotFailed(recipeIds);
+          Recipe result = service.getNotFailed(recipeIds);
 
           assertThat(result).isEqualTo(validRecipe1);
           verify(recipeRepository).findAllByIdIn(recipeIds);

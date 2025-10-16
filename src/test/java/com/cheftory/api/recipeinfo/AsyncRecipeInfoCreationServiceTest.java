@@ -117,7 +117,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
         // Service mock 설정
         doReturn(captionId).when(recipeCaptionService).create(videoId, recipeId);
-        doReturn(caption).when(recipeCaptionService).find(captionId);
+        doReturn(caption).when(recipeCaptionService).get(captionId);
         doReturn(detail).when(recipeDetailService).getRecipeDetails(videoId, caption);
       }
 
@@ -140,7 +140,7 @@ class AsyncRecipeInfoCreationServiceTest {
           inOrder
               .verify(recipeProgressService)
               .create(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
-          inOrder.verify(recipeCaptionService).find(captionId);
+          inOrder.verify(recipeCaptionService).get(captionId);
 
           // 병렬 구간: 호출 여부 검증
           verify(recipeDetailService).getRecipeDetails(videoId, caption);
@@ -313,7 +313,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
           // 캡션까지는 성공
           doReturn(captionId).when(recipeCaptionService).create(videoId, recipeId);
-          doReturn(caption).when(recipeCaptionService).find(captionId);
+          doReturn(caption).when(recipeCaptionService).get(captionId);
           doReturn(detail).when(recipeDetailService).getRecipeDetails(videoId, caption);
 
           // 브리핑 생성 실패

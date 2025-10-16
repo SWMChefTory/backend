@@ -30,7 +30,7 @@ public class RecipeBriefingService {
     }
   }
 
-  public List<RecipeBriefing> finds(UUID recipeId) {
+  public List<RecipeBriefing> gets(UUID recipeId) {
     return recipeBriefingRepository.findAllByRecipeId(recipeId);
   }
 }

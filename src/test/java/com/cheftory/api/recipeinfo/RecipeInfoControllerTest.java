@@ -188,7 +188,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           recentRecipes = new PageImpl<>(List.of(recentRecipe), pageable, 1);
           doReturn(recentRecipes)
               .when(recipeInfoService)
-              .findRecents(any(UUID.class), any(Integer.class));
+              .getRecents(any(UUID.class), any(Integer.class));
         }
 
         @Test
@@ -236,7 +236,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   RecipeStatus.class),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findRecents(userId, page);
+          verify(recipeInfoService).getRecents(userId, page);
 
           var responseBody = response.extract().jsonPath();
           var recentRecipesList = responseBody.getList("recent_recipes");
@@ -288,7 +288,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         void setUp() {
           doReturn(new PageImpl<>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .findRecents(userId, page);
+              .getRecents(userId, page);
         }
 
         @Test
@@ -304,7 +304,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recent_recipes", hasSize(0));
 
-          verify(recipeInfoService).findRecents(userId, page);
+          verify(recipeInfoService).getRecents(userId, page);
         }
       }
     }
@@ -415,7 +415,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
           doReturn(fullRecipe)
               .when(recipeInfoService)
-              .findFullRecipe(any(UUID.class), any(UUID.class));
+              .getFullRecipe(any(UUID.class), any(UUID.class));
         }
 
         @Test
@@ -495,7 +495,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("recipe_briefings").description("레시피 브리핑 목록"),
                               fieldWithPath("recipe_briefings[].content").description("브리핑 내용"))));
 
-          verify(recipeInfoService).findFullRecipe(recipeId, userId);
+          verify(recipeInfoService).getFullRecipe(recipeId, userId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -565,7 +565,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
         @BeforeEach
         void setUp() {
-          doReturn(null).when(recipeInfoService).findFullRecipe(recipeId, userId);
+          doReturn(null).when(recipeInfoService).getFullRecipe(recipeId, userId);
         }
 
         @Test
@@ -579,7 +579,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .then()
               .status(HttpStatus.BAD_REQUEST);
 
-          verify(recipeInfoService).findFullRecipe(recipeId, userId);
+          verify(recipeInfoService).getFullRecipe(recipeId, userId);
         }
       }
     }
@@ -637,7 +637,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
 
           recipes = new PageImpl<>(List.of(recipeOverview), pageable, 1);
-          doReturn(recipes).when(recipeInfoService).findPopulars(any(Integer.class));
+          doReturn(recipes).when(recipeInfoService).getPopulars(any(Integer.class));
         }
 
         @Test
@@ -679,7 +679,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findPopulars(page);
+          verify(recipeInfoService).getPopulars(page);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("recommend_recipes")).hasSize(1);
@@ -728,7 +728,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeOverview>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .findPopulars(any(Integer.class));
+              .getPopulars(any(Integer.class));
         }
 
         @Test
@@ -744,7 +744,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recommend_recipes", hasSize(0));
 
-          verify(recipeInfoService).findPopulars(page);
+          verify(recipeInfoService).getPopulars(page);
         }
       }
     }
@@ -824,7 +824,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           categorizedRecipes = new PageImpl<>(List.of(categorizedRecipe), pageable, 1);
           doReturn(categorizedRecipes)
               .when(recipeInfoService)
-              .findCategorized(any(UUID.class), any(UUID.class), any(Integer.class));
+              .getCategorized(any(UUID.class), any(UUID.class), any(Integer.class));
         }
 
         @Test
@@ -886,7 +886,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+          verify(recipeInfoService).getCategorized(userId, categoryId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getUUID("categorized_recipes[0].recipe_id")).isEqualTo(recipeId);
@@ -975,7 +975,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+          verify(recipeInfoService).getCategorized(userId, categoryId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThatObject(responseBody.get("categorized_recipes[0].description")).isNull();
@@ -1043,7 +1043,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+          verify(recipeInfoService).getCategorized(userId, categoryId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThatObject(responseBody.get("categorized_recipes[0].tags")).isNull();
@@ -1079,7 +1079,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeHistory>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .findCategorized(userId, categoryId, page);
+              .getCategorized(userId, categoryId, page);
         }
 
         @Test
@@ -1095,7 +1095,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("categorized_recipes", hasSize(0));
 
-          verify(recipeInfoService).findCategorized(userId, categoryId, page);
+          verify(recipeInfoService).getCategorized(userId, categoryId, page);
         }
       }
     }
@@ -1172,7 +1172,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           unCategorizedRecipes = new PageImpl<>(List.of(unCategorizedRecipe), pageable, 1);
           doReturn(unCategorizedRecipes)
               .when(recipeInfoService)
-              .findUnCategorized(any(UUID.class), any(Integer.class));
+              .getUnCategorized(any(UUID.class), any(Integer.class));
         }
 
         @Test
@@ -1231,7 +1231,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findUnCategorized(userId, page);
+          verify(recipeInfoService).getUnCategorized(userId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getUUID("unCategorized_recipes[0].recipe_id"))
@@ -1320,7 +1320,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findUnCategorized(userId, page);
+          verify(recipeInfoService).getUnCategorized(userId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThatObject(responseBody.get("unCategorized_recipes[0].description")).isNull();
@@ -1387,7 +1387,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).findUnCategorized(userId, page);
+          verify(recipeInfoService).getUnCategorized(userId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThatObject(responseBody.get("unCategorized_recipes[0].tags")).isNull();
@@ -1421,7 +1421,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeHistory>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .findUnCategorized(userId, page);
+              .getUnCategorized(userId, page);
         }
 
         @Test
@@ -1437,7 +1437,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("unCategorized_recipes", hasSize(0));
 
-          verify(recipeInfoService).findUnCategorized(userId, page);
+          verify(recipeInfoService).getUnCategorized(userId, page);
         }
       }
     }
@@ -1556,7 +1556,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
             doReturn(5).when(categoryWithCount).getCount();
 
             categories = List.of(categoryWithCount);
-            doReturn(categories).when(recipeInfoService).findCategories(any(UUID.class));
+            doReturn(categories).when(recipeInfoService).getCategories(any(UUID.class));
           }
 
           @Test
@@ -1583,7 +1583,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                 fieldWithPath("categories[].count").description("해당 카테고리의 레시피 수"),
                                 fieldWithPath("categories[].name").description("카테고리 이름"))));
 
-            verify(recipeInfoService).findCategories(userId);
+            verify(recipeInfoService).getCategories(userId);
 
             var responseBody = response.extract().jsonPath();
             var categoriesList = responseBody.getList("categories");
@@ -1615,7 +1615,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
           @BeforeEach
           void setUp() {
-            doReturn(List.of()).when(recipeInfoService).findCategories(userId);
+            doReturn(List.of()).when(recipeInfoService).getCategories(userId);
           }
 
           @Test
@@ -1630,8 +1630,384 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                 .status(HttpStatus.OK)
                 .body("categories", hasSize(0));
 
-            verify(recipeInfoService).findCategories(userId);
+            verify(recipeInfoService).getCategories(userId);
           }
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 검색")
+  class SearchRecipes {
+
+    @Nested
+    @DisplayName("Given - 유효한 검색어가 주어졌을 때")
+    class GivenValidSearchQuery {
+
+      private String query;
+      private Integer page;
+
+      @BeforeEach
+      void setUp() {
+        query = "김치찌개";
+        page = 0;
+      }
+
+      @Nested
+      @DisplayName("When - 레시피를 검색한다면")
+      class WhenSearchingRecipes {
+
+        private Page<RecipeOverview> searchResults;
+        private RecipeOverview recipeOverview;
+        private Recipe recipe;
+        private RecipeYoutubeMeta youtubeMeta;
+        private RecipeDetailMeta detailMeta;
+        private UUID recipeId;
+        private Pageable pageable;
+        private List<RecipeTag> tags;
+
+        @BeforeEach
+        void setUp() {
+          recipeId = UUID.randomUUID();
+          recipe = mock(Recipe.class);
+          recipeOverview = mock(RecipeOverview.class);
+          youtubeMeta = mock(RecipeYoutubeMeta.class);
+          detailMeta = mock(RecipeDetailMeta.class);
+          pageable = Pageable.ofSize(10);
+
+          doReturn(recipeId).when(recipe).getId();
+
+          doReturn("김치찌개 맛있게 끓이는 법").when(youtubeMeta).getTitle();
+          doReturn("kimchi_video_id").when(youtubeMeta).getVideoId();
+          doReturn(URI.create("https://example.com/kimchi_thumbnail.jpg"))
+              .when(youtubeMeta)
+              .getThumbnailUrl();
+          doReturn(300).when(youtubeMeta).getVideoSeconds();
+
+          doReturn("얼큰한 김치찌개 레시피").when(detailMeta).getDescription();
+          doReturn(2).when(detailMeta).getServings();
+          doReturn(30).when(detailMeta).getCookTime();
+
+          RecipeTag tag1 = mock(RecipeTag.class);
+          RecipeTag tag2 = mock(RecipeTag.class);
+          doReturn("한식").when(tag1).getTag();
+          doReturn("찌개").when(tag2).getTag();
+          tags = List.of(tag1, tag2);
+
+          doReturn(recipe).when(recipeOverview).getRecipe();
+          doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
+          doReturn(detailMeta).when(recipeOverview).getDetailMeta();
+          doReturn(tags).when(recipeOverview).getTags();
+
+          searchResults = new PageImpl<>(List.of(recipeOverview), pageable, 1);
+          doReturn(searchResults)
+              .when(recipeInfoService)
+              .searchRecipes(any(Integer.class), any(String.class));
+        }
+
+        @Test
+        @DisplayName("Then - 검색 결과를 성공적으로 반환해야 한다")
+        void thenShouldReturnSearchResults() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .param("query", query)
+                  .param("page", page)
+                  .get("/api/v1/recipes/search")
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("searched_recipes", hasSize(1))
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          queryParameters(
+                              parameterWithName("query").description("검색어"),
+                              parameterWithName("page")
+                                  .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional()),
+                          responseFields(
+                              fieldWithPath("searched_recipes").description("검색된 레시피 목록"),
+                              fieldWithPath("searched_recipes[].recipe_id").description("레시피 ID"),
+                              fieldWithPath("searched_recipes[].recipe_title")
+                                  .description("레시피 제목"),
+                              fieldWithPath("searched_recipes[].tags").description("레시피 태그 목록"),
+                              fieldWithPath("searched_recipes[].tags[].name").description("태그 이름"),
+                              fieldWithPath("searched_recipes[].detail_meta")
+                                  .description("레시피 상세 메타데이터"),
+                              fieldWithPath("searched_recipes[].detail_meta.description")
+                                  .description("레시피 설명"),
+                              fieldWithPath("searched_recipes[].detail_meta.servings")
+                                  .description("인분"),
+                              fieldWithPath("searched_recipes[].detail_meta.cookingTime")
+                                  .description("조리 시간(분)"),
+                              fieldWithPath("searched_recipes[].video_info")
+                                  .description("레시피 비디오 정보"),
+                              fieldWithPath("searched_recipes[].video_info.video_id")
+                                  .description("레시피 비디오 ID"),
+                              fieldWithPath("searched_recipes[].video_info.video_title")
+                                  .description("레시피 비디오 제목"),
+                              fieldWithPath("searched_recipes[].video_info.video_thumbnail_url")
+                                  .description("레시피 비디오 썸네일 URL"),
+                              fieldWithPath("searched_recipes[].video_info.video_seconds")
+                                  .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("current_page").description("현재 페이지 번호"),
+                              fieldWithPath("total_pages").description("전체 페이지 수"),
+                              fieldWithPath("total_elements").description("전체 요소 수"),
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+
+          verify(recipeInfoService).searchRecipes(page, query);
+
+          var responseBody = response.extract().jsonPath();
+          assertThat(responseBody.getList("searched_recipes")).hasSize(1);
+          assertThat(responseBody.getString("searched_recipes[0].recipe_id"))
+              .isEqualTo(recipeId.toString());
+          assertThat(responseBody.getString("searched_recipes[0].recipe_title"))
+              .isEqualTo("김치찌개 맛있게 끓이는 법");
+          assertThat(responseBody.getList("searched_recipes[0].tags")).hasSize(2);
+          assertThat(responseBody.getString("searched_recipes[0].tags[0].name")).isEqualTo("한식");
+          assertThat(responseBody.getString("searched_recipes[0].tags[1].name")).isEqualTo("찌개");
+          assertThat(responseBody.getString("searched_recipes[0].detail_meta.description"))
+              .isEqualTo("얼큰한 김치찌개 레시피");
+          assertThat(responseBody.getInt("searched_recipes[0].detail_meta.servings")).isEqualTo(2);
+          assertThat(responseBody.getInt("searched_recipes[0].detail_meta.cookingTime"))
+              .isEqualTo(30);
+          assertThat(responseBody.getString("searched_recipes[0].video_info.video_id"))
+              .isEqualTo("kimchi_video_id");
+          assertThat(responseBody.getString("searched_recipes[0].video_info.video_title"))
+              .isEqualTo("김치찌개 맛있게 끓이는 법");
+          assertThat(responseBody.getString("searched_recipes[0].video_info.video_thumbnail_url"))
+              .isEqualTo("https://example.com/kimchi_thumbnail.jpg");
+          assertThat(responseBody.getInt("searched_recipes[0].video_info.video_seconds"))
+              .isEqualTo(300);
+          assertThat(responseBody.getString("current_page")).isEqualTo("0");
+          assertThat(responseBody.getString("total_pages")).isEqualTo("1");
+          assertThat(responseBody.getString("total_elements")).isEqualTo("1");
+          assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 검색 결과가 없는 검색어가 주어졌을 때")
+    class GivenQueryWithNoResults {
+
+      private String query;
+      private Integer page;
+
+      @BeforeEach
+      void setUp() {
+        query = "존재하지않는레시피";
+        page = 0;
+      }
+
+      @Nested
+      @DisplayName("When - 레시피를 검색한다면")
+      class WhenSearchingRecipes {
+
+        private Pageable pageable;
+
+        @BeforeEach
+        void setUp() {
+          pageable = Pageable.ofSize(10);
+          doReturn(new PageImpl<RecipeOverview>(List.of(), pageable, 0))
+              .when(recipeInfoService)
+              .searchRecipes(any(Integer.class), any(String.class));
+        }
+
+        @Test
+        @DisplayName("Then - 빈 결과를 반환해야 한다")
+        void thenShouldReturnEmptyResults() {
+          given()
+              .contentType(ContentType.JSON)
+              .param("query", query)
+              .param("page", page)
+              .get("/api/v1/recipes/search")
+              .then()
+              .status(HttpStatus.OK)
+              .body("searched_recipes", hasSize(0));
+
+          verify(recipeInfoService).searchRecipes(page, query);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 여러 검색 결과가 있는 검색어가 주어졌을 때")
+    class GivenQueryWithMultipleResults {
+
+      private String query;
+      private Integer page;
+
+      @BeforeEach
+      void setUp() {
+        query = "찌개";
+        page = 0;
+      }
+
+      @Nested
+      @DisplayName("When - 레시피를 검색한다면")
+      class WhenSearchingRecipes {
+
+        private Page<RecipeOverview> searchResults;
+        private List<RecipeOverview> recipeOverviews;
+        private Pageable pageable;
+
+        @BeforeEach
+        void setUp() {
+          pageable = Pageable.ofSize(10);
+
+          // 첫 번째 레시피 - 김치찌개
+          RecipeOverview kimchiStew = mock(RecipeOverview.class);
+          Recipe recipe1 = mock(Recipe.class);
+          RecipeYoutubeMeta meta1 = mock(RecipeYoutubeMeta.class);
+          RecipeDetailMeta detail1 = mock(RecipeDetailMeta.class);
+          UUID recipeId1 = UUID.randomUUID();
+
+          doReturn(recipeId1).when(recipe1).getId();
+          doReturn("김치찌개").when(meta1).getTitle();
+          doReturn("kimchi_video_id").when(meta1).getVideoId();
+          doReturn(URI.create("https://example.com/kimchi.jpg")).when(meta1).getThumbnailUrl();
+          doReturn(300).when(meta1).getVideoSeconds();
+          doReturn("김치찌개 레시피").when(detail1).getDescription();
+          doReturn(2).when(detail1).getServings();
+          doReturn(30).when(detail1).getCookTime();
+
+          RecipeTag tag1 = mock(RecipeTag.class);
+          doReturn("한식").when(tag1).getTag();
+
+          doReturn(recipe1).when(kimchiStew).getRecipe();
+          doReturn(meta1).when(kimchiStew).getYoutubeMeta();
+          doReturn(detail1).when(kimchiStew).getDetailMeta();
+          doReturn(List.of(tag1)).when(kimchiStew).getTags();
+
+          // 두 번째 레시피 - 된장찌개
+          RecipeOverview soyBeanStew = mock(RecipeOverview.class);
+          Recipe recipe2 = mock(Recipe.class);
+          RecipeYoutubeMeta meta2 = mock(RecipeYoutubeMeta.class);
+          RecipeDetailMeta detail2 = mock(RecipeDetailMeta.class);
+          UUID recipeId2 = UUID.randomUUID();
+
+          doReturn(recipeId2).when(recipe2).getId();
+          doReturn("된장찌개").when(meta2).getTitle();
+          doReturn("soybean_video_id").when(meta2).getVideoId();
+          doReturn(URI.create("https://example.com/soybean.jpg")).when(meta2).getThumbnailUrl();
+          doReturn(240).when(meta2).getVideoSeconds();
+          doReturn("된장찌개 레시피").when(detail2).getDescription();
+          doReturn(2).when(detail2).getServings();
+          doReturn(25).when(detail2).getCookTime();
+
+          RecipeTag tag2 = mock(RecipeTag.class);
+          doReturn("한식").when(tag2).getTag();
+
+          doReturn(recipe2).when(soyBeanStew).getRecipe();
+          doReturn(meta2).when(soyBeanStew).getYoutubeMeta();
+          doReturn(detail2).when(soyBeanStew).getDetailMeta();
+          doReturn(List.of(tag2)).when(soyBeanStew).getTags();
+
+          recipeOverviews = List.of(kimchiStew, soyBeanStew);
+          searchResults = new PageImpl<>(recipeOverviews, pageable, 2);
+          doReturn(searchResults)
+              .when(recipeInfoService)
+              .searchRecipes(any(Integer.class), any(String.class));
+        }
+
+        @Test
+        @DisplayName("Then - 모든 검색 결과를 성공적으로 반환해야 한다")
+        void thenShouldReturnAllSearchResults() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .param("query", query)
+                  .param("page", page)
+                  .get("/api/v1/recipes/search")
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("searched_recipes", hasSize(2));
+
+          verify(recipeInfoService).searchRecipes(page, query);
+
+          var responseBody = response.extract().jsonPath();
+          assertThat(responseBody.getList("searched_recipes")).hasSize(2);
+          assertThat(responseBody.getString("searched_recipes[0].recipe_title")).isEqualTo("김치찌개");
+          assertThat(responseBody.getString("searched_recipes[1].recipe_title")).isEqualTo("된장찌개");
+          assertThat(responseBody.getString("total_elements")).isEqualTo("2");
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 페이지네이션이 필요한 검색 결과가 주어졌을 때")
+    class GivenPaginatedSearchResults {
+
+      private String query;
+      private Integer page;
+
+      @BeforeEach
+      void setUp() {
+        query = "파스타";
+        page = 1; // 두 번째 페이지
+      }
+
+      @Nested
+      @DisplayName("When - 두 번째 페이지를 검색한다면")
+      class WhenSearchingSecondPage {
+
+        private Page<RecipeOverview> searchResults;
+
+        @BeforeEach
+        void setUp() {
+          RecipeOverview recipe = mock(RecipeOverview.class);
+          Recipe recipeEntity = mock(Recipe.class);
+          RecipeYoutubeMeta meta = mock(RecipeYoutubeMeta.class);
+          RecipeDetailMeta detailMeta = mock(RecipeDetailMeta.class);
+          UUID recipeId = UUID.randomUUID();
+
+          doReturn(recipeId).when(recipeEntity).getId();
+          doReturn("까르보나라 파스타").when(meta).getTitle();
+          doReturn("pasta_video_id").when(meta).getVideoId();
+          doReturn(URI.create("https://example.com/pasta.jpg")).when(meta).getThumbnailUrl();
+          doReturn(180).when(meta).getVideoSeconds();
+          doReturn("파스타 레시피").when(detailMeta).getDescription();
+          doReturn(2).when(detailMeta).getServings();
+          doReturn(20).when(detailMeta).getCookTime();
+
+          RecipeTag tag = mock(RecipeTag.class);
+          doReturn("양식").when(tag).getTag();
+
+          doReturn(recipeEntity).when(recipe).getRecipe();
+          doReturn(meta).when(recipe).getYoutubeMeta();
+          doReturn(detailMeta).when(recipe).getDetailMeta();
+          doReturn(List.of(tag)).when(recipe).getTags();
+
+          // 전체 12개 결과 중 두 번째 페이지 (10개 이후의 2개)
+          searchResults = new PageImpl<>(List.of(recipe), Pageable.ofSize(10).withPage(1), 11);
+          doReturn(searchResults)
+              .when(recipeInfoService)
+              .searchRecipes(any(Integer.class), any(String.class));
+        }
+
+        @Test
+        @DisplayName("Then - 두 번째 페이지 결과를 성공적으로 반환해야 한다")
+        void thenShouldReturnSecondPageResults() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .param("query", query)
+                  .param("page", page)
+                  .get("/api/v1/recipes/search")
+                  .then()
+                  .status(HttpStatus.OK);
+
+          verify(recipeInfoService).searchRecipes(page, query);
+
+          var responseBody = response.extract().jsonPath();
+          assertThat(responseBody.getString("current_page")).isEqualTo("1");
+          assertThat(responseBody.getString("total_pages")).isEqualTo("2");
+          assertThat(responseBody.getString("total_elements")).isEqualTo("11");
+          assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
         }
       }
     }
@@ -1683,7 +2059,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(progresses).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1713,7 +2089,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   "현재 진행 상세 내용",
                                   RecipeProgressDetail.class))));
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -1761,7 +2137,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(progresses).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1774,7 +2150,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .then()
                   .status(HttpStatus.OK);
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -1811,7 +2187,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(List.of()).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1824,7 +2200,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recipe_progress_statuses", hasSize(0));
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
         }
       }
     }
@@ -1875,7 +2251,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(progresses).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1888,7 +2264,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .then()
                   .status(HttpStatus.OK);
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -1976,7 +2352,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(recipe).when(progressStatus).getRecipe();
           doReturn(progresses).when(progressStatus).getProgresses();
 
-          doReturn(progressStatus).when(recipeInfoService).findRecipeProgress(any(UUID.class));
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
         }
 
         @Test
@@ -1989,7 +2365,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .then()
                   .status(HttpStatus.OK);
 
-          verify(recipeInfoService).findRecipeProgress(recipeId);
+          verify(recipeInfoService).getRecipeProgress(recipeId);
 
           var responseBody = response.extract().jsonPath();
 

@@ -10,8 +10,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +17,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class RecipeYoutubeMetaService {
 
   private final RecipeYoutubeMetaRepository recipeYoutubeMetaRepository;
-  private final YoutubeUrlNormalizer youtubeUrlNormalizer;
   private final VideoInfoClient videoInfoClient;
   private final Clock clock;
 
@@ -39,29 +36,31 @@ public class RecipeYoutubeMetaService {
   }
 
   public List<RecipeYoutubeMeta> getByUrl(URI uri) {
-    UriComponents uriOriginal = UriComponentsBuilder.fromUri(uri).build();
-    UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uriOriginal);
+    YoutubeUri youtubeUri = YoutubeUri.from(uri);
     List<RecipeYoutubeMeta> metas =
-        recipeYoutubeMetaRepository.findAllByVideoUri(urlNormalized.toUri());
-    if (metas.stream().anyMatch(RecipeYoutubeMeta::isBanned)) {
-      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED);
-    }
+        recipeYoutubeMetaRepository.findAllByVideoUri(youtubeUri.getNormalizedUrl());
+    validateNotBanned(metas);
     return metas;
   }
 
   public YoutubeVideoInfo getVideoInfo(URI uri) {
-    UriComponents uriOriginal = UriComponentsBuilder.fromUri(uri).build();
-    UriComponents urlNormalized = youtubeUrlNormalizer.normalize(uriOriginal);
-    return videoInfoClient.fetchVideoInfo(urlNormalized);
+    YoutubeUri youtubeUri = YoutubeUri.from(uri);
+    return videoInfoClient.fetchVideoInfo(youtubeUri);
   }
 
-  public RecipeYoutubeMeta find(UUID recipeId) {
+  public RecipeYoutubeMeta get(UUID recipeId) {
     return recipeYoutubeMetaRepository
         .findByRecipeId(recipeId)
         .orElseThrow(() -> new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND));
   }
 
-  public List<RecipeYoutubeMeta> findsByRecipes(List<UUID> recipeIds) {
+  public List<RecipeYoutubeMeta> getByRecipes(List<UUID> recipeIds) {
     return recipeYoutubeMetaRepository.findAllByRecipeIdIn(recipeIds);
+  }
+
+  private void validateNotBanned(List<RecipeYoutubeMeta> metas) {
+    if (metas.stream().anyMatch(RecipeYoutubeMeta::isBanned)) {
+      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED);
+    }
   }
 }

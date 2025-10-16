@@ -2,27 +2,43 @@ package com.cheftory.api.recipeinfo.youtubemeta;
 
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-@Component
-public class YoutubeUrlNormalizer {
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
+@Getter
+@NoArgsConstructor
+public class YoutubeUri {
 
-  public UriComponents normalize(UriComponents url) {
-    String id = extractId(url);
+  private String videoId;
+  private URI normalizedUrl;
+
+  public static YoutubeUri from(URI uri) {
+    UriComponents u = UriComponentsBuilder.fromUri(uri).build();
+    String id = extractId(u);
 
     String normalizedPath = "https://www.youtube.com/watch";
     String normalizedQueryKey = "v";
 
-    return UriComponentsBuilder.fromUriString(normalizedPath)
-        .queryParam(normalizedQueryKey, id)
-        .build();
+    URI normalized =
+        UriComponentsBuilder.fromUriString(normalizedPath)
+            .queryParam(normalizedQueryKey, id)
+            .build()
+            .toUri();
+
+    return new YoutubeUri(id, normalized);
   }
 
-  private String extractId(UriComponents url) {
+  private static String extractId(UriComponents url) {
     String host = url.getHost();
     if (Objects.isNull(host) || host.isBlank()) {
       throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL);
@@ -37,7 +53,7 @@ public class YoutubeUrlNormalizer {
     throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_INVALID);
   }
 
-  private String extractIdFromSharedUrl(UriComponents url) {
+  private static String extractIdFromSharedUrl(UriComponents url) {
     List<String> pathSegments = url.getPathSegments();
 
     if (pathSegments.isEmpty()) {
@@ -52,7 +68,7 @@ public class YoutubeUrlNormalizer {
     return videoId;
   }
 
-  private String extractIdFromGeneralUrl(UriComponents url) {
+  private static String extractIdFromGeneralUrl(UriComponents url) {
     String path = url.getPath();
     if (Objects.isNull(path) || path.isBlank()) {
       throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL);

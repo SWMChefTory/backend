@@ -26,7 +26,7 @@ public class RecipeIngredientService {
     recipeIngredientRepository.saveAll(recipeIngredients);
   }
 
-  public List<RecipeIngredient> finds(UUID recipeId) {
+  public List<RecipeIngredient> gets(UUID recipeId) {
     return recipeIngredientRepository.findAllByRecipeId(recipeId);
   }
 }

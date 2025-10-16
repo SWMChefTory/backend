@@ -27,7 +27,7 @@ public class RecipeStepService {
     return recipeStepRepository.saveAll(recipeSteps).stream().map(RecipeStep::getId).toList();
   }
 
-  public List<RecipeStep> finds(UUID recipeId) {
+  public List<RecipeStep> gets(UUID recipeId) {
     return recipeStepRepository.findAllByRecipeId(recipeId, RecipeStepSort.STEP_ORDER_ASC);
   }
 }

@@ -32,7 +32,7 @@ public class RecipeCategoryService {
     recipeCategory.delete();
   }
 
-  public List<RecipeCategory> findUsers(UUID userId) {
+  public List<RecipeCategory> getUsers(UUID userId) {
     return recipeCategoryRepository.findAllByUserIdAndStatus(userId, RecipeCategoryStatus.ACTIVE);
   }
 

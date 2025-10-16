@@ -22,7 +22,7 @@ public class RecipeService {
   private final RecipeRepository recipeRepository;
   private final Clock clock;
 
-  public Recipe findSuccess(UUID recipeId) {
+  public Recipe getSuccess(UUID recipeId) {
 
     Recipe recipe =
         recipeRepository
@@ -37,7 +37,7 @@ public class RecipeService {
     return recipe;
   }
 
-  public Recipe findNotFailed(List<UUID> recipeIds) {
+  public Recipe getNotFailed(List<UUID> recipeIds) {
     List<Recipe> recipes = recipeRepository.findAllByIdIn(recipeIds);
 
     if (recipes.isEmpty()) {
@@ -66,14 +66,18 @@ public class RecipeService {
     return recipe.getId();
   }
 
-  public List<Recipe> findsNotFailed(List<UUID> recipeIds) {
+  public List<Recipe> getsNotFailed(List<UUID> recipeIds) {
     return recipeRepository
         .findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED)
         .stream()
         .toList();
   }
 
-  public Page<Recipe> findsSuccess(Integer page) {
+  public List<Recipe> gets(List<UUID> recipeIds) {
+    return recipeRepository.findAllByIdIn(recipeIds);
+  }
+
+  public Page<Recipe> getPopulars(Integer page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
     return recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
   }
@@ -100,7 +104,7 @@ public class RecipeService {
     return recipeRepository.existsById(recipeId);
   }
 
-  public Recipe find(UUID recipeId) {
+  public Recipe get(UUID recipeId) {
     return recipeRepository
         .findById(recipeId)
         .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));

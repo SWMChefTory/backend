@@ -137,7 +137,7 @@ public class RecipeCategoryServiceTest {
         @Test
         @DisplayName("Then - 해당 사용자의 레시피 카테고리 목록을 반환해야 한다")
         void thenShouldReturnUserRecipeCategories() {
-          List<RecipeCategory> categories = recipeCategoryService.findUsers(userId);
+          List<RecipeCategory> categories = recipeCategoryService.getUsers(userId);
 
           assertThat(categories)
               .hasSize(2)

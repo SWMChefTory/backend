@@ -119,7 +119,7 @@ public class RecipeIngredientServiceTest {
         @Test
         @DisplayName("Then - 해당 재료들이 반환된다")
         void thenIngredientsAreReturned() {
-          List<RecipeIngredient> result = recipeIngredientService.finds(recipeId);
+          List<RecipeIngredient> result = recipeIngredientService.gets(recipeId);
           assertThat(result).isEqualTo(expectedIngredients);
           verify(recipeIngredientRepository).findAllByRecipeId(recipeId);
         }

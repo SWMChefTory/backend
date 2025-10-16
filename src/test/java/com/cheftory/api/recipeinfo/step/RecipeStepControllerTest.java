@@ -108,7 +108,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn(List.of(step2Detail1, step2Detail2)).when(step2).getDetails();
 
           recipeSteps = List.of(step1, step2);
-          doReturn(recipeSteps).when(recipeStepService).finds(any(UUID.class));
+          doReturn(recipeSteps).when(recipeStepService).gets(any(UUID.class));
           doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
@@ -139,7 +139,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
                                   .description("단계 상세 설명 시작 시간(초)"),
                               fieldWithPath("steps[].start").description("레시피 단계 시작 시간(초)"))));
 
-          verify(recipeStepService).finds(recipeId);
+          verify(recipeStepService).gets(recipeId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -213,7 +213,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn(List.of(detail)).when(singleStep).getDetails();
 
           recipeSteps = List.of(singleStep);
-          doReturn(recipeSteps).when(recipeStepService).finds(any(UUID.class));
+          doReturn(recipeSteps).when(recipeStepService).gets(any(UUID.class));
           doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
@@ -228,7 +228,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
                   .status(HttpStatus.OK)
                   .body("steps", hasSize(1));
 
-          verify(recipeStepService).finds(recipeId);
+          verify(recipeStepService).gets(recipeId);
 
           var responseBody = response.extract().jsonPath();
 
@@ -260,7 +260,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
 
         @BeforeEach
         void setUp() {
-          doReturn(Collections.emptyList()).when(recipeStepService).finds(any(UUID.class));
+          doReturn(Collections.emptyList()).when(recipeStepService).gets(any(UUID.class));
           doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
@@ -274,7 +274,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("steps", hasSize(0));
 
-          verify(recipeStepService).finds(recipeId);
+          verify(recipeStepService).gets(recipeId);
         }
       }
     }
@@ -296,7 +296,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
 
         @BeforeEach
         void setUp() {
-          doReturn(Collections.emptyList()).when(recipeStepService).finds(any(UUID.class));
+          doReturn(Collections.emptyList()).when(recipeStepService).gets(any(UUID.class));
           doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
@@ -310,7 +310,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("steps", hasSize(0));
 
-          verify(recipeStepService).finds(nonExistentRecipeId);
+          verify(recipeStepService).gets(nonExistentRecipeId);
         }
       }
     }
@@ -382,7 +382,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
               .getDetails();
 
           complexRecipeSteps = List.of(step1, step2, step3);
-          doReturn(complexRecipeSteps).when(recipeStepService).finds(any(UUID.class));
+          doReturn(complexRecipeSteps).when(recipeStepService).gets(any(UUID.class));
           doReturn(true).when(recipeService).exists(any(UUID.class));
         }
 
@@ -397,7 +397,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
                   .status(HttpStatus.OK)
                   .body("steps", hasSize(3));
 
-          verify(recipeStepService).finds(recipeId);
+          verify(recipeStepService).gets(recipeId);
 
           var responseBody = response.extract().jsonPath();
 

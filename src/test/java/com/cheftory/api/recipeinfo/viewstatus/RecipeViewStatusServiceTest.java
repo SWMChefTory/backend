@@ -167,7 +167,7 @@ public class RecipeViewStatusServiceTest {
         @Test
         @DisplayName("Then - 올바른 레시피 조회 상태가 반환되어야 한다")
         public void thenShouldReturnCorrectRecipeViewStatus() {
-          RecipeViewStatus status = service.find(userId, recipeId);
+          RecipeViewStatus status = service.get(userId, recipeId);
 
           assertThat(status).isNotNull();
           assertThat(status.getRecipeId()).isEqualTo(recipeId);
@@ -212,7 +212,7 @@ public class RecipeViewStatusServiceTest {
               assertThrows(
                   ViewStatusException.class,
                   () -> {
-                    service.find(userId, recipeId);
+                    service.get(userId, recipeId);
                   });
 
           assertThat(exception.getErrorMessage())
@@ -425,7 +425,7 @@ public class RecipeViewStatusServiceTest {
           .findAllByUserIdAndRecipeCategoryIdAndStatus(
               any(UUID.class), any(UUID.class), any(RecipeViewState.class), any(Pageable.class));
 
-      Page<RecipeViewStatus> result = service.findCategories(userId, categoryId, page);
+      Page<RecipeViewStatus> result = service.getCategories(userId, categoryId, page);
 
       assertThat(result).isEqualTo(expectedStatuses);
       verify(repository)
@@ -455,7 +455,7 @@ public class RecipeViewStatusServiceTest {
           .findAllByUserIdAndRecipeCategoryIdAndStatus(
               any(UUID.class), isNull(), any(RecipeViewState.class), any(Pageable.class));
 
-      Page<RecipeViewStatus> result = service.findUnCategories(userId, page);
+      Page<RecipeViewStatus> result = service.getUnCategories(userId, page);
 
       assertThat(result.getContent()).isEqualTo(expectedStatuses);
       verify(repository)
@@ -505,7 +505,7 @@ public class RecipeViewStatusServiceTest {
         @Test
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들이 반환되어야 한다")
         void thenShouldReturnRecentRecipeViewStatuses() {
-          List<RecipeViewStatus> result = service.findRecentUsers(userId, page).getContent();
+          List<RecipeViewStatus> result = service.getRecentUsers(userId, page).getContent();
 
           assertThat(result).isEqualTo(expectedStatuses.getContent());
           verify(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);

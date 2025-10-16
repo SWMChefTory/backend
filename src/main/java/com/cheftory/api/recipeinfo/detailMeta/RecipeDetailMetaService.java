@@ -16,14 +16,14 @@ public class RecipeDetailMetaService {
   private final RecipeDetailMetaRepository recipeDetailMetaRepository;
   private final Clock clock;
 
-  public RecipeDetailMeta find(UUID recipeId) {
+  public RecipeDetailMeta get(UUID recipeId) {
     return recipeDetailMetaRepository
         .findByRecipeId(recipeId)
         .orElseThrow(
             () -> new RecipeDetailMetaException(RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND));
   }
 
-  public List<RecipeDetailMeta> findIn(List<UUID> recipeIds) {
+  public List<RecipeDetailMeta> getIn(List<UUID> recipeIds) {
     return recipeDetailMetaRepository.findAllByRecipeIdIn(recipeIds);
   }
 
