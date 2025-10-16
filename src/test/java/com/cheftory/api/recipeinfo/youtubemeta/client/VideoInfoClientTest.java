@@ -113,7 +113,8 @@ public class VideoInfoClientTest {
 
           doReturn(videoId).when(youtubeUri).getVideoId();
           doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
-              .when(youtubeUri).getNormalizedUrl();
+              .when(youtubeUri)
+              .getNormalizedUrl();
         }
 
         @Test
@@ -190,7 +191,8 @@ public class VideoInfoClientTest {
                   .setBody(responseBody));
           doReturn(videoId).when(youtubeUri).getVideoId();
           doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
-              .when(youtubeUri).getNormalizedUrl();
+              .when(youtubeUri)
+              .getNormalizedUrl();
         }
 
         @Test

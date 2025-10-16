@@ -35,8 +35,7 @@ public class RecipeYoutubeMetaServiceTest {
     videoInfoClient = mock(VideoInfoClient.class);
     clock = mock(Clock.class);
     recipeYoutubeMetaService =
-        new RecipeYoutubeMetaService(
-            recipeYoutubeMetaRepository, videoInfoClient, clock);
+        new RecipeYoutubeMetaService(recipeYoutubeMetaRepository, videoInfoClient, clock);
   }
 
   @Nested

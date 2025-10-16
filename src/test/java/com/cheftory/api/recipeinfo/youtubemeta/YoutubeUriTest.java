@@ -5,14 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
+import java.net.URI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.net.URI;
 
 @DisplayName("YoutubeUri.from")
 class YoutubeUriTest {
@@ -56,9 +52,8 @@ class YoutubeUriTest {
   @Nested
   class GivenValidGeneralUrlWithExtraParams {
 
-    private final URI withParams = URI.create(
-        "https://www.youtube.com/watch?v=" + ID + "&t=100s&list=PLrAXtmRdnEQy"
-    );
+    private final URI withParams =
+        URI.create("https://www.youtube.com/watch?v=" + ID + "&t=100s&list=PLrAXtmRdnEQy");
 
     @DisplayName("When - from 호출")
     @Test

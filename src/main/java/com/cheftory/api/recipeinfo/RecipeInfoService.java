@@ -255,7 +255,7 @@ public class RecipeInfoService {
             .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
 
     Map<UUID, List<RecipeTag>> tagsMap =
-        recipeTagService.findIn(recipeIds).stream()
+        recipeTagService.getIn(recipeIds).stream()
             .collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
     List<RecipeHistory> histories =
