@@ -96,6 +96,10 @@ jobs:
             APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
             SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}
             SENTRY_DSN=${{secrets.SENTRY_DSN}}
+            OPENSEARCH_HOST=${{ secrets.OPENSEARCH_HOST }}
+            OPENSEARCH_PORT=${{ secrets.OPENSEARCH_PORT }}
+            OPENSEARCH_USERNAME=${{ secrets.OPENSEARCH_USERNAME }}
+            OPENSEARCH_PASSWORD=${{ secrets.OPENSEARCH_PASSWORD }}
             EOF
             
 
