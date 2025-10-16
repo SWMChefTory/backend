@@ -99,4 +99,11 @@ public class RecipeInfoController {
     RecipeProgressStatus progressStatus = recipeInfoService.getRecipeProgress(recipeId);
     return RecipeProgressResponse.of(progressStatus);
   }
+
+  @GetMapping("/search")
+  public SearchedRecipesResponse searchRecipes(
+      @RequestParam("query") String query, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
+    Page<RecipeOverview> recipes = recipeInfoService.searchRecipes(page, query);
+    return SearchedRecipesResponse.from(recipes);
+  }
 }

@@ -89,6 +89,11 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	runtimeOnly  'io.micrometer:micrometer-registry-prometheus'
+
+	implementation("org.opensearch.client:spring-data-opensearch-starter:2.0.2") {
+		exclude group: "org.opensearch.client", module: "opensearch-rest-high-level-client"
+	}
+	implementation("org.opensearch.client:opensearch-java:3.1.0")
 }
 
 def snippetsDir = file("build/generated-snippets")

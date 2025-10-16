@@ -122,7 +122,7 @@ public class AsyncRecipeInfoCreationService {
     UUID captionId = recipeCaptionService.create(videoId, recipeId);
     recipeProgressService.create(
         recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
-    return recipeCaptionService.find(captionId);
+    return recipeCaptionService.get(captionId);
   }
 
   private void progressBriefing(UUID recipeId, String videoId) {

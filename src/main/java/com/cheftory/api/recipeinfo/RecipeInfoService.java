@@ -313,4 +313,64 @@ public class RecipeInfoService {
     Recipe recipe = recipeService.get(recipeId);
     return RecipeProgressStatus.of(recipe, progresses);
   }
+
+  public Page<RecipeOverview> searchRecipes(Integer page, String query) {
+
+    Page<RecipeSearch> searchResults = recipeSearchService.search(query, page);
+
+    List<UUID> recipeIds =
+        searchResults.getContent().stream().map(RecipeSearch::getId).map(UUID::fromString).toList();
+
+    Map<UUID, Recipe> recipeMap =
+        recipeService.gets(recipeIds).stream()
+            .collect(Collectors.toMap(Recipe::getId, Function.identity()));
+
+    Map<UUID, RecipeYoutubeMeta> youtubeMetaMap =
+        recipeYoutubeMetaService.getByRecipes(recipeIds).stream()
+            .collect(Collectors.toMap(RecipeYoutubeMeta::getRecipeId, Function.identity()));
+
+    Map<UUID, RecipeDetailMeta> detailMetaMap =
+        recipeDetailMetaService.getIn(recipeIds).stream()
+            .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
+
+    Map<UUID, List<RecipeTag>> tagsMap =
+        recipeTagService.getIn(recipeIds).stream()
+            .collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+
+    List<RecipeOverview> recipeOverviews =
+        searchResults
+            .map(
+                recipeSearch -> {
+                  UUID recipeId = UUID.fromString(recipeSearch.getId());
+                  Recipe recipe = recipeMap.get(recipeId);
+                  if (recipe == null) {
+                    log.error("검색된 레시피가 존재하지 않음: recipeId={}", recipeId);
+                    return null;
+                  }
+                  RecipeYoutubeMeta youtubeMeta = youtubeMetaMap.get(recipeId);
+                  if (youtubeMeta == null) {
+                    log.error("완료된 레시피의 유튜브 메타데이터 누락: recipeId={}", recipeId);
+                    return null;
+                  }
+
+                  RecipeDetailMeta detailMeta = detailMetaMap.get(recipe.getId());
+                  if (detailMeta == null) {
+                    log.warn("레시피 상세 메타데이터 누락: recipeId={}", recipe.getId());
+                  }
+
+                  List<RecipeTag> tags =
+                      tagsMap.getOrDefault(recipe.getId(), Collections.emptyList());
+
+                  if (tags.isEmpty()) {
+                    log.error("레시피의 태그 누락: recipeId={}", recipe.getId());
+                  }
+
+                  return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags);
+                })
+            .filter(Objects::nonNull)
+            .toList();
+
+    return new PageImpl<>(
+        recipeOverviews, searchResults.getPageable(), searchResults.getTotalElements());
+  }
 }
