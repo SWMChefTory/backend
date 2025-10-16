@@ -8,6 +8,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.recipeinfo.search.exception.RecipeSearchErrorCode;
+import com.cheftory.api.recipeinfo.search.exception.RecipeSearchException;
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -154,8 +156,8 @@ public class RecipeAutocompleteRepositoryTest {
       @DisplayName("When - 자동완성을 검색하면 Then - RuntimeException이 발생한다")
       void whenSearchingAutocomplete_thenThrowsRuntimeException() {
         assertThatThrownBy(() -> recipeAutocompleteRepository.searchAutocomplete(keyword, pageable))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("자동완성 검색 중 오류가 발생했습니다");
+            .isInstanceOf(RecipeSearchException.class)
+            .hasFieldOrPropertyWithValue("errorMessage", RecipeSearchErrorCode.RECIPE_AUTOCOMPLETE_FAILED);
       }
     }
   }

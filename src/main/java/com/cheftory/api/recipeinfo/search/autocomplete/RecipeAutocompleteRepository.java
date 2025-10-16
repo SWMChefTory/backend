@@ -1,8 +1,11 @@
 package com.cheftory.api.recipeinfo.search.autocomplete;
 
+import com.cheftory.api.recipeinfo.search.exception.RecipeSearchErrorCode;
+import com.cheftory.api.recipeinfo.search.exception.RecipeSearchException;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.query_dsl.FieldValueFactorModifier;
 import org.opensearch.client.opensearch._types.query_dsl.FunctionBoostMode;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class RecipeAutocompleteRepository {
 
   private final OpenSearchClient openSearchClient;
@@ -29,8 +33,9 @@ public class RecipeAutocompleteRepository {
 
       return response.hits().hits().stream().map(Hit::source).toList();
 
-    } catch (IOException e) {
-      throw new RuntimeException("자동완성 검색 중 오류가 발생했습니다", e);
+    } catch (Exception e) {
+      log.error(RecipeSearchErrorCode.RECIPE_AUTOCOMPLETE_FAILED.getMessage(), keyword, e);
+      throw new RecipeSearchException(RecipeSearchErrorCode.RECIPE_AUTOCOMPLETE_FAILED);
     }
   }
 

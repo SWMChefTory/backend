@@ -1,8 +1,11 @@
 package com.cheftory.api.recipeinfo.search;
 
+import com.cheftory.api.recipeinfo.search.exception.RecipeSearchErrorCode;
+import com.cheftory.api.recipeinfo.search.exception.RecipeSearchException;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.query_dsl.FunctionBoostMode;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class RecipeSearchRepository {
 
   private final OpenSearchClient openSearchClient;
@@ -34,8 +38,9 @@ public class RecipeSearchRepository {
 
       return new PageImpl<>(content, pageable, total);
 
-    } catch (IOException e) {
-      throw new RuntimeException("검색 중 오류가 발생했습니다", e);
+    } catch (Exception e) {
+      log.error(RecipeSearchErrorCode.RECIPE_SEARCH_FAILED.getMessage(), keyword, e);
+      throw new RecipeSearchException(RecipeSearchErrorCode.RECIPE_SEARCH_FAILED);
     }
   }
 
