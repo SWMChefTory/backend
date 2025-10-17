@@ -157,7 +157,8 @@ public class RecipeAutocompleteRepositoryTest {
       void whenSearchingAutocomplete_thenThrowsRuntimeException() {
         assertThatThrownBy(() -> recipeAutocompleteRepository.searchAutocomplete(keyword, pageable))
             .isInstanceOf(RecipeSearchException.class)
-            .hasFieldOrPropertyWithValue("errorMessage", RecipeSearchErrorCode.RECIPE_AUTOCOMPLETE_FAILED);
+            .hasFieldOrPropertyWithValue(
+                "errorMessage", RecipeSearchErrorCode.RECIPE_AUTOCOMPLETE_FAILED);
       }
     }
   }

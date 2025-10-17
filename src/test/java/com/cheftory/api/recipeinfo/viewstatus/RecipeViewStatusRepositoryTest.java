@@ -736,6 +736,250 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
     }
 
     @Nested
+    @DisplayName("사용자의 레시피 조회 상태 목록 조회")
+    class FindRecipeViewStatusesByRecipeIdsAndUserId {
+
+      @Nested
+      @DisplayName("Given - 유효한 레시피 ID 목록과 사용자 ID가 주어졌을 때")
+      class GivenValidRecipeIdsAndUserId {
+
+        private List<UUID> recipeIds;
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          recipeIds = new ArrayList<>();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+
+          // 3개의 레시피 조회 상태 생성
+          for (int i = 0; i < 3; i++) {
+            UUID recipeId = UUID.randomUUID();
+            recipeIds.add(recipeId);
+            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+            repository.save(viewStatus);
+          }
+        }
+
+        @Nested
+        @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
+        class WhenFindingRecipeViewStatusesByRecipeIdsAndUserId {
+
+          @Test
+          @DisplayName("Then - 해당 레시피 조회 상태 목록을 반환해야 한다")
+          void thenShouldReturnRecipeViewStatusList() {
+            List<RecipeViewStatus> statuses =
+                repository.findByRecipeIdInAndUserIdAndStatus(
+                    recipeIds, userId, RecipeViewState.ACTIVE);
+
+            assertThat(statuses).hasSize(3);
+            assertThat(statuses)
+                .allMatch(status -> status.getUserId().equals(userId))
+                .allMatch(status -> recipeIds.contains(status.getRecipeId()));
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 일부만 조회한 레시피 ID 목록이 주어졌을 때")
+      class GivenPartiallyViewedRecipeIds {
+
+        private List<UUID> allRecipeIds;
+        private List<UUID> viewedRecipeIds;
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          allRecipeIds = new ArrayList<>();
+          viewedRecipeIds = new ArrayList<>();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+
+          // 5개의 레시피 ID 중 3개만 조회 상태 생성
+          for (int i = 0; i < 5; i++) {
+            UUID recipeId = UUID.randomUUID();
+            allRecipeIds.add(recipeId);
+
+            if (i < 3) {
+              viewedRecipeIds.add(recipeId);
+              RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+              repository.save(viewStatus);
+            }
+          }
+        }
+
+        @Nested
+        @DisplayName("When - 모든 레시피 ID로 조회한다면")
+        class WhenFindingWithAllRecipeIds {
+
+          @Test
+          @DisplayName("Then - 조회한 레시피만 반환해야 한다")
+          void thenShouldReturnOnlyViewedRecipes() {
+            List<RecipeViewStatus> statuses =
+                repository.findByRecipeIdInAndUserIdAndStatus(
+                    allRecipeIds, userId, RecipeViewState.ACTIVE);
+
+            assertThat(statuses).hasSize(3);
+            assertThat(statuses).allMatch(status -> viewedRecipeIds.contains(status.getRecipeId()));
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 다른 사용자가 조회한 레시피가 있을 때")
+      class GivenOtherUserViewedRecipes {
+
+        private List<UUID> recipeIds;
+        private UUID userId1;
+        private UUID userId2;
+
+        @BeforeEach
+        void setUp() {
+          userId1 = UUID.randomUUID();
+          userId2 = UUID.randomUUID();
+          recipeIds = new ArrayList<>();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+
+          // userId1이 3개 조회
+          for (int i = 0; i < 3; i++) {
+            UUID recipeId = UUID.randomUUID();
+            recipeIds.add(recipeId);
+            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId1, recipeId);
+            repository.save(viewStatus);
+          }
+
+          // userId2도 같은 레시피 조회
+          for (UUID recipeId : recipeIds) {
+            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId2, recipeId);
+            repository.save(viewStatus);
+          }
+        }
+
+        @Nested
+        @DisplayName("When - 특정 사용자의 레시피 조회 상태를 조회한다면")
+        class WhenFindingSpecificUserRecipeViewStatuses {
+
+          @Test
+          @DisplayName("Then - 해당 사용자의 조회 상태만 반환해야 한다")
+          void thenShouldReturnOnlySpecificUserStatuses() {
+            List<RecipeViewStatus> user1Statuses =
+                repository.findByRecipeIdInAndUserIdAndStatus(
+                    recipeIds, userId1, RecipeViewState.ACTIVE);
+
+            assertThat(user1Statuses).hasSize(3);
+            assertThat(user1Statuses).allMatch(status -> status.getUserId().equals(userId1));
+
+            List<RecipeViewStatus> user2Statuses =
+                repository.findByRecipeIdInAndUserIdAndStatus(
+                    recipeIds, userId2, RecipeViewState.ACTIVE);
+
+            assertThat(user2Statuses).hasSize(3);
+            assertThat(user2Statuses).allMatch(status -> status.getUserId().equals(userId2));
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 삭제된 조회 상태가 포함된 경우")
+      class GivenDeletedViewStatuses {
+
+        private List<UUID> recipeIds;
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          recipeIds = new ArrayList<>();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+
+          // 3개 생성, 1개는 삭제
+          for (int i = 0; i < 3; i++) {
+            UUID recipeId = UUID.randomUUID();
+            recipeIds.add(recipeId);
+            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+
+            if (i == 1) {
+              viewStatus.delete();
+            }
+            repository.save(viewStatus);
+          }
+        }
+
+        @Nested
+        @DisplayName("When - Active 상태의 조회 상태를 조회한다면")
+        class WhenFindingActiveStatuses {
+
+          @Test
+          @DisplayName("Then - 삭제되지 않은 조회 상태만 반환해야 한다")
+          void thenShouldReturnOnlyActiveStatuses() {
+            List<RecipeViewStatus> statuses =
+                repository.findByRecipeIdInAndUserIdAndStatus(
+                    recipeIds, userId, RecipeViewState.ACTIVE);
+
+            assertThat(statuses).hasSize(2);
+            assertThat(statuses).allMatch(status -> status.getStatus() == RecipeViewState.ACTIVE);
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 빈 레시피 ID 목록이 주어졌을 때")
+      class GivenEmptyRecipeIds {
+
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+        }
+
+        @Nested
+        @DisplayName("When - 레시피 조회 상태를 조회한다면")
+        class WhenFindingRecipeViewStatuses {
+
+          @Test
+          @DisplayName("Then - 빈 목록을 반환해야 한다")
+          void thenShouldReturnEmptyList() {
+            List<RecipeViewStatus> statuses =
+                repository.findByRecipeIdInAndUserIdAndStatus(
+                    List.of(), userId, RecipeViewState.ACTIVE);
+
+            assertThat(statuses).isEmpty();
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 존재하지 않는 레시피 ID 목록이 주어졌을 때")
+      class GivenNonExistentRecipeIds {
+
+        private List<UUID> nonExistentRecipeIds;
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          nonExistentRecipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+        }
+
+        @Nested
+        @DisplayName("When - 레시피 조회 상태를 조회한다면")
+        class WhenFindingRecipeViewStatuses {
+
+          @Test
+          @DisplayName("Then - 빈 목록을 반환해야 한다")
+          void thenShouldReturnEmptyList() {
+            List<RecipeViewStatus> statuses =
+                repository.findByRecipeIdInAndUserIdAndStatus(
+                    nonExistentRecipeIds, userId, RecipeViewState.ACTIVE);
+
+            assertThat(statuses).isEmpty();
+          }
+        }
+      }
+    }
+
+    @Nested
     @DisplayName("레시피 조회 상태 삭제")
     class DeleteRecipeViewStatus {
 

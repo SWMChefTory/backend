@@ -166,7 +166,7 @@ public class RecipeInfoService {
    * @param page 페이지 번호 (0부터 시작)
    * @return 레시피 개요 페이지
    */
-  public Page<RecipeOverview> getPopulars(Integer page) {
+  public Page<RecipeOverview> getPopulars(Integer page, UUID userId) {
     Page<Recipe> recipes = recipeService.getPopulars(page);
 
     List<UUID> recipeIds = recipes.stream().map(Recipe::getId).toList();
@@ -182,6 +182,10 @@ public class RecipeInfoService {
     Map<UUID, List<RecipeTag>> tagsMap =
         recipeTagService.getIn(recipeIds).stream()
             .collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+
+    Map<UUID, RecipeViewStatus> recipeViewStatusMap =
+        recipeViewStatusService.getUsers(recipeIds, userId).stream()
+            .collect(Collectors.toMap(RecipeViewStatus::getRecipeId, Function.identity()));
 
     List<RecipeOverview> recipeOverviews =
         recipes.getContent().stream()
@@ -206,7 +210,10 @@ public class RecipeInfoService {
                     log.error("레시피의 태그 누락: recipeId={}", recipe.getId());
                   }
 
-                  return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags);
+                  RecipeViewStatus viewStatus = recipeViewStatusMap.get(recipeId);
+                  Boolean isViewed = viewStatus != null;
+
+                  return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
                 })
             .filter(Objects::nonNull)
             .toList();
@@ -320,7 +327,7 @@ public class RecipeInfoService {
     return RecipeProgressStatus.of(recipe, progresses);
   }
 
-  public Page<RecipeOverview> searchRecipes(Integer page, String query) {
+  public Page<RecipeOverview> searchRecipes(Integer page, String query, UUID userId) {
 
     Page<RecipeSearch> searchResults = recipeSearchService.search(query, page);
 
@@ -342,6 +349,10 @@ public class RecipeInfoService {
     Map<UUID, List<RecipeTag>> tagsMap =
         recipeTagService.getIn(recipeIds).stream()
             .collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+
+    Map<UUID, RecipeViewStatus> recipeViewStatusMap =
+        recipeViewStatusService.getUsers(recipeIds, userId).stream()
+            .collect(Collectors.toMap(RecipeViewStatus::getRecipeId, Function.identity()));
 
     List<RecipeOverview> recipeOverviews =
         searchResults
@@ -371,7 +382,10 @@ public class RecipeInfoService {
                     log.error("레시피의 태그 누락: recipeId={}", recipe.getId());
                   }
 
-                  return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags);
+                  RecipeViewStatus viewStatus = recipeViewStatusMap.get(recipeId);
+                  Boolean isViewed = viewStatus != null;
+
+                  return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
                 })
             .filter(Objects::nonNull)
             .toList();

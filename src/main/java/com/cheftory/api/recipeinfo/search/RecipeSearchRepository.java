@@ -2,7 +2,6 @@ package com.cheftory.api.recipeinfo.search;
 
 import com.cheftory.api.recipeinfo.search.exception.RecipeSearchErrorCode;
 import com.cheftory.api.recipeinfo.search.exception.RecipeSearchException;
-import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

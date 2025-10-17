@@ -30,7 +30,8 @@ public record SearchedRecipesResponse(
       @JsonProperty("recipe_title") String recipeTitle,
       @JsonProperty("tags") List<Tag> tags,
       @JsonProperty("detail_meta") DetailMeta detailMeta,
-      @JsonProperty("video_info") VideoInfo videoInfo) {
+      @JsonProperty("video_info") VideoInfo videoInfo,
+      @JsonProperty("is_viewed") Boolean isViewed) {
 
     private record DetailMeta(
         @JsonProperty("description") String description,
@@ -69,7 +70,8 @@ public record SearchedRecipesResponse(
           recipe.getYoutubeMeta().getTitle(),
           recipe.getTags().stream().map(Tag::from).toList(),
           DetailMeta.from(recipe.getDetailMeta()),
-          VideoInfo.from(recipe.getYoutubeMeta()));
+          VideoInfo.from(recipe.getYoutubeMeta()),
+          recipe.getIsViewed());
     }
   }
 }

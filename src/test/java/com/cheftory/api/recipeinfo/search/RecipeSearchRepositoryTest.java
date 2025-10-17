@@ -8,7 +8,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipeinfo.search.exception.RecipeSearchErrorCode;
 import com.cheftory.api.recipeinfo.search.exception.RecipeSearchException;
 import java.io.IOException;
@@ -161,7 +160,8 @@ public class RecipeSearchRepositoryTest {
       void whenSearching_thenThrowsRuntimeException() {
         assertThatThrownBy(() -> recipeSearchRepository.searchByKeyword(keyword, pageable))
             .isInstanceOf(RecipeSearchException.class)
-            .hasFieldOrPropertyWithValue("errorMessage", RecipeSearchErrorCode.RECIPE_SEARCH_FAILED);
+            .hasFieldOrPropertyWithValue(
+                "errorMessage", RecipeSearchErrorCode.RECIPE_SEARCH_FAILED);
       }
     }
   }

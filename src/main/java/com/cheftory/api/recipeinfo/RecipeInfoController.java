@@ -60,8 +60,8 @@ public class RecipeInfoController {
 
   @GetMapping("/recommend")
   public RecommendRecipesResponse getRecommendedRecipes(
-      @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeOverview> recipes = recipeInfoService.getPopulars(page);
+      @RequestParam(defaultValue = "0") @Min(0) Integer page, @UserPrincipal UUID userId) {
+    Page<RecipeOverview> recipes = recipeInfoService.getPopulars(page, userId);
     return RecommendRecipesResponse.from(recipes);
   }
 
@@ -102,8 +102,10 @@ public class RecipeInfoController {
 
   @GetMapping("/search")
   public SearchedRecipesResponse searchRecipes(
-      @RequestParam("query") String query, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeOverview> recipes = recipeInfoService.searchRecipes(page, query);
+      @RequestParam("query") String query,
+      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @UserPrincipal UUID userId) {
+    Page<RecipeOverview> recipes = recipeInfoService.searchRecipes(page, query, userId);
     return SearchedRecipesResponse.from(recipes);
   }
 }
