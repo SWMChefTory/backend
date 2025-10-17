@@ -94,4 +94,9 @@ public class RecipeViewStatusService {
                     projection.getCategoryId(), projection.getCount().intValue()))
         .toList();
   }
+
+  public List<RecipeViewStatus> getUsers(List<UUID> recipeIds, UUID userId) {
+    return recipeViewStatusRepository.findByRecipeIdInAndUserIdAndStatus(
+        recipeIds, userId, RecipeViewState.ACTIVE);
+  }
 }

@@ -635,9 +635,12 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
           doReturn(recipe).when(recipeOverview).getRecipe();
           doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
+          doReturn(true).when(recipeOverview).getIsViewed();
 
           recipes = new PageImpl<>(List.of(recipeOverview), pageable, 1);
-          doReturn(recipes).when(recipeInfoService).getPopulars(any(Integer.class));
+          doReturn(recipes)
+              .when(recipeInfoService)
+              .getPopulars(any(Integer.class), any(UUID.class));
         }
 
         @Test
@@ -674,12 +677,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("recommend_recipes[].count").description("레시피 조회 수"),
                               fieldWithPath("recommend_recipes[].video_url")
                                   .description("레시피 비디오 URL"),
+                              fieldWithPath("recommend_recipes[].is_viewed")
+                                  .description("사용자가 해당 레시피를 본 적이 있는지 여부"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).getPopulars(page);
+          verify(recipeInfoService).getPopulars(page, userId);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("recommend_recipes")).hasSize(1);
@@ -694,6 +699,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("recommend_recipes[0].count")).isEqualTo(100);
           assertThat(responseBody.getString("recommend_recipes[0].video_url"))
               .isEqualTo("https://example.com/video");
+          assertThat(responseBody.getString("recommend_recipes[0].is_viewed")).isEqualTo("true");
           assertThat(responseBody.getString("current_page")).isEqualTo("0");
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
@@ -728,7 +734,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeOverview>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .getPopulars(any(Integer.class));
+              .getPopulars(any(Integer.class), any(UUID.class));
         }
 
         @Test
@@ -744,7 +750,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recommend_recipes", hasSize(0));
 
-          verify(recipeInfoService).getPopulars(page);
+          verify(recipeInfoService).getPopulars(page, userId);
         }
       }
     }
@@ -1641,6 +1647,15 @@ public class RecipeInfoControllerTest extends RestDocsTest {
   @DisplayName("레시피 검색")
   class SearchRecipes {
 
+    private UUID userId;
+
+    @BeforeEach
+    void setUp() {
+      userId = UUID.randomUUID();
+      var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
     @Nested
     @DisplayName("Given - 유효한 검색어가 주어졌을 때")
     class GivenValidSearchQuery {
@@ -1699,11 +1714,12 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
           doReturn(detailMeta).when(recipeOverview).getDetailMeta();
           doReturn(tags).when(recipeOverview).getTags();
+          doReturn(true).when(recipeOverview).getIsViewed();
 
           searchResults = new PageImpl<>(List.of(recipeOverview), pageable, 1);
           doReturn(searchResults)
               .when(recipeInfoService)
-              .searchRecipes(any(Integer.class), any(String.class));
+              .searchRecipes(any(Integer.class), any(String.class), any(UUID.class));
         }
 
         @Test
@@ -1753,12 +1769,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("searched_recipes[].video_info.video_seconds")
                                   .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("searched_recipes[].is_viewed")
+                                  .description("레시피 조회 여부"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).searchRecipes(page, query);
+          verify(recipeInfoService).searchRecipes(page, query, userId);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("searched_recipes")).hasSize(1);
@@ -1782,6 +1800,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .isEqualTo("https://example.com/kimchi_thumbnail.jpg");
           assertThat(responseBody.getInt("searched_recipes[0].video_info.video_seconds"))
               .isEqualTo(300);
+          assertThat(responseBody.getBoolean("searched_recipes[0].is_viewed")).isEqualTo(true);
           assertThat(responseBody.getString("current_page")).isEqualTo("0");
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
@@ -1814,7 +1833,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeOverview>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .searchRecipes(any(Integer.class), any(String.class));
+              .searchRecipes(any(Integer.class), any(String.class), any(UUID.class));
         }
 
         @Test
@@ -1829,7 +1848,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("searched_recipes", hasSize(0));
 
-          verify(recipeInfoService).searchRecipes(page, query);
+          verify(recipeInfoService).searchRecipes(page, query, userId);
         }
       }
     }
@@ -1911,7 +1930,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           searchResults = new PageImpl<>(recipeOverviews, pageable, 2);
           doReturn(searchResults)
               .when(recipeInfoService)
-              .searchRecipes(any(Integer.class), any(String.class));
+              .searchRecipes(any(Integer.class), any(String.class), any(UUID.class));
         }
 
         @Test
@@ -1927,7 +1946,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .status(HttpStatus.OK)
                   .body("searched_recipes", hasSize(2));
 
-          verify(recipeInfoService).searchRecipes(page, query);
+          verify(recipeInfoService).searchRecipes(page, query, userId);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("searched_recipes")).hasSize(2);
@@ -1986,7 +2005,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           searchResults = new PageImpl<>(List.of(recipe), Pageable.ofSize(10).withPage(1), 11);
           doReturn(searchResults)
               .when(recipeInfoService)
-              .searchRecipes(any(Integer.class), any(String.class));
+              .searchRecipes(any(Integer.class), any(String.class), any(UUID.class));
         }
 
         @Test
@@ -2001,7 +2020,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .then()
                   .status(HttpStatus.OK);
 
-          verify(recipeInfoService).searchRecipes(page, query);
+          verify(recipeInfoService).searchRecipes(page, query, userId);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getString("current_page")).isEqualTo("1");

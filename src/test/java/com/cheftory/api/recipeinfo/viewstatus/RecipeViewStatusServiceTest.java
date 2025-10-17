@@ -575,6 +575,171 @@ public class RecipeViewStatusServiceTest {
   }
 
   @Nested
+  @DisplayName("사용자의 레시피 조회 상태 목록 조회")
+  class GetUserRecipeViewStatuses {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID 목록과 사용자 ID가 주어졌을 때")
+    class GivenValidRecipeIdsAndUserId {
+
+      private List<UUID> recipeIds;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
+      class WhenGettingUserRecipeViewStatuses {
+
+        private List<RecipeViewStatus> viewStatuses;
+
+        @BeforeEach
+        void beforeEach() {
+          viewStatuses =
+              List.of(
+                  RecipeViewStatus.create(clock, userId, recipeIds.get(0)),
+                  RecipeViewStatus.create(clock, userId, recipeIds.get(1)));
+
+          doReturn(viewStatuses)
+              .when(repository)
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Then - 사용자가 조회한 레시피 상태 목록을 반환해야 한다")
+        void thenShouldReturnUserRecipeViewStatuses() {
+          List<RecipeViewStatus> result = service.getUsers(recipeIds, userId);
+
+          assertThat(result).hasSize(2);
+          assertThat(result).containsExactlyElementsOf(viewStatuses);
+          verify(repository)
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 사용자가 조회하지 않은 레시피 ID 목록이 주어졌을 때")
+    class GivenUnviewedRecipeIds {
+
+      private List<UUID> recipeIds;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
+      class WhenGettingUserRecipeViewStatuses {
+
+        @BeforeEach
+        void beforeEach() {
+          doReturn(List.of())
+              .when(repository)
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Then - 빈 목록을 반환해야 한다")
+        void thenShouldReturnEmptyList() {
+          List<RecipeViewStatus> result = service.getUsers(recipeIds, userId);
+
+          assertThat(result).isEmpty();
+          verify(repository)
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 빈 레시피 ID 목록이 주어졌을 때")
+    class GivenEmptyRecipeIds {
+
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
+      class WhenGettingUserRecipeViewStatuses {
+
+        @BeforeEach
+        void beforeEach() {
+          doReturn(List.of())
+              .when(repository)
+              .findByRecipeIdInAndUserIdAndStatus(List.of(), userId, RecipeViewState.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Then - 빈 목록을 반환해야 한다")
+        void thenShouldReturnEmptyList() {
+          List<RecipeViewStatus> result = service.getUsers(List.of(), userId);
+
+          assertThat(result).isEmpty();
+          verify(repository)
+              .findByRecipeIdInAndUserIdAndStatus(List.of(), userId, RecipeViewState.ACTIVE);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 일부만 조회한 레시피 ID 목록이 주어졌을 때")
+    class GivenPartiallyViewedRecipeIds {
+
+      private List<UUID> recipeIds;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
+      class WhenGettingUserRecipeViewStatuses {
+
+        private List<RecipeViewStatus> viewStatuses;
+
+        @BeforeEach
+        void beforeEach() {
+          // 3개 중 2개만 조회한 상태
+          viewStatuses =
+              List.of(
+                  RecipeViewStatus.create(clock, userId, recipeIds.get(0)),
+                  RecipeViewStatus.create(clock, userId, recipeIds.get(2)));
+
+          doReturn(viewStatuses)
+              .when(repository)
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Then - 조회한 레시피 상태만 반환해야 한다")
+        void thenShouldReturnOnlyViewedRecipeStatuses() {
+          List<RecipeViewStatus> result = service.getUsers(recipeIds, userId);
+
+          assertThat(result).hasSize(2);
+          assertThat(result.get(0).getRecipeId()).isEqualTo(recipeIds.get(0));
+          assertThat(result.get(1).getRecipeId()).isEqualTo(recipeIds.get(2));
+          verify(repository)
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+        }
+      }
+    }
+  }
+
+  @Nested
   @DisplayName("레시피 조회 상태 삭제")
   class DeleteRecipeViewStatus {
 

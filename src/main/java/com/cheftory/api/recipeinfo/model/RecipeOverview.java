@@ -18,17 +18,20 @@ public class RecipeOverview {
   private RecipeYoutubeMeta youtubeMeta;
   private RecipeDetailMeta detailMeta;
   private List<RecipeTag> tags;
+  private Boolean isViewed;
 
   public static RecipeOverview of(
       Recipe recipe,
       RecipeYoutubeMeta youtubeMeta,
       RecipeDetailMeta detailMeta,
-      List<RecipeTag> tags) {
+      List<RecipeTag> tags,
+      Boolean isViewed) {
     return RecipeOverview.builder()
         .recipe(recipe)
         .youtubeMeta(youtubeMeta)
         .detailMeta(detailMeta)
         .tags(tags)
+        .isViewed(isViewed)
         .build();
   }
 }

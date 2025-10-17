@@ -33,4 +33,7 @@ public interface RecipeViewStatusRepository extends JpaRepository<RecipeViewStat
       @Param("categoryIds") List<UUID> categoryIds, @Param("status") RecipeViewState status);
 
   boolean existsByRecipeIdAndUserIdAndStatus(UUID recipeId, UUID userId, RecipeViewState status);
+
+  List<RecipeViewStatus> findByRecipeIdInAndUserIdAndStatus(
+      List<UUID> recipeIds, UUID userId, RecipeViewState status);
 }
