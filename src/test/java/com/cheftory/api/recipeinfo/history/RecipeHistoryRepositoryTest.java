@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.viewstatus;
+package com.cheftory.api.recipeinfo.history;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -20,10 +20,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@DisplayName("RecipeViewStatusRepository Tests")
-public class RecipeViewStatusRepositoryTest extends DbContextTest {
+@DisplayName("RecipeHistoryRepository Tests")
+public class RecipeHistoryRepositoryTest extends DbContextTest {
 
-  @Autowired private RecipeViewStatusRepository repository;
+  @Autowired private RecipeHistoryRepository repository;
   @MockitoBean private Clock clock;
 
   @BeforeEach
@@ -34,11 +34,11 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 저장")
-  class SaveRecipeViewStatus {
+  class SaveRecipeHistory {
 
     @Nested
     @DisplayName("Given - 유효한 레시피 조회 상태가 주어졌을 때")
-    class GivenValidRecipeViewStatus {
+    class GivenValidRecipeHistory {
 
       private UUID recipeId;
       private UUID userId;
@@ -52,21 +52,20 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태를 저장한다면")
-      class WhenSavingRecipeViewStatus {
+      class WhenSavingRecipeHistory {
 
-        private RecipeViewStatus recipeViewStatus;
+        private RecipeHistory recipeHistory;
 
         @BeforeEach
         void beforeEach() {
-          recipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-          repository.save(recipeViewStatus);
+          recipeHistory = RecipeHistory.create(clock, userId, recipeId);
+          repository.save(recipeHistory);
         }
 
         @DisplayName("Then - 레시피 조회 상태가 저장되어야 한다")
         @Test
-        void thenShouldSaveRecipeViewStatus() {
-          RecipeViewStatus savedStatus =
-              repository.findById(recipeViewStatus.getId()).orElseThrow();
+        void thenShouldSaveRecipeHistory() {
+          RecipeHistory savedStatus = repository.findById(recipeHistory.getId()).orElseThrow();
           assertThat(savedStatus.getRecipeId()).isEqualTo(recipeId);
           assertThat(savedStatus.getUserId()).isEqualTo(userId);
         }
@@ -96,12 +95,12 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
       @DisplayName("When - 레시피 조회 상태를 확인한다면")
       class WhenCheckingExists {
 
-        private RecipeViewStatus recipeViewStatus;
+        private RecipeHistory recipeHistory;
 
         @BeforeEach
         void beforeEach() {
-          recipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-          repository.save(recipeViewStatus);
+          recipeHistory = RecipeHistory.create(clock, userId, recipeId);
+          repository.save(recipeHistory);
         }
 
         @Test
@@ -166,18 +165,18 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
       @DisplayName("When - 레시피 조회 상태를 가져온다면")
       class WhenFindingByRecipeIdAndUserId {
 
-        private RecipeViewStatus recipeViewStatus;
+        private RecipeHistory recipeHistory;
 
         @BeforeEach
         void beforeEach() {
-          recipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-          repository.save(recipeViewStatus);
+          recipeHistory = RecipeHistory.create(clock, userId, recipeId);
+          repository.save(recipeHistory);
         }
 
         @Test
         @DisplayName("Then - 해당 레시피 조회 상태를 반환해야 한다")
-        void thenShouldReturnRecipeViewStatus() {
-          RecipeViewStatus foundStatus =
+        void thenShouldReturnRecipeHistory() {
+          RecipeHistory foundStatus =
               repository
                   .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)
                   .orElseThrow();
@@ -218,11 +217,11 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 미분류 카테고리 조회")
-  class FindUncategorizedRecipeViewStatuses {
+  class FindUncategorizedRecipeHistoryes {
 
     @Nested
     @DisplayName("Given - 미분류 레시피 조회 상태가 존재할 때")
-    class GivenUncategorizedRecipeViewStatuses {
+    class GivenUncategorizedRecipeHistoryes {
 
       private UUID userId;
       private UUID recipeId;
@@ -240,17 +239,17 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
       @DisplayName("When - 미분류 레시피 조회 상태를 가져온다면")
       class WhenFindingUncategorized {
 
-        private RecipeViewStatus recipeViewStatus;
+        private RecipeHistory recipeHistory;
 
         @BeforeEach
         void beforeEach() {
-          recipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-          repository.save(recipeViewStatus);
+          recipeHistory = RecipeHistory.create(clock, userId, recipeId);
+          repository.save(recipeHistory);
         }
 
         @Test
         @DisplayName("Then - 해당 레시피 조회 상태를 반환해야 한다")
-        void thenShouldReturnUncategorizedRecipeViewStatuses() {
+        void thenShouldReturnUncategorizedRecipeHistoryes() {
 
           Pageable pageable = PageRequest.of(page, 10);
           var statuses =
@@ -269,7 +268,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
     @Nested
     @DisplayName("Given - 미분류 레시피 조회 상태가 존재하지 않을 때")
-    class GivenNoUncategorizedRecipeViewStatuses {
+    class GivenNoUncategorizedRecipeHistoryes {
 
       private UUID userId;
       private Integer page;
@@ -301,11 +300,11 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 분류 카테고리 조회")
-  class FindCategorizedRecipeViewStatuses {
+  class FindCategorizedRecipeHistoryes {
 
     @Nested
     @DisplayName("Given - 분류된 레시피 조회 상태가 존재할 때")
-    class GivenCategorizedRecipeViewStatuses {
+    class GivenCategorizedRecipeHistoryes {
 
       private UUID userId;
       private UUID recipeId;
@@ -325,18 +324,18 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
       @DisplayName("When - 분류된 레시피 조회 상태를 가져온다면")
       class WhenFindingCategorized {
 
-        private RecipeViewStatus recipeViewStatus;
+        private RecipeHistory recipeHistory;
 
         @BeforeEach
         void beforeEach() {
-          recipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-          recipeViewStatus.updateRecipeCategoryId(categoryId);
-          repository.save(recipeViewStatus);
+          recipeHistory = RecipeHistory.create(clock, userId, recipeId);
+          recipeHistory.updateRecipeCategoryId(categoryId);
+          repository.save(recipeHistory);
         }
 
         @Test
         @DisplayName("Then - 해당 레시피 조회 상태를 반환해야 한다")
-        void thenShouldReturnCategorizedRecipeViewStatuses() {
+        void thenShouldReturnCategorizedRecipeHistoryes() {
 
           Pageable pageable = PageRequest.of(page, 10);
           var statuses =
@@ -355,7 +354,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
     @Nested
     @DisplayName("Given - 분류된 레시피 조회 상태가 존재하지 않을 때")
-    class GivenNoCategorizedRecipeViewStatuses {
+    class GivenNoCategorizedRecipeHistoryes {
 
       private UUID userId;
       private UUID categoryId;
@@ -389,7 +388,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
   @Nested
   @DisplayName("사용자의 최근 조회 레시피 상태 조회")
-  class FindRecentRecipeViewStatusesByUserId {
+  class FindRecentRecipeHistoryesByUserId {
 
     @Nested
     @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
@@ -404,12 +403,12 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
       @Nested
       @DisplayName("When - 사용자의 최근 조회 레시피를 가져온다면")
-      class WhenFindingRecentRecipeViewStatusesByUserId {
+      class WhenFindingRecentRecipeHistoryesByUserId {
 
         private UUID firstRecipeId;
         private UUID secondRecipeId;
-        private RecipeViewStatus firstRecipeViewStatus;
-        private RecipeViewStatus secondRecipeViewStatus;
+        private RecipeHistory firstRecipeHistory;
+        private RecipeHistory secondRecipeHistory;
 
         @BeforeEach
         void beforeEach() {
@@ -419,30 +418,30 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           // 첫 번째는 더 이전 시간으로 설정
           LocalDateTime firstTime = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
           when(clock.now()).thenReturn(firstTime);
-          firstRecipeViewStatus = RecipeViewStatus.create(clock, userId, firstRecipeId);
-          repository.save(firstRecipeViewStatus);
+          firstRecipeHistory = RecipeHistory.create(clock, userId, firstRecipeId);
+          repository.save(firstRecipeHistory);
 
           // 두 번째는 더 최근 시간으로 설정
           LocalDateTime secondTime = LocalDateTime.of(2024, 1, 1, 11, 0, 0);
           when(clock.now()).thenReturn(secondTime);
-          secondRecipeViewStatus = RecipeViewStatus.create(clock, userId, secondRecipeId);
-          repository.save(secondRecipeViewStatus);
+          secondRecipeHistory = RecipeHistory.create(clock, userId, secondRecipeId);
+          repository.save(secondRecipeHistory);
         }
 
         @Test
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들을 반환해야 한다")
-        void thenShouldReturnRecentRecipeViewStatusesByUserId() {
-          Pageable pageable = PageRequest.of(0, 10, ViewStatusSort.VIEWED_AT_DESC);
-          Page<RecipeViewStatus> page =
+        void thenShouldReturnRecentRecipeHistoryesByUserId() {
+          Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+          Page<RecipeHistory> page =
               repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
-          List<RecipeViewStatus> statuses = page.getContent();
+          List<RecipeHistory> statuses = page.getContent();
 
           assertThat(statuses).hasSize(2);
           assertThat(statuses.get(0).getUserId()).isEqualTo(userId);
 
           // 더 최근 것(11시)이 먼저 나와야 함
-          assertThat(statuses.get(0).getRecipeId()).isEqualTo(secondRecipeViewStatus.getRecipeId());
-          assertThat(statuses.get(1).getRecipeId()).isEqualTo(firstRecipeViewStatus.getRecipeId());
+          assertThat(statuses.get(0).getRecipeId()).isEqualTo(secondRecipeHistory.getRecipeId());
+          assertThat(statuses.get(1).getRecipeId()).isEqualTo(firstRecipeHistory.getRecipeId());
 
           // 시간 검증 - 첫 번째가 더 최근이어야 함
           assertThat(statuses.get(0).getViewedAt()).isAfter(statuses.get(1).getViewedAt());
@@ -451,16 +450,16 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
       @Nested
       @DisplayName("When - 사용자의 10개의 최근 조회 레시피를 가져온다면")
-      class WhenFindinTengRecentRecipeViewStatusesByUserId {
+      class WhenFindinTengRecentRecipeHistoryesByUserId {
 
         private List<UUID> recipeIds;
-        private List<RecipeViewStatus> recipeViewStatuses;
+        private List<RecipeHistory> recipeHistories;
         private LocalDateTime baseTime;
 
         @BeforeEach
         void beforeEach() {
           recipeIds = new ArrayList<>();
-          recipeViewStatuses = new ArrayList<>();
+          recipeHistories = new ArrayList<>();
           baseTime = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
 
           // 20개의 레시피 조회 상태 생성 (시간 순서대로)
@@ -472,20 +471,20 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
             LocalDateTime viewTime = baseTime.plusMinutes(i);
             when(clock.now()).thenReturn(viewTime);
 
-            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-            recipeViewStatuses.add(viewStatus);
+            RecipeHistory viewStatus = RecipeHistory.create(clock, userId, recipeId);
+            recipeHistories.add(viewStatus);
             repository.save(viewStatus);
           }
         }
 
         @Test
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들을 반환해야 한다")
-        void thenShouldReturnRecentRecipeViewStatusesByUserId() {
+        void thenShouldReturnRecentRecipeHistoryesByUserId() {
           // Given
-          Pageable pageable = PageRequest.of(0, 10, ViewStatusSort.VIEWED_AT_DESC);
+          Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
 
           // When
-          Page<RecipeViewStatus> statusPage =
+          Page<RecipeHistory> statusPage =
               repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
 
           // Then
@@ -495,7 +494,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           assertThat(statusPage.getSize()).isEqualTo(10); // 페이지 크기
           assertThat(statusPage.getTotalPages()).isEqualTo(2); // 총 페이지 수
 
-          List<RecipeViewStatus> statuses = statusPage.getContent();
+          List<RecipeHistory> statuses = statusPage.getContent();
           assertThat(statuses.get(0).getUserId()).isEqualTo(userId);
 
           // 가장 최근 것(19번 인덱스)이 첫 번째로 나와야 함
@@ -512,10 +511,10 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @DisplayName("Then - 페이지네이션이 올바르게 적용되어야 한다")
         void thenShouldApplyPaginationCorrectly() {
           // Given - 첫 번째 페이지 (페이지 크기 10)
-          Pageable firstPageable = PageRequest.of(0, 10, ViewStatusSort.VIEWED_AT_DESC);
+          Pageable firstPageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
 
           // When
-          Page<RecipeViewStatus> firstPage =
+          Page<RecipeHistory> firstPage =
               repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, firstPageable);
 
           // Then
@@ -527,16 +526,16 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           assertThat(firstPage.hasPrevious()).isFalse();
 
           // 가장 최근 10개가 첫 페이지에 나와야 함 (인덱스 19~10)
-          List<RecipeViewStatus> firstPageContent = firstPage.getContent();
+          List<RecipeHistory> firstPageContent = firstPage.getContent();
           assertThat(firstPageContent.get(0).getRecipeId()).isEqualTo(recipeIds.get(19)); // 가장 최근
           assertThat(firstPageContent.get(9).getRecipeId())
               .isEqualTo(recipeIds.get(10)); // 10번째로 최근
 
           // Given - 두 번째 페이지
-          Pageable secondPageable = PageRequest.of(1, 10, ViewStatusSort.VIEWED_AT_DESC);
+          Pageable secondPageable = PageRequest.of(1, 10, HistorySort.VIEWED_AT_DESC);
 
           // When
-          Page<RecipeViewStatus> secondPage =
+          Page<RecipeHistory> secondPage =
               repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, secondPageable);
 
           // Then
@@ -548,7 +547,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           assertThat(secondPage.hasPrevious()).isTrue();
 
           // 나머지 10개가 두 번째 페이지에 나와야 함 (인덱스 9~0)
-          List<RecipeViewStatus> secondPageContent = secondPage.getContent();
+          List<RecipeHistory> secondPageContent = secondPage.getContent();
           assertThat(secondPageContent.get(0).getRecipeId())
               .isEqualTo(recipeIds.get(9)); // 11번째로 최근
           assertThat(secondPageContent.get(9).getRecipeId()).isEqualTo(recipeIds.get(0)); // 가장 오래된
@@ -559,10 +558,10 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         void thenShouldReturnCorrectPageInfoForEmptyResult() {
           // Given
           UUID nonExistentUserId = UUID.randomUUID();
-          Pageable pageable = PageRequest.of(0, 10, ViewStatusSort.VIEWED_AT_DESC);
+          Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
 
           // When
-          Page<RecipeViewStatus> emptyPage =
+          Page<RecipeHistory> emptyPage =
               repository.findByUserIdAndStatus(nonExistentUserId, RecipeViewState.ACTIVE, pageable);
 
           // Then
@@ -578,10 +577,10 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
         @DisplayName("Then - 페이지 크기를 5로 설정했을 때 올바르게 동작해야 한다")
         void thenShouldWorkCorrectlyWithPageSizeFive() {
           // Given
-          Pageable pageable = PageRequest.of(0, 5, ViewStatusSort.VIEWED_AT_DESC);
+          Pageable pageable = PageRequest.of(0, 5, HistorySort.VIEWED_AT_DESC);
 
           // When
-          Page<RecipeViewStatus> page =
+          Page<RecipeHistory> page =
               repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
 
           // Then
@@ -591,7 +590,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           assertThat(page.hasNext()).isTrue();
 
           // 가장 최근 5개가 나와야 함 (인덱스 19~15)
-          List<RecipeViewStatus> content = page.getContent();
+          List<RecipeHistory> content = page.getContent();
           assertThat(content.get(0).getRecipeId()).isEqualTo(recipeIds.get(19));
           assertThat(content.get(4).getRecipeId()).isEqualTo(recipeIds.get(15));
         }
@@ -600,11 +599,11 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
     @Nested
     @DisplayName("카테고리별 레시피 조회 상태 개수 조회")
-    class CountRecipeViewStatusesByCategories {
+    class CountRecipeHistoryesByCategories {
 
       @Nested
       @DisplayName("Given - 여러 카테고리에 속한 레시피 조회 상태들이 존재할 때")
-      class GivenRecipeViewStatusesInMultipleCategories {
+      class GivenRecipeHistoryesInMultipleCategories {
 
         private UUID userId;
         private UUID categoryId1;
@@ -624,15 +623,14 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("When - 카테고리별 레시피 조회 상태 개수를 조회한다면")
-        class WhenCountingRecipeViewStatusesByCategories {
+        class WhenCountingRecipeHistoryesByCategories {
 
           @BeforeEach
           void beforeEach() {
             IntStream.range(0, 3)
                 .mapToObj(
                     i -> {
-                      RecipeViewStatus status =
-                          RecipeViewStatus.create(clock, userId, UUID.randomUUID());
+                      RecipeHistory status = RecipeHistory.create(clock, userId, UUID.randomUUID());
                       status.updateRecipeCategoryId(categoryId1);
                       return status;
                     })
@@ -641,8 +639,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
             IntStream.range(0, 2)
                 .mapToObj(
                     i -> {
-                      RecipeViewStatus status =
-                          RecipeViewStatus.create(clock, userId, UUID.randomUUID());
+                      RecipeHistory status = RecipeHistory.create(clock, userId, UUID.randomUUID());
                       status.updateRecipeCategoryId(categoryId2);
                       return status;
                     })
@@ -651,8 +648,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
             IntStream.range(0, 3)
                 .mapToObj(
                     i -> {
-                      RecipeViewStatus status =
-                          RecipeViewStatus.create(clock, userId, UUID.randomUUID());
+                      RecipeHistory status = RecipeHistory.create(clock, userId, UUID.randomUUID());
                       status.updateRecipeCategoryId(categoryId3);
                       status.delete();
                       repository.save(status);
@@ -664,19 +660,19 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 각 카테고리별 정확한 개수를 반환해야 한다")
           void thenShouldReturnCorrectCountsForEachCategory() {
-            List<RecipeViewStatusCountProjection> counts =
+            List<RecipeHistoryCountProjection> counts =
                 repository.countByCategoryIdsAndStatus(categoryIds, RecipeViewState.ACTIVE);
 
             assertThat(counts.size()).isEqualTo(2);
 
-            RecipeViewStatusCountProjection count1 =
+            RecipeHistoryCountProjection count1 =
                 counts.stream()
                     .filter(c -> c.getCategoryId().equals(categoryId1))
                     .findFirst()
                     .orElseThrow();
             assertThat(count1.getCount()).isEqualTo(3);
 
-            RecipeViewStatusCountProjection count2 =
+            RecipeHistoryCountProjection count2 =
                 counts.stream()
                     .filter(c -> c.getCategoryId().equals(categoryId2))
                     .findFirst()
@@ -703,12 +699,12 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("When - 카테고리별 레시피 조회 상태 개수를 조회한다면")
-        class WhenCountingRecipeViewStatusesByNonExistentCategories {
+        class WhenCountingRecipeHistoryesByNonExistentCategories {
 
           @Test
           @DisplayName("Then - 빈 결과를 반환해야 한다")
           void thenShouldReturnEmpty() {
-            List<RecipeViewStatusCountProjection> counts =
+            List<RecipeHistoryCountProjection> counts =
                 repository.countByCategoryIdsAndStatus(
                     nonExistentCategoryIds, RecipeViewState.ACTIVE);
             assertThat(counts.size()).isEqualTo(0);
@@ -722,12 +718,12 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("When - 카테고리별 레시피 조회 상태 개수를 조회한다면")
-        class WhenCountingRecipeViewStatusesByEmptyCategories {
+        class WhenCountingRecipeHistoryesByEmptyCategories {
 
           @Test
           @DisplayName("Then - 빈 결과를 반환해야 한다")
           void thenShouldReturnEmpty() {
-            List<RecipeViewStatusCountProjection> counts =
+            List<RecipeHistoryCountProjection> counts =
                 repository.countByCategoryIdsAndStatus(List.of(), RecipeViewState.ACTIVE);
             assertThat(counts.size()).isEqualTo(0);
           }
@@ -737,7 +733,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
     @Nested
     @DisplayName("사용자의 레시피 조회 상태 목록 조회")
-    class FindRecipeViewStatusesByRecipeIdsAndUserId {
+    class FindRecipeHistoryesByRecipeIdsAndUserId {
 
       @Nested
       @DisplayName("Given - 유효한 레시피 ID 목록과 사용자 ID가 주어졌을 때")
@@ -756,19 +752,19 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           for (int i = 0; i < 3; i++) {
             UUID recipeId = UUID.randomUUID();
             recipeIds.add(recipeId);
-            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+            RecipeHistory viewStatus = RecipeHistory.create(clock, userId, recipeId);
             repository.save(viewStatus);
           }
         }
 
         @Nested
         @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
-        class WhenFindingRecipeViewStatusesByRecipeIdsAndUserId {
+        class WhenFindingRecipeHistoryesByRecipeIdsAndUserId {
 
           @Test
           @DisplayName("Then - 해당 레시피 조회 상태 목록을 반환해야 한다")
-          void thenShouldReturnRecipeViewStatusList() {
-            List<RecipeViewStatus> statuses =
+          void thenShouldReturnRecipeHistoryList() {
+            List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
                     recipeIds, userId, RecipeViewState.ACTIVE);
 
@@ -802,7 +798,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
             if (i < 3) {
               viewedRecipeIds.add(recipeId);
-              RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+              RecipeHistory viewStatus = RecipeHistory.create(clock, userId, recipeId);
               repository.save(viewStatus);
             }
           }
@@ -815,7 +811,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 조회한 레시피만 반환해야 한다")
           void thenShouldReturnOnlyViewedRecipes() {
-            List<RecipeViewStatus> statuses =
+            List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
                     allRecipeIds, userId, RecipeViewState.ACTIVE);
 
@@ -844,32 +840,32 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           for (int i = 0; i < 3; i++) {
             UUID recipeId = UUID.randomUUID();
             recipeIds.add(recipeId);
-            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId1, recipeId);
+            RecipeHistory viewStatus = RecipeHistory.create(clock, userId1, recipeId);
             repository.save(viewStatus);
           }
 
           // userId2도 같은 레시피 조회
           for (UUID recipeId : recipeIds) {
-            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId2, recipeId);
+            RecipeHistory viewStatus = RecipeHistory.create(clock, userId2, recipeId);
             repository.save(viewStatus);
           }
         }
 
         @Nested
         @DisplayName("When - 특정 사용자의 레시피 조회 상태를 조회한다면")
-        class WhenFindingSpecificUserRecipeViewStatuses {
+        class WhenFindingSpecificUserRecipeHistoryes {
 
           @Test
           @DisplayName("Then - 해당 사용자의 조회 상태만 반환해야 한다")
           void thenShouldReturnOnlySpecificUserStatuses() {
-            List<RecipeViewStatus> user1Statuses =
+            List<RecipeHistory> user1Statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
                     recipeIds, userId1, RecipeViewState.ACTIVE);
 
             assertThat(user1Statuses).hasSize(3);
             assertThat(user1Statuses).allMatch(status -> status.getUserId().equals(userId1));
 
-            List<RecipeViewStatus> user2Statuses =
+            List<RecipeHistory> user2Statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
                     recipeIds, userId2, RecipeViewState.ACTIVE);
 
@@ -896,7 +892,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           for (int i = 0; i < 3; i++) {
             UUID recipeId = UUID.randomUUID();
             recipeIds.add(recipeId);
-            RecipeViewStatus viewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+            RecipeHistory viewStatus = RecipeHistory.create(clock, userId, recipeId);
 
             if (i == 1) {
               viewStatus.delete();
@@ -912,7 +908,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 삭제되지 않은 조회 상태만 반환해야 한다")
           void thenShouldReturnOnlyActiveStatuses() {
-            List<RecipeViewStatus> statuses =
+            List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
                     recipeIds, userId, RecipeViewState.ACTIVE);
 
@@ -935,12 +931,12 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("When - 레시피 조회 상태를 조회한다면")
-        class WhenFindingRecipeViewStatuses {
+        class WhenFindingRecipeHistoryes {
 
           @Test
           @DisplayName("Then - 빈 목록을 반환해야 한다")
           void thenShouldReturnEmptyList() {
-            List<RecipeViewStatus> statuses =
+            List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
                     List.of(), userId, RecipeViewState.ACTIVE);
 
@@ -964,12 +960,12 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("When - 레시피 조회 상태를 조회한다면")
-        class WhenFindingRecipeViewStatuses {
+        class WhenFindingRecipeHistoryes {
 
           @Test
           @DisplayName("Then - 빈 목록을 반환해야 한다")
           void thenShouldReturnEmptyList() {
-            List<RecipeViewStatus> statuses =
+            List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
                     nonExistentRecipeIds, userId, RecipeViewState.ACTIVE);
 
@@ -981,7 +977,7 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
     @Nested
     @DisplayName("레시피 조회 상태 삭제")
-    class DeleteRecipeViewStatus {
+    class DeleteRecipeHistory {
 
       @Nested
       @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
@@ -999,20 +995,20 @@ public class RecipeViewStatusRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("When - 레시피 조회 상태를 삭제한다면")
-        class WhenDeletingRecipeViewStatus {
+        class WhenDeletingRecipeHistory {
 
-          private RecipeViewStatus recipeViewStatus;
+          private RecipeHistory recipeHistory;
 
           @BeforeEach
           void beforeEach() {
-            recipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-            repository.save(recipeViewStatus);
-            repository.delete(recipeViewStatus);
+            recipeHistory = RecipeHistory.create(clock, userId, recipeId);
+            repository.save(recipeHistory);
+            repository.delete(recipeHistory);
           }
 
           @Test
           @DisplayName("Then - 해당 레시피 조회 상태가 삭제되어야 한다")
-          void thenShouldDeleteRecipeViewStatus() {
+          void thenShouldDeleteRecipeHistory() {
             assertThat(
                     repository.findByRecipeIdAndUserIdAndStatus(
                         recipeId, userId, RecipeViewState.ACTIVE))

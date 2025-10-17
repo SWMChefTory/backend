@@ -8,17 +8,15 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 
-public record CategorizedRecipesResponse(
-    @JsonProperty("categorized_recipes") List<CategorizedRecipe> categorizedRecipes,
+public record RecipeHistoryResponse(
+    @JsonProperty("unCategorized_recipes") List<RecipeHistory> categorizedRecipes,
     @JsonProperty("current_page") int currentPage,
     @JsonProperty("total_pages") int totalPages,
     @JsonProperty("total_elements") long totalElements,
     @JsonProperty("has_next") boolean hasNext) {
-  public static CategorizedRecipesResponse from(Page<RecipeRecord> categorizedRecipes) {
-
-    List<CategorizedRecipe> responses =
-        categorizedRecipes.stream().map(CategorizedRecipe::from).toList();
-    return new CategorizedRecipesResponse(
+  public static RecipeHistoryResponse from(Page<RecipeRecord> categorizedRecipes) {
+    List<RecipeHistory> responses = categorizedRecipes.stream().map(RecipeHistory::from).toList();
+    return new RecipeHistoryResponse(
         responses,
         categorizedRecipes.getNumber(),
         categorizedRecipes.getTotalPages(),
@@ -26,7 +24,7 @@ public record CategorizedRecipesResponse(
         categorizedRecipes.hasNext());
   }
 
-  private record CategorizedRecipe(
+  private record RecipeHistory(
       @JsonProperty("viewed_at") LocalDateTime viewedAt,
       @JsonProperty("last_play_seconds") Integer lastPlaySeconds,
       @JsonProperty("recipe_id") UUID recipeId,
@@ -34,14 +32,13 @@ public record CategorizedRecipesResponse(
       @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
       @JsonProperty("video_id") String videoId,
       @JsonProperty("video_seconds") Integer videoSeconds,
-      @JsonProperty("category_id") UUID categoryId,
       @JsonProperty("description") String description,
       @JsonProperty("cook_time") Integer cookTime,
       @JsonProperty("servings") Integer servings,
       @JsonProperty("created_at") LocalDateTime createdAt,
       @JsonProperty("tags") List<Tag> tags) {
-    public static CategorizedRecipe from(RecipeRecord info) {
-      return new CategorizedRecipe(
+    public static RecipeHistory from(RecipeRecord info) {
+      return new RecipeHistory(
           info.getRecipeHistory().getViewedAt(),
           info.getRecipeHistory().getLastPlaySeconds(),
           info.getRecipe().getId(),
@@ -49,7 +46,6 @@ public record CategorizedRecipesResponse(
           info.getYoutubeMeta().getThumbnailUrl(),
           info.getYoutubeMeta().getVideoId(),
           info.getYoutubeMeta().getVideoSeconds(),
-          info.getRecipeHistory().getRecipeCategoryId(),
           info.getDetailMeta() != null ? info.getDetailMeta().getDescription() : null,
           info.getDetailMeta() != null ? info.getDetailMeta().getCookTime() : null,
           info.getDetailMeta() != null ? info.getDetailMeta().getServings() : null,

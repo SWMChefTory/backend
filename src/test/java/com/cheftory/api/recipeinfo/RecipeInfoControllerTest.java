@@ -26,12 +26,13 @@ import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.category.RecipeCategory;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.history.RecipeHistory;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
 import com.cheftory.api.recipeinfo.model.CountRecipeCategory;
 import com.cheftory.api.recipeinfo.model.FullRecipeInfo;
-import com.cheftory.api.recipeinfo.model.RecipeHistory;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
+import com.cheftory.api.recipeinfo.model.RecipeRecord;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressStep;
@@ -39,7 +40,6 @@ import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
@@ -153,11 +153,11 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       @DisplayName("When - 레시피 최근 기록을 조회한다면")
       class WhenRequestingRecentRecipes {
 
-        private Page<RecipeHistory> recentRecipes;
-        private RecipeHistory recentRecipe;
+        private Page<RecipeRecord> recentRecipes;
+        private RecipeRecord recentRecipe;
         private Recipe recipe;
         private RecipeYoutubeMeta meta;
-        private RecipeViewStatus viewStatus;
+        private RecipeHistory viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -165,15 +165,15 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         @BeforeEach
         void setUp() {
           recipeId = UUID.randomUUID();
-          recentRecipe = mock(RecipeHistory.class);
+          recentRecipe = mock(RecipeRecord.class);
           recipe = mock(Recipe.class);
           meta = mock(RecipeYoutubeMeta.class);
-          viewStatus = mock(RecipeViewStatus.class);
+          viewStatus = mock(RecipeHistory.class);
           page = 0;
           pageable = Pageable.ofSize(10);
 
           doReturn(recipe).when(recentRecipe).getRecipe();
-          doReturn(viewStatus).when(recentRecipe).getRecipeViewStatus();
+          doReturn(viewStatus).when(recentRecipe).getRecipeHistory();
           doReturn(meta).when(recentRecipe).getYoutubeMeta();
 
           doReturn(recipeId).when(recipe).getId();
@@ -336,7 +336,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         private FullRecipeInfo fullRecipe;
         private RecipeYoutubeMeta youtubeMeta;
         private List<RecipeIngredient> ingredients;
-        private RecipeViewStatus viewStatus;
+        private RecipeHistory viewStatus;
         private List<RecipeStep> recipeSteps;
         private RecipeDetailMeta detailMeta;
         private List<RecipeTag> tags;
@@ -351,7 +351,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           fullRecipe = mock(FullRecipeInfo.class);
           recipe = mock(Recipe.class);
           youtubeMeta = mock(RecipeYoutubeMeta.class);
-          viewStatus = mock(RecipeViewStatus.class);
+          viewStatus = mock(RecipeHistory.class);
 
           doReturn(RecipeStatus.SUCCESS).when(recipe).getRecipeStatus();
           doReturn(recipe).when(fullRecipe).getRecipe();
@@ -401,7 +401,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(youtubeMeta).when(fullRecipe).getRecipeYoutubeMeta();
           doReturn(ingredients).when(fullRecipe).getRecipeIngredients();
           doReturn(recipeSteps).when(fullRecipe).getRecipeSteps();
-          doReturn(viewStatus).when(fullRecipe).getRecipeViewStatus();
+          doReturn(viewStatus).when(fullRecipe).getRecipeHistory();
           doReturn(detailMeta).when(fullRecipe).getRecipeDetailMeta();
           doReturn(tags).when(fullRecipe).getRecipeTags();
           doReturn(progresses).when(fullRecipe).getRecipeProgresses();
@@ -779,13 +779,13 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       @DisplayName("When - 카테고리별 레시피를 조회한다면")
       class WhenRequestingCategorizedRecipes {
 
-        private Page<RecipeHistory> categorizedRecipes;
-        private RecipeHistory categorizedRecipe;
+        private Page<RecipeRecord> categorizedRecipes;
+        private RecipeRecord categorizedRecipe;
         private Recipe recipe;
         private RecipeYoutubeMeta youtubeMeta;
         private RecipeDetailMeta recipeDetailMeta;
         private List<RecipeTag> tags;
-        private RecipeViewStatus viewStatus;
+        private RecipeHistory viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -795,14 +795,14 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           recipeId = UUID.randomUUID();
           page = 0;
           pageable = Pageable.ofSize(10);
-          categorizedRecipe = mock(RecipeHistory.class);
+          categorizedRecipe = mock(RecipeRecord.class);
           recipe = mock(Recipe.class);
           youtubeMeta = mock(RecipeYoutubeMeta.class);
           recipeDetailMeta = mock(RecipeDetailMeta.class);
-          viewStatus = mock(RecipeViewStatus.class);
+          viewStatus = mock(RecipeHistory.class);
 
           doReturn(recipe).when(categorizedRecipe).getRecipe();
-          doReturn(viewStatus).when(categorizedRecipe).getRecipeViewStatus();
+          doReturn(viewStatus).when(categorizedRecipe).getRecipeHistory();
           doReturn(youtubeMeta).when(categorizedRecipe).getYoutubeMeta();
           doReturn(recipeDetailMeta).when(categorizedRecipe).getDetailMeta();
 
@@ -1083,7 +1083,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         void setUp() {
           page = 0;
           pageable = Pageable.ofSize(10);
-          doReturn(new PageImpl<RecipeHistory>(List.of(), pageable, 0))
+          doReturn(new PageImpl<RecipeRecord>(List.of(), pageable, 0))
               .when(recipeInfoService)
               .getCategorized(userId, categoryId, page);
         }
@@ -1128,13 +1128,13 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       @DisplayName("When - 미분류 레시피를 조회한다면")
       class WhenRequestingUnCategorizedRecipes {
 
-        private Page<RecipeHistory> unCategorizedRecipes;
-        private RecipeHistory unCategorizedRecipe;
+        private Page<RecipeRecord> unCategorizedRecipes;
+        private RecipeRecord unCategorizedRecipe;
         private Recipe recipe;
         private RecipeYoutubeMeta youtubeMeta;
         private RecipeDetailMeta detailMeta;
         private List<RecipeTag> tags;
-        private RecipeViewStatus viewStatus;
+        private RecipeHistory viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -1144,17 +1144,17 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           recipeId = UUID.randomUUID();
           page = 0;
           pageable = Pageable.ofSize(10);
-          unCategorizedRecipe = mock(RecipeHistory.class);
+          unCategorizedRecipe = mock(RecipeRecord.class);
           recipe = mock(Recipe.class);
           youtubeMeta = mock(RecipeYoutubeMeta.class);
           detailMeta = mock(RecipeDetailMeta.class);
           RecipeTag tag = mock(RecipeTag.class);
           doReturn("한식").when(tag).getTag();
           tags = List.of(tag);
-          viewStatus = mock(RecipeViewStatus.class);
+          viewStatus = mock(RecipeHistory.class);
 
           doReturn(recipe).when(unCategorizedRecipe).getRecipe();
-          doReturn(viewStatus).when(unCategorizedRecipe).getRecipeViewStatus();
+          doReturn(viewStatus).when(unCategorizedRecipe).getRecipeHistory();
           doReturn(youtubeMeta).when(unCategorizedRecipe).getYoutubeMeta();
           doReturn(detailMeta).when(unCategorizedRecipe).getDetailMeta();
           doReturn(tags).when(unCategorizedRecipe).getTags();
@@ -1425,7 +1425,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         void setUp() {
           page = 0;
           pageable = Pageable.ofSize(10);
-          doReturn(new PageImpl<RecipeHistory>(List.of(), pageable, 0))
+          doReturn(new PageImpl<RecipeRecord>(List.of(), pageable, 0))
               .when(recipeInfoService)
               .getUnCategorized(userId, page);
         }

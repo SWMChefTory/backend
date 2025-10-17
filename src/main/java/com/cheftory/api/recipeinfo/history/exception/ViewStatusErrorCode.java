@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.viewstatus.exception;
+package com.cheftory.api.recipeinfo.history.exception;
 
 import com.cheftory.api.exception.ErrorMessage;
 

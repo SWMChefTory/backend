@@ -2,12 +2,12 @@ package com.cheftory.api.recipeinfo.model;
 
 import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.history.RecipeHistory;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import jakarta.annotation.Nullable;
 import java.util.List;
@@ -22,7 +22,7 @@ public class FullRecipeInfo {
   @Nullable private RecipeDetailMeta recipeDetailMeta;
   private List<RecipeStep> recipeSteps;
   private List<RecipeProgress> recipeProgresses;
-  private RecipeViewStatus recipeViewStatus;
+  private RecipeHistory recipeHistory;
   private RecipeYoutubeMeta recipeYoutubeMeta;
   private Recipe recipe;
   private List<RecipeBriefing> recipeBriefings;
@@ -34,7 +34,7 @@ public class FullRecipeInfo {
       List<RecipeProgress> recipeProgresses,
       List<RecipeTag> recipeTags,
       RecipeYoutubeMeta recipeYoutubeMeta,
-      RecipeViewStatus recipeViewStatus,
+      RecipeHistory recipeHistory,
       Recipe recipe,
       List<RecipeBriefing> recipeBriefings) {
     return FullRecipeInfo.builder()
@@ -44,7 +44,7 @@ public class FullRecipeInfo {
         .recipeDetailMeta(recipeDetailMeta)
         .recipeSteps(recipeSteps)
         .recipeProgresses(recipeProgresses)
-        .recipeViewStatus(recipeViewStatus)
+        .recipeHistory(recipeHistory)
         .recipe(recipe)
         .recipeBriefings(recipeBriefings)
         .build();

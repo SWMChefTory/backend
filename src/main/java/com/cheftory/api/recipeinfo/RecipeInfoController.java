@@ -10,10 +10,11 @@ import com.cheftory.api.recipeinfo.model.FullRecipeResponse;
 import com.cheftory.api.recipeinfo.model.RecentRecipesResponse;
 import com.cheftory.api.recipeinfo.model.RecipeCreateRequest;
 import com.cheftory.api.recipeinfo.model.RecipeCreateResponse;
-import com.cheftory.api.recipeinfo.model.RecipeHistory;
+import com.cheftory.api.recipeinfo.model.RecipeHistoryResponse;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressResponse;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
+import com.cheftory.api.recipeinfo.model.RecipeRecord;
 import com.cheftory.api.recipeinfo.model.RecommendRecipesResponse;
 import com.cheftory.api.recipeinfo.model.SearchedRecipesResponse;
 import com.cheftory.api.recipeinfo.model.UnCategorizedRecipesResponse;
@@ -54,7 +55,7 @@ public class RecipeInfoController {
   @GetMapping("/recent")
   public RecentRecipesResponse getRecentInfos(
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistory> infos = recipeInfoService.getRecents(userId, page);
+    Page<RecipeRecord> infos = recipeInfoService.getRecents(userId, page);
     return RecentRecipesResponse.from(infos);
   }
 
@@ -70,15 +71,22 @@ public class RecipeInfoController {
       @PathVariable("recipeCategoryId") UUID categoryId,
       @UserPrincipal UUID userId,
       @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistory> infos = recipeInfoService.getCategorized(userId, categoryId, page);
+    Page<RecipeRecord> infos = recipeInfoService.getCategorized(userId, categoryId, page);
     return CategorizedRecipesResponse.from(infos);
   }
 
   @GetMapping("/uncategorized")
   public UnCategorizedRecipesResponse getUnCategorizedRecipes(
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistory> infos = recipeInfoService.getUnCategorized(userId, page);
+    Page<RecipeRecord> infos = recipeInfoService.getUnCategorized(userId, page);
     return UnCategorizedRecipesResponse.from(infos);
+  }
+
+  @GetMapping("/histories")
+  public RecipeHistoryResponse getRecipeHistories(
+      @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
+    Page<RecipeRecord> infos = recipeInfoService.getHistories(userId, page);
+    return RecipeHistoryResponse.from(infos);
   }
 
   @DeleteMapping("/categories/{recipeCategoryId}")

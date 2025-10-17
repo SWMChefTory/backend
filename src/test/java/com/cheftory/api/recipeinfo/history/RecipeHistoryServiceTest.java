@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.viewstatus;
+package com.cheftory.api.recipeinfo.history;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,9 +11,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.history.exception.ViewStatusErrorCode;
+import com.cheftory.api.recipeinfo.history.exception.ViewStatusException;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
-import com.cheftory.api.recipeinfo.viewstatus.exception.ViewStatusErrorCode;
-import com.cheftory.api.recipeinfo.viewstatus.exception.ViewStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,23 +27,23 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-@DisplayName("RecipeViewStatusService Tests")
-public class RecipeViewStatusServiceTest {
+@DisplayName("RecipeHistoryService Tests")
+public class RecipeHistoryServiceTest {
 
-  private RecipeViewStatusRepository repository;
-  private RecipeViewStatusService service;
+  private RecipeHistoryRepository repository;
+  private RecipeHistoryService service;
   private Clock clock;
 
   @BeforeEach
   void setUp() {
-    repository = mock(RecipeViewStatusRepository.class);
+    repository = mock(RecipeHistoryRepository.class);
     clock = mock(Clock.class);
-    service = new RecipeViewStatusService(repository, clock);
+    service = new RecipeHistoryService(repository, clock);
   }
 
   @Nested
   @DisplayName("레시피 조회 상태 생성")
-  class CreateRecipeViewStatus {
+  class CreateRecipeHistory {
 
     @Nested
     @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
@@ -63,7 +63,7 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태를 생성한다면")
-      class WhenCreatingRecipeViewStatus {
+      class WhenCreatingRecipeHistory {
 
         @BeforeEach
         void beforeEach() {
@@ -82,16 +82,16 @@ public class RecipeViewStatusServiceTest {
           verify(repository)
               .save(
                   argThat(
-                      recipeViewStatus ->
-                          recipeViewStatus.getRecipeId().equals(recipeId)
-                              && recipeViewStatus.getUserId().equals(userId)));
+                      RecipeHistory ->
+                          RecipeHistory.getRecipeId().equals(recipeId)
+                              && RecipeHistory.getUserId().equals(userId)));
         }
       }
     }
 
     @Nested
     @DisplayName("Given - 이미 조회한 레시피 상태가 있을 때")
-    class GivenExistingRecipeViewStatus {
+    class GivenExistingRecipeHistory {
 
       private UUID recipeId;
       private UUID userId;
@@ -104,7 +104,7 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태를 생성한다면")
-      class WhenCreatingExistingRecipeViewStatus {
+      class WhenCreatingExistingRecipeHistory {
 
         @BeforeEach
         void beforeEach() {
@@ -118,7 +118,7 @@ public class RecipeViewStatusServiceTest {
         public void thenShouldNotDoAnything() {
           service.create(userId, recipeId);
 
-          verify(repository, never()).save(any(RecipeViewStatus.class));
+          verify(repository, never()).save(any(RecipeHistory.class));
         }
       }
     }
@@ -126,7 +126,7 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 조회")
-  class FindRecipeViewStatus {
+  class FindRecipeHistory {
 
     @Nested
     @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
@@ -147,27 +147,27 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태를 조회한다면")
-      class WhenFindingRecipeViewStatus {
+      class WhenFindingRecipeHistory {
 
-        private RecipeViewStatus realRecipeViewStatus;
+        private RecipeHistory realRecipeHistory;
 
         @BeforeEach
         void beforeEach() {
           doReturn(initialTime).when(clock).now();
-          realRecipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
+          realRecipeHistory = RecipeHistory.create(clock, userId, recipeId);
 
           doReturn(updateTime).when(clock).now();
 
-          doReturn(Optional.of(realRecipeViewStatus))
+          doReturn(Optional.of(realRecipeHistory))
               .when(repository)
               .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
-          doReturn(realRecipeViewStatus).when(repository).save(any(RecipeViewStatus.class));
+          doReturn(realRecipeHistory).when(repository).save(any(RecipeHistory.class));
         }
 
         @Test
         @DisplayName("Then - 올바른 레시피 조회 상태가 반환되어야 한다")
-        public void thenShouldReturnCorrectRecipeViewStatus() {
-          RecipeViewStatus status = service.get(userId, recipeId);
+        public void thenShouldReturnCorrectRecipeHistory() {
+          RecipeHistory status = service.get(userId, recipeId);
 
           assertThat(status).isNotNull();
           assertThat(status.getRecipeId()).isEqualTo(recipeId);
@@ -176,7 +176,7 @@ public class RecipeViewStatusServiceTest {
 
           verify(repository)
               .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
-          verify(repository).save(realRecipeViewStatus);
+          verify(repository).save(realRecipeHistory);
         }
       }
     }
@@ -196,7 +196,7 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태를 조회한다면")
-      class WhenFindingNonExistentRecipeViewStatus {
+      class WhenFindingNonExistentRecipeHistory {
 
         @BeforeEach
         void beforeEach() {
@@ -225,7 +225,7 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 카테고리 변경")
-  class ChangeRecipeViewStatusCategory {
+  class ChangeRecipeHistoryCategory {
 
     @Nested
     @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
@@ -244,17 +244,17 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태의 카테고리를 변경한다면")
-      class WhenChangingRecipeViewStatusCategory {
+      class WhenChangingRecipeHistoryCategory {
 
-        private RecipeViewStatus realRecipeViewStatus;
+        private RecipeHistory realRecipeHistory;
 
         @BeforeEach
         void beforeEach() {
-          realRecipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-          doReturn(Optional.of(realRecipeViewStatus))
+          realRecipeHistory = RecipeHistory.create(clock, userId, recipeId);
+          doReturn(Optional.of(realRecipeHistory))
               .when(repository)
               .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
-          doReturn(realRecipeViewStatus).when(repository).save(any(RecipeViewStatus.class));
+          doReturn(realRecipeHistory).when(repository).save(any(RecipeHistory.class));
         }
 
         @Test
@@ -262,14 +262,14 @@ public class RecipeViewStatusServiceTest {
         public void thenShouldChangeCategoryCorrectly() {
           service.updateCategory(userId, recipeId, newCategoryId);
 
-          assertThat(realRecipeViewStatus.getRecipeCategoryId()).isEqualTo(newCategoryId);
+          assertThat(realRecipeHistory.getRecipeCategoryId()).isEqualTo(newCategoryId);
           verify(repository)
               .save(
                   argThat(
-                      recipeViewStatus ->
-                          recipeViewStatus.getRecipeId().equals(recipeId)
-                              && recipeViewStatus.getUserId().equals(userId)
-                              && recipeViewStatus.getRecipeCategoryId().equals(newCategoryId)));
+                      RecipeHistory ->
+                          RecipeHistory.getRecipeId().equals(recipeId)
+                              && RecipeHistory.getUserId().equals(userId)
+                              && RecipeHistory.getRecipeCategoryId().equals(newCategoryId)));
         }
       }
     }
@@ -291,7 +291,7 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태의 카테고리를 변경한다면")
-      class WhenChangingNonExistentRecipeViewStatusCategory {
+      class WhenChangingNonExistentRecipeHistoryCategory {
 
         @BeforeEach
         void beforeEach() {
@@ -320,7 +320,7 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 카테고리 삭제")
-  class DeleteRecipeViewStatusCategory {
+  class DeleteRecipeHistoryCategory {
 
     @Nested
     @DisplayName("Given - 삭제할 카테고리 ID가 주어졌을 때")
@@ -338,19 +338,17 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 해당 카테고리를 가진 레시피 조회 상태들이 존재한다면")
-      class WhenRecipeViewStatusesWithCategoryExist {
+      class WhenRecipeHistoryesWithCategoryExist {
 
-        private List<RecipeViewStatus> viewStatusesWithCategory;
+        private List<RecipeHistory> viewStatusesWithCategory;
 
         @BeforeEach
         void beforeEach() {
           // 실제 도메인 객체들 생성
-          RecipeViewStatus status1 =
-              RecipeViewStatus.create(clock, UUID.randomUUID(), UUID.randomUUID());
+          RecipeHistory status1 = RecipeHistory.create(clock, UUID.randomUUID(), UUID.randomUUID());
           status1.updateRecipeCategoryId(categoryId);
 
-          RecipeViewStatus status2 =
-              RecipeViewStatus.create(clock, UUID.randomUUID(), UUID.randomUUID());
+          RecipeHistory status2 = RecipeHistory.create(clock, UUID.randomUUID(), UUID.randomUUID());
           status2.updateRecipeCategoryId(categoryId);
 
           viewStatusesWithCategory = List.of(status1, status2);
@@ -363,7 +361,7 @@ public class RecipeViewStatusServiceTest {
 
         @Test
         @DisplayName("Then - 해당 카테고리를 가진 모든 레시피 조회 상태의 카테고리가 비워져야 한다")
-        public void thenShouldEmptyAllRecipeViewStatusCategories() {
+        public void thenShouldEmptyAllRecipeHistoryCategories() {
           service.deleteCategories(categoryId);
 
           // 모든 상태의 카테고리가 null로 변경되었는지 확인
@@ -374,7 +372,7 @@ public class RecipeViewStatusServiceTest {
               .saveAll(
                   argThat(
                       statuses -> {
-                        List<RecipeViewStatus> statusList = (List<RecipeViewStatus>) statuses;
+                        List<RecipeHistory> statusList = (List<RecipeHistory>) statuses;
                         return statusList.size() == 2
                             && statusList.stream()
                                 .allMatch(status -> status.getRecipeCategoryId() == null);
@@ -384,7 +382,7 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 해당 카테고리를 가진 레시피 조회 상태가 없다면")
-      class WhenNoRecipeViewStatusesWithCategoryExist {
+      class WhenNoRecipeHistoryesWithCategoryExist {
 
         @BeforeEach
         void beforeEach() {
@@ -407,25 +405,25 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("카테고리별 레시피 조회 상태 조회")
-  class FindCategorizedRecipeViewStatuses {
+  class FindCategorizedRecipeHistoryes {
 
     @Test
     @DisplayName("특정 카테고리의 레시피 조회 상태들을 조회한다")
-    void shouldFindRecipeViewStatusesByCategory() {
+    void shouldFindRecipeHistoryesByCategory() {
       UUID userId = UUID.randomUUID();
       UUID categoryId = UUID.randomUUID();
       int page = 0;
-      Pageable pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
+      Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
 
-      Page<RecipeViewStatus> expectedStatuses =
-          new PageImpl<>(List.of(RecipeViewStatus.create(clock, userId, UUID.randomUUID())));
+      Page<RecipeHistory> expectedStatuses =
+          new PageImpl<>(List.of(RecipeHistory.create(clock, userId, UUID.randomUUID())));
 
       doReturn(expectedStatuses)
           .when(repository)
           .findAllByUserIdAndRecipeCategoryIdAndStatus(
               any(UUID.class), any(UUID.class), any(RecipeViewState.class), any(Pageable.class));
 
-      Page<RecipeViewStatus> result = service.getCategories(userId, categoryId, page);
+      Page<RecipeHistory> result = service.getCategories(userId, categoryId, page);
 
       assertThat(result).isEqualTo(expectedStatuses);
       verify(repository)
@@ -436,18 +434,18 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("미분류 레시피 조회 상태 조회")
-  class FindUncategorizedRecipeViewStatuses {
+  class FindUncategorizedRecipeHistoryes {
 
     @Test
     @DisplayName("카테고리가 없는 레시피 조회 상태들을 조회한다")
-    void shouldFindUncategorizedRecipeViewStatuses() {
+    void shouldFindUncategorizedRecipeHistoryes() {
       UUID userId = UUID.randomUUID();
       int page = 0;
-      Pageable pageable = PageRequest.of(page, 10, ViewStatusSort.VIEWED_AT_DESC);
+      Pageable pageable = PageRequest.of(page, 10, HistorySort.VIEWED_AT_DESC);
 
-      List<RecipeViewStatus> expectedStatuses =
-          List.of(RecipeViewStatus.create(clock, userId, UUID.randomUUID()));
-      Page<RecipeViewStatus> expectedPage =
+      List<RecipeHistory> expectedStatuses =
+          List.of(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+      Page<RecipeHistory> expectedPage =
           new PageImpl<>(expectedStatuses, pageable, expectedStatuses.size());
 
       doReturn(expectedPage)
@@ -455,7 +453,7 @@ public class RecipeViewStatusServiceTest {
           .findAllByUserIdAndRecipeCategoryIdAndStatus(
               any(UUID.class), isNull(), any(RecipeViewState.class), any(Pageable.class));
 
-      Page<RecipeViewStatus> result = service.getUnCategories(userId, page);
+      Page<RecipeHistory> result = service.getUnCategories(userId, page);
 
       assertThat(result.getContent()).isEqualTo(expectedStatuses);
       verify(repository)
@@ -466,7 +464,7 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("최근 조회한 레시피 상태 조회")
-  class FindRecentRecipeViewStatuses {
+  class FindRecentRecipeHistoryes {
 
     @Nested
     @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
@@ -480,14 +478,14 @@ public class RecipeViewStatusServiceTest {
       void setUp() {
         userId = UUID.randomUUID();
         page = 0;
-        pageable = RecipePageRequest.create(page, ViewStatusSort.VIEWED_AT_DESC);
+        pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
       }
 
       @Nested
       @DisplayName("When - 사용자의 최근 조회한 레시피 상태들을 조회한다면")
-      class WhenFindingRecentRecipeViewStatuses {
+      class WhenFindingRecentRecipeHistoryes {
 
-        private Page<RecipeViewStatus> expectedStatuses;
+        private Page<RecipeHistory> expectedStatuses;
         ;
 
         @BeforeEach
@@ -495,8 +493,8 @@ public class RecipeViewStatusServiceTest {
           expectedStatuses =
               new PageImpl<>(
                   List.of(
-                      RecipeViewStatus.create(clock, userId, UUID.randomUUID()),
-                      RecipeViewStatus.create(clock, userId, UUID.randomUUID())));
+                      RecipeHistory.create(clock, userId, UUID.randomUUID()),
+                      RecipeHistory.create(clock, userId, UUID.randomUUID())));
           doReturn(expectedStatuses)
               .when(repository)
               .findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
@@ -504,8 +502,8 @@ public class RecipeViewStatusServiceTest {
 
         @Test
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들이 반환되어야 한다")
-        void thenShouldReturnRecentRecipeViewStatuses() {
-          List<RecipeViewStatus> result = service.getRecentUsers(userId, page).getContent();
+        void thenShouldReturnRecentRecipeHistoryes() {
+          List<RecipeHistory> result = service.getRecentUsers(userId, page).getContent();
 
           assertThat(result).isEqualTo(expectedStatuses.getContent());
           verify(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
@@ -516,7 +514,7 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("카테고리별 레시피 개수 조회")
-  class CountRecipeViewStatusesByCategories {
+  class CountRecipeHistoryesByCategories {
 
     @Nested
     @DisplayName("Given - 유효한 카테고리 ID 목록이 주어졌을 때")
@@ -531,9 +529,9 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 카테고리별 레시피 개수를 조회한다면")
-      class WhenCountingRecipeViewStatusesByCategories {
+      class WhenCountingRecipeHistoryesByCategories {
 
-        private List<RecipeViewStatusCountProjection> projections;
+        private List<RecipeHistoryCountProjection> projections;
 
         @BeforeEach
         void beforeEach() {
@@ -546,8 +544,8 @@ public class RecipeViewStatusServiceTest {
               .countByCategoryIdsAndStatus(categoryIds, RecipeViewState.ACTIVE);
         }
 
-        private RecipeViewStatusCountProjection createMockProjection(UUID categoryId, Long count) {
-          RecipeViewStatusCountProjection projection = mock(RecipeViewStatusCountProjection.class);
+        private RecipeHistoryCountProjection createMockProjection(UUID categoryId, Long count) {
+          RecipeHistoryCountProjection projection = mock(RecipeHistoryCountProjection.class);
           doReturn(categoryId).when(projection).getCategoryId();
           doReturn(count).when(projection).getCount();
           return projection;
@@ -555,16 +553,16 @@ public class RecipeViewStatusServiceTest {
 
         @Test
         @DisplayName("Then - 각 카테고리별 레시피 개수가 반환되어야 한다")
-        void thenShouldReturnRecipeViewStatusCountsByCategories() {
-          List<RecipeViewStatusCount> result = service.countByCategories(categoryIds);
+        void thenShouldReturnRecipeHistoryCountsByCategories() {
+          List<RecipeHistoryCount> result = service.countByCategories(categoryIds);
 
           assertThat(result).hasSize(2);
 
-          RecipeViewStatusCount first = result.get(0);
+          RecipeHistoryCount first = result.get(0);
           assertThat(first.getCategoryId()).isEqualTo(categoryIds.get(0));
           assertThat(first.getCount()).isEqualTo(5);
 
-          RecipeViewStatusCount second = result.get(1);
+          RecipeHistoryCount second = result.get(1);
           assertThat(second.getCategoryId()).isEqualTo(categoryIds.get(1));
           assertThat(second.getCount()).isEqualTo(3);
 
@@ -576,7 +574,7 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("사용자의 레시피 조회 상태 목록 조회")
-  class GetUserRecipeViewStatuses {
+  class GetUserRecipeHistoryes {
 
     @Nested
     @DisplayName("Given - 유효한 레시피 ID 목록과 사용자 ID가 주어졌을 때")
@@ -593,16 +591,16 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
-      class WhenGettingUserRecipeViewStatuses {
+      class WhenGettingUserRecipeHistoryes {
 
-        private List<RecipeViewStatus> viewStatuses;
+        private List<RecipeHistory> viewStatuses;
 
         @BeforeEach
         void beforeEach() {
           viewStatuses =
               List.of(
-                  RecipeViewStatus.create(clock, userId, recipeIds.get(0)),
-                  RecipeViewStatus.create(clock, userId, recipeIds.get(1)));
+                  RecipeHistory.create(clock, userId, recipeIds.get(0)),
+                  RecipeHistory.create(clock, userId, recipeIds.get(1)));
 
           doReturn(viewStatuses)
               .when(repository)
@@ -611,8 +609,8 @@ public class RecipeViewStatusServiceTest {
 
         @Test
         @DisplayName("Then - 사용자가 조회한 레시피 상태 목록을 반환해야 한다")
-        void thenShouldReturnUserRecipeViewStatuses() {
-          List<RecipeViewStatus> result = service.getUsers(recipeIds, userId);
+        void thenShouldReturnUserRecipeHistoryes() {
+          List<RecipeHistory> result = service.getUsers(recipeIds, userId);
 
           assertThat(result).hasSize(2);
           assertThat(result).containsExactlyElementsOf(viewStatuses);
@@ -637,7 +635,7 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
-      class WhenGettingUserRecipeViewStatuses {
+      class WhenGettingUserRecipeHistoryes {
 
         @BeforeEach
         void beforeEach() {
@@ -649,7 +647,7 @@ public class RecipeViewStatusServiceTest {
         @Test
         @DisplayName("Then - 빈 목록을 반환해야 한다")
         void thenShouldReturnEmptyList() {
-          List<RecipeViewStatus> result = service.getUsers(recipeIds, userId);
+          List<RecipeHistory> result = service.getUsers(recipeIds, userId);
 
           assertThat(result).isEmpty();
           verify(repository)
@@ -671,7 +669,7 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
-      class WhenGettingUserRecipeViewStatuses {
+      class WhenGettingUserRecipeHistoryes {
 
         @BeforeEach
         void beforeEach() {
@@ -683,7 +681,7 @@ public class RecipeViewStatusServiceTest {
         @Test
         @DisplayName("Then - 빈 목록을 반환해야 한다")
         void thenShouldReturnEmptyList() {
-          List<RecipeViewStatus> result = service.getUsers(List.of(), userId);
+          List<RecipeHistory> result = service.getUsers(List.of(), userId);
 
           assertThat(result).isEmpty();
           verify(repository)
@@ -707,17 +705,17 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 사용자의 레시피 조회 상태 목록을 조회한다면")
-      class WhenGettingUserRecipeViewStatuses {
+      class WhenGettingUserRecipeHistoryes {
 
-        private List<RecipeViewStatus> viewStatuses;
+        private List<RecipeHistory> viewStatuses;
 
         @BeforeEach
         void beforeEach() {
           // 3개 중 2개만 조회한 상태
           viewStatuses =
               List.of(
-                  RecipeViewStatus.create(clock, userId, recipeIds.get(0)),
-                  RecipeViewStatus.create(clock, userId, recipeIds.get(2)));
+                  RecipeHistory.create(clock, userId, recipeIds.get(0)),
+                  RecipeHistory.create(clock, userId, recipeIds.get(2)));
 
           doReturn(viewStatuses)
               .when(repository)
@@ -727,7 +725,7 @@ public class RecipeViewStatusServiceTest {
         @Test
         @DisplayName("Then - 조회한 레시피 상태만 반환해야 한다")
         void thenShouldReturnOnlyViewedRecipeStatuses() {
-          List<RecipeViewStatus> result = service.getUsers(recipeIds, userId);
+          List<RecipeHistory> result = service.getUsers(recipeIds, userId);
 
           assertThat(result).hasSize(2);
           assertThat(result.get(0).getRecipeId()).isEqualTo(recipeIds.get(0));
@@ -741,7 +739,7 @@ public class RecipeViewStatusServiceTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 삭제")
-  class DeleteRecipeViewStatus {
+  class DeleteRecipeHistory {
 
     @Nested
     @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
@@ -758,27 +756,27 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태를 삭제한다면")
-      class WhenDeletingRecipeViewStatus {
+      class WhenDeletingRecipeHistory {
 
-        private RecipeViewStatus realRecipeViewStatus;
+        private RecipeHistory realRecipeHistory;
 
         @BeforeEach
         void beforeEach() {
-          realRecipeViewStatus = RecipeViewStatus.create(clock, userId, recipeId);
-          doReturn(Optional.of(realRecipeViewStatus))
+          realRecipeHistory = RecipeHistory.create(clock, userId, recipeId);
+          doReturn(Optional.of(realRecipeHistory))
               .when(repository)
               .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - 레시피 조회 상태가 삭제되어야 한다")
-        public void thenShouldDeleteRecipeViewStatus() {
+        public void thenShouldDeleteRecipeHistory() {
           service.delete(userId, recipeId);
 
           verify(repository)
               .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
-          verify(repository).save(realRecipeViewStatus);
-          assertThat(realRecipeViewStatus.getStatus() == RecipeViewState.DELETED).isTrue();
+          verify(repository).save(realRecipeHistory);
+          assertThat(realRecipeHistory.getStatus() == RecipeViewState.DELETED).isTrue();
         }
       }
     }
@@ -798,7 +796,7 @@ public class RecipeViewStatusServiceTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태를 삭제한다면")
-      class WhenDeletingNonExistentRecipeViewStatus {
+      class WhenDeletingNonExistentRecipeHistory {
 
         @BeforeEach
         void beforeEach() {

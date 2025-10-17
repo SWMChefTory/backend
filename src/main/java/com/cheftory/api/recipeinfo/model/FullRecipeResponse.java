@@ -2,6 +2,7 @@ package com.cheftory.api.recipeinfo.model;
 
 import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.history.RecipeHistory;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
@@ -9,7 +10,6 @@ import com.cheftory.api.recipeinfo.progress.RecipeProgressStep;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
@@ -35,7 +35,7 @@ public record FullRecipeResponse(
         fullRecipeInfo.getRecipeIngredients().stream().map(Ingredient::from).toList(),
         fullRecipeInfo.getRecipeProgresses().stream().map(Progress::from).toList(),
         fullRecipeInfo.getRecipeSteps().stream().map(Step::from).toList(),
-        ViewStatus.from(fullRecipeInfo.getRecipeViewStatus()),
+        ViewStatus.from(fullRecipeInfo.getRecipeHistory()),
         fullRecipeInfo.getRecipeDetailMeta() != null
             ? DetailMeta.from(fullRecipeInfo.getRecipeDetailMeta())
             : null,
@@ -111,7 +111,7 @@ public record FullRecipeResponse(
       @JsonProperty("viewed_at") LocalDateTime viewedAt,
       @JsonProperty("last_play_seconds") Integer lastPlaySeconds,
       @JsonProperty("created_at") LocalDateTime createdAt) {
-    public static ViewStatus from(RecipeViewStatus viewStatus) {
+    public static ViewStatus from(RecipeHistory viewStatus) {
       return new ViewStatus(
           viewStatus.getId(),
           viewStatus.getViewedAt(),

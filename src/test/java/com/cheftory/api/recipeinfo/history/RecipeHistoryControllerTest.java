@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.viewstatus;
+package com.cheftory.api.recipeinfo.history;
 
 import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;
 import static com.cheftory.api.utils.RestDocsUtils.requestAccessTokenFields;
@@ -35,10 +35,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @DisplayName("RecipeViewStatusController Tests")
-public class RecipeViewStatusControllerTest extends RestDocsTest {
+public class RecipeHistoryControllerTest extends RestDocsTest {
 
-  private RecipeViewStatusController controller;
-  private RecipeViewStatusService recipeViewStatusService;
+  private RecipeHistoryController controller;
+  private RecipeHistoryService recipeHistoryService;
   private RecipeService recipeService;
   private RecipeCategoryService recipeCategoryService;
   private GlobalExceptionHandler exceptionHandler;
@@ -46,12 +46,12 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
 
   @BeforeEach
   void setUp() {
-    recipeViewStatusService = mock(RecipeViewStatusService.class);
+    recipeHistoryService = mock(RecipeHistoryService.class);
     recipeCategoryService = mock(RecipeCategoryService.class);
     recipeService = mock(RecipeService.class);
     exceptionHandler = new GlobalExceptionHandler();
     userArgumentResolver = new UserArgumentResolver();
-    controller = new RecipeViewStatusController(recipeViewStatusService);
+    controller = new RecipeHistoryController(recipeHistoryService);
 
     mockMvc =
         mockMvcBuilder(controller)
@@ -64,7 +64,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 카테고리 업데이트")
-  class UpdateRecipeViewStatusCategory {
+  class UpdateRecipeHistoryCategory {
 
     @Nested
     @DisplayName("Given - 레시피 조회 상태 카테고리 업데이트 요청이 주어졌을 때")
@@ -89,13 +89,13 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
 
       @Nested
       @DisplayName("When - 레시피 조회 상태 카테고리를 업데이트한다면")
-      class WhenUpdatingRecipeViewStatusCategory {
+      class WhenUpdatingRecipeHistoryCategory {
 
         @BeforeEach
         void setUp() {
           doReturn(true).when(recipeCategoryService).exists(any(UUID.class));
           doNothing()
-              .when(recipeViewStatusService)
+              .when(recipeHistoryService)
               .updateCategory(any(UUID.class), any(UUID.class), any(UUID.class));
           doReturn(true).when(recipeService).exists(any(UUID.class));
         }
@@ -124,7 +124,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
                               fieldWithPath("category_id").description("레시피 조회 상태 카테고리 ID")),
                           responseSuccessFields()));
           assertSuccessResponse(response);
-          verify(recipeViewStatusService).updateCategory(userId, recipeId, categoryId);
+          verify(recipeHistoryService).updateCategory(userId, recipeId, categoryId);
         }
       }
     }
@@ -132,7 +132,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 카테고리 업데이트 - 예외 처리")
-  class UpdateRecipeViewStatusCategoryException {
+  class UpdateRecipeHistoryCategoryException {
 
     @Nested
     @DisplayName("Given - 존재하지 않는 카테고리 ID가 주어졌을 때")
@@ -181,7 +181,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
 
   @Nested
   @DisplayName("레시피 조회 상태 삭제")
-  class DeleteRecipeViewStatus {
+  class DeleteRecipeHistory {
     @Nested
     @DisplayName("Given - 레시피 조회 상태 삭제 요청이 주어졌을 때")
     class GivenValidParametersForDelete {
@@ -197,13 +197,13 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
         var authentication = new UsernamePasswordAuthenticationToken(userId, null);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        doNothing().when(recipeViewStatusService).delete(any(UUID.class), any(UUID.class));
+        doNothing().when(recipeHistoryService).delete(any(UUID.class), any(UUID.class));
         doReturn(true).when(recipeService).exists(any(UUID.class));
       }
 
       @Nested
       @DisplayName("When - 레시피 조회 상태를 삭제한다면")
-      class WhenDeletingRecipeViewStatus {
+      class WhenDeletingRecipeHistory {
 
         @Test
         @DisplayName("Then - 레시피 조회 상태를 삭제한다 - 성공")
@@ -224,7 +224,7 @@ public class RecipeViewStatusControllerTest extends RestDocsTest {
                       requestAccessTokenFields(),
                       pathParameters(parameterWithName("recipeId").description("레시피 ID")),
                       responseSuccessFields()));
-          verify(recipeViewStatusService).delete(userId, recipeId);
+          verify(recipeHistoryService).delete(userId, recipeId);
         }
       }
     }

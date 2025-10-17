@@ -1,9 +1,9 @@
 package com.cheftory.api.recipeinfo.model;
 
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.history.RecipeHistory;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import java.util.List;
 import lombok.AccessLevel;
@@ -15,22 +15,22 @@ import org.springframework.lang.Nullable;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class RecipeHistory {
+public class RecipeRecord {
   private Recipe recipe;
-  private RecipeViewStatus recipeViewStatus;
+  private RecipeHistory recipeHistory;
   private RecipeYoutubeMeta youtubeMeta;
   private RecipeDetailMeta detailMeta;
   private List<RecipeTag> tags;
 
-  public static RecipeHistory of(
+  public static RecipeRecord of(
       Recipe recipe,
-      RecipeViewStatus recipeViewStatus,
+      RecipeHistory recipeHistory,
       RecipeYoutubeMeta youtubeMeta,
       @Nullable RecipeDetailMeta detailMeta,
       @Nullable List<RecipeTag> tags) {
-    return RecipeHistory.builder()
+    return RecipeRecord.builder()
         .recipe(recipe)
-        .recipeViewStatus(recipeViewStatus)
+        .recipeHistory(recipeHistory)
         .youtubeMeta(youtubeMeta)
         .detailMeta(detailMeta)
         .tags(tags)
