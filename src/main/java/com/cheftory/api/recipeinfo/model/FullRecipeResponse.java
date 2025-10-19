@@ -28,19 +28,19 @@ public record FullRecipeResponse(
     @JsonProperty("recipe_tags") List<Tag> tags,
     @JsonProperty("recipe_briefings") List<Briefing> briefings) {
 
-  public static FullRecipeResponse of(FullRecipeInfo fullRecipeInfo) {
+  public static FullRecipeResponse of(FullRecipe fullRecipe) {
     return new FullRecipeResponse(
-        fullRecipeInfo.getRecipe().getRecipeStatus(),
-        VideoInfo.from(fullRecipeInfo.getRecipeYoutubeMeta()),
-        fullRecipeInfo.getRecipeIngredients().stream().map(Ingredient::from).toList(),
-        fullRecipeInfo.getRecipeProgresses().stream().map(Progress::from).toList(),
-        fullRecipeInfo.getRecipeSteps().stream().map(Step::from).toList(),
-        ViewStatus.from(fullRecipeInfo.getRecipeHistory()),
-        fullRecipeInfo.getRecipeDetailMeta() != null
-            ? DetailMeta.from(fullRecipeInfo.getRecipeDetailMeta())
+        fullRecipe.getRecipe().getRecipeStatus(),
+        VideoInfo.from(fullRecipe.getRecipeYoutubeMeta()),
+        fullRecipe.getRecipeIngredients().stream().map(Ingredient::from).toList(),
+        fullRecipe.getRecipeProgresses().stream().map(Progress::from).toList(),
+        fullRecipe.getRecipeSteps().stream().map(Step::from).toList(),
+        ViewStatus.from(fullRecipe.getRecipeHistory()),
+        fullRecipe.getRecipeDetailMeta() != null
+            ? DetailMeta.from(fullRecipe.getRecipeDetailMeta())
             : null,
-        fullRecipeInfo.getRecipeTags().stream().map(Tag::from).toList(),
-        fullRecipeInfo.getRecipeBriefings().stream().map(Briefing::from).toList());
+        fullRecipe.getRecipeTags().stream().map(Tag::from).toList(),
+        fullRecipe.getRecipeBriefings().stream().map(Briefing::from).toList());
   }
 
   private record DetailMeta(

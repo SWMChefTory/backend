@@ -108,7 +108,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         void thenShouldExist() {
           boolean exists =
               repository.existsByRecipeIdAndUserIdAndStatus(
-                  recipeId, userId, RecipeViewState.ACTIVE);
+                  recipeId, userId, RecipeHistoryStatus.ACTIVE);
           assertThat(exists).isTrue();
         }
       }
@@ -136,7 +136,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         void thenShouldNotExist() {
           boolean exists =
               repository.existsByRecipeIdAndUserIdAndStatus(
-                  recipeId, userId, RecipeViewState.ACTIVE);
+                  recipeId, userId, RecipeHistoryStatus.ACTIVE);
           assertThat(exists).isFalse();
         }
       }
@@ -178,7 +178,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         void thenShouldReturnRecipeHistory() {
           RecipeHistory foundStatus =
               repository
-                  .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)
+                  .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
                   .orElseThrow();
           assertThat(foundStatus.getRecipeId()).isEqualTo(recipeId);
           assertThat(foundStatus.getUserId()).isEqualTo(userId);
@@ -208,7 +208,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         void thenShouldReturnEmpty() {
           assertThat(
                   repository.findByRecipeIdAndUserIdAndStatus(
-                      recipeId, userId, RecipeViewState.ACTIVE))
+                      recipeId, userId, RecipeHistoryStatus.ACTIVE))
               .isEmpty();
         }
       }
@@ -255,7 +255,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           var statuses =
               repository
                   .findAllByUserIdAndRecipeCategoryIdAndStatus(
-                      userId, null, RecipeViewState.ACTIVE, pageable)
+                      userId, null, RecipeHistoryStatus.ACTIVE, pageable)
                   .getContent();
 
           assertThat(statuses.size()).isEqualTo(1);
@@ -290,7 +290,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           var statuses =
               repository
                   .findAllByUserIdAndRecipeCategoryIdAndStatus(
-                      userId, null, RecipeViewState.ACTIVE, pageable)
+                      userId, null, RecipeHistoryStatus.ACTIVE, pageable)
                   .getContent();
           assertThat(statuses.size()).isEqualTo(0);
         }
@@ -341,7 +341,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           var statuses =
               repository
                   .findAllByUserIdAndRecipeCategoryIdAndStatus(
-                      userId, categoryId, RecipeViewState.ACTIVE, pageable)
+                      userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable)
                   .getContent();
 
           assertThat(statuses.size()).isEqualTo(1);
@@ -378,7 +378,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           var statuses =
               repository
                   .findAllByUserIdAndRecipeCategoryIdAndStatus(
-                      userId, categoryId, RecipeViewState.ACTIVE, pageable)
+                      userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable)
                   .getContent();
           assertThat(statuses.size()).isEqualTo(0);
         }
@@ -433,7 +433,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         void thenShouldReturnRecentRecipeHistoryesByUserId() {
           Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
           Page<RecipeHistory> page =
-              repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
+              repository.findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
           List<RecipeHistory> statuses = page.getContent();
 
           assertThat(statuses).hasSize(2);
@@ -485,7 +485,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
 
           // When
           Page<RecipeHistory> statusPage =
-              repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
+              repository.findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
 
           // Then
           assertThat(statusPage.getTotalElements()).isEqualTo(20);
@@ -515,7 +515,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
 
           // When
           Page<RecipeHistory> firstPage =
-              repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, firstPageable);
+              repository.findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, firstPageable);
 
           // Then
           assertThat(firstPage.getTotalElements()).isEqualTo(20);
@@ -536,7 +536,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
 
           // When
           Page<RecipeHistory> secondPage =
-              repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, secondPageable);
+              repository.findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, secondPageable);
 
           // Then
           assertThat(secondPage.getTotalElements()).isEqualTo(20);
@@ -562,7 +562,8 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
 
           // When
           Page<RecipeHistory> emptyPage =
-              repository.findByUserIdAndStatus(nonExistentUserId, RecipeViewState.ACTIVE, pageable);
+              repository.findByUserIdAndStatus(
+                  nonExistentUserId, RecipeHistoryStatus.ACTIVE, pageable);
 
           // Then
           assertThat(emptyPage.getTotalElements()).isEqualTo(0);
@@ -581,7 +582,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
 
           // When
           Page<RecipeHistory> page =
-              repository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
+              repository.findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
 
           // Then
           assertThat(page.getTotalElements()).isEqualTo(20);
@@ -593,6 +594,269 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           List<RecipeHistory> content = page.getContent();
           assertThat(content.get(0).getRecipeId()).isEqualTo(recipeIds.get(19));
           assertThat(content.get(4).getRecipeId()).isEqualTo(recipeIds.get(15));
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("모든 레시피 히스토리 조회")
+    class FindAllRecipeHistoriesByUserId {
+
+      @Nested
+      @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+      class GivenValidUserId {
+
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+        }
+
+        @Nested
+        @DisplayName("When - 사용자의 모든 레시피 히스토리를 조회한다면")
+        class WhenFindingAllRecipeHistories {
+
+          private List<RecipeHistory> allHistories;
+
+          @BeforeEach
+          void beforeEach() {
+            allHistories = new ArrayList<>();
+
+            // 카테고리가 있는 히스토리 2개
+            for (int i = 0; i < 2; i++) {
+              RecipeHistory history = RecipeHistory.create(clock, userId, UUID.randomUUID());
+              history.updateRecipeCategoryId(UUID.randomUUID());
+              repository.save(history);
+              allHistories.add(history);
+            }
+
+            // 카테고리가 없는 히스토리 2개
+            for (int i = 0; i < 2; i++) {
+              RecipeHistory history = RecipeHistory.create(clock, userId, UUID.randomUUID());
+              repository.save(history);
+              allHistories.add(history);
+            }
+          }
+
+          @Test
+          @DisplayName("Then - 카테고리 유무와 상관없이 모든 히스토리를 반환해야 한다")
+          void thenShouldReturnAllHistories() {
+            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Page<RecipeHistory> result =
+                repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+
+            assertThat(result.getContent()).hasSize(4);
+            assertThat(result.getContent()).allMatch(h -> h.getUserId().equals(userId));
+
+            // 카테고리가 있는 것과 없는 것이 모두 포함되어야 함
+            long withCategory =
+                result.getContent().stream().filter(h -> h.getRecipeCategoryId() != null).count();
+            long withoutCategory =
+                result.getContent().stream().filter(h -> h.getRecipeCategoryId() == null).count();
+
+            assertThat(withCategory).isEqualTo(2);
+            assertThat(withoutCategory).isEqualTo(2);
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 카테고리가 있는 히스토리만 있을 때")
+      class GivenOnlyCategorizedHistories {
+
+        private UUID userId;
+        private UUID categoryId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          categoryId = UUID.randomUUID();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+
+          // 모든 히스토리가 카테고리를 가지고 있음
+          for (int i = 0; i < 3; i++) {
+            RecipeHistory history = RecipeHistory.create(clock, userId, UUID.randomUUID());
+            history.updateRecipeCategoryId(categoryId);
+            repository.save(history);
+          }
+        }
+
+        @Nested
+        @DisplayName("When - 사용자의 모든 레시피 히스토리를 조회한다면")
+        class WhenFindingAllRecipeHistories {
+
+          @Test
+          @DisplayName("Then - 카테고리가 있는 모든 히스토리를 반환해야 한다")
+          void thenShouldReturnAllCategorizedHistories() {
+            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Page<RecipeHistory> result =
+                repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+
+            assertThat(result.getContent()).hasSize(3);
+            assertThat(result.getContent())
+                .allMatch(h -> h.getRecipeCategoryId().equals(categoryId));
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 카테고리가 없는 히스토리만 있을 때")
+      class GivenOnlyUncategorizedHistories {
+
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+
+          // 모든 히스토리가 카테고리 없음
+          for (int i = 0; i < 3; i++) {
+            RecipeHistory history = RecipeHistory.create(clock, userId, UUID.randomUUID());
+            repository.save(history);
+          }
+        }
+
+        @Nested
+        @DisplayName("When - 사용자의 모든 레시피 히스토리를 조회한다면")
+        class WhenFindingAllRecipeHistories {
+
+          @Test
+          @DisplayName("Then - 카테고리가 없는 모든 히스토리를 반환해야 한다")
+          void thenShouldReturnAllUncategorizedHistories() {
+            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Page<RecipeHistory> result =
+                repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+
+            assertThat(result.getContent()).hasSize(3);
+            assertThat(result.getContent()).allMatch(h -> h.getRecipeCategoryId() == null);
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 삭제된 히스토리가 포함되어 있을 때")
+      class GivenDeletedHistoriesIncluded {
+
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+
+          // Active 히스토리 2개
+          for (int i = 0; i < 2; i++) {
+            RecipeHistory history = RecipeHistory.create(clock, userId, UUID.randomUUID());
+            repository.save(history);
+          }
+
+          // Deleted 히스토리 2개
+          for (int i = 0; i < 2; i++) {
+            RecipeHistory history = RecipeHistory.create(clock, userId, UUID.randomUUID());
+            history.delete();
+            repository.save(history);
+          }
+        }
+
+        @Nested
+        @DisplayName("When - Active 상태의 히스토리를 조회한다면")
+        class WhenFindingActiveHistories {
+
+          @Test
+          @DisplayName("Then - 삭제되지 않은 히스토리만 반환해야 한다")
+          void thenShouldReturnOnlyActiveHistories() {
+            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Page<RecipeHistory> result =
+                repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+
+            assertThat(result.getContent()).hasSize(2);
+            assertThat(result.getContent())
+                .allMatch(h -> h.getStatus() == RecipeHistoryStatus.ACTIVE);
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 히스토리가 없는 사용자 ID가 주어졌을 때")
+      class GivenUserIdWithNoHistories {
+
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+        }
+
+        @Nested
+        @DisplayName("When - 사용자의 모든 레시피 히스토리를 조회한다면")
+        class WhenFindingAllRecipeHistories {
+
+          @Test
+          @DisplayName("Then - 빈 페이지를 반환해야 한다")
+          void thenShouldReturnEmptyPage() {
+            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Page<RecipeHistory> result =
+                repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.getTotalElements()).isEqualTo(0);
+          }
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("다른 사용자의 히스토리 분리")
+    class SeparateHistoriesByUsers {
+
+      @Nested
+      @DisplayName("Given - 여러 사용자의 히스토리가 있을 때")
+      class GivenMultipleUserHistories {
+
+        private UUID userId1;
+        private UUID userId2;
+
+        @BeforeEach
+        void setUp() {
+          userId1 = UUID.randomUUID();
+          userId2 = UUID.randomUUID();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+
+          // userId1의 히스토리 3개
+          for (int i = 0; i < 3; i++) {
+            RecipeHistory history = RecipeHistory.create(clock, userId1, UUID.randomUUID());
+            repository.save(history);
+          }
+
+          // userId2의 히스토리 2개
+          for (int i = 0; i < 2; i++) {
+            RecipeHistory history = RecipeHistory.create(clock, userId2, UUID.randomUUID());
+            repository.save(history);
+          }
+        }
+
+        @Nested
+        @DisplayName("When - 특정 사용자의 모든 히스토리를 조회한다면")
+        class WhenFindingSpecificUserHistories {
+
+          @Test
+          @DisplayName("Then - 해당 사용자의 히스토리만 반환해야 한다")
+          void thenShouldReturnOnlySpecificUserHistories() {
+            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+
+            Page<RecipeHistory> user1Result =
+                repository.findAllByUserIdAndStatus(userId1, RecipeHistoryStatus.ACTIVE, pageable);
+            assertThat(user1Result.getContent()).hasSize(3);
+            assertThat(user1Result.getContent()).allMatch(h -> h.getUserId().equals(userId1));
+
+            Page<RecipeHistory> user2Result =
+                repository.findAllByUserIdAndStatus(userId2, RecipeHistoryStatus.ACTIVE, pageable);
+            assertThat(user2Result.getContent()).hasSize(2);
+            assertThat(user2Result.getContent()).allMatch(h -> h.getUserId().equals(userId2));
+          }
         }
       }
     }
@@ -660,19 +924,19 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 각 카테고리별 정확한 개수를 반환해야 한다")
           void thenShouldReturnCorrectCountsForEachCategory() {
-            List<RecipeHistoryCountProjection> counts =
-                repository.countByCategoryIdsAndStatus(categoryIds, RecipeViewState.ACTIVE);
+            List<RecipeHistoryCategorizedCountProjection> counts =
+                repository.countByCategoryIdsAndStatus(categoryIds, RecipeHistoryStatus.ACTIVE);
 
             assertThat(counts.size()).isEqualTo(2);
 
-            RecipeHistoryCountProjection count1 =
+            RecipeHistoryCategorizedCountProjection count1 =
                 counts.stream()
                     .filter(c -> c.getCategoryId().equals(categoryId1))
                     .findFirst()
                     .orElseThrow();
             assertThat(count1.getCount()).isEqualTo(3);
 
-            RecipeHistoryCountProjection count2 =
+            RecipeHistoryCategorizedCountProjection count2 =
                 counts.stream()
                     .filter(c -> c.getCategoryId().equals(categoryId2))
                     .findFirst()
@@ -704,9 +968,9 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 빈 결과를 반환해야 한다")
           void thenShouldReturnEmpty() {
-            List<RecipeHistoryCountProjection> counts =
+            List<RecipeHistoryCategorizedCountProjection> counts =
                 repository.countByCategoryIdsAndStatus(
-                    nonExistentCategoryIds, RecipeViewState.ACTIVE);
+                    nonExistentCategoryIds, RecipeHistoryStatus.ACTIVE);
             assertThat(counts.size()).isEqualTo(0);
           }
         }
@@ -723,9 +987,193 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 빈 결과를 반환해야 한다")
           void thenShouldReturnEmpty() {
-            List<RecipeHistoryCountProjection> counts =
-                repository.countByCategoryIdsAndStatus(List.of(), RecipeViewState.ACTIVE);
+            List<RecipeHistoryCategorizedCountProjection> counts =
+                repository.countByCategoryIdsAndStatus(List.of(), RecipeHistoryStatus.ACTIVE);
             assertThat(counts.size()).isEqualTo(0);
+          }
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("사용자별 레시피 히스토리 개수 조회")
+    class CountRecipeHistoriesByUserId {
+
+      @Nested
+      @DisplayName("Given - 레시피 히스토리가 있는 사용자 ID가 주어졌을 때")
+      class GivenUserIdWithHistories {
+
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+        }
+
+        @Nested
+        @DisplayName("When - 사용자의 레시피 히스토리 개수를 조회한다면")
+        class WhenCountingHistoriesByUserId {
+
+          @BeforeEach
+          void beforeEach() {
+            // Active 히스토리 5개 생성
+            IntStream.range(0, 5)
+                .forEach(
+                    i -> {
+                      RecipeHistory history =
+                          RecipeHistory.create(clock, userId, UUID.randomUUID());
+                      repository.save(history);
+                    });
+
+            // Deleted 히스토리 3개 생성 (카운트되지 않아야 함)
+            IntStream.range(0, 3)
+                .forEach(
+                    i -> {
+                      RecipeHistory history =
+                          RecipeHistory.create(clock, userId, UUID.randomUUID());
+                      history.delete();
+                      repository.save(history);
+                    });
+          }
+
+          @Test
+          @DisplayName("Then - Active 상태의 정확한 개수를 반환해야 한다")
+          void thenShouldReturnCorrectActiveCount() {
+            RecipeHistoryUnCategorizedCountProjection projection =
+                repository.countByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE);
+
+            assertThat(projection.getCount()).isEqualTo(5);
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 카테고리가 섞인 히스토리가 있을 때")
+      class GivenHistoriesWithMixedCategories {
+
+        private UUID userId;
+        private UUID categoryId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+          categoryId = UUID.randomUUID();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+        }
+
+        @Nested
+        @DisplayName("When - 사용자의 전체 히스토리 개수를 조회한다면")
+        class WhenCountingAllHistories {
+
+          @BeforeEach
+          void beforeEach() {
+            // 카테고리가 있는 히스토리 3개
+            IntStream.range(0, 3)
+                .forEach(
+                    i -> {
+                      RecipeHistory history =
+                          RecipeHistory.create(clock, userId, UUID.randomUUID());
+                      history.updateRecipeCategoryId(categoryId);
+                      repository.save(history);
+                    });
+
+            // 카테고리가 없는 히스토리 2개
+            IntStream.range(0, 2)
+                .forEach(
+                    i -> {
+                      RecipeHistory history =
+                          RecipeHistory.create(clock, userId, UUID.randomUUID());
+                      repository.save(history);
+                    });
+          }
+
+          @Test
+          @DisplayName("Then - 카테고리 유무와 상관없이 모든 Active 히스토리 개수를 반환해야 한다")
+          void thenShouldReturnAllActiveHistoriesCount() {
+            RecipeHistoryUnCategorizedCountProjection projection =
+                repository.countByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE);
+
+            assertThat(projection.getCount()).isEqualTo(5);
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 히스토리가 없는 사용자 ID가 주어졌을 때")
+      class GivenUserIdWithNoHistories {
+
+        private UUID userId;
+
+        @BeforeEach
+        void setUp() {
+          userId = UUID.randomUUID();
+        }
+
+        @Nested
+        @DisplayName("When - 사용자의 레시피 히스토리 개수를 조회한다면")
+        class WhenCountingHistoriesByUserId {
+
+          @Test
+          @DisplayName("Then - 0을 반환해야 한다")
+          void thenShouldReturnZero() {
+            RecipeHistoryUnCategorizedCountProjection projection =
+                repository.countByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE);
+
+            assertThat(projection.getCount()).isEqualTo(0);
+          }
+        }
+      }
+
+      @Nested
+      @DisplayName("Given - 여러 사용자의 히스토리가 섞여있을 때")
+      class GivenMultipleUsersHistories {
+
+        private UUID userId1;
+        private UUID userId2;
+
+        @BeforeEach
+        void setUp() {
+          userId1 = UUID.randomUUID();
+          userId2 = UUID.randomUUID();
+          when(clock.now()).thenReturn(LocalDateTime.now());
+        }
+
+        @Nested
+        @DisplayName("When - 특정 사용자의 히스토리 개수를 조회한다면")
+        class WhenCountingSpecificUserHistories {
+
+          @BeforeEach
+          void beforeEach() {
+            // userId1의 히스토리 3개
+            IntStream.range(0, 3)
+                .forEach(
+                    i -> {
+                      RecipeHistory history =
+                          RecipeHistory.create(clock, userId1, UUID.randomUUID());
+                      repository.save(history);
+                    });
+
+            // userId2의 히스토리 5개
+            IntStream.range(0, 5)
+                .forEach(
+                    i -> {
+                      RecipeHistory history =
+                          RecipeHistory.create(clock, userId2, UUID.randomUUID());
+                      repository.save(history);
+                    });
+          }
+
+          @Test
+          @DisplayName("Then - 해당 사용자의 히스토리만 카운트되어야 한다")
+          void thenShouldCountOnlySpecificUserHistories() {
+            RecipeHistoryUnCategorizedCountProjection projection1 =
+                repository.countByUserIdAndStatus(userId1, RecipeHistoryStatus.ACTIVE);
+            assertThat(projection1.getCount()).isEqualTo(3);
+
+            RecipeHistoryUnCategorizedCountProjection projection2 =
+                repository.countByUserIdAndStatus(userId2, RecipeHistoryStatus.ACTIVE);
+            assertThat(projection2.getCount()).isEqualTo(5);
           }
         }
       }
@@ -766,7 +1214,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           void thenShouldReturnRecipeHistoryList() {
             List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
-                    recipeIds, userId, RecipeViewState.ACTIVE);
+                    recipeIds, userId, RecipeHistoryStatus.ACTIVE);
 
             assertThat(statuses).hasSize(3);
             assertThat(statuses)
@@ -813,7 +1261,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           void thenShouldReturnOnlyViewedRecipes() {
             List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
-                    allRecipeIds, userId, RecipeViewState.ACTIVE);
+                    allRecipeIds, userId, RecipeHistoryStatus.ACTIVE);
 
             assertThat(statuses).hasSize(3);
             assertThat(statuses).allMatch(status -> viewedRecipeIds.contains(status.getRecipeId()));
@@ -860,14 +1308,14 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           void thenShouldReturnOnlySpecificUserStatuses() {
             List<RecipeHistory> user1Statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
-                    recipeIds, userId1, RecipeViewState.ACTIVE);
+                    recipeIds, userId1, RecipeHistoryStatus.ACTIVE);
 
             assertThat(user1Statuses).hasSize(3);
             assertThat(user1Statuses).allMatch(status -> status.getUserId().equals(userId1));
 
             List<RecipeHistory> user2Statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
-                    recipeIds, userId2, RecipeViewState.ACTIVE);
+                    recipeIds, userId2, RecipeHistoryStatus.ACTIVE);
 
             assertThat(user2Statuses).hasSize(3);
             assertThat(user2Statuses).allMatch(status -> status.getUserId().equals(userId2));
@@ -910,10 +1358,11 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           void thenShouldReturnOnlyActiveStatuses() {
             List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
-                    recipeIds, userId, RecipeViewState.ACTIVE);
+                    recipeIds, userId, RecipeHistoryStatus.ACTIVE);
 
             assertThat(statuses).hasSize(2);
-            assertThat(statuses).allMatch(status -> status.getStatus() == RecipeViewState.ACTIVE);
+            assertThat(statuses)
+                .allMatch(status -> status.getStatus() == RecipeHistoryStatus.ACTIVE);
           }
         }
       }
@@ -938,7 +1387,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           void thenShouldReturnEmptyList() {
             List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
-                    List.of(), userId, RecipeViewState.ACTIVE);
+                    List.of(), userId, RecipeHistoryStatus.ACTIVE);
 
             assertThat(statuses).isEmpty();
           }
@@ -967,7 +1416,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           void thenShouldReturnEmptyList() {
             List<RecipeHistory> statuses =
                 repository.findByRecipeIdInAndUserIdAndStatus(
-                    nonExistentRecipeIds, userId, RecipeViewState.ACTIVE);
+                    nonExistentRecipeIds, userId, RecipeHistoryStatus.ACTIVE);
 
             assertThat(statuses).isEmpty();
           }
@@ -1011,7 +1460,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           void thenShouldDeleteRecipeHistory() {
             assertThat(
                     repository.findByRecipeIdAndUserIdAndStatus(
-                        recipeId, userId, RecipeViewState.ACTIVE))
+                        recipeId, userId, RecipeHistoryStatus.ACTIVE))
                 .isEmpty();
           }
         }

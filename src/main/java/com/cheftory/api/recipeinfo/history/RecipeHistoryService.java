@@ -1,8 +1,8 @@
 package com.cheftory.api.recipeinfo.history;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeinfo.history.exception.ViewStatusErrorCode;
-import com.cheftory.api.recipeinfo.history.exception.ViewStatusException;
+import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryErrorCode;
+import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryException;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-// 사용자의 시청 상태,
 public class RecipeHistoryService {
   private final RecipeHistoryRepository recipeHistoryRepository;
   private final Clock clock;
@@ -22,7 +21,7 @@ public class RecipeHistoryService {
   @Transactional
   public void create(UUID userId, UUID recipeId) {
     if (!recipeHistoryRepository.existsByRecipeIdAndUserIdAndStatus(
-        recipeId, userId, RecipeViewState.ACTIVE)) {
+        recipeId, userId, RecipeHistoryStatus.ACTIVE)) {
       recipeHistoryRepository.save(RecipeHistory.create(clock, userId, recipeId));
     }
   }
@@ -31,8 +30,9 @@ public class RecipeHistoryService {
   public RecipeHistory get(UUID userId, UUID recipeId) {
     RecipeHistory recipeHistory =
         recipeHistoryRepository
-            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)
-            .orElseThrow(() -> new ViewStatusException(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND));
+            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
+            .orElseThrow(
+                () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
     recipeHistory.updateViewedAt(clock);
     return recipeHistoryRepository.save(recipeHistory);
   }
@@ -41,16 +41,18 @@ public class RecipeHistoryService {
   public void updateCategory(UUID userId, UUID recipeId, UUID categoryId) {
     RecipeHistory recipeHistory =
         recipeHistoryRepository
-            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)
-            .orElseThrow(() -> new ViewStatusException(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND));
+            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
+            .orElseThrow(
+                () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
     recipeHistory.updateRecipeCategoryId(categoryId);
     recipeHistoryRepository.save(recipeHistory);
   }
 
   @Transactional
-  public void deleteCategories(UUID categoryId) {
+  public void unCategorize(UUID categoryId) {
     List<RecipeHistory> viewStatuses =
-        recipeHistoryRepository.findByRecipeCategoryIdAndStatus(categoryId, RecipeViewState.ACTIVE);
+        recipeHistoryRepository.findByRecipeCategoryIdAndStatus(
+            categoryId, RecipeHistoryStatus.ACTIVE);
     viewStatuses.forEach(RecipeHistory::emptyRecipeCategoryId);
     recipeHistoryRepository.saveAll(viewStatuses);
   }
@@ -59,47 +61,64 @@ public class RecipeHistoryService {
   public void delete(UUID userId, UUID recipeId) {
     RecipeHistory recipeHistory =
         recipeHistoryRepository
-            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE)
-            .orElseThrow(() -> new ViewStatusException(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND));
+            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
+            .orElseThrow(
+                () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
     recipeHistory.delete();
     recipeHistoryRepository.save(recipeHistory);
   }
 
-  public Page<RecipeHistory> getCategories(UUID userId, UUID categoryId, Integer page) {
-    Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
-    return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
-        userId, categoryId, RecipeViewState.ACTIVE, pageable);
+  @Transactional
+  public void deleteByRecipe(UUID recipeId) {
+    List<RecipeHistory> histories = recipeHistoryRepository.findAllByRecipeId(recipeId);
+    histories.forEach(RecipeHistory::delete);
+    recipeHistoryRepository.saveAll(histories);
   }
 
-  public Page<RecipeHistory> getUnCategories(UUID userId, Integer page) {
+  public Page<RecipeHistory> getCategorized(UUID userId, UUID categoryId, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
-        userId, null, RecipeViewState.ACTIVE, pageable);
+        userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable);
+  }
+
+  public Page<RecipeHistory> getUnCategorized(UUID userId, Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
+    return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
+        userId, null, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
   public Page<RecipeHistory> getAll(UUID userId, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findAllByUserIdAndStatus(
-        userId, RecipeViewState.ACTIVE, pageable);
+        userId, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
-  public Page<RecipeHistory> getRecentUsers(UUID userId, Integer page) {
+  public Page<RecipeHistory> getRecents(UUID userId, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
-    return recipeHistoryRepository.findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
+    return recipeHistoryRepository.findByUserIdAndStatus(
+        userId, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
-  public List<RecipeHistoryCount> countByCategories(List<UUID> categoryIds) {
-    List<RecipeHistoryCountProjection> projections =
-        recipeHistoryRepository.countByCategoryIdsAndStatus(categoryIds, RecipeViewState.ACTIVE);
+  public List<RecipeHistoryCategorizedCount> countByCategories(List<UUID> categoryIds) {
+    List<RecipeHistoryCategorizedCountProjection> projections =
+        recipeHistoryRepository.countByCategoryIdsAndStatus(
+            categoryIds, RecipeHistoryStatus.ACTIVE);
     return projections.stream()
         .map(
             projection ->
-                RecipeHistoryCount.of(projection.getCategoryId(), projection.getCount().intValue()))
+                RecipeHistoryCategorizedCount.of(
+                    projection.getCategoryId(), projection.getCount().intValue()))
         .toList();
   }
 
-  public List<RecipeHistory> getUsers(List<UUID> recipeIds, UUID userId) {
+  public RecipeHistoryUnCategorizedCount countUncategorized(UUID userId) {
+    RecipeHistoryUnCategorizedCountProjection projection =
+        recipeHistoryRepository.countByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE);
+    return RecipeHistoryUnCategorizedCount.of(projection.getCount().intValue());
+  }
+
+  public List<RecipeHistory> getByRecipes(List<UUID> recipeIds, UUID userId) {
     return recipeHistoryRepository.findByRecipeIdInAndUserIdAndStatus(
-        recipeIds, userId, RecipeViewState.ACTIVE);
+        recipeIds, userId, RecipeHistoryStatus.ACTIVE);
   }
 }

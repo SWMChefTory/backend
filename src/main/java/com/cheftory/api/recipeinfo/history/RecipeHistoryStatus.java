@@ -1,6 +1,6 @@
 package com.cheftory.api.recipeinfo.history;
 
-public enum RecipeViewState {
+public enum RecipeHistoryStatus {
   ACTIVE,
   DELETED,
 }

@@ -13,7 +13,7 @@ public record RecentRecipesResponse(
     @JsonProperty("total_pages") int totalPages,
     @JsonProperty("total_elements") long totalElements,
     @JsonProperty("has_next") boolean hasNext) {
-  public static RecentRecipesResponse from(Page<RecipeRecord> recentRecipes) {
+  public static RecentRecipesResponse from(Page<RecipeHistoryOverview> recentRecipes) {
     List<RecentRecipeResponse> responses =
         recentRecipes.stream().map(RecentRecipeResponse::from).toList();
     return new RecentRecipesResponse(
@@ -33,7 +33,7 @@ public record RecentRecipesResponse(
       @JsonProperty("video_id") String videoId,
       @JsonProperty("video_seconds") Integer videoSeconds,
       @JsonProperty("recipe_status") String recipeStatus) {
-    public static RecentRecipeResponse from(RecipeRecord info) {
+    public static RecentRecipeResponse from(RecipeHistoryOverview info) {
       return new RecentRecipeResponse(
           info.getRecipeHistory().getViewedAt(),
           info.getRecipeHistory().getLastPlaySeconds(),

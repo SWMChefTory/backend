@@ -8,20 +8,20 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 
-public record RecipeHistoryResponse(
-    @JsonProperty("unCategorized_recipes") List<RecipeHistory> categorizedRecipes,
+public record RecipeHistoriesResponse(
+    @JsonProperty("recipe_histories") List<RecipeHistory> recipeHistories,
     @JsonProperty("current_page") int currentPage,
     @JsonProperty("total_pages") int totalPages,
     @JsonProperty("total_elements") long totalElements,
     @JsonProperty("has_next") boolean hasNext) {
-  public static RecipeHistoryResponse from(Page<RecipeRecord> categorizedRecipes) {
-    List<RecipeHistory> responses = categorizedRecipes.stream().map(RecipeHistory::from).toList();
-    return new RecipeHistoryResponse(
+  public static RecipeHistoriesResponse from(Page<RecipeHistoryOverview> recipeHistories) {
+    List<RecipeHistory> responses = recipeHistories.stream().map(RecipeHistory::from).toList();
+    return new RecipeHistoriesResponse(
         responses,
-        categorizedRecipes.getNumber(),
-        categorizedRecipes.getTotalPages(),
-        categorizedRecipes.getTotalElements(),
-        categorizedRecipes.hasNext());
+        recipeHistories.getNumber(),
+        recipeHistories.getTotalPages(),
+        recipeHistories.getTotalElements(),
+        recipeHistories.hasNext());
   }
 
   private record RecipeHistory(
@@ -37,7 +37,7 @@ public record RecipeHistoryResponse(
       @JsonProperty("servings") Integer servings,
       @JsonProperty("created_at") LocalDateTime createdAt,
       @JsonProperty("tags") List<Tag> tags) {
-    public static RecipeHistory from(RecipeRecord info) {
+    public static RecipeHistory from(RecipeHistoryOverview info) {
       return new RecipeHistory(
           info.getRecipeHistory().getViewedAt(),
           info.getRecipeHistory().getLastPlaySeconds(),

@@ -14,7 +14,7 @@ public record UnCategorizedRecipesResponse(
     @JsonProperty("total_pages") int totalPages,
     @JsonProperty("total_elements") long totalElements,
     @JsonProperty("has_next") boolean hasNext) {
-  public static UnCategorizedRecipesResponse from(Page<RecipeRecord> categorizedRecipes) {
+  public static UnCategorizedRecipesResponse from(Page<RecipeHistoryOverview> categorizedRecipes) {
     List<UnCategorizedRecipe> responses =
         categorizedRecipes.stream().map(UnCategorizedRecipe::from).toList();
     return new UnCategorizedRecipesResponse(
@@ -38,7 +38,7 @@ public record UnCategorizedRecipesResponse(
       @JsonProperty("servings") Integer servings,
       @JsonProperty("created_at") LocalDateTime createdAt,
       @JsonProperty("tags") List<Tag> tags) {
-    public static UnCategorizedRecipe from(RecipeRecord info) {
+    public static UnCategorizedRecipe from(RecipeHistoryOverview info) {
       return new UnCategorizedRecipe(
           info.getRecipeHistory().getViewedAt(),
           info.getRecipeHistory().getLastPlaySeconds(),

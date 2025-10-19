@@ -9,12 +9,12 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class CountRecipeCategory {
+public class RecipeCategoryCount {
 
   private RecipeCategory category;
-  private Integer count;
+  private Integer recipeCount;
 
-  public static CountRecipeCategory of(RecipeCategory category, Integer count) {
-    return CountRecipeCategory.builder().category(category).count(count).build();
+  public static RecipeCategoryCount of(RecipeCategory category, Integer count) {
+    return RecipeCategoryCount.builder().category(category).recipeCount(count).build();
   }
 }

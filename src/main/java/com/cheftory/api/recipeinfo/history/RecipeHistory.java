@@ -41,7 +41,7 @@ public class RecipeHistory {
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  private RecipeViewState status;
+  private RecipeHistoryStatus status;
 
   public static RecipeHistory create(Clock clock, UUID userId, UUID recipeId) {
     return RecipeHistory.builder()
@@ -51,7 +51,7 @@ public class RecipeHistory {
         .createdAt(clock.now())
         .userId(userId)
         .recipeId(recipeId)
-        .status(RecipeViewState.ACTIVE)
+        .status(RecipeHistoryStatus.ACTIVE)
         .build();
   }
 
@@ -68,6 +68,6 @@ public class RecipeHistory {
   }
 
   public void delete() {
-    this.status = RecipeViewState.DELETED;
+    this.status = RecipeHistoryStatus.DELETED;
   }
 }

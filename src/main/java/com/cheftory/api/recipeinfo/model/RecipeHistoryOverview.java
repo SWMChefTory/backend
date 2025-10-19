@@ -15,20 +15,20 @@ import org.springframework.lang.Nullable;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class RecipeRecord {
+public class RecipeHistoryOverview {
   private Recipe recipe;
   private RecipeHistory recipeHistory;
   private RecipeYoutubeMeta youtubeMeta;
   private RecipeDetailMeta detailMeta;
   private List<RecipeTag> tags;
 
-  public static RecipeRecord of(
+  public static RecipeHistoryOverview of(
       Recipe recipe,
       RecipeHistory recipeHistory,
       RecipeYoutubeMeta youtubeMeta,
       @Nullable RecipeDetailMeta detailMeta,
       @Nullable List<RecipeTag> tags) {
-    return RecipeRecord.builder()
+    return RecipeHistoryOverview.builder()
         .recipe(recipe)
         .recipeHistory(recipeHistory)
         .youtubeMeta(youtubeMeta)

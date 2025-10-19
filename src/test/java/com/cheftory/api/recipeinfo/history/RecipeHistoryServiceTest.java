@@ -3,6 +3,7 @@ package com.cheftory.api.recipeinfo.history;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
@@ -11,8 +12,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeinfo.history.exception.ViewStatusErrorCode;
-import com.cheftory.api.recipeinfo.history.exception.ViewStatusException;
+import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryErrorCode;
+import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryException;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -69,7 +70,7 @@ public class RecipeHistoryServiceTest {
         void beforeEach() {
           doReturn(false)
               .when(repository)
-              .existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
@@ -78,7 +79,7 @@ public class RecipeHistoryServiceTest {
           service.create(userId, recipeId);
 
           verify(repository)
-              .existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
           verify(repository)
               .save(
                   argThat(
@@ -110,7 +111,7 @@ public class RecipeHistoryServiceTest {
         void beforeEach() {
           doReturn(true)
               .when(repository)
-              .existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .existsByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
@@ -160,7 +161,7 @@ public class RecipeHistoryServiceTest {
 
           doReturn(Optional.of(realRecipeHistory))
               .when(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
           doReturn(realRecipeHistory).when(repository).save(any(RecipeHistory.class));
         }
 
@@ -175,7 +176,7 @@ public class RecipeHistoryServiceTest {
           assertThat(status.getViewedAt()).isEqualTo(updateTime); // 실제로 업데이트된 시간
 
           verify(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
           verify(repository).save(realRecipeHistory);
         }
       }
@@ -202,21 +203,21 @@ public class RecipeHistoryServiceTest {
         void beforeEach() {
           doReturn(Optional.empty())
               .when(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - ViewStatusException이 발생해야 한다")
         public void thenShouldThrowViewStatusException() {
-          ViewStatusException exception =
+          RecipeHistoryException exception =
               assertThrows(
-                  ViewStatusException.class,
+                  RecipeHistoryException.class,
                   () -> {
                     service.get(userId, recipeId);
                   });
 
           assertThat(exception.getErrorMessage())
-              .isEqualTo(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND);
+              .isEqualTo(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND);
           verify(repository, never()).save(any());
         }
       }
@@ -253,7 +254,7 @@ public class RecipeHistoryServiceTest {
           realRecipeHistory = RecipeHistory.create(clock, userId, recipeId);
           doReturn(Optional.of(realRecipeHistory))
               .when(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
           doReturn(realRecipeHistory).when(repository).save(any(RecipeHistory.class));
         }
 
@@ -297,21 +298,21 @@ public class RecipeHistoryServiceTest {
         void beforeEach() {
           doReturn(Optional.empty())
               .when(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - ViewStatusException이 발생해야 한다")
         public void thenShouldThrowViewStatusException() {
-          ViewStatusException exception =
+          RecipeHistoryException exception =
               assertThrows(
-                  ViewStatusException.class,
+                  RecipeHistoryException.class,
                   () -> {
                     service.updateCategory(userId, recipeId, newCategoryId);
                   });
 
           assertThat(exception.getErrorMessage())
-              .isEqualTo(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND);
+              .isEqualTo(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND);
           verify(repository, never()).save(any());
         }
       }
@@ -355,14 +356,14 @@ public class RecipeHistoryServiceTest {
 
           doReturn(viewStatusesWithCategory)
               .when(repository)
-              .findByRecipeCategoryIdAndStatus(categoryId, RecipeViewState.ACTIVE);
+              .findByRecipeCategoryIdAndStatus(categoryId, RecipeHistoryStatus.ACTIVE);
           doReturn(viewStatusesWithCategory).when(repository).saveAll(any());
         }
 
         @Test
         @DisplayName("Then - 해당 카테고리를 가진 모든 레시피 조회 상태의 카테고리가 비워져야 한다")
         public void thenShouldEmptyAllRecipeHistoryCategories() {
-          service.deleteCategories(categoryId);
+          service.unCategorize(categoryId);
 
           // 모든 상태의 카테고리가 null로 변경되었는지 확인
           assertThat(viewStatusesWithCategory)
@@ -388,15 +389,16 @@ public class RecipeHistoryServiceTest {
         void beforeEach() {
           doReturn(List.of())
               .when(repository)
-              .findByRecipeCategoryIdAndStatus(categoryId, RecipeViewState.ACTIVE);
+              .findByRecipeCategoryIdAndStatus(categoryId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - saveAll이 빈 리스트로 호출되어야 한다")
         public void thenShouldCallSaveAllWithEmptyList() {
-          service.deleteCategories(categoryId);
+          service.unCategorize(categoryId);
 
-          verify(repository).findByRecipeCategoryIdAndStatus(categoryId, RecipeViewState.ACTIVE);
+          verify(repository)
+              .findByRecipeCategoryIdAndStatus(categoryId, RecipeHistoryStatus.ACTIVE);
           verify(repository).saveAll(List.of());
         }
       }
@@ -421,14 +423,17 @@ public class RecipeHistoryServiceTest {
       doReturn(expectedStatuses)
           .when(repository)
           .findAllByUserIdAndRecipeCategoryIdAndStatus(
-              any(UUID.class), any(UUID.class), any(RecipeViewState.class), any(Pageable.class));
+              any(UUID.class),
+              any(UUID.class),
+              any(RecipeHistoryStatus.class),
+              any(Pageable.class));
 
-      Page<RecipeHistory> result = service.getCategories(userId, categoryId, page);
+      Page<RecipeHistory> result = service.getCategorized(userId, categoryId, page);
 
       assertThat(result).isEqualTo(expectedStatuses);
       verify(repository)
           .findAllByUserIdAndRecipeCategoryIdAndStatus(
-              userId, categoryId, RecipeViewState.ACTIVE, pageable);
+              userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable);
     }
   }
 
@@ -451,14 +456,14 @@ public class RecipeHistoryServiceTest {
       doReturn(expectedPage)
           .when(repository)
           .findAllByUserIdAndRecipeCategoryIdAndStatus(
-              any(UUID.class), isNull(), any(RecipeViewState.class), any(Pageable.class));
+              any(UUID.class), isNull(), any(RecipeHistoryStatus.class), any(Pageable.class));
 
-      Page<RecipeHistory> result = service.getUnCategories(userId, page);
+      Page<RecipeHistory> result = service.getUnCategorized(userId, page);
 
       assertThat(result.getContent()).isEqualTo(expectedStatuses);
       verify(repository)
           .findAllByUserIdAndRecipeCategoryIdAndStatus(
-              userId, null, RecipeViewState.ACTIVE, pageable);
+              userId, null, RecipeHistoryStatus.ACTIVE, pageable);
     }
   }
 
@@ -486,7 +491,6 @@ public class RecipeHistoryServiceTest {
       class WhenFindingRecentRecipeHistoryes {
 
         private Page<RecipeHistory> expectedStatuses;
-        ;
 
         @BeforeEach
         void beforeEach() {
@@ -497,16 +501,109 @@ public class RecipeHistoryServiceTest {
                       RecipeHistory.create(clock, userId, UUID.randomUUID())));
           doReturn(expectedStatuses)
               .when(repository)
-              .findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
+              .findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
         }
 
         @Test
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들이 반환되어야 한다")
         void thenShouldReturnRecentRecipeHistoryes() {
-          List<RecipeHistory> result = service.getRecentUsers(userId, page).getContent();
+          List<RecipeHistory> result = service.getRecents(userId, page).getContent();
 
           assertThat(result).isEqualTo(expectedStatuses.getContent());
-          verify(repository).findByUserIdAndStatus(userId, RecipeViewState.ACTIVE, pageable);
+          verify(repository).findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("모든 레시피 히스토리 조회")
+  class GetAllRecipeHistories {
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+    class GivenValidUserId {
+
+      private UUID userId;
+      private Integer page;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        page = 0;
+        pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
+      }
+
+      @Nested
+      @DisplayName("When - 사용자의 모든 레시피 히스토리를 조회한다면")
+      class WhenGettingAllRecipeHistories {
+
+        private Page<RecipeHistory> expectedHistories;
+
+        @BeforeEach
+        void beforeEach() {
+          RecipeHistory history1 = RecipeHistory.create(clock, userId, UUID.randomUUID());
+          RecipeHistory history2 = RecipeHistory.create(clock, userId, UUID.randomUUID());
+          history2.updateRecipeCategoryId(UUID.randomUUID()); // 카테고리 있음
+
+          RecipeHistory history3 = RecipeHistory.create(clock, userId, UUID.randomUUID());
+          // 카테고리 없음
+
+          expectedHistories = new PageImpl<>(List.of(history1, history2, history3));
+
+          doReturn(expectedHistories)
+              .when(repository)
+              .findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+        }
+
+        @Test
+        @DisplayName("Then - 카테고리 유무와 상관없이 모든 히스토리를 반환해야 한다")
+        void thenShouldReturnAllHistories() {
+          Page<RecipeHistory> result = service.getAll(userId, page);
+
+          assertThat(result.getContent()).hasSize(3);
+          assertThat(result).isEqualTo(expectedHistories);
+          verify(repository).findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 히스토리가 없는 사용자 ID가 주어졌을 때")
+    class GivenUserIdWithNoHistories {
+
+      private UUID userId;
+      private Integer page;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        page = 0;
+        pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
+      }
+
+      @Nested
+      @DisplayName("When - 사용자의 모든 레시피 히스토리를 조회한다면")
+      class WhenGettingAllRecipeHistories {
+
+        @BeforeEach
+        void beforeEach() {
+          Page<RecipeHistory> emptyPage = new PageImpl<>(List.of());
+          doReturn(emptyPage)
+              .when(repository)
+              .findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
+        }
+
+        @Test
+        @DisplayName("Then - 빈 페이지를 반환해야 한다")
+        void thenShouldReturnEmptyPage() {
+          Page<RecipeHistory> result = service.getAll(userId, page);
+
+          assertThat(result.getContent()).isEmpty();
+          assertThat(result.getTotalElements()).isEqualTo(0);
+          verify(repository).findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
         }
       }
     }
@@ -531,7 +628,7 @@ public class RecipeHistoryServiceTest {
       @DisplayName("When - 카테고리별 레시피 개수를 조회한다면")
       class WhenCountingRecipeHistoryesByCategories {
 
-        private List<RecipeHistoryCountProjection> projections;
+        private List<RecipeHistoryCategorizedCountProjection> projections;
 
         @BeforeEach
         void beforeEach() {
@@ -541,11 +638,13 @@ public class RecipeHistoryServiceTest {
                   createMockProjection(categoryIds.get(1), 3L));
           doReturn(projections)
               .when(repository)
-              .countByCategoryIdsAndStatus(categoryIds, RecipeViewState.ACTIVE);
+              .countByCategoryIdsAndStatus(categoryIds, RecipeHistoryStatus.ACTIVE);
         }
 
-        private RecipeHistoryCountProjection createMockProjection(UUID categoryId, Long count) {
-          RecipeHistoryCountProjection projection = mock(RecipeHistoryCountProjection.class);
+        private RecipeHistoryCategorizedCountProjection createMockProjection(
+            UUID categoryId, Long count) {
+          RecipeHistoryCategorizedCountProjection projection =
+              mock(RecipeHistoryCategorizedCountProjection.class);
           doReturn(categoryId).when(projection).getCategoryId();
           doReturn(count).when(projection).getCount();
           return projection;
@@ -554,19 +653,19 @@ public class RecipeHistoryServiceTest {
         @Test
         @DisplayName("Then - 각 카테고리별 레시피 개수가 반환되어야 한다")
         void thenShouldReturnRecipeHistoryCountsByCategories() {
-          List<RecipeHistoryCount> result = service.countByCategories(categoryIds);
+          List<RecipeHistoryCategorizedCount> result = service.countByCategories(categoryIds);
 
           assertThat(result).hasSize(2);
 
-          RecipeHistoryCount first = result.get(0);
+          RecipeHistoryCategorizedCount first = result.get(0);
           assertThat(first.getCategoryId()).isEqualTo(categoryIds.get(0));
           assertThat(first.getCount()).isEqualTo(5);
 
-          RecipeHistoryCount second = result.get(1);
+          RecipeHistoryCategorizedCount second = result.get(1);
           assertThat(second.getCategoryId()).isEqualTo(categoryIds.get(1));
           assertThat(second.getCount()).isEqualTo(3);
 
-          verify(repository).countByCategoryIdsAndStatus(categoryIds, RecipeViewState.ACTIVE);
+          verify(repository).countByCategoryIdsAndStatus(categoryIds, RecipeHistoryStatus.ACTIVE);
         }
       }
     }
@@ -604,18 +703,18 @@ public class RecipeHistoryServiceTest {
 
           doReturn(viewStatuses)
               .when(repository)
-              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - 사용자가 조회한 레시피 상태 목록을 반환해야 한다")
         void thenShouldReturnUserRecipeHistoryes() {
-          List<RecipeHistory> result = service.getUsers(recipeIds, userId);
+          List<RecipeHistory> result = service.getByRecipes(recipeIds, userId);
 
           assertThat(result).hasSize(2);
           assertThat(result).containsExactlyElementsOf(viewStatuses);
           verify(repository)
-              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeHistoryStatus.ACTIVE);
         }
       }
     }
@@ -641,17 +740,17 @@ public class RecipeHistoryServiceTest {
         void beforeEach() {
           doReturn(List.of())
               .when(repository)
-              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - 빈 목록을 반환해야 한다")
         void thenShouldReturnEmptyList() {
-          List<RecipeHistory> result = service.getUsers(recipeIds, userId);
+          List<RecipeHistory> result = service.getByRecipes(recipeIds, userId);
 
           assertThat(result).isEmpty();
           verify(repository)
-              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeHistoryStatus.ACTIVE);
         }
       }
     }
@@ -675,17 +774,17 @@ public class RecipeHistoryServiceTest {
         void beforeEach() {
           doReturn(List.of())
               .when(repository)
-              .findByRecipeIdInAndUserIdAndStatus(List.of(), userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdInAndUserIdAndStatus(List.of(), userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - 빈 목록을 반환해야 한다")
         void thenShouldReturnEmptyList() {
-          List<RecipeHistory> result = service.getUsers(List.of(), userId);
+          List<RecipeHistory> result = service.getByRecipes(List.of(), userId);
 
           assertThat(result).isEmpty();
           verify(repository)
-              .findByRecipeIdInAndUserIdAndStatus(List.of(), userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdInAndUserIdAndStatus(List.of(), userId, RecipeHistoryStatus.ACTIVE);
         }
       }
     }
@@ -719,19 +818,19 @@ public class RecipeHistoryServiceTest {
 
           doReturn(viewStatuses)
               .when(repository)
-              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - 조회한 레시피 상태만 반환해야 한다")
         void thenShouldReturnOnlyViewedRecipeStatuses() {
-          List<RecipeHistory> result = service.getUsers(recipeIds, userId);
+          List<RecipeHistory> result = service.getByRecipes(recipeIds, userId);
 
           assertThat(result).hasSize(2);
           assertThat(result.get(0).getRecipeId()).isEqualTo(recipeIds.get(0));
           assertThat(result.get(1).getRecipeId()).isEqualTo(recipeIds.get(2));
           verify(repository)
-              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeHistoryStatus.ACTIVE);
         }
       }
     }
@@ -765,7 +864,7 @@ public class RecipeHistoryServiceTest {
           realRecipeHistory = RecipeHistory.create(clock, userId, recipeId);
           doReturn(Optional.of(realRecipeHistory))
               .when(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
@@ -774,9 +873,9 @@ public class RecipeHistoryServiceTest {
           service.delete(userId, recipeId);
 
           verify(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
           verify(repository).save(realRecipeHistory);
-          assertThat(realRecipeHistory.getStatus() == RecipeViewState.DELETED).isTrue();
+          assertThat(realRecipeHistory.getStatus() == RecipeHistoryStatus.DELETED).isTrue();
         }
       }
     }
@@ -802,22 +901,189 @@ public class RecipeHistoryServiceTest {
         void beforeEach() {
           doReturn(Optional.empty())
               .when(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeViewState.ACTIVE);
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
         }
 
         @Test
         @DisplayName("Then - ViewStatusException이 발생해야 한다")
         public void thenShouldThrowViewStatusException() {
-          ViewStatusException exception =
+          RecipeHistoryException exception =
               assertThrows(
-                  ViewStatusException.class,
+                  RecipeHistoryException.class,
                   () -> {
                     service.delete(userId, recipeId);
                   });
 
           assertThat(exception.getErrorMessage())
-              .isEqualTo(ViewStatusErrorCode.VIEW_STATUS_NOT_FOUND);
+              .isEqualTo(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND);
           verify(repository, never()).save(any());
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("미분류 레시피 개수 조회")
+  class CountUncategorized {
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+    class GivenValidUserId {
+
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 미분류 레시피 개수를 조회한다면")
+      class WhenCountingUncategorized {
+
+        private RecipeHistoryUnCategorizedCountProjection projection;
+
+        @BeforeEach
+        void beforeEach() {
+          projection = mock(RecipeHistoryUnCategorizedCountProjection.class);
+          doReturn(5L).when(projection).getCount();
+          doReturn(projection)
+              .when(repository)
+              .countByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Then - 올바른 미분류 레시피 개수를 반환해야 한다")
+        void thenShouldReturnCorrectUncategorizedCount() {
+          RecipeHistoryUnCategorizedCount result = service.countUncategorized(userId);
+
+          assertThat(result.getCount()).isEqualTo(5);
+          verify(repository).countByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 미분류 레시피가 없는 사용자 ID가 주어졌을 때")
+    class GivenUserIdWithNoUncategorized {
+
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 미분류 레시피 개수를 조회한다면")
+      class WhenCountingUncategorized {
+
+        private RecipeHistoryUnCategorizedCountProjection projection;
+
+        @BeforeEach
+        void beforeEach() {
+          projection = mock(RecipeHistoryUnCategorizedCountProjection.class);
+          doReturn(0L).when(projection).getCount();
+          doReturn(projection)
+              .when(repository)
+              .countByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Then - 0을 반환해야 한다")
+        void thenShouldReturnZero() {
+          RecipeHistoryUnCategorizedCount result = service.countUncategorized(userId);
+
+          assertThat(result.getCount()).isEqualTo(0);
+          verify(repository).countByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피별 히스토리 삭제")
+  class DeleteByRecipe {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+    class GivenValidRecipeId {
+
+      private UUID recipeId;
+      private LocalDateTime fixedTime;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        fixedTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        doReturn(fixedTime).when(clock).now();
+      }
+
+      @Nested
+      @DisplayName("When - 해당 레시피의 모든 히스토리를 삭제한다면")
+      class WhenDeletingAllHistoriesByRecipe {
+
+        private List<RecipeHistory> histories;
+
+        @BeforeEach
+        void beforeEach() {
+          RecipeHistory history1 = RecipeHistory.create(clock, UUID.randomUUID(), recipeId);
+          RecipeHistory history2 = RecipeHistory.create(clock, UUID.randomUUID(), recipeId);
+          RecipeHistory history3 = RecipeHistory.create(clock, UUID.randomUUID(), recipeId);
+          histories = List.of(history1, history2, history3);
+
+          doReturn(histories).when(repository).findAllByRecipeId(recipeId);
+          doReturn(histories).when(repository).saveAll(anyList());
+        }
+
+        @Test
+        @DisplayName("Then - 모든 히스토리가 삭제 상태로 변경되어야 한다")
+        void thenShouldDeleteAllHistories() {
+          service.deleteByRecipe(recipeId);
+
+          assertThat(histories)
+              .allMatch(history -> history.getStatus() == RecipeHistoryStatus.DELETED);
+          verify(repository).findAllByRecipeId(recipeId);
+          verify(repository)
+              .saveAll(
+                  argThat(
+                      savedHistories -> {
+                        List<RecipeHistory> list = (List<RecipeHistory>) savedHistories;
+                        return list.size() == 3
+                            && list.stream()
+                                .allMatch(h -> h.getStatus() == RecipeHistoryStatus.DELETED);
+                      }));
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 히스토리가 없는 레시피 ID가 주어졌을 때")
+    class GivenRecipeIdWithNoHistories {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 해당 레시피의 모든 히스토리를 삭제한다면")
+      class WhenDeletingAllHistoriesByRecipe {
+
+        @BeforeEach
+        void beforeEach() {
+          doReturn(List.of()).when(repository).findAllByRecipeId(recipeId);
+        }
+
+        @Test
+        @DisplayName("Then - 빈 리스트로 saveAll이 호출되어야 한다")
+        void thenShouldSaveEmptyList() {
+          service.deleteByRecipe(recipeId);
+
+          verify(repository).findAllByRecipeId(recipeId);
+          verify(repository).saveAll(List.of());
         }
       }
     }

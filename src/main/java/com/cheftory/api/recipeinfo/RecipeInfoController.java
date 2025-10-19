@@ -3,23 +3,22 @@ package com.cheftory.api.recipeinfo;
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.recipeinfo.model.CategorizedRecipesResponse;
-import com.cheftory.api.recipeinfo.model.CountRecipeCategoriesResponse;
-import com.cheftory.api.recipeinfo.model.CountRecipeCategory;
-import com.cheftory.api.recipeinfo.model.FullRecipeInfo;
+import com.cheftory.api.recipeinfo.model.FullRecipe;
 import com.cheftory.api.recipeinfo.model.FullRecipeResponse;
 import com.cheftory.api.recipeinfo.model.RecentRecipesResponse;
+import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
+import com.cheftory.api.recipeinfo.model.RecipeCategoryCountsResponse;
 import com.cheftory.api.recipeinfo.model.RecipeCreateRequest;
 import com.cheftory.api.recipeinfo.model.RecipeCreateResponse;
-import com.cheftory.api.recipeinfo.model.RecipeHistoryResponse;
+import com.cheftory.api.recipeinfo.model.RecipeHistoriesResponse;
+import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressResponse;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
-import com.cheftory.api.recipeinfo.model.RecipeRecord;
 import com.cheftory.api.recipeinfo.model.RecommendRecipesResponse;
 import com.cheftory.api.recipeinfo.model.SearchedRecipesResponse;
 import com.cheftory.api.recipeinfo.model.UnCategorizedRecipesResponse;
 import jakarta.validation.constraints.Min;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -48,14 +47,14 @@ public class RecipeInfoController {
   @GetMapping("/{recipeId}")
   public FullRecipeResponse getFullRecipeResponse(
       @PathVariable("recipeId") UUID recipeId, @UserPrincipal UUID userId) {
-    FullRecipeInfo info = recipeInfoService.getFullRecipe(recipeId, userId);
+    FullRecipe info = recipeInfoService.getFullRecipe(recipeId, userId);
     return FullRecipeResponse.of(info);
   }
 
   @GetMapping("/recent")
   public RecentRecipesResponse getRecentInfos(
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeRecord> infos = recipeInfoService.getRecents(userId, page);
+    Page<RecipeHistoryOverview> infos = recipeInfoService.getRecents(userId, page);
     return RecentRecipesResponse.from(infos);
   }
 
@@ -71,22 +70,22 @@ public class RecipeInfoController {
       @PathVariable("recipeCategoryId") UUID categoryId,
       @UserPrincipal UUID userId,
       @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeRecord> infos = recipeInfoService.getCategorized(userId, categoryId, page);
+    Page<RecipeHistoryOverview> infos = recipeInfoService.getCategorized(userId, categoryId, page);
     return CategorizedRecipesResponse.from(infos);
   }
 
   @GetMapping("/uncategorized")
   public UnCategorizedRecipesResponse getUnCategorizedRecipes(
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeRecord> infos = recipeInfoService.getUnCategorized(userId, page);
+    Page<RecipeHistoryOverview> infos = recipeInfoService.getUnCategorized(userId, page);
     return UnCategorizedRecipesResponse.from(infos);
   }
 
   @GetMapping("/histories")
-  public RecipeHistoryResponse getRecipeHistories(
+  public RecipeHistoriesResponse getRecipeHistories(
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeRecord> infos = recipeInfoService.getHistories(userId, page);
-    return RecipeHistoryResponse.from(infos);
+    Page<RecipeHistoryOverview> infos = recipeInfoService.getHistories(userId, page);
+    return RecipeHistoriesResponse.from(infos);
   }
 
   @DeleteMapping("/categories/{recipeCategoryId}")
@@ -97,9 +96,9 @@ public class RecipeInfoController {
   }
 
   @GetMapping("/categories")
-  public CountRecipeCategoriesResponse getRecipeCategories(@UserPrincipal UUID userId) {
-    List<CountRecipeCategory> categories = recipeInfoService.getCategories(userId);
-    return CountRecipeCategoriesResponse.from(categories);
+  public RecipeCategoryCountsResponse getRecipeCategories(@UserPrincipal UUID userId) {
+    RecipeCategoryCounts categories = recipeInfoService.getCategoryCounts(userId);
+    return RecipeCategoryCountsResponse.from(categories);
   }
 
   @GetMapping("/progress/{recipeId}")

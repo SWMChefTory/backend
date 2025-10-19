@@ -16,7 +16,7 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class FullRecipeInfo {
+public class FullRecipe {
   private List<RecipeIngredient> recipeIngredients;
   private List<RecipeTag> recipeTags;
   @Nullable private RecipeDetailMeta recipeDetailMeta;
@@ -27,7 +27,7 @@ public class FullRecipeInfo {
   private Recipe recipe;
   private List<RecipeBriefing> recipeBriefings;
 
-  public static FullRecipeInfo of(
+  public static FullRecipe of(
       List<RecipeStep> recipeSteps,
       List<RecipeIngredient> recipeIngredients,
       @Nullable RecipeDetailMeta recipeDetailMeta,
@@ -37,7 +37,7 @@ public class FullRecipeInfo {
       RecipeHistory recipeHistory,
       Recipe recipe,
       List<RecipeBriefing> recipeBriefings) {
-    return FullRecipeInfo.builder()
+    return FullRecipe.builder()
         .recipeYoutubeMeta(recipeYoutubeMeta)
         .recipeIngredients(recipeIngredients)
         .recipeTags(recipeTags)
