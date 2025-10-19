@@ -9,13 +9,18 @@ import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaErrorCode;
 import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipeinfo.exception.RecipeInfoException;
+import com.cheftory.api.recipeinfo.history.RecipeHistory;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryCategorizedCount;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryService;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryUnCategorizedCount;
 import com.cheftory.api.recipeinfo.identify.RecipeIdentifyService;
 import com.cheftory.api.recipeinfo.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
-import com.cheftory.api.recipeinfo.model.CountRecipeCategory;
-import com.cheftory.api.recipeinfo.model.FullRecipeInfo;
-import com.cheftory.api.recipeinfo.model.RecipeHistory;
+import com.cheftory.api.recipeinfo.model.FullRecipe;
+import com.cheftory.api.recipeinfo.model.RecipeCategoryCount;
+import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
+import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
@@ -29,9 +34,6 @@ import com.cheftory.api.recipeinfo.step.RecipeStepService;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
 import com.cheftory.api.recipeinfo.tag.RecipeTagService;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatusCount;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatusService;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
@@ -57,7 +59,7 @@ public class RecipeInfoService {
 
   private final AsyncRecipeInfoCreationService asyncRecipeInfoCreationService;
   private final RecipeStepService recipeStepService;
-  private final RecipeViewStatusService recipeViewStatusService;
+  private final RecipeHistoryService recipeHistoryService;
   private final RecipeCategoryService recipeCategoryService;
   private final RecipeYoutubeMetaService recipeYoutubeMetaService;
   private final RecipeIngredientService recipeIngredientService;
@@ -83,7 +85,7 @@ public class RecipeInfoService {
               .map(RecipeYoutubeMeta::getRecipeId)
               .toList();
       Recipe recipe = recipeService.getNotFailed(recipeIds);
-      recipeViewStatusService.create(userId, recipe.getId());
+      recipeHistoryService.create(userId, recipe.getId());
       return recipe.getId();
     } catch (RecipeInfoException e) {
       if (e.getErrorMessage() == RecipeErrorCode.RECIPE_NOT_FOUND) {
@@ -107,7 +109,7 @@ public class RecipeInfoService {
       UUID recipeId = recipeService.create();
       recipeYoutubeMetaService.create(videoInfo, recipeId);
       asyncRecipeInfoCreationService.create(recipeId, videoInfo.getVideoId(), uri);
-      recipeViewStatusService.create(userId, recipeId);
+      recipeHistoryService.create(userId, recipeId);
       return recipeId;
     } catch (RecipeInfoException e) {
       if (e.getErrorMessage() == RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING) {
@@ -116,7 +118,7 @@ public class RecipeInfoService {
                 .map(RecipeYoutubeMeta::getRecipeId)
                 .toList();
         Recipe recipe = recipeService.getNotFailed(recipeIds);
-        recipeViewStatusService.create(userId, recipe.getId());
+        recipeHistoryService.create(userId, recipe.getId());
         return recipe.getId();
       }
       throw e;
@@ -126,7 +128,7 @@ public class RecipeInfoService {
   /**
    * 레시피 상세 정보를 조회합니다. * 레시피가 존재하지 않으면 예외를 던집니다. * 레시피가 실패 상태이면 예외를 던집니다. 레시피가 성공 상태이면 조회수를 증가시킵니다.
    */
-  public FullRecipeInfo getFullRecipe(UUID recipeId, UUID userId) {
+  public FullRecipe getFullRecipe(UUID recipeId, UUID userId) {
     try {
       Recipe recipe = recipeService.getSuccess(recipeId);
       List<RecipeStep> steps = recipeStepService.gets(recipeId);
@@ -136,16 +138,16 @@ public class RecipeInfoService {
       List<RecipeTag> tags = recipeTagService.gets(recipeId);
       List<RecipeBriefing> briefings = recipeBriefingService.gets(recipeId);
       RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
-      RecipeViewStatus viewStatus = recipeViewStatusService.get(userId, recipeId);
+      RecipeHistory history = recipeHistoryService.get(userId, recipeId);
 
-      return FullRecipeInfo.of(
+      return FullRecipe.of(
           steps,
           ingredients,
           detailMeta,
           progresses,
           tags,
           youtubeMeta,
-          viewStatus,
+          history,
           recipe,
           briefings);
     } catch (RecipeInfoException e) {
@@ -183,9 +185,9 @@ public class RecipeInfoService {
         recipeTagService.getIn(recipeIds).stream()
             .collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
-    Map<UUID, RecipeViewStatus> recipeViewStatusMap =
-        recipeViewStatusService.getUsers(recipeIds, userId).stream()
-            .collect(Collectors.toMap(RecipeViewStatus::getRecipeId, Function.identity()));
+    Map<UUID, RecipeHistory> recipeViewStatusMap =
+        recipeHistoryService.getByRecipes(recipeIds, userId).stream()
+            .collect(Collectors.toMap(RecipeHistory::getRecipeId, Function.identity()));
 
     List<RecipeOverview> recipeOverviews =
         recipes.getContent().stream()
@@ -210,8 +212,8 @@ public class RecipeInfoService {
                     log.error("레시피의 태그 누락: recipeId={}", recipe.getId());
                   }
 
-                  RecipeViewStatus viewStatus = recipeViewStatusMap.get(recipeId);
-                  Boolean isViewed = viewStatus != null;
+                  RecipeHistory history = recipeViewStatusMap.get(recipeId);
+                  Boolean isViewed = history != null;
 
                   return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
                 })
@@ -221,20 +223,26 @@ public class RecipeInfoService {
     return new PageImpl<>(recipeOverviews, recipes.getPageable(), recipes.getTotalElements());
   }
 
-  public Page<RecipeHistory> getRecents(UUID userId, Integer page) {
-    Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.getRecentUsers(userId, page);
-    return buildHistoryOverviews(viewStatuses);
+  public Page<RecipeHistoryOverview> getRecents(UUID userId, Integer page) {
+    Page<RecipeHistory> histories = recipeHistoryService.getRecents(userId, page);
+    return buildHistoryOverviews(histories);
   }
 
-  public Page<RecipeHistory> getCategorized(UUID userId, UUID recipeCategoryId, Integer page) {
-    Page<RecipeViewStatus> viewStatuses =
-        recipeViewStatusService.getCategories(userId, recipeCategoryId, page);
-    return buildHistoryOverviews(viewStatuses);
+  public Page<RecipeHistoryOverview> getCategorized(
+      UUID userId, UUID recipeCategoryId, Integer page) {
+    Page<RecipeHistory> histories =
+        recipeHistoryService.getCategorized(userId, recipeCategoryId, page);
+    return buildHistoryOverviews(histories);
   }
 
-  public Page<RecipeHistory> getUnCategorized(UUID userId, Integer page) {
-    Page<RecipeViewStatus> viewStatuses = recipeViewStatusService.getUnCategories(userId, page);
-    return buildHistoryOverviews(viewStatuses);
+  public Page<RecipeHistoryOverview> getUnCategorized(UUID userId, Integer page) {
+    Page<RecipeHistory> histories = recipeHistoryService.getUnCategorized(userId, page);
+    return buildHistoryOverviews(histories);
+  }
+
+  public Page<RecipeHistoryOverview> getHistories(UUID userId, Integer page) {
+    Page<RecipeHistory> histories = recipeHistoryService.getAll(userId, page);
+    return buildHistoryOverviews(histories);
   }
 
   /**
@@ -242,11 +250,11 @@ public class RecipeInfoService {
    * success) 3) recipeId로 RecipeYoutube 불러오기 (metaId 수집) 3-2) metaId 목록 수집 4) metaId로
    * RecipeYoutubeMeta 불러오기 5) 매핑: 누락은 스킵하며 로그
    *
-   * @param viewStatuses 뷰 상태 페이지
-   * @return 히스토리 페이지
+   * @param histories 히스토리 페이지
+   * @return 리코드 페이지
    */
-  private Page<RecipeHistory> buildHistoryOverviews(Page<RecipeViewStatus> viewStatuses) {
-    List<UUID> recipeIds = viewStatuses.stream().map(RecipeViewStatus::getRecipeId).toList();
+  private Page<RecipeHistoryOverview> buildHistoryOverviews(Page<RecipeHistory> histories) {
+    List<UUID> recipeIds = histories.stream().map(RecipeHistory::getRecipeId).toList();
 
     Map<UUID, Recipe> recipeMap =
         recipeService.getsNotFailed(recipeIds).stream()
@@ -265,18 +273,16 @@ public class RecipeInfoService {
         recipeTagService.getIn(recipeIds).stream()
             .collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
-    List<RecipeHistory> histories =
-        viewStatuses.getContent().stream()
+    List<RecipeHistoryOverview> historyOverviews =
+        histories.getContent().stream()
             .map(
-                viewStatus -> {
-                  UUID recipeId = viewStatus.getRecipeId();
+                history -> {
+                  UUID recipeId = history.getRecipeId();
 
                   Recipe recipe = recipeMap.get(recipeId);
                   if (recipe == null) {
                     log.warn(
-                        "히스토리: 존재하지 않는 레시피 recipeId={}, userId={}",
-                        recipeId,
-                        viewStatus.getUserId());
+                        "히스토리: 존재하지 않는 레시피 recipeId={}, userId={}", recipeId, history.getUserId());
                     return null;
                   }
 
@@ -290,34 +296,42 @@ public class RecipeInfoService {
                   List<RecipeTag> tags =
                       tagsMap.getOrDefault(recipe.getId(), Collections.emptyList());
 
-                  return RecipeHistory.of(recipe, viewStatus, youtubeMeta, detailMeta, tags);
+                  return RecipeHistoryOverview.of(recipe, history, youtubeMeta, detailMeta, tags);
                 })
             .filter(Objects::nonNull)
             .toList();
 
-    return new PageImpl<>(histories, viewStatuses.getPageable(), viewStatuses.getTotalElements());
+    return new PageImpl<>(historyOverviews, histories.getPageable(), histories.getTotalElements());
   }
 
-  public List<CountRecipeCategory> getCategories(UUID userId) {
-    var categories = recipeCategoryService.getUsers(userId);
-    var categoryIds = categories.stream().map(RecipeCategory::getId).toList();
-    var counts = recipeViewStatusService.countByCategories(categoryIds);
+  public RecipeCategoryCounts getCategoryCounts(UUID userId) {
+    List<RecipeCategory> categories = recipeCategoryService.getUsers(userId);
+    List<UUID> categoryIds = categories.stream().map(RecipeCategory::getId).toList();
 
-    var countMap =
-        counts.stream()
+    List<RecipeHistoryCategorizedCount> categorizedCounts =
+        recipeHistoryService.countByCategories(categoryIds);
+    Map<UUID, Integer> countMap =
+        categorizedCounts.stream()
             .collect(
                 Collectors.toMap(
-                    RecipeViewStatusCount::getCategoryId, RecipeViewStatusCount::getCount));
+                    RecipeHistoryCategorizedCount::getCategoryId,
+                    RecipeHistoryCategorizedCount::getCount));
 
-    return categories.stream()
-        .map(
-            category ->
-                CountRecipeCategory.of(category, countMap.getOrDefault(category.getId(), 0)))
-        .toList();
+    RecipeHistoryUnCategorizedCount uncategorizedCount =
+        recipeHistoryService.countUncategorized(userId);
+
+    List<RecipeCategoryCount> categoriesWithCount =
+        categories.stream()
+            .map(
+                category ->
+                    RecipeCategoryCount.of(category, countMap.getOrDefault(category.getId(), 0)))
+            .toList();
+
+    return RecipeCategoryCounts.of(uncategorizedCount.getCount(), categoriesWithCount);
   }
 
   public void deleteCategory(UUID categoryId) {
-    recipeViewStatusService.deleteCategories(categoryId);
+    recipeHistoryService.unCategorize(categoryId);
     recipeCategoryService.delete(categoryId);
   }
 
@@ -350,9 +364,9 @@ public class RecipeInfoService {
         recipeTagService.getIn(recipeIds).stream()
             .collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
-    Map<UUID, RecipeViewStatus> recipeViewStatusMap =
-        recipeViewStatusService.getUsers(recipeIds, userId).stream()
-            .collect(Collectors.toMap(RecipeViewStatus::getRecipeId, Function.identity()));
+    Map<UUID, RecipeHistory> recipeViewStatusMap =
+        recipeHistoryService.getByRecipes(recipeIds, userId).stream()
+            .collect(Collectors.toMap(RecipeHistory::getRecipeId, Function.identity()));
 
     List<RecipeOverview> recipeOverviews =
         searchResults
@@ -382,7 +396,7 @@ public class RecipeInfoService {
                     log.error("레시피의 태그 누락: recipeId={}", recipe.getId());
                   }
 
-                  RecipeViewStatus viewStatus = recipeViewStatusMap.get(recipeId);
+                  RecipeHistory viewStatus = recipeViewStatusMap.get(recipeId);
                   Boolean isViewed = viewStatus != null;
 
                   return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);

@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.viewstatus;
+package com.cheftory.api.recipeinfo.history;
 
 import com.cheftory.api._common.Clock;
 import jakarta.persistence.Column;
@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class RecipeViewStatus {
+public class RecipeHistory {
   @Id private UUID id;
 
   @Column(nullable = false)
@@ -41,17 +41,17 @@ public class RecipeViewStatus {
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  private RecipeViewState status;
+  private RecipeHistoryStatus status;
 
-  public static RecipeViewStatus create(Clock clock, UUID userId, UUID recipeId) {
-    return RecipeViewStatus.builder()
+  public static RecipeHistory create(Clock clock, UUID userId, UUID recipeId) {
+    return RecipeHistory.builder()
         .id(UUID.randomUUID())
         .lastPlaySeconds(0)
         .viewedAt(clock.now())
         .createdAt(clock.now())
         .userId(userId)
         .recipeId(recipeId)
-        .status(RecipeViewState.ACTIVE)
+        .status(RecipeHistoryStatus.ACTIVE)
         .build();
   }
 
@@ -68,6 +68,6 @@ public class RecipeViewStatus {
   }
 
   public void delete() {
-    this.status = RecipeViewState.DELETED;
+    this.status = RecipeHistoryStatus.DELETED;
   }
 }

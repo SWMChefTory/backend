@@ -3,6 +3,8 @@ package com.cheftory.api.exception;
 import static com.cheftory.api.exception.ErrorMessage.resolveErrorCode;
 
 import com.cheftory.api._common.reponse.ErrorResponse;
+import com.cheftory.api.account.auth.exception.AuthErrorCode;
+import com.cheftory.api.account.auth.exception.AuthException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,11 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(CheftoryException.class)
   public ResponseEntity<ErrorResponse> handleCheftoryException(CheftoryException ex) {
-    log.error(ex.getErrorMessage().getMessage(), ex);
+    if (ex instanceof AuthException && ex.getErrorMessage() == AuthErrorCode.INVALID_TOKEN) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(ex));
+    } else {
+      log.error(ex.getErrorMessage().getMessage(), ex);
+    }
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(ex));
   }
 
