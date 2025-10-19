@@ -1,0 +1,21 @@
+[[RecipeCaption-API]]
+= RecipeCaption API
+
+== 레시피 자막 조회 (GET /api/v1/recipes/+{recipe_id}+/caption)
+
+=== 1.1 성공 – 레시피 한글 자막 조회
+
+==== 요청
+include::{snippets}/recipe-caption-controller-test/get-recipe-caption/given-valid-recipe-id/when-requesting-korean-caption/then-should-return-korean-caption/http-request.adoc[]
+
+==== 경로 매개변수
+include::{snippets}/recipe-caption-controller-test/get-recipe-caption/given-valid-recipe-id/when-requesting-korean-caption/then-should-return-korean-caption/path-parameters.adoc[]
+
+==== 응답
+include::{snippets}/recipe-caption-controller-test/get-recipe-caption/given-valid-recipe-id/when-requesting-korean-caption/then-should-return-korean-caption/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/recipe-caption-controller-test/get-recipe-caption/given-valid-recipe-id/when-requesting-korean-caption/then-should-return-korean-caption/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/recipe-caption-controller-test/get-recipe-caption/given-valid-recipe-id/when-requesting-korean-caption/then-should-return-korean-caption/response-fields.adoc[]

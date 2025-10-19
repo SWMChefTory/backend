@@ -1,0 +1,21 @@
+[[RecipeStep-API]]
+= RecipeStep API
+
+== 레시피 단계 조회 (GET /api/v1/recipes/+{recipe_id}+/steps)
+
+=== 1.1 성공 – 레시피 단계 목록 조회
+
+==== 요청
+include::{snippets}/recipe-step-controller-test/get-recipe-steps/given-valid-recipe-id/when-requesting-recipe-steps/then-should-return-recipe-steps/http-request.adoc[]
+
+==== 경로 매개변수
+include::{snippets}/recipe-step-controller-test/get-recipe-steps/given-valid-recipe-id/when-requesting-recipe-steps/then-should-return-recipe-steps/path-parameters.adoc[]
+
+==== 응답
+include::{snippets}/recipe-step-controller-test/get-recipe-steps/given-valid-recipe-id/when-requesting-recipe-steps/then-should-return-recipe-steps/http-response.adoc[]
+
+==== 응답 본문
+include::{snippets}/recipe-step-controller-test/get-recipe-steps/given-valid-recipe-id/when-requesting-recipe-steps/then-should-return-recipe-steps/response-body.adoc[]
+
+==== 응답 필드
+include::{snippets}/recipe-step-controller-test/get-recipe-steps/given-valid-recipe-id/when-requesting-recipe-steps/then-should-return-recipe-steps/response-fields.adoc[]
