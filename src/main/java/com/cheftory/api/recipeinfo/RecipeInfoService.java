@@ -257,7 +257,7 @@ public class RecipeInfoService {
     List<UUID> recipeIds = histories.stream().map(RecipeHistory::getRecipeId).toList();
 
     Map<UUID, Recipe> recipeMap =
-        recipeService.getsNotFailed(recipeIds).stream()
+        recipeService.getValidRecipes(recipeIds).stream()
             .collect(Collectors.toMap(Recipe::getId, Function.identity()));
 
     Map<UUID, RecipeYoutubeMeta> youtubeMetaMap =

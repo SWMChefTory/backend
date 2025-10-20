@@ -172,6 +172,42 @@ public class RecipeYoutubeMetaServiceTest {
             .findAllByVideoUri(normalizedUri.toUri());
         doReturn(false).when(meta1).isBanned();
         doReturn(false).when(meta2).isBanned();
+        doReturn(false).when(meta1).isBlocked();
+        doReturn(false).when(meta2).isBlocked();
+
+        var result = recipeYoutubeMetaService.getByUrl(originalUri);
+
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(2);
+        assertThat(result).containsExactly(meta1, meta2);
+      }
+
+      @Test
+      @DisplayName("Then - 결과 중 blocked가 하나라도 있으면 YOUTUBE_META_BLOCKED 예외를 던진다.")
+      void thenThrowYoutubeMetaBlockedIfAnyBlocked() {
+        doReturn(java.util.List.of(meta1, meta2))
+            .when(recipeYoutubeMetaRepository)
+            .findAllByVideoUri(any(URI.class));
+        doReturn(false).when(meta1).isBanned();
+        doReturn(false).when(meta2).isBanned();
+        doReturn(false).when(meta1).isBlocked();
+        doReturn(true).when(meta2).isBlocked();
+
+        assertThatThrownBy(() -> recipeYoutubeMetaService.getByUrl(originalUri))
+            .isInstanceOf(YoutubeMetaException.class)
+            .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED);
+      }
+
+      @Test
+      @DisplayName("Then - 모든 메타데이터가 blocked가 아니고 banned가 아니면 정상적으로 리스트를 반환한다")
+      void thenReturnListWhenNoneBannedAndNoneBlocked() {
+        doReturn(java.util.List.of(meta1, meta2))
+            .when(recipeYoutubeMetaRepository)
+            .findAllByVideoUri(normalizedUri.toUri());
+        doReturn(false).when(meta1).isBanned();
+        doReturn(false).when(meta2).isBanned();
+        doReturn(false).when(meta1).isBlocked();
+        doReturn(false).when(meta2).isBlocked();
 
         var result = recipeYoutubeMetaService.getByUrl(originalUri);
 

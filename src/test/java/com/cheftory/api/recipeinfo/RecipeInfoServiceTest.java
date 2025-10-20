@@ -173,6 +173,21 @@ public class RecipeInfoServiceTest {
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_BANNED);
     }
+
+    @Test
+    @DisplayName("블락된 유튜브 영상이면 예외를 던진다")
+    void shouldThrowExceptionWhenYoutubeVideoIsBlocked() {
+      URI uri = URI.create("https://youtube.com/watch?v=blocked");
+      UUID userId = UUID.randomUUID();
+
+      doThrow(new RecipeInfoException(YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED))
+          .when(recipeYoutubeMetaService)
+          .getByUrl(uri);
+
+      assertThatThrownBy(() -> recipeInfoService.create(uri, userId))
+          .isInstanceOf(RecipeInfoException.class)
+          .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_CREATE_FAIL);
+    }
   }
 
   @Nested
@@ -525,7 +540,7 @@ public class RecipeInfoServiceTest {
                 createMockRecipeYoutubeMeta(UUID.randomUUID(), "된장찌개 만들기", recipeId2));
 
         doReturn(viewStatuses).when(recipeHistoryService).getRecents(userId, page);
-        doReturn(recipes).when(recipeService).getsNotFailed(anyList());
+        doReturn(recipes).when(recipeService).getValidRecipes(anyList());
         doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
       }
 
@@ -546,7 +561,7 @@ public class RecipeInfoServiceTest {
                           && history.getRecipeHistory() != null
                           && history.getYoutubeMeta() != null);
           verify(recipeHistoryService).getRecents(userId, page);
-          verify(recipeService).getsNotFailed(anyList());
+          verify(recipeService).getValidRecipes(anyList());
           verify(recipeYoutubeMetaService).getByRecipes(anyList());
         }
       }
@@ -602,7 +617,7 @@ public class RecipeInfoServiceTest {
         viewStatuses = new PageImpl<>(List.of(createMockRecipeHistory(recipeId, userId)));
 
         doReturn(viewStatuses).when(recipeHistoryService).getRecents(userId, page);
-        doReturn(List.of()).when(recipeService).getsNotFailed(anyList()); // 실패한 레시피는 제외
+        doReturn(List.of()).when(recipeService).getValidRecipes(anyList()); // 실패한 레시피는 제외
         doReturn(List.of()).when(recipeYoutubeMetaService).getByRecipes(anyList());
       }
 
@@ -617,7 +632,7 @@ public class RecipeInfoServiceTest {
 
           assertThat(result.getContent()).isEmpty();
           verify(recipeHistoryService).getRecents(userId, page);
-          verify(recipeService).getsNotFailed(anyList());
+          verify(recipeService).getValidRecipes(anyList());
         }
       }
     }
@@ -652,7 +667,7 @@ public class RecipeInfoServiceTest {
         doReturn(viewStatuses)
             .when(recipeHistoryService)
             .getCategorized(userId, recipeCategoryId, page);
-        doReturn(recipes).when(recipeService).getsNotFailed(anyList());
+        doReturn(recipes).when(recipeService).getValidRecipes(anyList());
         doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
       }
 
@@ -671,7 +686,7 @@ public class RecipeInfoServiceTest {
           assertThat(result.getContent().get(0).getRecipeHistory()).isNotNull();
           assertThat(result.getContent().get(0).getYoutubeMeta()).isNotNull();
           verify(recipeHistoryService).getCategorized(userId, recipeCategoryId, page);
-          verify(recipeService).getsNotFailed(anyList());
+          verify(recipeService).getValidRecipes(anyList());
         }
       }
     }
@@ -740,7 +755,7 @@ public class RecipeInfoServiceTest {
         youtubeMetas = List.of(createMockRecipeYoutubeMeta(UUID.randomUUID(), "미분류 요리", recipeId1));
 
         doReturn(viewStatuses).when(recipeHistoryService).getUnCategorized(userId, page);
-        doReturn(recipes).when(recipeService).getsNotFailed(anyList());
+        doReturn(recipes).when(recipeService).getValidRecipes(anyList());
         doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
       }
 
@@ -758,7 +773,7 @@ public class RecipeInfoServiceTest {
           assertThat(result.getContent().get(0).getRecipeHistory()).isNotNull();
           assertThat(result.getContent().get(0).getYoutubeMeta()).isNotNull();
           verify(recipeHistoryService).getUnCategorized(userId, page);
-          verify(recipeService).getsNotFailed(anyList());
+          verify(recipeService).getValidRecipes(anyList());
         }
       }
     }
@@ -1594,6 +1609,7 @@ public class RecipeInfoServiceTest {
         .getThumbnailUrl();
     doReturn(300).when(youtubeMeta).getVideoSeconds();
     doReturn(false).when(youtubeMeta).isBanned();
+    doReturn(false).when(youtubeMeta).isBlocked();
     doReturn(LocalDateTime.now()).when(youtubeMeta).getCreatedAt();
     return youtubeMeta;
   }

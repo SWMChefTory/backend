@@ -273,16 +273,17 @@ class RecipeServiceTest {
     }
 
     @Nested
-    @DisplayName("Given - 실패하지 않은 레시피들이 존재할 때")
-    class GivenNotFailedRecipesExist {
+    @DisplayName("Given - 유효한 레시피들(IN_PROGRESS, SUCCESS)이 존재할 때")
+    class GivenValidRecipesExist {
 
-      private List<Recipe> notFailedRecipes;
+      private List<Recipe> validRecipes;
 
       @BeforeEach
       void setUp() {
-        notFailedRecipes = List.of(mock(Recipe.class), mock(Recipe.class));
-        when(recipeRepository.findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED))
-            .thenReturn(notFailedRecipes);
+        validRecipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        when(recipeRepository.findRecipesByIdInAndRecipeStatusIn(
+                recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS)))
+            .thenReturn(validRecipes);
       }
 
       @Nested
@@ -290,13 +291,44 @@ class RecipeServiceTest {
       class WhenFindingRecipes {
 
         @Test
-        @DisplayName("Then - 실패하지 않은 레시피 목록이 반환된다")
-        void thenReturnNotFailedRecipes() {
-          List<Recipe> result = service.getsNotFailed(recipeIds);
+        @DisplayName("Then - 유효한 레시피 목록이 반환된다")
+        void thenReturnValidRecipes() {
+          List<Recipe> result = service.getValidRecipes(recipeIds);
 
-          assertThat(result).isEqualTo(notFailedRecipes);
+          assertThat(result).isEqualTo(validRecipes);
           verify(recipeRepository)
-              .findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED);
+              .findRecipesByIdInAndRecipeStatusIn(
+                  recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS));
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - BLOCKED 상태의 레시피가 포함되어 있을 때")
+    class GivenBlockedRecipesIncluded {
+
+      @BeforeEach
+      void setUp() {
+        // IN_PROGRESS와 SUCCESS만 반환 (BLOCKED와 FAILED 제외)
+        List<Recipe> validRecipes = List.of(mock(Recipe.class));
+        when(recipeRepository.findRecipesByIdInAndRecipeStatusIn(
+                recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS)))
+            .thenReturn(validRecipes);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 목록 조회 요청을 하면")
+      class WhenFindingRecipes {
+
+        @Test
+        @DisplayName("Then - BLOCKED 상태는 제외되고 유효한 레시피만 반환된다")
+        void thenReturnOnlyValidRecipesExcludingBlocked() {
+          List<Recipe> result = service.getValidRecipes(recipeIds);
+
+          assertThat(result).hasSize(1);
+          verify(recipeRepository)
+              .findRecipesByIdInAndRecipeStatusIn(
+                  recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS));
         }
       }
     }

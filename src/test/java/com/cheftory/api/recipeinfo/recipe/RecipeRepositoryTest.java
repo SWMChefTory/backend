@@ -274,7 +274,8 @@ public class RecipeRepositoryTest extends DbContextTest {
         @BeforeEach
         void setUp() {
           notFailedRecipes =
-              recipeRepository.findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED);
+              recipeRepository.findRecipesByIdInAndRecipeStatusIn(
+                  recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS));
         }
 
         @DisplayName("Then - 실패 상태가 아닌 레시피들만 반환된다")
@@ -312,8 +313,8 @@ public class RecipeRepositoryTest extends DbContextTest {
         @BeforeEach
         void setUp() {
           notInProgressRecipes =
-              recipeRepository.findRecipesByIdInAndRecipeStatusNot(
-                  recipeIds, RecipeStatus.IN_PROGRESS);
+              recipeRepository.findRecipesByIdInAndRecipeStatusIn(
+                  recipeIds, List.of(RecipeStatus.SUCCESS, RecipeStatus.FAILED));
         }
 
         @DisplayName("Then - 진행 중 상태가 아닌 레시피들만 반환된다")
@@ -355,7 +356,8 @@ public class RecipeRepositoryTest extends DbContextTest {
         @BeforeEach
         void setUp() {
           recipes =
-              recipeRepository.findRecipesByIdInAndRecipeStatusNot(List.of(), RecipeStatus.FAILED);
+              recipeRepository.findRecipesByIdInAndRecipeStatusIn(
+                  List.of(), List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS));
         }
 
         @DisplayName("Then - 빈 목록이 반환된다")

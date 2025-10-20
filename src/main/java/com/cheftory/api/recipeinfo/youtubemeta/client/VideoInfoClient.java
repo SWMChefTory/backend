@@ -46,4 +46,26 @@ public class VideoInfoClient {
         URI.create(youtubeVideoResponse.getThumbnailUri()),
         youtubeVideoResponse.getSecondsDuration().intValue());
   }
+
+  public Boolean isBlockedVideo(YoutubeUri youtubeUri) {
+    String videoId = youtubeUri.getVideoId();
+
+    YoutubeVideoResponse youtubeVideoResponse =
+        webClient
+            .get()
+            .uri(
+                uriBuilder ->
+                    uriBuilder
+                        .path("/videos")
+                        .queryParam("id", videoId)
+                        .queryParam("key", YOUTUBE_KEY)
+                        .queryParam("part", "id")
+                        .build())
+            .retrieve()
+            .bodyToMono(YoutubeVideoResponse.class)
+            .block();
+
+    Objects.requireNonNull(youtubeVideoResponse, "비디오 응답이 null 입니다.");
+    return youtubeVideoResponse.items().isEmpty();
+  }
 }
