@@ -33,6 +33,7 @@ import com.cheftory.api.recipeinfo.model.FullRecipe;
 import com.cheftory.api.recipeinfo.model.RecipeCategoryCount;
 import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
@@ -634,6 +635,9 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .when(youtubeMeta)
               .getThumbnailUrl();
           doReturn(URI.create("https://example.com/video")).when(youtubeMeta).getVideoUri();
+          doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL)
+              .when(youtubeMeta)
+              .getType();
 
           doReturn(recipe).when(recipeOverview).getRecipe();
           doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
@@ -642,7 +646,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           recipes = new PageImpl<>(List.of(recipeOverview), pageable, 1);
           doReturn(recipes)
               .when(recipeInfoService)
-              .getPopulars(any(Integer.class), any(UUID.class));
+              .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
         }
 
         @Test
@@ -681,12 +685,15 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 URL"),
                               fieldWithPath("recommend_recipes[].is_viewed")
                                   .description("사용자가 해당 레시피를 본 적이 있는지 여부"),
+                              fieldWithPath("recommend_recipes[].video_type")
+                                  .description("비디오 타입 (NORMAL 또는 SHORTS)"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).getPopulars(page, userId);
+          verify(recipeInfoService)
+              .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("recommend_recipes")).hasSize(1);
@@ -702,6 +709,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("recommend_recipes[0].video_url"))
               .isEqualTo("https://example.com/video");
           assertThat(responseBody.getString("recommend_recipes[0].is_viewed")).isEqualTo("true");
+          assertThat(responseBody.getString("recommend_recipes[0].video_type")).isEqualTo("NORMAL");
           assertThat(responseBody.getString("current_page")).isEqualTo("0");
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
@@ -736,7 +744,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeOverview>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .getPopulars(any(Integer.class), any(UUID.class));
+              .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
         }
 
         @Test
@@ -752,8 +760,155 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recommend_recipes", hasSize(0));
 
-          verify(recipeInfoService).getPopulars(page, userId);
+          verify(recipeInfoService)
+              .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
         }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - query 파라미터가 주어졌을 때")
+    class GivenQueryParameter {
+
+      private UUID userId;
+      private Integer page;
+      private Page<RecipeOverview> recipes;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        page = 0;
+        var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        recipes = new PageImpl<>(List.of());
+      }
+
+      @Test
+      @DisplayName("query=ALL이면 RecipeInfoVideoQuery.ALL로 서비스를 호출한다")
+      void callsServiceWithAllQuery() {
+        doReturn(recipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        given()
+            .contentType(ContentType.JSON)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .param("page", page)
+            .param("query", "ALL")
+            .get("/api/v1/recipes/recommend")
+            .then()
+            .status(HttpStatus.OK);
+
+        verify(recipeInfoService).getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+      }
+
+      @Test
+      @DisplayName("query=NORMAL이면 RecipeInfoVideoQuery.NORMAL로 서비스를 호출한다")
+      void callsServiceWithNormalQuery() {
+        doReturn(recipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        given()
+            .contentType(ContentType.JSON)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .param("page", page)
+            .param("query", "NORMAL")
+            .get("/api/v1/recipes/recommend")
+            .then()
+            .status(HttpStatus.OK);
+
+        verify(recipeInfoService).getPopulars(page, userId, RecipeInfoVideoQuery.NORMAL);
+      }
+
+      @Test
+      @DisplayName("query=SHORTS이면 RecipeInfoVideoQuery.SHORTS로 서비스를 호출한다")
+      void callsServiceWithShortsQuery() {
+        doReturn(recipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        given()
+            .contentType(ContentType.JSON)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .param("page", page)
+            .param("query", "SHORTS")
+            .get("/api/v1/recipes/recommend")
+            .then()
+            .status(HttpStatus.OK);
+
+        verify(recipeInfoService).getPopulars(page, userId, RecipeInfoVideoQuery.SHORTS);
+      }
+
+      @Test
+      @DisplayName("query 파라미터가 없으면 기본값 ALL로 서비스를 호출한다")
+      void callsServiceWithDefaultAllQuery() {
+        doReturn(recipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        given()
+            .contentType(ContentType.JSON)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .param("page", page)
+            .get("/api/v1/recipes/recommend")
+            .then()
+            .status(HttpStatus.OK);
+
+        verify(recipeInfoService).getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+      }
+
+      @Test
+      @DisplayName("SHORTS 타입 비디오는 video_type이 SHORTS로 반환된다")
+      void returnsShortsVideoType() {
+        UUID recipeId = UUID.randomUUID();
+        Recipe recipe = mock(Recipe.class);
+        RecipeYoutubeMeta youtubeMeta = mock(RecipeYoutubeMeta.class);
+        RecipeOverview recipeOverview = mock(RecipeOverview.class);
+
+        doReturn(recipeId).when(recipe).getId();
+        doReturn(50).when(recipe).getViewCount();
+        doReturn("30초 요리 팁").when(youtubeMeta).getTitle();
+        doReturn("shorts123").when(youtubeMeta).getVideoId();
+        doReturn(URI.create("https://example.com/shorts/thumbnail.jpg"))
+            .when(youtubeMeta)
+            .getThumbnailUrl();
+        doReturn(URI.create("https://www.youtube.com/shorts/shorts123"))
+            .when(youtubeMeta)
+            .getVideoUri();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS)
+            .when(youtubeMeta)
+            .getType();
+
+        doReturn(recipe).when(recipeOverview).getRecipe();
+        doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
+        doReturn(false).when(recipeOverview).getIsViewed();
+
+        Page<RecipeOverview> shortsRecipes = new PageImpl<>(List.of(recipeOverview));
+        doReturn(shortsRecipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .attribute("userId", userId.toString())
+                .header("Authorization", "Bearer accessToken")
+                .param("page", page)
+                .param("query", "SHORTS")
+                .get("/api/v1/recipes/recommend")
+                .then()
+                .status(HttpStatus.OK);
+
+        var responseBody = response.extract().jsonPath();
+        assertThat(responseBody.getString("recommend_recipes[0].video_type")).isEqualTo("SHORTS");
+        assertThat(responseBody.getString("recommend_recipes[0].recipe_title"))
+            .isEqualTo("30초 요리 팁");
       }
     }
   }

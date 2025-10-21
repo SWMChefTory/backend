@@ -12,6 +12,7 @@ import com.cheftory.api.recipeinfo.model.RecipeCreateRequest;
 import com.cheftory.api.recipeinfo.model.RecipeCreateResponse;
 import com.cheftory.api.recipeinfo.model.RecipeHistoriesResponse;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressResponse;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
@@ -60,8 +61,10 @@ public class RecipeInfoController {
 
   @GetMapping("/recommend")
   public RecommendRecipesResponse getRecommendedRecipes(
-      @RequestParam(defaultValue = "0") @Min(0) Integer page, @UserPrincipal UUID userId) {
-    Page<RecipeOverview> recipes = recipeInfoService.getPopulars(page, userId);
+      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @UserPrincipal UUID userId,
+      @RequestParam(defaultValue = "ALL") RecipeInfoVideoQuery query) {
+    Page<RecipeOverview> recipes = recipeInfoService.getPopulars(page, userId, query);
     return RecommendRecipesResponse.from(recipes);
   }
 

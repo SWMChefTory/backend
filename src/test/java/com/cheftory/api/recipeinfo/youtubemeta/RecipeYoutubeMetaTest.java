@@ -250,4 +250,57 @@ public class RecipeYoutubeMetaTest {
       }
     }
   }
+
+  @Nested
+  @DisplayName("비디오 타입 설정")
+  class VideoTypeField {
+
+    private Clock clock;
+    private UUID recipeId;
+    private URI videoUri;
+    private LocalDateTime now;
+
+    @BeforeEach
+    void setUp() {
+      clock = mock(Clock.class);
+      recipeId = UUID.randomUUID();
+      videoUri = URI.create("https://www.youtube.com/watch?v=testid");
+      now = LocalDateTime.now();
+      doReturn(now).when(clock).now();
+    }
+
+    @Test
+    @DisplayName("NORMAL 타입 비디오 정보로 생성하면 type이 NORMAL이다")
+    void createsWithNormalType() {
+      YoutubeVideoInfo videoInfo = mock(YoutubeVideoInfo.class);
+      doReturn(videoUri).when(videoInfo).getVideoUri();
+      doReturn("Normal Video").when(videoInfo).getTitle();
+      doReturn(URI.create("https://img.youtube.com/vi/testid/default.jpg"))
+          .when(videoInfo)
+          .getThumbnailUrl();
+      doReturn(300).when(videoInfo).getVideoSeconds();
+      doReturn(YoutubeMetaType.NORMAL).when(videoInfo).getVideoType();
+
+      RecipeYoutubeMeta meta = RecipeYoutubeMeta.create(videoInfo, recipeId, clock);
+
+      assertThat(meta.getType()).isEqualTo(YoutubeMetaType.NORMAL);
+    }
+
+    @Test
+    @DisplayName("SHORTS 타입 비디오 정보로 생성하면 type이 SHORTS이다")
+    void createsWithShortsType() {
+      YoutubeVideoInfo videoInfo = mock(YoutubeVideoInfo.class);
+      doReturn(videoUri).when(videoInfo).getVideoUri();
+      doReturn("Shorts Video").when(videoInfo).getTitle();
+      doReturn(URI.create("https://img.youtube.com/vi/testid/default.jpg"))
+          .when(videoInfo)
+          .getThumbnailUrl();
+      doReturn(30).when(videoInfo).getVideoSeconds();
+      doReturn(YoutubeMetaType.SHORTS).when(videoInfo).getVideoType();
+
+      RecipeYoutubeMeta meta = RecipeYoutubeMeta.create(videoInfo, recipeId, clock);
+
+      assertThat(meta.getType()).isEqualTo(YoutubeMetaType.SHORTS);
+    }
+  }
 }

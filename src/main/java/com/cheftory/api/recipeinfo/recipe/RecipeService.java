@@ -119,4 +119,14 @@ public class RecipeService {
         .findById(recipeId)
         .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
   }
+
+  public Page<Recipe> getPopularNormals(Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+    return recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable);
+  }
+
+  public Page<Recipe> getPopularShorts(Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+    return recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable);
+  }
 }

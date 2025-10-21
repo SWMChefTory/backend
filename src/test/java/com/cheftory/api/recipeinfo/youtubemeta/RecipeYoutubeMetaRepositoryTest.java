@@ -67,6 +67,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
           doReturn(title).when(youtubeVideoInfo).getTitle();
           doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
           doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
+          doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo).getVideoType();
           doReturn(FIXED_TIME).when(clock).now();
           recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
         }
@@ -115,6 +116,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
       doReturn(title).when(youtubeVideoInfo).getTitle();
       doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
       doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
+      doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo).getVideoType();
       doReturn(FIXED_TIME).when(clock).now();
 
       recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
@@ -210,12 +212,14 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
       doReturn(title1).when(youtubeVideoInfo1).getTitle();
       doReturn(videoSeconds1).when(youtubeVideoInfo1).getVideoSeconds();
       doReturn(youtubeUri1.toUri()).when(youtubeVideoInfo1).getVideoUri();
+      doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo1).getVideoType();
 
       youtubeVideoInfo2 = mock(YoutubeVideoInfo.class);
       doReturn(youtubeThumbnailUrl2).when(youtubeVideoInfo2).getThumbnailUrl();
       doReturn(title2).when(youtubeVideoInfo2).getTitle();
       doReturn(videoSeconds2).when(youtubeVideoInfo2).getVideoSeconds();
       doReturn(youtubeUri2.toUri()).when(youtubeVideoInfo2).getVideoUri();
+      doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo2).getVideoType();
       doReturn(FIXED_TIME).when(clock).now();
     }
 

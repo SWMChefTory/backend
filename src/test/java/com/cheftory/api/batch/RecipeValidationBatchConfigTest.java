@@ -15,6 +15,7 @@ import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaRepository;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaStatus;
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
 import com.cheftory.api.recipeinfo.youtubemeta.client.VideoInfoClient;
 import java.net.URI;
@@ -172,6 +173,7 @@ class RecipeValidationBatchConfigTest {
         .when(videoInfo)
         .getThumbnailUrl();
     doReturn(180).when(videoInfo).getVideoSeconds();
+    doReturn(YoutubeMetaType.NORMAL).when(videoInfo).getVideoType();
 
     RecipeYoutubeMeta youtubeMeta = RecipeYoutubeMeta.create(videoInfo, recipeId, clock);
     return youtubeMetaRepository.save(youtubeMeta).getId();
@@ -186,6 +188,7 @@ class RecipeValidationBatchConfigTest {
         .when(videoInfo)
         .getThumbnailUrl();
     doReturn(180).when(videoInfo).getVideoSeconds();
+    doReturn(YoutubeMetaType.NORMAL).when(videoInfo).getVideoType();
 
     RecipeYoutubeMeta youtubeMeta = RecipeYoutubeMeta.create(videoInfo, recipeId, clock);
     youtubeMeta.block();
