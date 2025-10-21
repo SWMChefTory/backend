@@ -35,6 +35,71 @@ class RecipeServiceTest {
   }
 
   @Nested
+  @DisplayName("block(recipeId)")
+  class BlockRecipe {
+
+    private UUID recipeId;
+    private Recipe recipe;
+
+    @BeforeEach
+    void init() {
+      recipeId = UUID.randomUUID();
+      recipe = mock(Recipe.class);
+    }
+
+    @Nested
+    @DisplayName("Given - 레시피가 존재할 때")
+    class GivenRecipeExists {
+
+      @BeforeEach
+      void setUp() {
+        when(recipeRepository.findById(recipeId)).thenReturn(java.util.Optional.of(recipe));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 차단 요청을 하면")
+      class WhenBlockingRecipe {
+
+        @Test
+        @DisplayName("Then - 레시피가 BLOCKED 상태로 변경되고 저장된다")
+        void thenMarkBlockedAndSave() {
+          service.block(recipeId);
+
+          verify(recipeRepository).findById(recipeId);
+          verify(recipe).block(clock);
+          verify(recipeRepository).save(recipe);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 레시피가 존재하지 않을 때")
+    class GivenRecipeNotExists {
+
+      @BeforeEach
+      void setUp() {
+        when(recipeRepository.findById(recipeId)).thenReturn(java.util.Optional.empty());
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 차단 요청을 하면")
+      class WhenBlockingRecipe {
+
+        @Test
+        @DisplayName("Then - RECIPE_NOT_FOUND 예외가 발생한다")
+        void thenThrowsRecipeNotFoundException() {
+          RecipeException ex = assertThrows(RecipeException.class, () -> service.block(recipeId));
+
+          assertThat(ex.getErrorMessage().getErrorCode())
+              .isEqualTo(RecipeErrorCode.RECIPE_NOT_FOUND.getErrorCode());
+          verify(recipeRepository).findById(recipeId);
+          verify(recipeRepository, never()).save(any());
+        }
+      }
+    }
+  }
+
+  @Nested
   @DisplayName("findSuccess(recipeId)")
   class FindSuccess {
 

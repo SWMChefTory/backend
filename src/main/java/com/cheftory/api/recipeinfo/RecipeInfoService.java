@@ -407,4 +407,18 @@ public class RecipeInfoService {
     return new PageImpl<>(
         recipeOverviews, searchResults.getPageable(), searchResults.getTotalElements());
   }
+
+  public void blockRecipe(UUID recipeId) {
+    try {
+      recipeYoutubeMetaService.block(recipeId);
+      recipeService.block(recipeId);
+      recipeHistoryService.blockByRecipe(recipeId);
+    } catch (RecipeInfoException e) {
+      if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO) {
+        log.warn("차단되지 않은 영상에 대해 레시피 차단 시도 recipeId={}", recipeId);
+        throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
+      }
+      throw e;
+    }
+  }
 }

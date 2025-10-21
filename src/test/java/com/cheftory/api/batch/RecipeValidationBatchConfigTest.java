@@ -43,8 +43,7 @@ class RecipeValidationBatchConfigTest {
   @Autowired private RecipeHistoryRepository recipeHistoryRepository;
   @Autowired private com.cheftory.api._common.Clock clock;
 
-  @MockitoBean
-  private VideoInfoClient videoInfoClient;
+  @MockitoBean private VideoInfoClient videoInfoClient;
 
   @BeforeEach
   void setUp() {
@@ -60,7 +59,9 @@ class RecipeValidationBatchConfigTest {
     UUID invalidRecipeId = createRecipe();
     UUID invalidYoutubeMetaId =
         createYoutubeMeta(
-            invalidRecipeId, "invalid_video_id1", "https://www.youtube.com/watch?v=invalid_video_id1");
+            invalidRecipeId,
+            "invalid_video_id1",
+            "https://www.youtube.com/watch?v=invalid_video_id1");
     UUID invalidHistoryId = createRecipeHistory(userId, invalidRecipeId);
 
     when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
@@ -196,4 +197,3 @@ class RecipeValidationBatchConfigTest {
     return recipeHistoryRepository.save(history).getId();
   }
 }
-

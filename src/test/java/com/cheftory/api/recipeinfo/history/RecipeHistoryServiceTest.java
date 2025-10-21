@@ -1088,4 +1088,86 @@ public class RecipeHistoryServiceTest {
       }
     }
   }
+
+  @Nested
+  @DisplayName("레시피별 히스토리 차단")
+  class BlockByRecipe {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+    class GivenValidRecipeId {
+
+      private UUID recipeId;
+      private java.time.LocalDateTime fixedTime;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        fixedTime = java.time.LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        doReturn(fixedTime).when(clock).now();
+      }
+
+      @Nested
+      @DisplayName("When - 해당 레시피의 모든 히스토리를 차단한다면")
+      class WhenBlockingAllHistoriesByRecipe {
+
+        private java.util.List<RecipeHistory> histories;
+
+        @BeforeEach
+        void beforeEach() {
+          RecipeHistory history1 = RecipeHistory.create(clock, UUID.randomUUID(), recipeId);
+          RecipeHistory history2 = RecipeHistory.create(clock, UUID.randomUUID(), recipeId);
+          histories = java.util.List.of(history1, history2);
+
+          doReturn(histories).when(repository).findAllByRecipeId(recipeId);
+          doReturn(histories).when(repository).saveAll(anyList());
+        }
+
+        @Test
+        @DisplayName("Then - 모든 히스토리가 BLOCKED 상태로 변경되어야 한다")
+        void thenShouldBlockAllHistories() {
+          service.blockByRecipe(recipeId);
+
+          assertThat(histories).allMatch(h -> h.getStatus() == RecipeHistoryStatus.BLOCKED);
+          verify(repository).findAllByRecipeId(recipeId);
+          verify(repository)
+              .saveAll(
+                  argThat(
+                      saved -> {
+                        java.util.List<RecipeHistory> list = (java.util.List<RecipeHistory>) saved;
+                        return list.size() == 2
+                            && list.stream()
+                                .allMatch(h -> h.getStatus() == RecipeHistoryStatus.BLOCKED);
+                      }));
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 히스토리가 없는 레시피 ID가 주어졌을 때")
+    class GivenRecipeIdWithNoHistories {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        doReturn(java.util.List.of()).when(repository).findAllByRecipeId(recipeId);
+      }
+
+      @Nested
+      @DisplayName("When - 해당 레시피의 모든 히스토리를 차단한다면")
+      class WhenBlockingAllHistoriesByRecipe {
+
+        @Test
+        @DisplayName("Then - 빈 리스트로 saveAll이 호출되어야 한다")
+        void thenShouldSaveEmptyList() {
+          service.blockByRecipe(recipeId);
+
+          verify(repository).findAllByRecipeId(recipeId);
+          verify(repository).saveAll(java.util.List.of());
+        }
+      }
+    }
+  }
 }
