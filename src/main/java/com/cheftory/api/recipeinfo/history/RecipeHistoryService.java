@@ -75,6 +75,13 @@ public class RecipeHistoryService {
     recipeHistoryRepository.saveAll(histories);
   }
 
+  @Transactional
+  public void blockByRecipe(UUID recipeId) {
+    List<RecipeHistory> histories = recipeHistoryRepository.findAllByRecipeId(recipeId);
+    histories.forEach(RecipeHistory::block);
+    recipeHistoryRepository.saveAll(histories);
+  }
+
   public Page<RecipeHistory> getCategorized(UUID userId, UUID categoryId, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(

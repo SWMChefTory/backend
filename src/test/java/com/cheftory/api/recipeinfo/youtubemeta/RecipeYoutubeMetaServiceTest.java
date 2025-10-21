@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
@@ -36,6 +37,96 @@ public class RecipeYoutubeMetaServiceTest {
     clock = mock(Clock.class);
     recipeYoutubeMetaService =
         new RecipeYoutubeMetaService(recipeYoutubeMetaRepository, videoInfoClient, clock);
+  }
+
+  @Nested
+  @DisplayName("유튜브 메타 차단")
+  class BlockYoutubeMeta {
+
+    private UUID recipeId;
+    private RecipeYoutubeMeta meta;
+
+    @BeforeEach
+    void setUp() {
+      recipeId = java.util.UUID.randomUUID();
+      meta = mock(RecipeYoutubeMeta.class);
+    }
+
+    @Nested
+    @DisplayName("Given - 해당 레시피의 메타가 존재하고, 영상이 차단된 경우")
+    class GivenMetaExistsAndVideoBlocked {
+
+      @BeforeEach
+      void setUp() {
+        doReturn(java.util.Optional.of(meta))
+            .when(recipeYoutubeMetaRepository)
+            .findByRecipeId(recipeId);
+        doReturn(java.net.URI.create("https://www.youtube.com/watch?v=blocked"))
+            .when(meta)
+            .getVideoUri();
+        doReturn(true).when(videoInfoClient).isBlockedVideo(any(YoutubeUri.class));
+      }
+
+      @Test
+      @DisplayName("Then - 메타가 BLOCKED 처리되고 저장된다")
+      void thenBlockAndSave() {
+        recipeYoutubeMetaService.block(recipeId);
+
+        verify(videoInfoClient).isBlockedVideo(any(YoutubeUri.class));
+        verify(meta).block();
+        verify(recipeYoutubeMetaRepository).save(meta);
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 해당 레시피의 메타가 존재하지만, 영상이 차단되지 않은 경우")
+    class GivenMetaExistsAndVideoNotBlocked {
+
+      @BeforeEach
+      void setUp() {
+        doReturn(java.util.Optional.of(meta))
+            .when(recipeYoutubeMetaRepository)
+            .findByRecipeId(recipeId);
+        doReturn(java.net.URI.create("https://www.youtube.com/watch?v=notblocked"))
+            .when(meta)
+            .getVideoUri();
+        doReturn(false).when(videoInfoClient).isBlockedVideo(any(YoutubeUri.class));
+      }
+
+      @Test
+      @DisplayName("Then - YOUTUBE_META_NOT_BLOCKED_VIDEO 예외가 발생한다")
+      void thenThrowNotBlockedVideo() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> recipeYoutubeMetaService.block(recipeId))
+            .isInstanceOf(YoutubeMetaException.class)
+            .hasFieldOrPropertyWithValue(
+                "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO);
+
+        verify(recipeYoutubeMetaRepository, never()).save(any());
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 해당 레시피의 메타가 존재하지 않는 경우")
+    class GivenMetaNotFound {
+
+      @BeforeEach
+      void setUp() {
+        doReturn(java.util.Optional.empty())
+            .when(recipeYoutubeMetaRepository)
+            .findByRecipeId(recipeId);
+      }
+
+      @Test
+      @DisplayName("Then - YOUTUBE_META_NOT_FOUND 예외가 발생한다")
+      void thenThrowNotFound() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> recipeYoutubeMetaService.block(recipeId))
+            .isInstanceOf(YoutubeMetaException.class)
+            .hasFieldOrPropertyWithValue(
+                "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
+      }
+    }
   }
 
   @Nested

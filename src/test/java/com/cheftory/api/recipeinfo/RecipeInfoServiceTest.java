@@ -114,6 +114,71 @@ public class RecipeInfoServiceTest {
   }
 
   @Nested
+  @DisplayName("레시피 차단")
+  class BlockRecipeFeature {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+    class GivenValidRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 차단을 요청하면")
+      class WhenBlockingRecipe {
+
+        @Test
+        @DisplayName("Then - 메타 차단, 레시피 차단, 히스토리 차단이 순서대로 호출된다")
+        void thenCallsBlockServices() {
+          recipeInfoService.blockRecipe(recipeId);
+
+          verify(recipeYoutubeMetaService).block(recipeId);
+          verify(recipeService).block(recipeId);
+          verify(recipeHistoryService).blockByRecipe(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 차단되지 않은 영상일 때")
+    class GivenNotBlockedVideo {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        doThrow(new RecipeInfoException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO))
+            .when(recipeYoutubeMetaService)
+            .block(recipeId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 차단을 요청하면")
+      class WhenBlockingRecipe {
+
+        @Test
+        @DisplayName("Then - RECIPE_NOT_BLOCKED_VIDEO 예외가 발생하고 이후 서비스는 호출되지 않는다")
+        void thenThrowsNotBlockedAndStop() {
+          assertThatThrownBy(() -> recipeInfoService.blockRecipe(recipeId))
+              .isInstanceOf(RecipeInfoException.class)
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", RecipeInfoErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
+
+          verify(recipeYoutubeMetaService).block(recipeId);
+          verify(recipeService, never()).block(any());
+          verify(recipeHistoryService, never()).blockByRecipe(any());
+        }
+      }
+    }
+  }
+
+  @Nested
   @DisplayName("기존 레시피 사용")
   class UseExistingRecipe {
 

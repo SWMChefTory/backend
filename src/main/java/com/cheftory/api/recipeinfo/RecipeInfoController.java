@@ -115,4 +115,10 @@ public class RecipeInfoController {
     Page<RecipeOverview> recipes = recipeInfoService.searchRecipes(page, query, userId);
     return SearchedRecipesResponse.from(recipes);
   }
+
+  @PostMapping("/block/{recipeId}")
+  public SuccessOnlyResponse blockRecipe(@PathVariable UUID recipeId) {
+    recipeInfoService.blockRecipe(recipeId);
+    return SuccessOnlyResponse.create();
+  }
 }

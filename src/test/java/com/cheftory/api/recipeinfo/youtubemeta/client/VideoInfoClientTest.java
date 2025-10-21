@@ -127,7 +127,7 @@ public class VideoInfoClientTest {
           assertThat(result.getTitle()).isEqualTo("맛있는 김치찌개 만들기");
           assertThat(result.getThumbnailUrl())
               .isEqualTo(URI.create("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"));
-          assertThat(result.getVideoSeconds()).isEqualTo(630); // 10분 30초 = 630초
+          assertThat(result.getVideoSeconds()).isEqualTo(630);
           assertThat(result.getVideoId()).isEqualTo(videoId);
 
           RecordedRequest recordedRequest = mockWebServer.takeRequest();
@@ -139,74 +139,61 @@ public class VideoInfoClientTest {
               .contains("part=snippet,contentDetails");
         }
       }
+    }
+  }
 
-      @Nested
-      @DisplayName("When - YouTube API가 짧은 동영상 정보를 반환하면")
-      class WhenYoutubeApiReturnsShortVideo {
+  @DisplayName("비디오 차단 여부 확인")
+  @Nested
+  class IsBlockedVideo {
 
-        @BeforeEach
-        void setUp() {
-          String responseBody =
-              """
-              {
-                "items": [
-                  {
-                    "snippet": {
-                      "title": "30초 요리 팁",
-                      "thumbnails": {
-                        "default": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg",
-                          "width": 120,
-                          "height": 90
-                        },
-                        "medium": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-                          "width": 320,
-                          "height": 180
-                        },
-                        "high": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-                          "width": 480,
-                          "height": 360
-                        },
-                        "maxres": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-                          "width": 1280,
-                          "height": 720
-                        }
-                      }
-                    },
-                    "contentDetails": {
-                      "duration": "PT30S"
-                    }
-                  }
-                ]
-              }
-              """;
+    private YoutubeUri youtubeUri;
+    private String videoId;
 
-          mockWebServer.enqueue(
-              new MockResponse()
-                  .setResponseCode(200)
-                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody(responseBody));
-          doReturn(videoId).when(youtubeUri).getVideoId();
-          doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
-              .when(youtubeUri)
-              .getNormalizedUrl();
-        }
+    @BeforeEach
+    void setUp() {
+      videoId = "abcd1234";
+      youtubeUri = mock(YoutubeUri.class);
+      doReturn(videoId).when(youtubeUri).getVideoId();
+    }
 
-        @Test
-        @DisplayName("Then - 짧은 동영상 정보가 정상적으로 반환된다")
-        void thenReturnsShortVideoInfo() {
-          // when
-          YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+    @Test
+    @DisplayName("items가 비어있으면 true (차단됨)")
+    void returnsTrueWhenItemsEmpty() {
+      String responseBody =
+          """
+          {
+            "items": []
+          }
+          """;
 
-          // then
-          assertThat(result).isNotNull();
-          assertThat(result.getTitle()).isEqualTo("30초 요리 팁");
-          assertThat(result.getVideoSeconds()).isEqualTo(30);
-        }
-      }
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(responseBody));
+
+      Boolean result = videoInfoClient.isBlockedVideo(youtubeUri);
+      assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("items가 존재하면 false (차단 아님)")
+    void returnsFalseWhenItemsPresent() {
+      String responseBody =
+          """
+          {
+            "items": [ { "id": "abcd1234" } ]
+          }
+          """;
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(responseBody));
+
+      Boolean result = videoInfoClient.isBlockedVideo(youtubeUri);
+      assertThat(result).isFalse();
     }
   }
 }
