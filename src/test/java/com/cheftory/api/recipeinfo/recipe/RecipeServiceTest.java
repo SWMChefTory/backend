@@ -678,4 +678,92 @@ class RecipeServiceTest {
       }
     }
   }
+
+  @Nested
+  @DisplayName("getPopularNormals(page)")
+  class GetPopularNormals {
+
+    private Integer page;
+
+    @BeforeEach
+    void init() {
+      page = 0;
+    }
+
+    @Nested
+    @DisplayName("Given - 성공한 Normal 타입 레시피들이 존재할 때")
+    class GivenNormalRecipesExist {
+
+      private Page<Recipe> expectedPage;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        List<Recipe> recipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        expectedPage = new PageImpl<>(recipes);
+        pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+
+        when(recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable))
+            .thenReturn(expectedPage);
+      }
+
+      @Nested
+      @DisplayName("When - Normal 레시피 페이지 조회 요청을 하면")
+      class WhenFindingNormalRecipes {
+
+        @Test
+        @DisplayName("Then - Normal 레시피 페이지가 반환된다")
+        void thenReturnNormalRecipePage() {
+          Page<Recipe> result = service.getPopularNormals(page);
+
+          assertThat(result).isEqualTo(expectedPage);
+          verify(recipeRepository).findNormalRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("getPopularShorts(page)")
+  class GetPopularShorts {
+
+    private Integer page;
+
+    @BeforeEach
+    void init() {
+      page = 0;
+    }
+
+    @Nested
+    @DisplayName("Given - 성공한 Shorts 타입 레시피들이 존재할 때")
+    class GivenShortsRecipesExist {
+
+      private Page<Recipe> expectedPage;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        List<Recipe> recipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        expectedPage = new PageImpl<>(recipes);
+        pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+
+        when(recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable))
+            .thenReturn(expectedPage);
+      }
+
+      @Nested
+      @DisplayName("When - Shorts 레시피 페이지 조회 요청을 하면")
+      class WhenFindingShortsRecipes {
+
+        @Test
+        @DisplayName("Then - Shorts 레시피 페이지가 반환된다")
+        void thenReturnShortsRecipePage() {
+          Page<Recipe> result = service.getPopularShorts(page);
+
+          assertThat(result).isEqualTo(expectedPage);
+          verify(recipeRepository).findShortsRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+        }
+      }
+    }
+  }
 }

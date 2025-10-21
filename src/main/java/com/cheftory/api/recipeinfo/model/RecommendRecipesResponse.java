@@ -28,7 +28,8 @@ public record RecommendRecipesResponse(
       @JsonProperty("video_id") String videoId,
       @JsonProperty("count") Integer count,
       @JsonProperty("video_url") String videoUrl,
-      @JsonProperty("is_viewed") Boolean isViewed) {
+      @JsonProperty("is_viewed") Boolean isViewed,
+      @JsonProperty("video_type") String videoType) {
     public static RecommendRecipe from(RecipeOverview recipe) {
       return new RecommendRecipe(
           recipe.getRecipe().getId().toString(),
@@ -37,7 +38,8 @@ public record RecommendRecipesResponse(
           recipe.getYoutubeMeta().getVideoId(),
           recipe.getRecipe().getViewCount(),
           recipe.getYoutubeMeta().getVideoUri().toString(),
-          recipe.getIsViewed());
+          recipe.getIsViewed(),
+          recipe.getYoutubeMeta().getType().name());
     }
   }
 }

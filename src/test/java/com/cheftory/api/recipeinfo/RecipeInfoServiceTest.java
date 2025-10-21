@@ -27,6 +27,7 @@ import com.cheftory.api.recipeinfo.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipeinfo.model.FullRecipe;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
@@ -45,6 +46,7 @@ import com.cheftory.api.recipeinfo.tag.RecipeTag;
 import com.cheftory.api.recipeinfo.tag.RecipeTagService;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaService;
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
@@ -434,7 +436,8 @@ public class RecipeInfoServiceTest {
       setupPopularMocks(List.of(recipeId1, recipeId2));
       doReturn(recipePage).when(recipeService).getPopulars(page);
 
-      Page<RecipeOverview> result = recipeInfoService.getPopulars(page, userId);
+      Page<RecipeOverview> result =
+          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
 
       assertThat(result.getContent()).hasSize(2);
       assertThat(result.getContent()).allMatch(overview -> overview.getRecipe() != null);
@@ -450,7 +453,8 @@ public class RecipeInfoServiceTest {
 
       doReturn(emptyRecipePage).when(recipeService).getPopulars(page);
 
-      Page<RecipeOverview> result = recipeInfoService.getPopulars(page, userId);
+      Page<RecipeOverview> result =
+          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
 
       assertThat(result.getContent()).isEmpty();
       assertThat(result.getTotalElements()).isEqualTo(0);
@@ -480,7 +484,8 @@ public class RecipeInfoServiceTest {
       doReturn(List.of()).when(recipeTagService).getIn(List.of(recipeId1, recipeId2));
       doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
-      Page<RecipeOverview> result = recipeInfoService.getPopulars(page, userId);
+      Page<RecipeOverview> result =
+          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().get(0).getRecipe().getId()).isEqualTo(recipeId1);
@@ -521,7 +526,8 @@ public class RecipeInfoServiceTest {
       doReturn(tags).when(recipeTagService).getIn(anyList());
       doReturn(viewStatuses).when(recipeHistoryService).getByRecipes(anyList(), eq(userId));
 
-      Page<RecipeOverview> result = recipeInfoService.getPopulars(page, userId);
+      Page<RecipeOverview> result =
+          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
 
       assertThat(result.getContent()).hasSize(2);
 
@@ -557,13 +563,76 @@ public class RecipeInfoServiceTest {
       doReturn(recipePage).when(recipeService).getPopulars(page);
       doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
-      recipeInfoService.getPopulars(page, userId);
+      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
 
       verify(recipeService).getPopulars(page);
       verify(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
       verify(recipeDetailMetaService).getIn(List.of(recipeId));
       verify(recipeTagService).getIn(List.of(recipeId));
       verify(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+    }
+
+    @Test
+    @DisplayName("Query가 ALL이면 getPopulars를 호출한다")
+    void shouldCallGetPopularsWhenQueryIsAll() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage).when(recipeService).getPopulars(page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+
+      verify(recipeService).getPopulars(page);
+      verify(recipeService, never()).getPopularNormals(any());
+      verify(recipeService, never()).getPopularShorts(any());
+    }
+
+    @Test
+    @DisplayName("Query가 NORMAL이면 getPopularNormals를 호출한다")
+    void shouldCallGetPopularNormalsWhenQueryIsNormal() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage).when(recipeService).getPopularNormals(page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.NORMAL);
+
+      verify(recipeService).getPopularNormals(page);
+      verify(recipeService, never()).getPopulars(any());
+      verify(recipeService, never()).getPopularShorts(any());
+    }
+
+    @Test
+    @DisplayName("Query가 SHORTS이면 getPopularShorts를 호출한다")
+    void shouldCallGetPopularShortsWhenQueryIsShorts() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage).when(recipeService).getPopularShorts(page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.SHORTS);
+
+      verify(recipeService).getPopularShorts(page);
+      verify(recipeService, never()).getPopulars(any());
+      verify(recipeService, never()).getPopularNormals(any());
     }
   }
 
@@ -1703,7 +1772,8 @@ public class RecipeInfoServiceTest {
         youtubeUri,
         "테스트 요리 영상",
         URI.create("https://img.youtube.com/vi/test_video_id/maxresdefault.jpg"),
-        300);
+        300,
+        YoutubeMetaType.NORMAL);
   }
 
   private void setupFullRecipeInfoMocks(UUID recipeId, UUID userId, Recipe recipe) {

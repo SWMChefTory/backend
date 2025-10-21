@@ -158,7 +158,12 @@ public class RecipeYoutubeMetaServiceTest {
       @BeforeEach
       void setUp() {
         youtubeVideoInfo =
-            YoutubeVideoInfo.from(youtubeUri, title, youtubeThumbnailUrl, videoSeconds);
+            YoutubeVideoInfo.from(
+                youtubeUri,
+                title,
+                youtubeThumbnailUrl,
+                videoSeconds,
+                com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
         recipeId = UUID.randomUUID();
       }
 

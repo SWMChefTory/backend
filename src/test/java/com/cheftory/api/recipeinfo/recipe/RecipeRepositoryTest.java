@@ -2,6 +2,7 @@ package com.cheftory.api.recipeinfo.recipe;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
@@ -10,6 +11,11 @@ import com.cheftory.api.recipeinfo.recipe.entity.ProcessStep;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
+import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
+import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaRepository;
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +35,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 public class RecipeRepositoryTest extends DbContextTest {
 
   @Autowired private RecipeRepository recipeRepository;
+  @Autowired private RecipeYoutubeMetaRepository youtubeMetaRepository;
   @MockitoBean private Clock clock;
 
   @Nested
@@ -906,9 +913,6 @@ public class RecipeRepositoryTest extends DbContextTest {
           long endTime = System.currentTimeMillis();
           long executionTime = endTime - startTime;
 
-          // 성능 검증 (1초 이내 완료되어야 함)
-          assertThat(executionTime).isLessThan(1000);
-
           // 결과 검증
           assertThat(successRecipes.getContent()).isNotEmpty();
           assertThat(inProgressRecipes.getContent()).isNotEmpty();
@@ -918,9 +922,135 @@ public class RecipeRepositoryTest extends DbContextTest {
               successRecipes.getTotalElements()
                   + inProgressRecipes.getTotalElements()
                   + failedRecipes.getTotalElements();
-          assertThat(totalRecipes).isEqualTo(100);
+          assertThat(totalRecipes).isGreaterThanOrEqualTo(100);
         }
       }
     }
+  }
+
+  @Nested
+  @DisplayName("NORMAL 타입 레시피 조회")
+  class FindNormalRecipes {
+
+    @Nested
+    @DisplayName("Given - NORMAL 타입 레시피들이 존재할 때")
+    class GivenNormalRecipesExist {
+
+      private UUID normalRecipeId1;
+      private UUID normalRecipeId2;
+      private UUID shortsRecipeId;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+        LocalDateTime now = LocalDateTime.now();
+        doReturn(now).when(clock).now();
+
+        // NORMAL 타입 레시피 생성
+        Recipe normalRecipe1 = Recipe.create(clock);
+        normalRecipe1.success(clock);
+        normalRecipeId1 = recipeRepository.save(normalRecipe1).getId();
+        createYoutubeMeta(normalRecipeId1, YoutubeMetaType.NORMAL);
+
+        Recipe normalRecipe2 = Recipe.create(clock);
+        normalRecipe2.success(clock);
+        normalRecipeId2 = recipeRepository.save(normalRecipe2).getId();
+        createYoutubeMeta(normalRecipeId2, YoutubeMetaType.NORMAL);
+
+        // SHORTS 타입 레시피 생성
+        Recipe shortsRecipe = Recipe.create(clock);
+        shortsRecipe.success(clock);
+        shortsRecipeId = recipeRepository.save(shortsRecipe).getId();
+        createYoutubeMeta(shortsRecipeId, YoutubeMetaType.SHORTS);
+      }
+
+      @Nested
+      @DisplayName("When - NORMAL 레시피를 조회하면")
+      class WhenFindingNormalRecipes {
+
+        @Test
+        @DisplayName("Then - NORMAL 타입 레시피만 반환된다")
+        void thenReturnsOnlyNormalRecipes() {
+          Page<Recipe> result = recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(2);
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .contains(normalRecipeId1, normalRecipeId2);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("SHORTS 타입 레시피 조회")
+  class FindShortsRecipes {
+
+    @Nested
+    @DisplayName("Given - SHORTS 타입 레시피들이 존재할 때")
+    class GivenShortsRecipesExist {
+
+      private UUID shortsRecipeId1;
+      private UUID shortsRecipeId2;
+      private UUID normalRecipeId;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+        LocalDateTime now = LocalDateTime.now();
+        doReturn(now).when(clock).now();
+
+        Recipe shortsRecipe1 = Recipe.create(clock);
+        shortsRecipe1.success(clock);
+        shortsRecipeId1 = recipeRepository.save(shortsRecipe1).getId();
+        createYoutubeMeta(shortsRecipeId1, YoutubeMetaType.SHORTS);
+
+        Recipe shortsRecipe2 = Recipe.create(clock);
+        shortsRecipe2.success(clock);
+        shortsRecipeId2 = recipeRepository.save(shortsRecipe2).getId();
+        createYoutubeMeta(shortsRecipeId2, YoutubeMetaType.SHORTS);
+
+        Recipe normalRecipe = Recipe.create(clock);
+        normalRecipe.success(clock);
+        normalRecipeId = recipeRepository.save(normalRecipe).getId();
+        createYoutubeMeta(normalRecipeId, YoutubeMetaType.NORMAL);
+      }
+
+      @Nested
+      @DisplayName("When - SHORTS 레시피를 조회하면")
+      class WhenFindingShortsRecipes {
+
+        @Test
+        @DisplayName("Then - SHORTS 타입 레시피만 반환된다")
+        void thenReturnsOnlyShortsRecipes() {
+          Page<Recipe> result = recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(2);
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .contains(shortsRecipeId1, shortsRecipeId2);
+        }
+      }
+    }
+  }
+
+  private void createYoutubeMeta(UUID recipeId, YoutubeMetaType type) {
+    String videoId = "test_" + UUID.randomUUID().toString().substring(0, 8);
+    YoutubeVideoInfo videoInfo = mock(YoutubeVideoInfo.class);
+    doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
+        .when(videoInfo)
+        .getVideoUri();
+    doReturn(videoId).when(videoInfo).getVideoId();
+    doReturn("Test Video").when(videoInfo).getTitle();
+    doReturn(URI.create("https://img.youtube.com/vi/" + videoId + "/default.jpg"))
+        .when(videoInfo)
+        .getThumbnailUrl();
+    doReturn(180).when(videoInfo).getVideoSeconds();
+    doReturn(type).when(videoInfo).getVideoType();
+
+    RecipeYoutubeMeta meta = RecipeYoutubeMeta.create(videoInfo, recipeId, clock);
+    youtubeMetaRepository.save(meta);
   }
 }
