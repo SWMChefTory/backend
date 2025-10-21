@@ -31,6 +31,9 @@ public class RecipeHistory {
   private LocalDateTime createdAt;
 
   @Column(nullable = false)
+  private LocalDateTime updatedAt;
+
+  @Column(nullable = false)
   private UUID userId;
 
   @Column(nullable = false)
@@ -52,6 +55,7 @@ public class RecipeHistory {
         .userId(userId)
         .recipeId(recipeId)
         .status(RecipeHistoryStatus.ACTIVE)
+        .updatedAt(clock.now())
         .build();
   }
 
@@ -67,7 +71,13 @@ public class RecipeHistory {
     this.viewedAt = clock.now();
   }
 
+  public void block() {
+    this.status = RecipeHistoryStatus.BLOCKED;
+    this.updatedAt = LocalDateTime.now();
+  }
+
   public void delete() {
     this.status = RecipeHistoryStatus.DELETED;
+    this.updatedAt = LocalDateTime.now();
   }
 }

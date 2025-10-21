@@ -39,7 +39,7 @@ public class RecipeYoutubeMetaService {
     YoutubeUri youtubeUri = YoutubeUri.from(uri);
     List<RecipeYoutubeMeta> metas =
         recipeYoutubeMetaRepository.findAllByVideoUri(youtubeUri.getNormalizedUrl());
-    validateNotBanned(metas);
+    validateAllActive(metas);
     return metas;
   }
 
@@ -58,9 +58,12 @@ public class RecipeYoutubeMetaService {
     return recipeYoutubeMetaRepository.findAllByRecipeIdIn(recipeIds);
   }
 
-  private void validateNotBanned(List<RecipeYoutubeMeta> metas) {
+  private void validateAllActive(List<RecipeYoutubeMeta> metas) {
     if (metas.stream().anyMatch(RecipeYoutubeMeta::isBanned)) {
       throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED);
+    }
+    if (metas.stream().anyMatch(RecipeYoutubeMeta::isBlocked)) {
+      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED);
     }
   }
 }

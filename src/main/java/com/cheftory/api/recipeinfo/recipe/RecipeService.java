@@ -66,9 +66,10 @@ public class RecipeService {
     return recipe.getId();
   }
 
-  public List<Recipe> getsNotFailed(List<UUID> recipeIds) {
+  public List<Recipe> getValidRecipes(List<UUID> recipeIds) {
     return recipeRepository
-        .findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED)
+        .findRecipesByIdInAndRecipeStatusIn(
+            recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS))
         .stream()
         .toList();
   }

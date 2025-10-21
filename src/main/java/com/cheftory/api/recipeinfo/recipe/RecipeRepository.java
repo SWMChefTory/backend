@@ -18,7 +18,8 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
   @Query("update Recipe r set r.viewCount = r.viewCount + 1 where r.id = :id")
   void increaseCount(UUID id);
 
-  List<Recipe> findRecipesByIdInAndRecipeStatusNot(List<UUID> recipeIds, RecipeStatus status);
+  List<Recipe> findRecipesByIdInAndRecipeStatusIn(
+      List<UUID> recipeIds, List<RecipeStatus> statuses);
 
   Page<Recipe> findByRecipeStatus(RecipeStatus status, Pageable pageable);
 

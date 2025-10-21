@@ -75,4 +75,12 @@ public class RecipeYoutubeMeta {
   public void ban() {
     this.status = YoutubeMetaStatus.BANNED;
   }
+
+  public void block() {
+    this.status = YoutubeMetaStatus.BLOCKED;
+  }
+
+  public boolean isBlocked() {
+    return this.status == YoutubeMetaStatus.BLOCKED;
+  }
 }
