@@ -133,6 +133,12 @@ public class RecipeInfoController {
     return RecipeCreateResponse.from(recipeId);
   }
 
+  @GetMapping("/papi/v1/recipes/progress/{recipeId}")
+  public RecipeProgressResponse getCrawledRecipeProgress(@PathVariable("recipeId") UUID recipeId) {
+    RecipeProgressStatus progressStatus = recipeInfoService.getRecipeProgress(recipeId);
+    return RecipeProgressResponse.of(progressStatus);
+  }
+
   @GetMapping("/api/v1/recipes/trending")
   public TrendRecipesResponse getTrendingRecipes(
       @RequestParam(defaultValue = "0") @Min(0) Integer page, @UserPrincipal UUID userId) {
