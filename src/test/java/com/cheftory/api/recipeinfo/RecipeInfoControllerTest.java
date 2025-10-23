@@ -2881,6 +2881,199 @@ public class RecipeInfoControllerTest extends RestDocsTest {
   }
 
   @Nested
+  @DisplayName("크롤러 레시피 진행 상황 조회")
+  class GetCrawledRecipeProgress {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+    class GivenValidRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 크롤러 레시피 진행 상황을 조회한다면")
+      class WhenRequestingCrawledRecipeProgress {
+
+        private RecipeProgressStatus progressStatus;
+        private Recipe recipe;
+        private List<RecipeProgress> progresses;
+
+        @BeforeEach
+        void setUp() {
+          recipe = mock(Recipe.class);
+          doReturn(RecipeStatus.SUCCESS).when(recipe).getRecipeStatus();
+
+          RecipeProgress progress1 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+          doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+          RecipeProgress progress2 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+          doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+          RecipeProgress progress3 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.FINISHED).when(progress3).getStep();
+          doReturn(RecipeProgressDetail.FINISHED).when(progress3).getDetail();
+
+          progresses = List.of(progress1, progress2, progress3);
+
+          progressStatus = mock(RecipeProgressStatus.class);
+          doReturn(recipe).when(progressStatus).getRecipe();
+          doReturn(progresses).when(progressStatus).getProgresses();
+
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Then - 크롤러 레시피 진행 상황을 성공적으로 반환해야 한다")
+        void thenShouldReturnCrawledRecipeProgress() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/papi/v1/recipes/progress/{recipeId}", recipeId)
+                  .then()
+                  .status(HttpStatus.OK)
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          pathParameters(parameterWithName("recipeId").description("조회할 레시피 ID")),
+                          responseFields(
+                              enumFields("recipe_status", "레시피의 현재 상태: ", RecipeStatus.class),
+                              fieldWithPath("recipe_progress_statuses").description("레시피 진행 상황 목록"),
+                              enumFields(
+                                  "recipe_progress_statuses[].progress_step",
+                                  "현재 진행 상태",
+                                  RecipeProgressStep.class),
+                              enumFields(
+                                  "recipe_progress_statuses[].progress_detail",
+                                  "현재 진행 상세 내용",
+                                  RecipeProgressDetail.class))));
+
+          verify(recipeInfoService).getRecipeProgress(recipeId);
+
+          var responseBody = response.extract().jsonPath();
+
+          assertThat(responseBody.getString("recipe_status")).isEqualTo("SUCCESS");
+          assertThat(responseBody.getList("recipe_progress_statuses")).hasSize(3);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 진행 중인 레시피 ID가 주어졌을 때")
+    class GivenInProgressRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 크롤러 레시피 진행 상황을 조회한다면")
+      class WhenRequestingCrawledRecipeProgress {
+
+        private RecipeProgressStatus progressStatus;
+        private Recipe recipe;
+        private List<RecipeProgress> progresses;
+
+        @BeforeEach
+        void setUp() {
+          recipe = mock(Recipe.class);
+          doReturn(RecipeStatus.IN_PROGRESS).when(recipe).getRecipeStatus();
+
+          RecipeProgress progress1 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.READY).when(progress1).getStep();
+          doReturn(RecipeProgressDetail.READY).when(progress1).getDetail();
+
+          RecipeProgress progress2 = mock(RecipeProgress.class);
+          doReturn(RecipeProgressStep.CAPTION).when(progress2).getStep();
+          doReturn(RecipeProgressDetail.CAPTION).when(progress2).getDetail();
+
+          progresses = List.of(progress1, progress2);
+
+          progressStatus = mock(RecipeProgressStatus.class);
+          doReturn(recipe).when(progressStatus).getRecipe();
+          doReturn(progresses).when(progressStatus).getProgresses();
+
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Then - 부분적인 진행 상황을 성공적으로 반환해야 한다")
+        void thenShouldReturnPartialProgress() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .get("/papi/v1/recipes/progress/{recipeId}", recipeId)
+                  .then()
+                  .status(HttpStatus.OK);
+
+          verify(recipeInfoService).getRecipeProgress(recipeId);
+
+          var responseBody = response.extract().jsonPath();
+
+          assertThat(responseBody.getString("recipe_status")).isEqualTo("IN_PROGRESS");
+          assertThat(responseBody.getList("recipe_progress_statuses")).hasSize(2);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 시작되지 않은 레시피 ID가 주어졌을 때")
+    class GivenNotStartedRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 크롤러 레시피 진행 상황을 조회한다면")
+      class WhenRequestingCrawledRecipeProgress {
+
+        private RecipeProgressStatus progressStatus;
+        private Recipe recipe;
+
+        @BeforeEach
+        void setUp() {
+          recipe = mock(Recipe.class);
+          doReturn(RecipeStatus.IN_PROGRESS).when(recipe).getRecipeStatus();
+
+          progressStatus = mock(RecipeProgressStatus.class);
+          doReturn(recipe).when(progressStatus).getRecipe();
+          doReturn(List.of()).when(progressStatus).getProgresses();
+
+          doReturn(progressStatus).when(recipeInfoService).getRecipeProgress(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Then - 빈 진행 상황 목록을 반환해야 한다")
+        void thenShouldReturnEmptyProgress() {
+          given()
+              .contentType(ContentType.JSON)
+              .get("/papi/v1/recipes/progress/{recipeId}", recipeId)
+              .then()
+              .status(HttpStatus.OK)
+              .body("recipe_progress_statuses", hasSize(0));
+
+          verify(recipeInfoService).getRecipeProgress(recipeId);
+        }
+      }
+    }
+  }
+
+  @Nested
   @DisplayName("트렌딩 레시피 조회")
   class GetTrendingRecipes {
 
