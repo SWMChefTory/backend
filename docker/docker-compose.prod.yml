@@ -17,6 +17,9 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       AI_RECIPE_SUMMARY_HOST: ${AI_RECIPE_SUMMARY_HOST}
       AI_RECIPE_SUMMARY_PORT: ${AI_RECIPE_SUMMARY_PORT}
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
@@ -54,6 +57,19 @@ services:
     ]
     networks:
       - cheftory_network
+
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - "6379"
+    volumes:
+      - ./data/redis-data:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: [ "redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}" ]
+    networks:
+      - cheftory_network
+    restart: always
 
 networks:
   cheftory_network:

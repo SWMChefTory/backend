@@ -15,8 +15,8 @@ public class RecipeIdValidator implements ConstraintValidator<ExistsRecipeId, UU
   private final RecipeService recipeService;
 
   @Override
-  public boolean isValid(UUID userId, ConstraintValidatorContext context) {
-    boolean exists = recipeService.exists(userId);
+  public boolean isValid(UUID recipeId, ConstraintValidatorContext context) {
+    boolean exists = recipeService.exists(recipeId);
 
     if (!exists) {
       context.disableDefaultConstraintViolation();

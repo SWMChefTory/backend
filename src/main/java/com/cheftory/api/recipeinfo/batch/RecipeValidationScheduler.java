@@ -1,4 +1,4 @@
-package com.cheftory.api.batch;
+package com.cheftory.api.recipeinfo.batch;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

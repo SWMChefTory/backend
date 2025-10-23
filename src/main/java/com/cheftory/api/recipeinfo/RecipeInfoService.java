@@ -20,12 +20,15 @@ import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipeinfo.model.FullRecipe;
 import com.cheftory.api.recipeinfo.model.RecipeCategoryCount;
 import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
+import com.cheftory.api.recipeinfo.model.RecipeCreationTarget;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
 import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressService;
+import com.cheftory.api.recipeinfo.rank.RankingType;
+import com.cheftory.api.recipeinfo.rank.RecipeRankService;
 import com.cheftory.api.recipeinfo.recipe.RecipeService;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.exception.RecipeErrorCode;
@@ -39,7 +42,6 @@ import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -71,29 +75,23 @@ public class RecipeInfoService {
   private final RecipeBriefingService recipeBriefingService;
   private final RecipeService recipeService;
   private final RecipeSearchService recipeSearchService;
+  private final RecipeRankService recipeRankService;
 
-  /**
-   * 기존 레시피가 있으면 그 레시피를, 없으면 새로 생성합니다.
-   *
-   * @param uri 유튜브 영상 URL
-   * @param userId 사용자 ID
-   * @return 레시피 ID
-   */
-  public UUID create(URI uri, UUID userId) {
+  public UUID create(RecipeCreationTarget target) {
     try {
       List<UUID> recipeIds =
-          recipeYoutubeMetaService.getByUrl(uri).stream()
+          recipeYoutubeMetaService.getByUrl(target.uri()).stream()
               .map(RecipeYoutubeMeta::getRecipeId)
               .toList();
       Recipe recipe = recipeService.getNotFailed(recipeIds);
-      recipeHistoryService.create(userId, recipe.getId());
+      saveHistoryIfNeeded(target, recipe.getId());
       return recipe.getId();
     } catch (RecipeInfoException e) {
       if (e.getErrorMessage() == RecipeErrorCode.RECIPE_NOT_FOUND) {
-        return createNewRecipe(uri, userId);
+        return createNewRecipe(target);
       }
       if (e.getErrorMessage() == RecipeErrorCode.RECIPE_FAILED) {
-        return createNewRecipe(uri, userId);
+        return createNewRecipe(target);
       }
       if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_BANNED) {
         throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_BANNED);
@@ -102,27 +100,33 @@ public class RecipeInfoService {
     }
   }
 
-  /** 새로운 유튜브 메타 데이터를 생성하고, 새로운 레시피를 생성합니다. 만약 유니크 키 중복 오류가 발생하면(동시성 문제) 기존 레시피를 사용합니다. */
-  public UUID createNewRecipe(URI uri, UUID userId) {
+  private UUID createNewRecipe(RecipeCreationTarget target) {
     try {
-      YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(uri);
-      recipeIdentifyService.create(uri);
+      YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(target.uri());
+      recipeIdentifyService.create(target.uri());
       UUID recipeId = recipeService.create();
       recipeYoutubeMetaService.create(videoInfo, recipeId);
-      asyncRecipeInfoCreationService.create(recipeId, videoInfo.getVideoId(), uri);
-      recipeHistoryService.create(userId, recipeId);
+      asyncRecipeInfoCreationService.create(recipeId, videoInfo.getVideoId(), target.uri());
+      saveHistoryIfNeeded(target, recipeId);
       return recipeId;
     } catch (RecipeInfoException e) {
       if (e.getErrorMessage() == RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING) {
         List<UUID> recipeIds =
-            recipeYoutubeMetaService.getByUrl(uri).stream()
+            recipeYoutubeMetaService.getByUrl(target.uri()).stream()
                 .map(RecipeYoutubeMeta::getRecipeId)
                 .toList();
         Recipe recipe = recipeService.getNotFailed(recipeIds);
-        recipeHistoryService.create(userId, recipe.getId());
+        saveHistoryIfNeeded(target, recipe.getId());
         return recipe.getId();
       }
       throw e;
+    }
+  }
+
+  private void saveHistoryIfNeeded(RecipeCreationTarget target, UUID recipeId) {
+    switch (target) {
+      case RecipeCreationTarget.User user -> recipeHistoryService.create(user.userId(), recipeId);
+      case RecipeCreationTarget.Crawler crawler -> {}
     }
   }
 
@@ -375,5 +379,27 @@ public class RecipeInfoService {
       }
       throw e;
     }
+  }
+
+  public Page<RecipeOverview> getTrendRecipes(UUID userId, Integer page) {
+    List<UUID> recipeIds = recipeRankService.getRecipeIds(RankingType.TRENDING, page);
+    List<Recipe> recipes = recipeService.getValidRecipes(recipeIds);
+    Long totalElements = recipeRankService.getTotalCount(RankingType.TRENDING);
+
+    Pageable pageable = PageRequest.of(page, 10);
+    Page<Recipe> recipePage = new PageImpl<>(recipes, pageable, totalElements);
+
+    return makeOverviews(recipePage, userId);
+  }
+
+  public Page<RecipeOverview> getChefRecipes(UUID userId, Integer page) {
+    List<UUID> recipeIds = recipeRankService.getRecipeIds(RankingType.CHEF, page);
+    List<Recipe> recipes = recipeService.getValidRecipes(recipeIds);
+    Long totalElements = recipeRankService.getTotalCount(RankingType.CHEF);
+
+    Pageable pageable = PageRequest.of(page, 10);
+    Page<Recipe> recipePage = new PageImpl<>(recipes, pageable, totalElements);
+
+    return makeOverviews(recipePage, userId);
   }
 }
