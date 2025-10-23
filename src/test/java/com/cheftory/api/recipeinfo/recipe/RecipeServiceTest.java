@@ -35,6 +35,71 @@ class RecipeServiceTest {
   }
 
   @Nested
+  @DisplayName("block(recipeId)")
+  class BlockRecipe {
+
+    private UUID recipeId;
+    private Recipe recipe;
+
+    @BeforeEach
+    void init() {
+      recipeId = UUID.randomUUID();
+      recipe = mock(Recipe.class);
+    }
+
+    @Nested
+    @DisplayName("Given - 레시피가 존재할 때")
+    class GivenRecipeExists {
+
+      @BeforeEach
+      void setUp() {
+        when(recipeRepository.findById(recipeId)).thenReturn(java.util.Optional.of(recipe));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 차단 요청을 하면")
+      class WhenBlockingRecipe {
+
+        @Test
+        @DisplayName("Then - 레시피가 BLOCKED 상태로 변경되고 저장된다")
+        void thenMarkBlockedAndSave() {
+          service.block(recipeId);
+
+          verify(recipeRepository).findById(recipeId);
+          verify(recipe).block(clock);
+          verify(recipeRepository).save(recipe);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 레시피가 존재하지 않을 때")
+    class GivenRecipeNotExists {
+
+      @BeforeEach
+      void setUp() {
+        when(recipeRepository.findById(recipeId)).thenReturn(java.util.Optional.empty());
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 차단 요청을 하면")
+      class WhenBlockingRecipe {
+
+        @Test
+        @DisplayName("Then - RECIPE_NOT_FOUND 예외가 발생한다")
+        void thenThrowsRecipeNotFoundException() {
+          RecipeException ex = assertThrows(RecipeException.class, () -> service.block(recipeId));
+
+          assertThat(ex.getErrorMessage().getErrorCode())
+              .isEqualTo(RecipeErrorCode.RECIPE_NOT_FOUND.getErrorCode());
+          verify(recipeRepository).findById(recipeId);
+          verify(recipeRepository, never()).save(any());
+        }
+      }
+    }
+  }
+
+  @Nested
   @DisplayName("findSuccess(recipeId)")
   class FindSuccess {
 
@@ -273,16 +338,17 @@ class RecipeServiceTest {
     }
 
     @Nested
-    @DisplayName("Given - 실패하지 않은 레시피들이 존재할 때")
-    class GivenNotFailedRecipesExist {
+    @DisplayName("Given - 유효한 레시피들(IN_PROGRESS, SUCCESS)이 존재할 때")
+    class GivenValidRecipesExist {
 
-      private List<Recipe> notFailedRecipes;
+      private List<Recipe> validRecipes;
 
       @BeforeEach
       void setUp() {
-        notFailedRecipes = List.of(mock(Recipe.class), mock(Recipe.class));
-        when(recipeRepository.findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED))
-            .thenReturn(notFailedRecipes);
+        validRecipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        when(recipeRepository.findRecipesByIdInAndRecipeStatusIn(
+                recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS)))
+            .thenReturn(validRecipes);
       }
 
       @Nested
@@ -290,13 +356,44 @@ class RecipeServiceTest {
       class WhenFindingRecipes {
 
         @Test
-        @DisplayName("Then - 실패하지 않은 레시피 목록이 반환된다")
-        void thenReturnNotFailedRecipes() {
-          List<Recipe> result = service.getsNotFailed(recipeIds);
+        @DisplayName("Then - 유효한 레시피 목록이 반환된다")
+        void thenReturnValidRecipes() {
+          List<Recipe> result = service.getValidRecipes(recipeIds);
 
-          assertThat(result).isEqualTo(notFailedRecipes);
+          assertThat(result).isEqualTo(validRecipes);
           verify(recipeRepository)
-              .findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED);
+              .findRecipesByIdInAndRecipeStatusIn(
+                  recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS));
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - BLOCKED 상태의 레시피가 포함되어 있을 때")
+    class GivenBlockedRecipesIncluded {
+
+      @BeforeEach
+      void setUp() {
+        // IN_PROGRESS와 SUCCESS만 반환 (BLOCKED와 FAILED 제외)
+        List<Recipe> validRecipes = List.of(mock(Recipe.class));
+        when(recipeRepository.findRecipesByIdInAndRecipeStatusIn(
+                recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS)))
+            .thenReturn(validRecipes);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 목록 조회 요청을 하면")
+      class WhenFindingRecipes {
+
+        @Test
+        @DisplayName("Then - BLOCKED 상태는 제외되고 유효한 레시피만 반환된다")
+        void thenReturnOnlyValidRecipesExcludingBlocked() {
+          List<Recipe> result = service.getValidRecipes(recipeIds);
+
+          assertThat(result).hasSize(1);
+          verify(recipeRepository)
+              .findRecipesByIdInAndRecipeStatusIn(
+                  recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS));
         }
       }
     }
@@ -577,6 +674,94 @@ class RecipeServiceTest {
           assertThat(result).isEqualTo(validRecipe1);
           verify(recipeRepository).findAllByIdIn(recipeIds);
           // 로그 검증은 실제 프로덕션에서 별도의 로그 캡처 도구로 확인할 수 있음
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("getPopularNormals(page)")
+  class GetPopularNormals {
+
+    private Integer page;
+
+    @BeforeEach
+    void init() {
+      page = 0;
+    }
+
+    @Nested
+    @DisplayName("Given - 성공한 Normal 타입 레시피들이 존재할 때")
+    class GivenNormalRecipesExist {
+
+      private Page<Recipe> expectedPage;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        List<Recipe> recipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        expectedPage = new PageImpl<>(recipes);
+        pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+
+        when(recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable))
+            .thenReturn(expectedPage);
+      }
+
+      @Nested
+      @DisplayName("When - Normal 레시피 페이지 조회 요청을 하면")
+      class WhenFindingNormalRecipes {
+
+        @Test
+        @DisplayName("Then - Normal 레시피 페이지가 반환된다")
+        void thenReturnNormalRecipePage() {
+          Page<Recipe> result = service.getPopularNormals(page);
+
+          assertThat(result).isEqualTo(expectedPage);
+          verify(recipeRepository).findNormalRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("getPopularShorts(page)")
+  class GetPopularShorts {
+
+    private Integer page;
+
+    @BeforeEach
+    void init() {
+      page = 0;
+    }
+
+    @Nested
+    @DisplayName("Given - 성공한 Shorts 타입 레시피들이 존재할 때")
+    class GivenShortsRecipesExist {
+
+      private Page<Recipe> expectedPage;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        List<Recipe> recipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        expectedPage = new PageImpl<>(recipes);
+        pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+
+        when(recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable))
+            .thenReturn(expectedPage);
+      }
+
+      @Nested
+      @DisplayName("When - Shorts 레시피 페이지 조회 요청을 하면")
+      class WhenFindingShortsRecipes {
+
+        @Test
+        @DisplayName("Then - Shorts 레시피 페이지가 반환된다")
+        void thenReturnShortsRecipePage() {
+          Page<Recipe> result = service.getPopularShorts(page);
+
+          assertThat(result).isEqualTo(expectedPage);
+          verify(recipeRepository).findShortsRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class));
         }
       }
     }

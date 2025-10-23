@@ -48,11 +48,20 @@ public class Recipe {
     this.recipeStatus = RecipeStatus.FAILED;
   }
 
+  public void block(Clock clock) {
+    this.updatedAt = clock.now();
+    this.recipeStatus = RecipeStatus.BLOCKED;
+  }
+
   public boolean isSuccess() {
     return this.recipeStatus == RecipeStatus.SUCCESS;
   }
 
   public boolean isFailed() {
     return this.recipeStatus == RecipeStatus.FAILED;
+  }
+
+  public boolean isBlocked() {
+    return this.recipeStatus == RecipeStatus.BLOCKED;
   }
 }

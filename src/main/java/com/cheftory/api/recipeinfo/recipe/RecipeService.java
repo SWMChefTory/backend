@@ -66,9 +66,10 @@ public class RecipeService {
     return recipe.getId();
   }
 
-  public List<Recipe> getsNotFailed(List<UUID> recipeIds) {
+  public List<Recipe> getValidRecipes(List<UUID> recipeIds) {
     return recipeRepository
-        .findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED)
+        .findRecipesByIdInAndRecipeStatusIn(
+            recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS))
         .stream()
         .toList();
   }
@@ -100,6 +101,15 @@ public class RecipeService {
     return recipeRepository.save(recipe);
   }
 
+  public void block(UUID recipeId) {
+    Recipe recipe =
+        recipeRepository
+            .findById(recipeId)
+            .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
+    recipe.block(clock);
+    recipeRepository.save(recipe);
+  }
+
   public boolean exists(UUID recipeId) {
     return recipeRepository.existsById(recipeId);
   }
@@ -108,5 +118,15 @@ public class RecipeService {
     return recipeRepository
         .findById(recipeId)
         .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
+  }
+
+  public Page<Recipe> getPopularNormals(Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+    return recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable);
+  }
+
+  public Page<Recipe> getPopularShorts(Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+    return recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable);
   }
 }

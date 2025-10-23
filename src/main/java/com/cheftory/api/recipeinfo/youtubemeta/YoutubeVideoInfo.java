@@ -15,15 +15,21 @@ public class YoutubeVideoInfo {
   private String title;
   private URI thumbnailUrl;
   private Integer videoSeconds;
+  private YoutubeMetaType videoType;
 
   public static YoutubeVideoInfo from(
-      YoutubeUri youtubeUri, String title, URI thumbnailUrl, Integer videoSeconds) {
+      YoutubeUri youtubeUri,
+      String title,
+      URI thumbnailUrl,
+      Integer videoSeconds,
+      YoutubeMetaType videoType) {
     return YoutubeVideoInfo.builder()
         .videoUri(youtubeUri.getNormalizedUrl())
         .title(title)
         .thumbnailUrl(thumbnailUrl)
         .videoId(youtubeUri.getVideoId())
         .videoSeconds(videoSeconds)
+        .videoType(videoType)
         .build();
   }
 }

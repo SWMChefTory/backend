@@ -17,9 +17,13 @@ public record YoutubeVideoResponse(List<Item> items) {
     return Iso8601DurationToSecondConverter.convert(items.getFirst().contentDetails().duration());
   }
 
+  public String getChannelId() {
+    return items.getFirst().snippet().channelId();
+  }
+
   public record Item(Snippet snippet, ContentDetails contentDetails) {}
 
-  public record Snippet(String title, Thumbnails thumbnails) {}
+  public record Snippet(String title, String channelId, Thumbnails thumbnails) {}
 
   public record Thumbnails(
       @JsonProperty("default") ThumbnailInfo defaultThumbnail,

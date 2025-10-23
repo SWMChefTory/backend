@@ -180,4 +180,127 @@ public class RecipeYoutubeMetaTest {
       }
     }
   }
+
+  @Nested
+  @DisplayName("레시피 유튜브 메타데이터 블락")
+  class BlockRecipeYoutubeMeta {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 유튜브 메타데이터가 주어졌을 때")
+    class GivenValidRecipeYoutubeMeta {
+
+      private RecipeYoutubeMeta recipeYoutubeMeta;
+      private URI videoUri;
+      private String title;
+      private String thumbnailUrl;
+      private Integer videoSeconds;
+      private Clock clock;
+      private LocalDateTime now;
+      private UUID recipeId;
+
+      @BeforeEach
+      void beforeEach() {
+        videoUri = URI.create("https://www.youtube.com/watch?v=testvideoid");
+        title = "Sample Video";
+        thumbnailUrl = "https://img.youtube.com/vi/testvideoid/test.jpg";
+        videoSeconds = 213;
+        clock = mock(Clock.class);
+        YoutubeVideoInfo youtubeVideoInfo = mock(YoutubeVideoInfo.class);
+        now = LocalDateTime.now();
+        recipeId = UUID.randomUUID();
+        doReturn(videoUri).when(youtubeVideoInfo).getVideoUri();
+        doReturn(title).when(youtubeVideoInfo).getTitle();
+        doReturn(URI.create(thumbnailUrl)).when(youtubeVideoInfo).getThumbnailUrl();
+        doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
+        doReturn(now).when(clock).now();
+
+        recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
+      }
+
+      @Nested
+      @DisplayName("When - 유튜브 메타데이터를 블락한다면")
+      class WhenBlockingYoutubeMeta {
+
+        @BeforeEach
+        void beforeEach() {
+          recipeYoutubeMeta.block();
+        }
+
+        @Test
+        @DisplayName("Then - 레시피 유튜브 메타데이터가 블락된다.")
+        void itBlocksRecipeYoutubeMeta() {
+          assertThat(recipeYoutubeMeta).isNotNull();
+          assertTrue(recipeYoutubeMeta.isBlocked());
+          assertFalse(recipeYoutubeMeta.isBanned());
+          assertThat(recipeYoutubeMeta.getStatus()).isEqualTo(YoutubeMetaStatus.BLOCKED);
+        }
+      }
+
+      @Nested
+      @DisplayName("When - 유튜브 메타데이터가 블락되었는지 확인한다면")
+      class WhenCheckingIfBlocked {
+
+        @Test
+        @DisplayName("Then - 레시피 유튜브 메타데이터가 블락되지 않았다.")
+        void itIsNotBlocked() {
+          assertThat(recipeYoutubeMeta).isNotNull();
+          assertFalse(recipeYoutubeMeta.isBlocked());
+          assertThat(recipeYoutubeMeta.getStatus()).isEqualTo(YoutubeMetaStatus.ACTIVE);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("비디오 타입 설정")
+  class VideoTypeField {
+
+    private Clock clock;
+    private UUID recipeId;
+    private URI videoUri;
+    private LocalDateTime now;
+
+    @BeforeEach
+    void setUp() {
+      clock = mock(Clock.class);
+      recipeId = UUID.randomUUID();
+      videoUri = URI.create("https://www.youtube.com/watch?v=testid");
+      now = LocalDateTime.now();
+      doReturn(now).when(clock).now();
+    }
+
+    @Test
+    @DisplayName("NORMAL 타입 비디오 정보로 생성하면 type이 NORMAL이다")
+    void createsWithNormalType() {
+      YoutubeVideoInfo videoInfo = mock(YoutubeVideoInfo.class);
+      doReturn(videoUri).when(videoInfo).getVideoUri();
+      doReturn("Normal Video").when(videoInfo).getTitle();
+      doReturn(URI.create("https://img.youtube.com/vi/testid/default.jpg"))
+          .when(videoInfo)
+          .getThumbnailUrl();
+      doReturn(300).when(videoInfo).getVideoSeconds();
+      doReturn(YoutubeMetaType.NORMAL).when(videoInfo).getVideoType();
+
+      RecipeYoutubeMeta meta = RecipeYoutubeMeta.create(videoInfo, recipeId, clock);
+
+      assertThat(meta.getType()).isEqualTo(YoutubeMetaType.NORMAL);
+    }
+
+    @Test
+    @DisplayName("SHORTS 타입 비디오 정보로 생성하면 type이 SHORTS이다")
+    void createsWithShortsType() {
+      YoutubeVideoInfo videoInfo = mock(YoutubeVideoInfo.class);
+      doReturn(videoUri).when(videoInfo).getVideoUri();
+      doReturn("Shorts Video").when(videoInfo).getTitle();
+      doReturn(URI.create("https://img.youtube.com/vi/testid/default.jpg"))
+          .when(videoInfo)
+          .getThumbnailUrl();
+      doReturn(30).when(videoInfo).getVideoSeconds();
+      doReturn(YoutubeMetaType.SHORTS).when(videoInfo).getVideoType();
+
+      RecipeYoutubeMeta meta = RecipeYoutubeMeta.create(videoInfo, recipeId, clock);
+
+      assertThat(meta.getType()).isEqualTo(YoutubeMetaType.SHORTS);
+    }
+  }
 }

@@ -14,7 +14,7 @@ public record UnCategorizedRecipesResponse(
     @JsonProperty("total_pages") int totalPages,
     @JsonProperty("total_elements") long totalElements,
     @JsonProperty("has_next") boolean hasNext) {
-  public static UnCategorizedRecipesResponse from(Page<RecipeHistory> categorizedRecipes) {
+  public static UnCategorizedRecipesResponse from(Page<RecipeHistoryOverview> categorizedRecipes) {
     List<UnCategorizedRecipe> responses =
         categorizedRecipes.stream().map(UnCategorizedRecipe::from).toList();
     return new UnCategorizedRecipesResponse(
@@ -38,20 +38,20 @@ public record UnCategorizedRecipesResponse(
       @JsonProperty("servings") Integer servings,
       @JsonProperty("created_at") LocalDateTime createdAt,
       @JsonProperty("tags") List<Tag> tags) {
-    public static UnCategorizedRecipe from(RecipeHistory info) {
+    public static UnCategorizedRecipe from(RecipeHistoryOverview info) {
       return new UnCategorizedRecipe(
-          info.getRecipeViewStatus().getViewedAt(),
-          info.getRecipeViewStatus().getLastPlaySeconds(),
-          info.getRecipe().getId(),
-          info.getYoutubeMeta().getTitle(),
-          info.getYoutubeMeta().getThumbnailUrl(),
-          info.getYoutubeMeta().getVideoId(),
-          info.getYoutubeMeta().getVideoSeconds(),
-          info.getDetailMeta() != null ? info.getDetailMeta().getDescription() : null,
-          info.getDetailMeta() != null ? info.getDetailMeta().getCookTime() : null,
-          info.getDetailMeta() != null ? info.getDetailMeta().getServings() : null,
-          info.getDetailMeta() != null ? info.getDetailMeta().getCreatedAt() : null,
-          info.getTags() != null ? info.getTags().stream().map(Tag::from).toList() : null);
+          info.getViewedAt(),
+          info.getLastPlaySeconds(),
+          info.getRecipeId(),
+          info.getVideoTitle(),
+          info.getThumbnailUrl(),
+          info.getVideoId(),
+          info.getVideoSeconds(),
+          info.getDescription(),
+          info.getCookTime(),
+          info.getServings(),
+          info.getRecipeCreatedAt(),
+          info.getTags() != null ? info.getTags().stream().map(Tag::new).toList() : null);
     }
   }
 

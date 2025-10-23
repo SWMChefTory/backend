@@ -13,7 +13,7 @@ public record RecentRecipesResponse(
     @JsonProperty("total_pages") int totalPages,
     @JsonProperty("total_elements") long totalElements,
     @JsonProperty("has_next") boolean hasNext) {
-  public static RecentRecipesResponse from(Page<RecipeHistory> recentRecipes) {
+  public static RecentRecipesResponse from(Page<RecipeHistoryOverview> recentRecipes) {
     List<RecentRecipeResponse> responses =
         recentRecipes.stream().map(RecentRecipeResponse::from).toList();
     return new RecentRecipesResponse(
@@ -33,16 +33,16 @@ public record RecentRecipesResponse(
       @JsonProperty("video_id") String videoId,
       @JsonProperty("video_seconds") Integer videoSeconds,
       @JsonProperty("recipe_status") String recipeStatus) {
-    public static RecentRecipeResponse from(RecipeHistory info) {
+    public static RecentRecipeResponse from(RecipeHistoryOverview info) {
       return new RecentRecipeResponse(
-          info.getRecipeViewStatus().getViewedAt(),
-          info.getRecipeViewStatus().getLastPlaySeconds(),
-          info.getRecipe().getId(),
-          info.getYoutubeMeta().getTitle(),
-          info.getYoutubeMeta().getThumbnailUrl(),
-          info.getYoutubeMeta().getVideoId(),
-          info.getYoutubeMeta().getVideoSeconds(),
-          info.getRecipe().getRecipeStatus().name());
+          info.getViewedAt(),
+          info.getLastPlaySeconds(),
+          info.getRecipeId(),
+          info.getVideoTitle(),
+          info.getThumbnailUrl(),
+          info.getVideoId(),
+          info.getVideoSeconds(),
+          info.getRecipeStatus().name());
     }
   }
 }

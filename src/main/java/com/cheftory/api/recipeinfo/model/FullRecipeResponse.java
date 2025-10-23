@@ -2,6 +2,7 @@ package com.cheftory.api.recipeinfo.model;
 
 import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.history.RecipeHistory;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
@@ -9,7 +10,6 @@ import com.cheftory.api.recipeinfo.progress.RecipeProgressStep;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
@@ -28,19 +28,19 @@ public record FullRecipeResponse(
     @JsonProperty("recipe_tags") List<Tag> tags,
     @JsonProperty("recipe_briefings") List<Briefing> briefings) {
 
-  public static FullRecipeResponse of(FullRecipeInfo fullRecipeInfo) {
+  public static FullRecipeResponse of(FullRecipe fullRecipe) {
     return new FullRecipeResponse(
-        fullRecipeInfo.getRecipe().getRecipeStatus(),
-        VideoInfo.from(fullRecipeInfo.getRecipeYoutubeMeta()),
-        fullRecipeInfo.getRecipeIngredients().stream().map(Ingredient::from).toList(),
-        fullRecipeInfo.getRecipeProgresses().stream().map(Progress::from).toList(),
-        fullRecipeInfo.getRecipeSteps().stream().map(Step::from).toList(),
-        ViewStatus.from(fullRecipeInfo.getRecipeViewStatus()),
-        fullRecipeInfo.getRecipeDetailMeta() != null
-            ? DetailMeta.from(fullRecipeInfo.getRecipeDetailMeta())
+        fullRecipe.getRecipe().getRecipeStatus(),
+        VideoInfo.from(fullRecipe.getRecipeYoutubeMeta()),
+        fullRecipe.getRecipeIngredients().stream().map(Ingredient::from).toList(),
+        fullRecipe.getRecipeProgresses().stream().map(Progress::from).toList(),
+        fullRecipe.getRecipeSteps().stream().map(Step::from).toList(),
+        ViewStatus.from(fullRecipe.getRecipeHistory()),
+        fullRecipe.getRecipeDetailMeta() != null
+            ? DetailMeta.from(fullRecipe.getRecipeDetailMeta())
             : null,
-        fullRecipeInfo.getRecipeTags().stream().map(Tag::from).toList(),
-        fullRecipeInfo.getRecipeBriefings().stream().map(Briefing::from).toList());
+        fullRecipe.getRecipeTags().stream().map(Tag::from).toList(),
+        fullRecipe.getRecipeBriefings().stream().map(Briefing::from).toList());
   }
 
   private record DetailMeta(
@@ -111,7 +111,7 @@ public record FullRecipeResponse(
       @JsonProperty("viewed_at") LocalDateTime viewedAt,
       @JsonProperty("last_play_seconds") Integer lastPlaySeconds,
       @JsonProperty("created_at") LocalDateTime createdAt) {
-    public static ViewStatus from(RecipeViewStatus viewStatus) {
+    public static ViewStatus from(RecipeHistory viewStatus) {
       return new ViewStatus(
           viewStatus.getId(),
           viewStatus.getViewedAt(),

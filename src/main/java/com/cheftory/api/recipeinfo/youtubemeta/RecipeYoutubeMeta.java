@@ -49,6 +49,10 @@ public class RecipeYoutubeMeta {
   @Column(nullable = false)
   private UUID recipeId;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private YoutubeMetaType type;
+
   public static RecipeYoutubeMeta create(
       YoutubeVideoInfo youtubeVideoInfo, UUID recipeId, Clock clock) {
     return RecipeYoutubeMeta.builder()
@@ -58,6 +62,7 @@ public class RecipeYoutubeMeta {
         .thumbnailUrl(youtubeVideoInfo.getThumbnailUrl())
         .videoSeconds(youtubeVideoInfo.getVideoSeconds())
         .status(YoutubeMetaStatus.ACTIVE)
+        .type(youtubeVideoInfo.getVideoType())
         .recipeId(recipeId)
         .createdAt(clock.now())
         .updatedAt(clock.now())
@@ -74,5 +79,13 @@ public class RecipeYoutubeMeta {
 
   public void ban() {
     this.status = YoutubeMetaStatus.BANNED;
+  }
+
+  public void block() {
+    this.status = YoutubeMetaStatus.BLOCKED;
+  }
+
+  public boolean isBlocked() {
+    return this.status == YoutubeMetaStatus.BLOCKED;
   }
 }

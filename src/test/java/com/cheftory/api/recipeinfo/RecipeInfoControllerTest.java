@@ -7,6 +7,7 @@ import static com.cheftory.api.utils.RestDocsUtils.requestPreprocessor;
 import static com.cheftory.api.utils.RestDocsUtils.responsePreprocessor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatObject;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.any;
@@ -26,10 +27,14 @@ import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.category.RecipeCategory;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.history.RecipeHistory;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
-import com.cheftory.api.recipeinfo.model.CountRecipeCategory;
-import com.cheftory.api.recipeinfo.model.FullRecipeInfo;
-import com.cheftory.api.recipeinfo.model.RecipeHistory;
+import com.cheftory.api.recipeinfo.model.FullRecipe;
+import com.cheftory.api.recipeinfo.model.RecipeCategoryCount;
+import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
+import com.cheftory.api.recipeinfo.model.RecipeCreationTarget;
+import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
@@ -39,7 +44,6 @@ import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
@@ -104,7 +108,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           }
           """;
 
-      doReturn(recipeId).when(recipeInfoService).create(any(URI.class), any(UUID.class));
+      doReturn(recipeId).when(recipeInfoService).create(any(RecipeCreationTarget.class));
 
       var response =
           given()
@@ -124,8 +128,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                       requestFields(fieldWithPath("video_url").description("레시피 비디오 URL")),
                       responseFields(fieldWithPath("recipe_id").description("생성된 레시피 ID"))));
 
-      verify(recipeInfoService)
-          .create(URI.create("https://www.youtube.com/watch?v=example"), userId);
+      verify(recipeInfoService).create(any(RecipeCreationTarget.User.class));
 
       var responseBody = response.extract().jsonPath();
       assertThat(responseBody.getUUID("recipe_id")).isEqualTo(recipeId);
@@ -153,11 +156,11 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       @DisplayName("When - 레시피 최근 기록을 조회한다면")
       class WhenRequestingRecentRecipes {
 
-        private Page<RecipeHistory> recentRecipes;
-        private RecipeHistory recentRecipe;
+        private Page<RecipeHistoryOverview> recentRecipes;
+        private RecipeHistoryOverview recentRecipe;
         private Recipe recipe;
         private RecipeYoutubeMeta meta;
-        private RecipeViewStatus viewStatus;
+        private RecipeHistory viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -165,25 +168,24 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         @BeforeEach
         void setUp() {
           recipeId = UUID.randomUUID();
-          recentRecipe = mock(RecipeHistory.class);
+          recentRecipe = mock(RecipeHistoryOverview.class);
           recipe = mock(Recipe.class);
           meta = mock(RecipeYoutubeMeta.class);
-          viewStatus = mock(RecipeViewStatus.class);
+          viewStatus = mock(RecipeHistory.class);
           page = 0;
           pageable = Pageable.ofSize(10);
 
-          doReturn(recipe).when(recentRecipe).getRecipe();
-          doReturn(viewStatus).when(recentRecipe).getRecipeViewStatus();
-          doReturn(meta).when(recentRecipe).getYoutubeMeta();
-
-          doReturn(recipeId).when(recipe).getId();
-          doReturn(RecipeStatus.IN_PROGRESS).when(recipe).getRecipeStatus();
-          doReturn("Sample Recipe Title").when(meta).getTitle();
-          doReturn("sample_video_id").when(meta).getVideoId();
-          doReturn(URI.create("https://example.com/thumbnail.jpg")).when(meta).getThumbnailUrl();
-          doReturn(LocalDateTime.of(2024, 1, 15, 10, 30, 0)).when(viewStatus).getViewedAt();
-          doReturn(120).when(viewStatus).getLastPlaySeconds();
-          doReturn(120).when(meta).getVideoSeconds();
+          // RecipeHistoryOverview mock 설정
+          doReturn(LocalDateTime.of(2024, 1, 15, 10, 30, 0)).when(recentRecipe).getViewedAt();
+          doReturn(120).when(recentRecipe).getLastPlaySeconds();
+          doReturn(recipeId).when(recentRecipe).getRecipeId();
+          doReturn("Sample Recipe Title").when(recentRecipe).getVideoTitle();
+          doReturn(URI.create("https://example.com/thumbnail.jpg"))
+              .when(recentRecipe)
+              .getThumbnailUrl();
+          doReturn("sample_video_id").when(recentRecipe).getVideoId();
+          doReturn(120).when(recentRecipe).getVideoSeconds();
+          doReturn(RecipeStatus.IN_PROGRESS).when(recentRecipe).getRecipeStatus();
 
           recentRecipes = new PageImpl<>(List.of(recentRecipe), pageable, 1);
           doReturn(recentRecipes)
@@ -333,10 +335,10 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       @DisplayName("When - 레시피 전체 정보를 조회한다면")
       class WhenRequestingRecipeDetail {
 
-        private FullRecipeInfo fullRecipe;
+        private FullRecipe fullRecipe;
         private RecipeYoutubeMeta youtubeMeta;
         private List<RecipeIngredient> ingredients;
-        private RecipeViewStatus viewStatus;
+        private RecipeHistory viewStatus;
         private List<RecipeStep> recipeSteps;
         private RecipeDetailMeta detailMeta;
         private List<RecipeTag> tags;
@@ -348,10 +350,10 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
         @BeforeEach
         void setUp() {
-          fullRecipe = mock(FullRecipeInfo.class);
+          fullRecipe = mock(FullRecipe.class);
           recipe = mock(Recipe.class);
           youtubeMeta = mock(RecipeYoutubeMeta.class);
-          viewStatus = mock(RecipeViewStatus.class);
+          viewStatus = mock(RecipeHistory.class);
 
           doReturn(RecipeStatus.SUCCESS).when(recipe).getRecipeStatus();
           doReturn(recipe).when(fullRecipe).getRecipe();
@@ -385,9 +387,9 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn("Step 1 Title").when(recipeStep).getSubtitle();
           recipeSteps = List.of(recipeStep);
 
-          RecipeTag tag = mock(RecipeTag.class);
-          doReturn("한식").when(tag).getTag();
-          tags = List.of(tag);
+          RecipeTag recipeTag = mock(RecipeTag.class);
+          doReturn("한식").when(recipeTag).getTag();
+          tags = List.of(recipeTag);
 
           RecipeBriefing recipeBriefing = mock(RecipeBriefing.class);
           doReturn("이 요리는 맛있습니다").when(recipeBriefing).getContent();
@@ -401,7 +403,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(youtubeMeta).when(fullRecipe).getRecipeYoutubeMeta();
           doReturn(ingredients).when(fullRecipe).getRecipeIngredients();
           doReturn(recipeSteps).when(fullRecipe).getRecipeSteps();
-          doReturn(viewStatus).when(fullRecipe).getRecipeViewStatus();
+          doReturn(viewStatus).when(fullRecipe).getRecipeHistory();
           doReturn(detailMeta).when(fullRecipe).getRecipeDetailMeta();
           doReturn(tags).when(fullRecipe).getRecipeTags();
           doReturn(progresses).when(fullRecipe).getRecipeProgresses();
@@ -623,24 +625,24 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           youtubeMeta = mock(RecipeYoutubeMeta.class);
           pageable = Pageable.ofSize(10);
 
-          doReturn(recipeId).when(recipe).getId();
-          doReturn(100).when(recipe).getViewCount(); // getCount() -> getViewCount()로 변경
-
-          doReturn("Sample Recipe Title").when(youtubeMeta).getTitle();
-          doReturn("sample_video_id").when(youtubeMeta).getVideoId();
+          // RecipeOverview mock 설정
+          doReturn(recipeId).when(recipeOverview).getRecipeId();
+          doReturn("Sample Recipe Title").when(recipeOverview).getVideoTitle();
           doReturn(URI.create("https://example.com/thumbnail.jpg"))
-              .when(youtubeMeta)
+              .when(recipeOverview)
               .getThumbnailUrl();
-          doReturn(URI.create("https://example.com/video")).when(youtubeMeta).getVideoUri();
-
-          doReturn(recipe).when(recipeOverview).getRecipe();
-          doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
+          doReturn("sample_video_id").when(recipeOverview).getVideoId();
+          doReturn(100).when(recipeOverview).getViewCount();
+          doReturn(URI.create("https://example.com/video")).when(recipeOverview).getVideoUri();
           doReturn(true).when(recipeOverview).getIsViewed();
+          doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL)
+              .when(recipeOverview)
+              .getVideoType();
 
           recipes = new PageImpl<>(List.of(recipeOverview), pageable, 1);
           doReturn(recipes)
               .when(recipeInfoService)
-              .getPopulars(any(Integer.class), any(UUID.class));
+              .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
         }
 
         @Test
@@ -679,12 +681,15 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 URL"),
                               fieldWithPath("recommend_recipes[].is_viewed")
                                   .description("사용자가 해당 레시피를 본 적이 있는지 여부"),
+                              fieldWithPath("recommend_recipes[].video_type")
+                                  .description("비디오 타입 (NORMAL 또는 SHORTS)"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
                               fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
-          verify(recipeInfoService).getPopulars(page, userId);
+          verify(recipeInfoService)
+              .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("recommend_recipes")).hasSize(1);
@@ -700,6 +705,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("recommend_recipes[0].video_url"))
               .isEqualTo("https://example.com/video");
           assertThat(responseBody.getString("recommend_recipes[0].is_viewed")).isEqualTo("true");
+          assertThat(responseBody.getString("recommend_recipes[0].video_type")).isEqualTo("NORMAL");
           assertThat(responseBody.getString("current_page")).isEqualTo("0");
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
@@ -734,7 +740,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           pageable = Pageable.ofSize(10);
           doReturn(new PageImpl<RecipeOverview>(List.of(), pageable, 0))
               .when(recipeInfoService)
-              .getPopulars(any(Integer.class), any(UUID.class));
+              .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
         }
 
         @Test
@@ -750,8 +756,167 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .status(HttpStatus.OK)
               .body("recommend_recipes", hasSize(0));
 
-          verify(recipeInfoService).getPopulars(page, userId);
+          verify(recipeInfoService)
+              .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
         }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - query 파라미터가 주어졌을 때")
+    class GivenQueryParameter {
+
+      private UUID userId;
+      private Integer page;
+      private Page<RecipeOverview> recipes;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        page = 0;
+        var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        recipes = new PageImpl<>(List.of());
+      }
+
+      @Test
+      @DisplayName("query=ALL이면 RecipeInfoVideoQuery.ALL로 서비스를 호출한다")
+      void callsServiceWithAllQuery() {
+        doReturn(recipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        given()
+            .contentType(ContentType.JSON)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .param("page", page)
+            .param("query", "ALL")
+            .get("/api/v1/recipes/recommend")
+            .then()
+            .status(HttpStatus.OK);
+
+        verify(recipeInfoService).getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+      }
+
+      @Test
+      @DisplayName("query=NORMAL이면 RecipeInfoVideoQuery.NORMAL로 서비스를 호출한다")
+      void callsServiceWithNormalQuery() {
+        doReturn(recipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        given()
+            .contentType(ContentType.JSON)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .param("page", page)
+            .param("query", "NORMAL")
+            .get("/api/v1/recipes/recommend")
+            .then()
+            .status(HttpStatus.OK);
+
+        verify(recipeInfoService).getPopulars(page, userId, RecipeInfoVideoQuery.NORMAL);
+      }
+
+      @Test
+      @DisplayName("query=SHORTS이면 RecipeInfoVideoQuery.SHORTS로 서비스를 호출한다")
+      void callsServiceWithShortsQuery() {
+        doReturn(recipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        given()
+            .contentType(ContentType.JSON)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .param("page", page)
+            .param("query", "SHORTS")
+            .get("/api/v1/recipes/recommend")
+            .then()
+            .status(HttpStatus.OK);
+
+        verify(recipeInfoService).getPopulars(page, userId, RecipeInfoVideoQuery.SHORTS);
+      }
+
+      @Test
+      @DisplayName("query 파라미터가 없으면 기본값 ALL로 서비스를 호출한다")
+      void callsServiceWithDefaultAllQuery() {
+        doReturn(recipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        given()
+            .contentType(ContentType.JSON)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .param("page", page)
+            .get("/api/v1/recipes/recommend")
+            .then()
+            .status(HttpStatus.OK);
+
+        verify(recipeInfoService).getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+      }
+
+      @Test
+      @DisplayName("SHORTS 타입 비디오는 video_type이 SHORTS로 반환된다")
+      void returnsShortsVideoType() {
+        UUID recipeId = UUID.randomUUID();
+        Recipe recipe = mock(Recipe.class);
+        RecipeYoutubeMeta youtubeMeta = mock(RecipeYoutubeMeta.class);
+        RecipeOverview recipeOverview = mock(RecipeOverview.class);
+
+        doReturn(recipeId).when(recipe).getId();
+        doReturn(50).when(recipe).getViewCount();
+        doReturn("30초 요리 팁").when(youtubeMeta).getTitle();
+        doReturn("shorts123").when(youtubeMeta).getVideoId();
+        doReturn(URI.create("https://example.com/shorts/thumbnail.jpg"))
+            .when(youtubeMeta)
+            .getThumbnailUrl();
+        doReturn(URI.create("https://www.youtube.com/shorts/shorts123"))
+            .when(youtubeMeta)
+            .getVideoUri();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS)
+            .when(youtubeMeta)
+            .getType();
+
+        // RecipeOverview mock 설정
+        doReturn(recipeId).when(recipeOverview).getRecipeId();
+        doReturn("30초 요리 팁").when(recipeOverview).getVideoTitle();
+        doReturn(URI.create("https://example.com/shorts/thumbnail.jpg"))
+            .when(recipeOverview)
+            .getThumbnailUrl();
+        doReturn("shorts123").when(recipeOverview).getVideoId();
+        doReturn(50).when(recipeOverview).getViewCount();
+        doReturn(URI.create("https://www.youtube.com/shorts/shorts123"))
+            .when(recipeOverview)
+            .getVideoUri();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS)
+            .when(recipeOverview)
+            .getVideoType();
+        doReturn(false).when(recipeOverview).getIsViewed();
+
+        Page<RecipeOverview> shortsRecipes = new PageImpl<>(List.of(recipeOverview));
+        doReturn(shortsRecipes)
+            .when(recipeInfoService)
+            .getPopulars(any(Integer.class), any(UUID.class), any(RecipeInfoVideoQuery.class));
+
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .attribute("userId", userId.toString())
+                .header("Authorization", "Bearer accessToken")
+                .param("page", page)
+                .param("query", "SHORTS")
+                .get("/api/v1/recipes/recommend")
+                .then()
+                .status(HttpStatus.OK);
+
+        var responseBody = response.extract().jsonPath();
+        assertThat(responseBody.getString("recommend_recipes[0].video_type")).isEqualTo("SHORTS");
+        assertThat(responseBody.getString("recommend_recipes[0].recipe_title"))
+            .isEqualTo("30초 요리 팁");
       }
     }
   }
@@ -779,13 +944,13 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       @DisplayName("When - 카테고리별 레시피를 조회한다면")
       class WhenRequestingCategorizedRecipes {
 
-        private Page<RecipeHistory> categorizedRecipes;
-        private RecipeHistory categorizedRecipe;
+        private Page<RecipeHistoryOverview> categorizedRecipes;
+        private RecipeHistoryOverview categorizedRecipe;
         private Recipe recipe;
         private RecipeYoutubeMeta youtubeMeta;
         private RecipeDetailMeta recipeDetailMeta;
-        private List<RecipeTag> tags;
-        private RecipeViewStatus viewStatus;
+        private List<String> tags;
+        private RecipeHistory viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -795,37 +960,31 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           recipeId = UUID.randomUUID();
           page = 0;
           pageable = Pageable.ofSize(10);
-          categorizedRecipe = mock(RecipeHistory.class);
+          categorizedRecipe = mock(RecipeHistoryOverview.class);
           recipe = mock(Recipe.class);
           youtubeMeta = mock(RecipeYoutubeMeta.class);
           recipeDetailMeta = mock(RecipeDetailMeta.class);
-          viewStatus = mock(RecipeViewStatus.class);
+          viewStatus = mock(RecipeHistory.class);
 
-          doReturn(recipe).when(categorizedRecipe).getRecipe();
-          doReturn(viewStatus).when(categorizedRecipe).getRecipeViewStatus();
-          doReturn(youtubeMeta).when(categorizedRecipe).getYoutubeMeta();
-          doReturn(recipeDetailMeta).when(categorizedRecipe).getDetailMeta();
-
-          doReturn(recipeId).when(recipe).getId();
-          doReturn("Categorized Recipe Title").when(youtubeMeta).getTitle();
-          doReturn("categorized_video_id").when(youtubeMeta).getVideoId();
+          // RecipeHistoryOverview mock 설정
+          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(categorizedRecipe).getViewedAt();
+          doReturn(90).when(categorizedRecipe).getLastPlaySeconds();
+          doReturn(recipeId).when(categorizedRecipe).getRecipeId();
+          doReturn("Categorized Recipe Title").when(categorizedRecipe).getVideoTitle();
           doReturn(URI.create("https://example.com/categorized_thumbnail.jpg"))
-              .when(youtubeMeta)
+              .when(categorizedRecipe)
               .getThumbnailUrl();
-          doReturn(180).when(youtubeMeta).getVideoSeconds();
+          doReturn("categorized_video_id").when(categorizedRecipe).getVideoId();
+          doReturn(180).when(categorizedRecipe).getVideoSeconds();
+          doReturn(categoryId).when(categorizedRecipe).getRecipeCategoryId();
+          doReturn("Categorized Recipe Description").when(categorizedRecipe).getDescription();
+          doReturn(2).when(categorizedRecipe).getServings();
+          doReturn(30).when(categorizedRecipe).getCookTime();
+          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0))
+              .when(categorizedRecipe)
+              .getRecipeCreatedAt();
 
-          doReturn(30).when(recipeDetailMeta).getCookTime();
-          doReturn(2).when(recipeDetailMeta).getServings();
-          doReturn("Categorized Recipe Description").when(recipeDetailMeta).getDescription();
-          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(recipeDetailMeta).getCreatedAt();
-
-          RecipeTag tag = mock(RecipeTag.class);
-          doReturn("한식").when(tag).getTag();
-          tags = List.of(tag);
-
-          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(viewStatus).getViewedAt();
-          doReturn(90).when(viewStatus).getLastPlaySeconds();
-          doReturn(categoryId).when(viewStatus).getRecipeCategoryId();
+          tags = List.of("한식");
           doReturn(tags).when(categorizedRecipe).getTags();
           categorizedRecipes = new PageImpl<>(List.of(categorizedRecipe), pageable, 1);
           doReturn(categorizedRecipes)
@@ -920,8 +1079,31 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         @Test
         @DisplayName("Then - DetailMeta가 null이면 해당 필드는 null로 내려간다")
         void thenDetailMetaNullShouldReturnNullFields() {
-          // DetailMeta를 null로 응답
-          doReturn(null).when(categorizedRecipe).getDetailMeta();
+          // DetailMeta가 null인 경우를 위한 새로운 mock 설정
+          RecipeHistoryOverview nullDetailMetaRecipe = mock(RecipeHistoryOverview.class);
+          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0))
+              .when(nullDetailMetaRecipe)
+              .getViewedAt();
+          doReturn(90).when(nullDetailMetaRecipe).getLastPlaySeconds();
+          doReturn(recipeId).when(nullDetailMetaRecipe).getRecipeId();
+          doReturn("Categorized Recipe Title").when(nullDetailMetaRecipe).getVideoTitle();
+          doReturn(URI.create("https://example.com/categorized_thumbnail.jpg"))
+              .when(nullDetailMetaRecipe)
+              .getThumbnailUrl();
+          doReturn("categorized_video_id").when(nullDetailMetaRecipe).getVideoId();
+          doReturn(180).when(nullDetailMetaRecipe).getVideoSeconds();
+          doReturn(categoryId).when(nullDetailMetaRecipe).getRecipeCategoryId();
+          doReturn(null).when(nullDetailMetaRecipe).getDescription();
+          doReturn(null).when(nullDetailMetaRecipe).getServings();
+          doReturn(null).when(nullDetailMetaRecipe).getCookTime();
+          doReturn(null).when(nullDetailMetaRecipe).getRecipeCreatedAt();
+          doReturn(tags).when(nullDetailMetaRecipe).getTags();
+
+          Page<RecipeHistoryOverview> nullDetailMetaRecipes =
+              new PageImpl<>(List.of(nullDetailMetaRecipe), pageable, 1);
+          doReturn(nullDetailMetaRecipes)
+              .when(recipeInfoService)
+              .getCategorized(any(UUID.class), any(UUID.class), any(Integer.class));
 
           var response =
               given()
@@ -932,7 +1114,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .get("/api/v1/recipes/categorized/{recipe_category_id}", categoryId)
                   .then()
                   .status(HttpStatus.OK)
-                  .body("categorized_recipes", hasSize(categorizedRecipes.getContent().size()))
+                  .body("categorized_recipes", hasSize(1))
                   .body("categorized_recipes[0].description", nullValue())
                   .body("categorized_recipes[0].servings", nullValue())
                   .body("categorized_recipes[0].cook_time", nullValue())
@@ -1083,7 +1265,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         void setUp() {
           page = 0;
           pageable = Pageable.ofSize(10);
-          doReturn(new PageImpl<RecipeHistory>(List.of(), pageable, 0))
+          doReturn(new PageImpl<RecipeHistoryOverview>(List.of(), pageable, 0))
               .when(recipeInfoService)
               .getCategorized(userId, categoryId, page);
         }
@@ -1128,13 +1310,13 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       @DisplayName("When - 미분류 레시피를 조회한다면")
       class WhenRequestingUnCategorizedRecipes {
 
-        private Page<RecipeHistory> unCategorizedRecipes;
-        private RecipeHistory unCategorizedRecipe;
+        private Page<RecipeHistoryOverview> unCategorizedRecipes;
+        private RecipeHistoryOverview unCategorizedRecipe;
         private Recipe recipe;
         private RecipeYoutubeMeta youtubeMeta;
         private RecipeDetailMeta detailMeta;
-        private List<RecipeTag> tags;
-        private RecipeViewStatus viewStatus;
+        private List<String> tags;
+        private RecipeHistory viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -1144,36 +1326,32 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           recipeId = UUID.randomUUID();
           page = 0;
           pageable = Pageable.ofSize(10);
-          unCategorizedRecipe = mock(RecipeHistory.class);
+          unCategorizedRecipe = mock(RecipeHistoryOverview.class);
           recipe = mock(Recipe.class);
           youtubeMeta = mock(RecipeYoutubeMeta.class);
           detailMeta = mock(RecipeDetailMeta.class);
-          RecipeTag tag = mock(RecipeTag.class);
-          doReturn("한식").when(tag).getTag();
-          tags = List.of(tag);
-          viewStatus = mock(RecipeViewStatus.class);
+          tags = List.of("한식");
+          viewStatus = mock(RecipeHistory.class);
 
-          doReturn(recipe).when(unCategorizedRecipe).getRecipe();
-          doReturn(viewStatus).when(unCategorizedRecipe).getRecipeViewStatus();
-          doReturn(youtubeMeta).when(unCategorizedRecipe).getYoutubeMeta();
-          doReturn(detailMeta).when(unCategorizedRecipe).getDetailMeta();
-          doReturn(tags).when(unCategorizedRecipe).getTags();
-
-          doReturn(recipeId).when(recipe).getId();
-          doReturn("Uncategorized Recipe Title").when(youtubeMeta).getTitle();
-          doReturn("uncategorized_video_id").when(youtubeMeta).getVideoId();
+          // RecipeHistoryOverview mock 설정
+          doReturn(LocalDateTime.of(2024, 1, 25, 16, 45, 0))
+              .when(unCategorizedRecipe)
+              .getViewedAt();
+          doReturn(150).when(unCategorizedRecipe).getLastPlaySeconds();
+          doReturn(recipeId).when(unCategorizedRecipe).getRecipeId();
+          doReturn("Uncategorized Recipe Title").when(unCategorizedRecipe).getVideoTitle();
           doReturn(URI.create("https://example.com/uncategorized_thumbnail.jpg"))
-              .when(youtubeMeta)
+              .when(unCategorizedRecipe)
               .getThumbnailUrl();
-          doReturn(240).when(youtubeMeta).getVideoSeconds();
-
-          doReturn(30).when(detailMeta).getCookTime();
-          doReturn(2).when(detailMeta).getServings();
-          doReturn("Uncategorized Recipe Description").when(detailMeta).getDescription();
-          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0)).when(detailMeta).getCreatedAt();
-
-          doReturn(LocalDateTime.of(2024, 1, 25, 16, 45, 0)).when(viewStatus).getViewedAt();
-          doReturn(150).when(viewStatus).getLastPlaySeconds();
+          doReturn("uncategorized_video_id").when(unCategorizedRecipe).getVideoId();
+          doReturn(240).when(unCategorizedRecipe).getVideoSeconds();
+          doReturn("Uncategorized Recipe Description").when(unCategorizedRecipe).getDescription();
+          doReturn(2).when(unCategorizedRecipe).getServings();
+          doReturn(30).when(unCategorizedRecipe).getCookTime();
+          doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0))
+              .when(unCategorizedRecipe)
+              .getRecipeCreatedAt();
+          doReturn(tags).when(unCategorizedRecipe).getTags();
 
           unCategorizedRecipes = new PageImpl<>(List.of(unCategorizedRecipe), pageable, 1);
           doReturn(unCategorizedRecipes)
@@ -1266,8 +1444,30 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         @Test
         @DisplayName("Then - DetailMeta가 null이면 해당 필드는 null로 내려간다")
         void thenDetailMetaNullShouldReturnNullFields() {
-          // DetailMeta를 null로 응답
-          doReturn(null).when(unCategorizedRecipe).getDetailMeta();
+          // DetailMeta가 null인 경우를 위한 새로운 mock 설정
+          RecipeHistoryOverview nullDetailMetaRecipe = mock(RecipeHistoryOverview.class);
+          doReturn(LocalDateTime.of(2024, 1, 25, 16, 45, 0))
+              .when(nullDetailMetaRecipe)
+              .getViewedAt();
+          doReturn(150).when(nullDetailMetaRecipe).getLastPlaySeconds();
+          doReturn(recipeId).when(nullDetailMetaRecipe).getRecipeId();
+          doReturn("Uncategorized Recipe Title").when(nullDetailMetaRecipe).getVideoTitle();
+          doReturn(URI.create("https://example.com/uncategorized_thumbnail.jpg"))
+              .when(nullDetailMetaRecipe)
+              .getThumbnailUrl();
+          doReturn("uncategorized_video_id").when(nullDetailMetaRecipe).getVideoId();
+          doReturn(240).when(nullDetailMetaRecipe).getVideoSeconds();
+          doReturn(null).when(nullDetailMetaRecipe).getDescription();
+          doReturn(null).when(nullDetailMetaRecipe).getServings();
+          doReturn(null).when(nullDetailMetaRecipe).getCookTime();
+          doReturn(null).when(nullDetailMetaRecipe).getRecipeCreatedAt();
+          doReturn(tags).when(nullDetailMetaRecipe).getTags();
+
+          Page<RecipeHistoryOverview> nullDetailMetaRecipes =
+              new PageImpl<>(List.of(nullDetailMetaRecipe), pageable, 1);
+          doReturn(nullDetailMetaRecipes)
+              .when(recipeInfoService)
+              .getUnCategorized(any(UUID.class), any(Integer.class));
 
           var response =
               given()
@@ -1278,7 +1478,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                   .get("/api/v1/recipes/uncategorized")
                   .then()
                   .status(HttpStatus.OK)
-                  .body("unCategorized_recipes", hasSize(unCategorizedRecipes.getContent().size()))
+                  .body("unCategorized_recipes", hasSize(1))
                   .body("unCategorized_recipes[0].description", nullValue())
                   .body("unCategorized_recipes[0].servings", nullValue())
                   .body("unCategorized_recipes[0].cook_time", nullValue())
@@ -1425,7 +1625,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         void setUp() {
           page = 0;
           pageable = Pageable.ofSize(10);
-          doReturn(new PageImpl<RecipeHistory>(List.of(), pageable, 0))
+          doReturn(new PageImpl<RecipeHistoryOverview>(List.of(), pageable, 0))
               .when(recipeInfoService)
               .getUnCategorized(userId, page);
         }
@@ -1444,6 +1644,179 @@ public class RecipeInfoControllerTest extends RestDocsTest {
               .body("unCategorized_recipes", hasSize(0));
 
           verify(recipeInfoService).getUnCategorized(userId, page);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("전체 레시피 히스토리 조회")
+  class GetRecipeHistories {
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+    class GivenValidUserId {
+
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+      }
+
+      @Nested
+      @DisplayName("When - 전체 레시피 히스토리를 조회한다면")
+      class WhenRequestingRecipeHistories {
+
+        private Page<RecipeHistoryOverview> recipeHistories;
+        private RecipeHistoryOverview recipeHistoryOverview;
+        private Recipe recipe;
+        private RecipeYoutubeMeta youtubeMeta;
+        private RecipeDetailMeta detailMeta;
+        private List<String> tags;
+        private RecipeHistory history;
+        private UUID recipeId;
+        private Integer page;
+        private Pageable pageable;
+
+        @BeforeEach
+        void setUp() {
+          recipeId = UUID.randomUUID();
+          page = 0;
+          pageable = Pageable.ofSize(10);
+          recipeHistoryOverview = mock(RecipeHistoryOverview.class);
+          recipe = mock(Recipe.class);
+          youtubeMeta = mock(RecipeYoutubeMeta.class);
+          detailMeta = mock(RecipeDetailMeta.class);
+          tags = List.of("한식");
+          history = mock(RecipeHistory.class);
+
+          // RecipeHistoryOverview mock 설정
+          doReturn(LocalDateTime.now()).when(recipeHistoryOverview).getViewedAt();
+          doReturn(null).when(recipeHistoryOverview).getLastPlaySeconds();
+          doReturn(recipeId).when(recipeHistoryOverview).getRecipeId();
+          doReturn("김치찌개 만들기").when(recipeHistoryOverview).getVideoTitle();
+          doReturn(URI.create("https://img.youtube.com/vi/test/maxresdefault.jpg"))
+              .when(recipeHistoryOverview)
+              .getThumbnailUrl();
+          doReturn("test_video_id").when(recipeHistoryOverview).getVideoId();
+          doReturn(300).when(recipeHistoryOverview).getVideoSeconds();
+          doReturn("맛있는 김치찌개").when(recipeHistoryOverview).getDescription();
+          doReturn(30).when(recipeHistoryOverview).getCookTime();
+          doReturn(2).when(recipeHistoryOverview).getServings();
+          doReturn(LocalDateTime.now()).when(recipeHistoryOverview).getRecipeCreatedAt();
+          doReturn(tags).when(recipeHistoryOverview).getTags();
+
+          recipeHistories = new PageImpl<>(List.of(recipeHistoryOverview), pageable, 1);
+
+          doReturn(recipeHistories).when(recipeInfoService).getHistories(userId, page);
+        }
+
+        @Test
+        @DisplayName("Then - 전체 레시피 히스토리를 성공적으로 반환해야 한다")
+        void thenShouldReturnRecipeHistories() {
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
+                  .param("page", page)
+                  .get("/api/v1/recipes/histories")
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("recipe_histories", hasSize(1))
+                  .apply(
+                      document(
+                          getNestedClassPath(this.getClass()) + "/{method-name}",
+                          requestPreprocessor(),
+                          responsePreprocessor(),
+                          requestAccessTokenFields(),
+                          queryParameters(
+                              parameterWithName("page").description("페이지 번호 (0부터 시작)").optional()),
+                          responseFields(
+                              fieldWithPath("recipe_histories").description("레시피 히스토리 목록"),
+                              fieldWithPath("recipe_histories[].viewed_at")
+                                  .description("레시피 조회 시간"),
+                              fieldWithPath("recipe_histories[].last_play_seconds")
+                                  .description("마지막 재생 위치(초) (nullable)"),
+                              fieldWithPath("recipe_histories[].recipe_id").description("레시피 ID"),
+                              fieldWithPath("recipe_histories[].recipe_title")
+                                  .description("레시피 제목"),
+                              fieldWithPath("recipe_histories[].video_thumbnail_url")
+                                  .description("레시피 썸네일 URL"),
+                              fieldWithPath("recipe_histories[].video_id")
+                                  .description("레시피 비디오 ID"),
+                              fieldWithPath("recipe_histories[].video_seconds")
+                                  .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("recipe_histories[].description")
+                                  .description("레시피 설명 (nullable)"),
+                              fieldWithPath("recipe_histories[].servings")
+                                  .description("레시피 인분 (nullable)"),
+                              fieldWithPath("recipe_histories[].cook_time")
+                                  .description("레시피 조리 시간(분) (nullable)"),
+                              fieldWithPath("recipe_histories[].created_at")
+                                  .description("레시피 생성 시간 (nullable)"),
+                              fieldWithPath("recipe_histories[].tags").description("레시피 태그 목록"),
+                              fieldWithPath("recipe_histories[].tags[].name").description("태그 이름"),
+                              fieldWithPath("current_page").description("현재 페이지 번호"),
+                              fieldWithPath("total_pages").description("전체 페이지 수"),
+                              fieldWithPath("total_elements").description("전체 요소 수"),
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+
+          verify(recipeInfoService).getHistories(userId, page);
+
+          var responseBody = response.extract().jsonPath();
+          assertThat(responseBody.getList("recipe_histories")).hasSize(1);
+          assertThat(responseBody.getUUID("recipe_histories[0].recipe_id")).isEqualTo(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 히스토리가 없는 사용자 ID가 주어졌을 때")
+    class GivenUserWithNoHistories {
+
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+      }
+
+      @Nested
+      @DisplayName("When - 전체 레시피 히스토리를 조회한다면")
+      class WhenRequestingRecipeHistories {
+
+        private Integer page;
+        private Pageable pageable;
+
+        @BeforeEach
+        void setUp() {
+          page = 0;
+          pageable = Pageable.ofSize(10);
+          doReturn(new PageImpl<RecipeHistoryOverview>(List.of(), pageable, 0))
+              .when(recipeInfoService)
+              .getHistories(userId, page);
+        }
+
+        @Test
+        @DisplayName("Then - 빈 결과를 반환해야 한다")
+        void thenShouldReturnEmptyList() {
+          given()
+              .contentType(ContentType.JSON)
+              .attribute("userId", userId.toString())
+              .header("Authorization", "Bearer accessToken")
+              .param("page", page)
+              .get("/api/v1/recipes/histories")
+              .then()
+              .status(HttpStatus.OK)
+              .body("recipe_histories", hasSize(0));
+
+          verify(recipeInfoService).getHistories(userId, page);
         }
       }
     }
@@ -1545,8 +1918,9 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         @DisplayName("When - 레시피 카테고리 목록을 조회한다면")
         class WhenRequestingRecipeCategories {
 
-          private List<CountRecipeCategory> categories;
-          private CountRecipeCategory categoryWithCount;
+          private RecipeCategoryCounts categoryCounts;
+          private List<RecipeCategoryCount> categories;
+          private RecipeCategoryCount categoryWithCount;
           private RecipeCategory category;
           private UUID categoryId;
 
@@ -1554,20 +1928,25 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           void setUp() {
             categoryId = UUID.randomUUID();
             category = mock(RecipeCategory.class);
-            categoryWithCount = mock(CountRecipeCategory.class);
+            categoryWithCount = mock(RecipeCategoryCount.class);
 
             doReturn(categoryId).when(category).getId();
             doReturn("한식").when(category).getName();
             doReturn(category).when(categoryWithCount).getCategory();
-            doReturn(5).when(categoryWithCount).getCount();
+            doReturn(5).when(categoryWithCount).getRecipeCount();
 
             categories = List.of(categoryWithCount);
-            doReturn(categories).when(recipeInfoService).getCategories(any(UUID.class));
+            categoryCounts = mock(RecipeCategoryCounts.class);
+            doReturn(3).when(categoryCounts).getUncategorizedCount();
+            doReturn(categories).when(categoryCounts).getCategorizedCounts();
+            doReturn(8).when(categoryCounts).getTotalCount(); // 5 + 3
+
+            doReturn(categoryCounts).when(recipeInfoService).getCategoryCounts(any(UUID.class));
           }
 
           @Test
-          @DisplayName("Then - 레시피 카테고리 목록을 성공적으로 반환해야 한다")
-          void thenShouldReturnRecipeCategories() {
+          @DisplayName("Then - 레시피 카테고리 목록과 개수를 성공적으로 반환해야 한다")
+          void thenShouldReturnRecipeCategoryCounts() {
             var response =
                 given()
                     .contentType(ContentType.JSON)
@@ -1587,9 +1966,11 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                 fieldWithPath("categories").description("레시피 카테고리 목록"),
                                 fieldWithPath("categories[].category_id").description("카테고리 ID"),
                                 fieldWithPath("categories[].count").description("해당 카테고리의 레시피 수"),
-                                fieldWithPath("categories[].name").description("카테고리 이름"))));
+                                fieldWithPath("categories[].name").description("카테고리 이름"),
+                                fieldWithPath("unCategorized_count").description("미분류 레시피 수"),
+                                fieldWithPath("total_count").description("전체 레시피 수"))));
 
-            verify(recipeInfoService).getCategories(userId);
+            verify(recipeInfoService).getCategoryCounts(userId);
 
             var responseBody = response.extract().jsonPath();
             var categoriesList = responseBody.getList("categories");
@@ -1598,6 +1979,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
             assertThat(responseBody.getUUID("categories[0].category_id")).isEqualTo(categoryId);
             assertThat(responseBody.getInt("categories[0].count")).isEqualTo(5);
             assertThat(responseBody.getString("categories[0].name")).isEqualTo("한식");
+            assertThat(responseBody.getInt("unCategorized_count")).isEqualTo(3);
+            assertThat(responseBody.getInt("total_count")).isEqualTo(8);
           }
         }
       }
@@ -1621,7 +2004,11 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
           @BeforeEach
           void setUp() {
-            doReturn(List.of()).when(recipeInfoService).getCategories(userId);
+            var categoryCounts = mock(RecipeCategoryCounts.class);
+            doReturn(0).when(categoryCounts).getUncategorizedCount();
+            doReturn(List.of()).when(categoryCounts).getCategorizedCounts();
+            doReturn(0).when(categoryCounts).getTotalCount();
+            doReturn(categoryCounts).when(recipeInfoService).getCategoryCounts(userId);
           }
 
           @Test
@@ -1634,9 +2021,11 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                 .get("/api/v1/recipes/categories")
                 .then()
                 .status(HttpStatus.OK)
-                .body("categories", hasSize(0));
+                .body("categories", hasSize(0))
+                .body("unCategorized_count", equalTo(0))
+                .body("total_count", equalTo(0));
 
-            verify(recipeInfoService).getCategories(userId);
+            verify(recipeInfoService).getCategoryCounts(userId);
           }
         }
       }
@@ -1680,7 +2069,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         private RecipeDetailMeta detailMeta;
         private UUID recipeId;
         private Pageable pageable;
-        private List<RecipeTag> tags;
+        private List<String> tags;
 
         @BeforeEach
         void setUp() {
@@ -1704,17 +2093,24 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(2).when(detailMeta).getServings();
           doReturn(30).when(detailMeta).getCookTime();
 
-          RecipeTag tag1 = mock(RecipeTag.class);
-          RecipeTag tag2 = mock(RecipeTag.class);
-          doReturn("한식").when(tag1).getTag();
-          doReturn("찌개").when(tag2).getTag();
-          tags = List.of(tag1, tag2);
-
-          doReturn(recipe).when(recipeOverview).getRecipe();
-          doReturn(youtubeMeta).when(recipeOverview).getYoutubeMeta();
-          doReturn(detailMeta).when(recipeOverview).getDetailMeta();
-          doReturn(tags).when(recipeOverview).getTags();
+          // RecipeOverview mock 설정
+          doReturn(recipeId).when(recipeOverview).getRecipeId();
+          doReturn("김치찌개 맛있게 끓이는 법").when(recipeOverview).getVideoTitle();
+          doReturn(URI.create("https://example.com/kimchi_thumbnail.jpg"))
+              .when(recipeOverview)
+              .getThumbnailUrl();
+          doReturn("kimchi_video_id").when(recipeOverview).getVideoId();
+          doReturn(300).when(recipeOverview).getVideoSeconds();
+          doReturn("얼큰한 김치찌개 레시피").when(recipeOverview).getDescription();
+          doReturn(2).when(recipeOverview).getServings();
+          doReturn(30).when(recipeOverview).getCookTime();
+          doReturn(List.of("한식", "찌개")).when(recipeOverview).getTags();
           doReturn(true).when(recipeOverview).getIsViewed();
+
+          // 디버깅을 위한 mock 설정 확인
+          System.out.println("Mock setup - recipeId: " + recipeOverview.getRecipeId());
+          System.out.println("Mock setup - videoTitle: " + recipeOverview.getVideoTitle());
+          System.out.println("Mock setup - tags: " + recipeOverview.getTags());
 
           searchResults = new PageImpl<>(List.of(recipeOverview), pageable, 1);
           doReturn(searchResults)
@@ -1728,57 +2124,66 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           var response =
               given()
                   .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
                   .param("query", query)
                   .param("page", page)
                   .get("/api/v1/recipes/search")
                   .then()
                   .status(HttpStatus.OK)
-                  .body("searched_recipes", hasSize(1))
-                  .apply(
-                      document(
-                          getNestedClassPath(this.getClass()) + "/{method-name}",
-                          requestPreprocessor(),
-                          responsePreprocessor(),
-                          queryParameters(
-                              parameterWithName("query").description("검색어"),
-                              parameterWithName("page")
-                                  .description("페이지 번호 (0부터 시작, 기본값: 0)")
-                                  .optional()),
-                          responseFields(
-                              fieldWithPath("searched_recipes").description("검색된 레시피 목록"),
-                              fieldWithPath("searched_recipes[].recipe_id").description("레시피 ID"),
-                              fieldWithPath("searched_recipes[].recipe_title")
-                                  .description("레시피 제목"),
-                              fieldWithPath("searched_recipes[].tags").description("레시피 태그 목록"),
-                              fieldWithPath("searched_recipes[].tags[].name").description("태그 이름"),
-                              fieldWithPath("searched_recipes[].detail_meta")
-                                  .description("레시피 상세 메타데이터"),
-                              fieldWithPath("searched_recipes[].detail_meta.description")
-                                  .description("레시피 설명"),
-                              fieldWithPath("searched_recipes[].detail_meta.servings")
-                                  .description("인분"),
-                              fieldWithPath("searched_recipes[].detail_meta.cookingTime")
-                                  .description("조리 시간(분)"),
-                              fieldWithPath("searched_recipes[].video_info")
-                                  .description("레시피 비디오 정보"),
-                              fieldWithPath("searched_recipes[].video_info.video_id")
-                                  .description("레시피 비디오 ID"),
-                              fieldWithPath("searched_recipes[].video_info.video_title")
-                                  .description("레시피 비디오 제목"),
-                              fieldWithPath("searched_recipes[].video_info.video_thumbnail_url")
-                                  .description("레시피 비디오 썸네일 URL"),
-                              fieldWithPath("searched_recipes[].video_info.video_seconds")
-                                  .description("레시피 비디오 재생 시간"),
-                              fieldWithPath("searched_recipes[].is_viewed")
-                                  .description("레시피 조회 여부"),
-                              fieldWithPath("current_page").description("현재 페이지 번호"),
-                              fieldWithPath("total_pages").description("전체 페이지 수"),
-                              fieldWithPath("total_elements").description("전체 요소 수"),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                  .extract()
+                  .response();
+
+          // 디버깅을 위한 응답 출력
+          System.out.println("Response body: " + response.getBody().asString());
+
+          // 응답 검증
+          response.then().body("searched_recipes", hasSize(1));
+
+          response
+              .then()
+              .apply(
+                  document(
+                      getNestedClassPath(this.getClass()) + "/{method-name}",
+                      requestPreprocessor(),
+                      responsePreprocessor(),
+                      queryParameters(
+                          parameterWithName("query").description("검색어"),
+                          parameterWithName("page")
+                              .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                              .optional()),
+                      responseFields(
+                          fieldWithPath("searched_recipes").description("검색된 레시피 목록"),
+                          fieldWithPath("searched_recipes[].recipe_id").description("레시피 ID"),
+                          fieldWithPath("searched_recipes[].recipe_title").description("레시피 제목"),
+                          fieldWithPath("searched_recipes[].tags").description("레시피 태그 목록"),
+                          fieldWithPath("searched_recipes[].tags[].name").description("태그 이름"),
+                          fieldWithPath("searched_recipes[].detail_meta")
+                              .description("레시피 상세 메타데이터"),
+                          fieldWithPath("searched_recipes[].detail_meta.description")
+                              .description("레시피 설명"),
+                          fieldWithPath("searched_recipes[].detail_meta.servings")
+                              .description("인분"),
+                          fieldWithPath("searched_recipes[].detail_meta.cookingTime")
+                              .description("조리 시간(분)"),
+                          fieldWithPath("searched_recipes[].video_info").description("레시피 비디오 정보"),
+                          fieldWithPath("searched_recipes[].video_info.video_id")
+                              .description("레시피 비디오 ID"),
+                          fieldWithPath("searched_recipes[].video_info.video_title")
+                              .description("레시피 비디오 제목"),
+                          fieldWithPath("searched_recipes[].video_info.video_thumbnail_url")
+                              .description("레시피 비디오 썸네일 URL"),
+                          fieldWithPath("searched_recipes[].video_info.video_seconds")
+                              .description("레시피 비디오 재생 시간"),
+                          fieldWithPath("searched_recipes[].is_viewed").description("레시피 조회 여부"),
+                          fieldWithPath("current_page").description("현재 페이지 번호"),
+                          fieldWithPath("total_pages").description("전체 페이지 수"),
+                          fieldWithPath("total_elements").description("전체 요소 수"),
+                          fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
 
           verify(recipeInfoService).searchRecipes(page, query, userId);
 
-          var responseBody = response.extract().jsonPath();
+          var responseBody = response.jsonPath();
           assertThat(responseBody.getList("searched_recipes")).hasSize(1);
           assertThat(responseBody.getString("searched_recipes[0].recipe_id"))
               .isEqualTo(recipeId.toString());
@@ -1894,13 +2299,17 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(2).when(detail1).getServings();
           doReturn(30).when(detail1).getCookTime();
 
-          RecipeTag tag1 = mock(RecipeTag.class);
-          doReturn("한식").when(tag1).getTag();
-
-          doReturn(recipe1).when(kimchiStew).getRecipe();
-          doReturn(meta1).when(kimchiStew).getYoutubeMeta();
-          doReturn(detail1).when(kimchiStew).getDetailMeta();
-          doReturn(List.of(tag1)).when(kimchiStew).getTags();
+          // RecipeOverview mock 설정
+          doReturn(recipeId1).when(kimchiStew).getRecipeId();
+          doReturn("김치찌개").when(kimchiStew).getVideoTitle();
+          doReturn(URI.create("https://example.com/kimchi.jpg")).when(kimchiStew).getThumbnailUrl();
+          doReturn("kimchi_video_id").when(kimchiStew).getVideoId();
+          doReturn(300).when(kimchiStew).getVideoSeconds();
+          doReturn("김치찌개 레시피").when(kimchiStew).getDescription();
+          doReturn(2).when(kimchiStew).getServings();
+          doReturn(30).when(kimchiStew).getCookTime();
+          doReturn(List.of("한식")).when(kimchiStew).getTags();
+          doReturn(true).when(kimchiStew).getIsViewed();
 
           // 두 번째 레시피 - 된장찌개
           RecipeOverview soyBeanStew = mock(RecipeOverview.class);
@@ -1918,13 +2327,19 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(2).when(detail2).getServings();
           doReturn(25).when(detail2).getCookTime();
 
-          RecipeTag tag2 = mock(RecipeTag.class);
-          doReturn("한식").when(tag2).getTag();
-
-          doReturn(recipe2).when(soyBeanStew).getRecipe();
-          doReturn(meta2).when(soyBeanStew).getYoutubeMeta();
-          doReturn(detail2).when(soyBeanStew).getDetailMeta();
-          doReturn(List.of(tag2)).when(soyBeanStew).getTags();
+          // RecipeOverview mock 설정
+          doReturn(recipeId2).when(soyBeanStew).getRecipeId();
+          doReturn("된장찌개").when(soyBeanStew).getVideoTitle();
+          doReturn(URI.create("https://example.com/soybean.jpg"))
+              .when(soyBeanStew)
+              .getThumbnailUrl();
+          doReturn("soybean_video_id").when(soyBeanStew).getVideoId();
+          doReturn(240).when(soyBeanStew).getVideoSeconds();
+          doReturn("된장찌개 레시피").when(soyBeanStew).getDescription();
+          doReturn(2).when(soyBeanStew).getServings();
+          doReturn(25).when(soyBeanStew).getCookTime();
+          doReturn(List.of("한식")).when(soyBeanStew).getTags();
+          doReturn(true).when(soyBeanStew).getIsViewed();
 
           recipeOverviews = List.of(kimchiStew, soyBeanStew);
           searchResults = new PageImpl<>(recipeOverviews, pageable, 2);
@@ -1939,6 +2354,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           var response =
               given()
                   .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
                   .param("query", query)
                   .param("page", page)
                   .get("/api/v1/recipes/search")
@@ -1993,13 +2410,17 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(2).when(detailMeta).getServings();
           doReturn(20).when(detailMeta).getCookTime();
 
-          RecipeTag tag = mock(RecipeTag.class);
-          doReturn("양식").when(tag).getTag();
-
-          doReturn(recipeEntity).when(recipe).getRecipe();
-          doReturn(meta).when(recipe).getYoutubeMeta();
-          doReturn(detailMeta).when(recipe).getDetailMeta();
-          doReturn(List.of(tag)).when(recipe).getTags();
+          // RecipeOverview mock 설정
+          doReturn(recipeId).when(recipe).getRecipeId();
+          doReturn("까르보나라 파스타").when(recipe).getVideoTitle();
+          doReturn(URI.create("https://example.com/pasta.jpg")).when(recipe).getThumbnailUrl();
+          doReturn("pasta_video_id").when(recipe).getVideoId();
+          doReturn(180).when(recipe).getVideoSeconds();
+          doReturn("파스타 레시피").when(recipe).getDescription();
+          doReturn(2).when(recipe).getServings();
+          doReturn(20).when(recipe).getCookTime();
+          doReturn(List.of("양식")).when(recipe).getTags();
+          doReturn(true).when(recipe).getIsViewed();
 
           // 전체 12개 결과 중 두 번째 페이지 (10개 이후의 2개)
           searchResults = new PageImpl<>(List.of(recipe), Pageable.ofSize(10).withPage(1), 11);
@@ -2014,6 +2435,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           var response =
               given()
                   .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
                   .param("query", query)
                   .param("page", page)
                   .get("/api/v1/recipes/search")
@@ -2416,6 +2839,191 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           }
           assertThat(detailCount).isEqualTo(3); // TAG, DETAIL_META, INGREDIENT
         }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("크롤러 레시피 생성")
+  class CreateCrawledRecipe {
+
+    @Nested
+    @DisplayName("Given - 유효한 비디오 URL이 주어졌을 때")
+    class GivenValidVideoUrl {
+
+      @Test
+      @DisplayName("Then - 크롤러 레시피 생성 요청을 성공적으로 처리하고 히스토리를 생성하지 않는다")
+      void thenShouldCreateCrawledRecipeWithoutHistory() {
+        var recipeId = UUID.randomUUID();
+        var requestBody =
+            """
+            {
+              "video_url": "https://www.youtube.com/watch?v=crawled"
+            }
+            """;
+
+        doReturn(recipeId).when(recipeInfoService).create(any(RecipeCreationTarget.class));
+
+        var response =
+            given()
+                .contentType(ContentType.JSON)
+                .body(requestBody)
+                .post("/papi/v1/recipes")
+                .then()
+                .status(HttpStatus.OK);
+
+        verify(recipeInfoService).create(any(RecipeCreationTarget.Crawler.class));
+
+        var responseBody = response.extract().jsonPath();
+        assertThat(responseBody.getUUID("recipe_id")).isEqualTo(recipeId);
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("트렌딩 레시피 조회")
+  class GetTrendingRecipes {
+
+    private UUID userId;
+
+    @BeforeEach
+    void setUp() {
+      userId = UUID.randomUUID();
+      var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+    class GivenValidUserId {
+
+      @Test
+      @DisplayName("Then - 트렌딩 레시피 목록을 성공적으로 조회한다")
+      void thenShouldGetTrendingRecipesSuccessfully() {
+        var recipeId1 = UUID.randomUUID();
+        var recipeId2 = UUID.randomUUID();
+        var recipeOverview1 = mock(RecipeOverview.class);
+        var recipeOverview2 = mock(RecipeOverview.class);
+
+        doReturn(recipeId1).when(recipeOverview1).getRecipeId();
+        doReturn("트렌딩 레시피 1").when(recipeOverview1).getVideoTitle();
+        doReturn(URI.create("https://example.com/thumb1.jpg")).when(recipeOverview1).getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=1")).when(recipeOverview1).getVideoUri();
+        doReturn(1000).when(recipeOverview1).getViewCount();
+        doReturn("video1").when(recipeOverview1).getVideoId();
+        doReturn(false).when(recipeOverview1).getIsViewed();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview1).getVideoType();
+
+        doReturn(recipeId2).when(recipeOverview2).getRecipeId();
+        doReturn("트렌딩 레시피 2").when(recipeOverview2).getVideoTitle();
+        doReturn(URI.create("https://example.com/thumb2.jpg")).when(recipeOverview2).getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=2")).when(recipeOverview2).getVideoUri();
+        doReturn(2000).when(recipeOverview2).getViewCount();
+        doReturn("video2").when(recipeOverview2).getVideoId();
+        doReturn(false).when(recipeOverview2).getIsViewed();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview2).getVideoType();
+
+        var recipes = List.of(recipeOverview1, recipeOverview2);
+        var page = new PageImpl<>(recipes, Pageable.ofSize(20), 2);
+
+        doReturn(page).when(recipeInfoService).getTrendRecipes(userId, 0);
+
+        given()
+            .queryParam("page", 0)
+            .get("/api/v1/recipes/trending")
+            .then()
+            .status(HttpStatus.OK)
+            .body("trend_recipes", hasSize(2))
+            .body("trend_recipes[0].recipe_id", equalTo(recipeId1.toString()))
+            .body("trend_recipes[0].recipe_title", equalTo("트렌딩 레시피 1"))
+            .body("trend_recipes[0].video_thumbnail_url", equalTo("https://example.com/thumb1.jpg"))
+            .body("trend_recipes[0].video_url", equalTo("https://youtube.com/watch?v=1"))
+            .body("trend_recipes[0].count", equalTo(1000))
+            .body("trend_recipes[1].recipe_id", equalTo(recipeId2.toString()))
+            .body("trend_recipes[1].recipe_title", equalTo("트렌딩 레시피 2"))
+            .body("trend_recipes[1].video_thumbnail_url", equalTo("https://example.com/thumb2.jpg"))
+            .body("trend_recipes[1].video_url", equalTo("https://youtube.com/watch?v=2"))
+            .body("trend_recipes[1].count", equalTo(2000))
+            .body("total_pages", equalTo(1))
+            .body("total_elements", equalTo(2))
+            .body("current_page", equalTo(0))
+            .body("has_next", equalTo(false));
+
+        verify(recipeInfoService).getTrendRecipes(userId, 0);
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("셰프 레시피 조회")
+  class GetChefRecipes {
+
+    private UUID userId;
+
+    @BeforeEach
+    void setUp() {
+      userId = UUID.randomUUID();
+      var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+    class GivenValidUserId {
+
+      @Test
+      @DisplayName("Then - 셰프 레시피 목록을 성공적으로 조회한다")
+      void thenShouldGetChefRecipesSuccessfully() {
+        var recipeId1 = UUID.randomUUID();
+        var recipeId2 = UUID.randomUUID();
+        var recipeOverview1 = mock(RecipeOverview.class);
+        var recipeOverview2 = mock(RecipeOverview.class);
+
+        doReturn(recipeId1).when(recipeOverview1).getRecipeId();
+        doReturn("셰프 레시피 1").when(recipeOverview1).getVideoTitle();
+        doReturn(URI.create("https://example.com/chef1.jpg")).when(recipeOverview1).getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=chef1")).when(recipeOverview1).getVideoUri();
+        doReturn(5000).when(recipeOverview1).getViewCount();
+        doReturn("chef1").when(recipeOverview1).getVideoId();
+        doReturn(false).when(recipeOverview1).getIsViewed();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview1).getVideoType();
+
+        doReturn(recipeId2).when(recipeOverview2).getRecipeId();
+        doReturn("셰프 레시피 2").when(recipeOverview2).getVideoTitle();
+        doReturn(URI.create("https://example.com/chef2.jpg")).when(recipeOverview2).getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=chef2")).when(recipeOverview2).getVideoUri();
+        doReturn(8000).when(recipeOverview2).getViewCount();
+        doReturn("chef2").when(recipeOverview2).getVideoId();
+        doReturn(false).when(recipeOverview2).getIsViewed();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview2).getVideoType();
+
+        var recipes = List.of(recipeOverview1, recipeOverview2);
+        var page = new PageImpl<>(recipes, Pageable.ofSize(20), 2);
+
+        doReturn(page).when(recipeInfoService).getChefRecipes(userId, 0);
+
+        given()
+            .queryParam("page", 0)
+            .get("/api/v1/recipes/chef")
+            .then()
+            .status(HttpStatus.OK)
+            .body("trend_recipes", hasSize(2))
+            .body("trend_recipes[0].recipe_id", equalTo(recipeId1.toString()))
+            .body("trend_recipes[0].recipe_title", equalTo("셰프 레시피 1"))
+            .body("trend_recipes[0].video_thumbnail_url", equalTo("https://example.com/chef1.jpg"))
+            .body("trend_recipes[0].video_url", equalTo("https://youtube.com/watch?v=chef1"))
+            .body("trend_recipes[0].count", equalTo(5000))
+            .body("trend_recipes[1].recipe_id", equalTo(recipeId2.toString()))
+            .body("trend_recipes[1].recipe_title", equalTo("셰프 레시피 2"))
+            .body("trend_recipes[1].video_thumbnail_url", equalTo("https://example.com/chef2.jpg"))
+            .body("trend_recipes[1].video_url", equalTo("https://youtube.com/watch?v=chef2"))
+            .body("trend_recipes[1].count", equalTo(8000))
+            .body("total_pages", equalTo(1))
+            .body("total_elements", equalTo(2))
+            .body("current_page", equalTo(0))
+            .body("has_next", equalTo(false));
+
+        verify(recipeInfoService).getChefRecipes(userId, 0);
       }
     }
   }

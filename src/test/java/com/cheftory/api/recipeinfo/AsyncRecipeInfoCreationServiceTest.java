@@ -14,6 +14,7 @@ import com.cheftory.api.recipeinfo.caption.exception.RecipeCaptionException;
 import com.cheftory.api.recipeinfo.detail.RecipeDetail;
 import com.cheftory.api.recipeinfo.detail.RecipeDetailService;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryService;
 import com.cheftory.api.recipeinfo.identify.RecipeIdentifyService;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
@@ -47,6 +48,7 @@ class AsyncRecipeInfoCreationServiceTest {
   private RecipeYoutubeMetaService recipeYoutubeMetaService;
   private RecipeIdentifyService recipeIdentifyService;
   private RecipeBriefingService recipeBriefingService;
+  private RecipeHistoryService recipeHistoryService;
 
   private AsyncTaskExecutor directExecutor;
 
@@ -65,6 +67,7 @@ class AsyncRecipeInfoCreationServiceTest {
     recipeYoutubeMetaService = mock(RecipeYoutubeMetaService.class);
     recipeIdentifyService = mock(RecipeIdentifyService.class);
     recipeBriefingService = mock(RecipeBriefingService.class);
+    recipeHistoryService = mock(RecipeHistoryService.class);
 
     directExecutor = Runnable::run;
 
@@ -81,6 +84,7 @@ class AsyncRecipeInfoCreationServiceTest {
             recipeYoutubeMetaService,
             recipeIdentifyService,
             recipeBriefingService,
+            recipeHistoryService,
             directExecutor);
   }
 
@@ -219,6 +223,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
             // Then
             verify(recipeService).failed(recipeId);
+            verify(recipeHistoryService).deleteByRecipe(recipeId);
             verify(recipeYoutubeMetaService).ban(recipeId);
             verify(recipeIdentifyService).delete(videoUrl);
 
@@ -266,6 +271,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
             // Then
             verify(recipeService).failed(recipeId);
+            verify(recipeHistoryService).deleteByRecipe(recipeId);
             verify(recipeIdentifyService).delete(videoUrl);
 
             // Ban 처리는 되지 않아야 함
@@ -334,6 +340,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
             // Then
             verify(recipeService).failed(recipeId);
+            verify(recipeHistoryService).deleteByRecipe(recipeId);
             verify(recipeIdentifyService).delete(videoUrl);
 
             // Ban 처리는 되지 않아야 함
@@ -388,6 +395,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
             // Then
             verify(recipeService).failed(recipeId);
+            verify(recipeHistoryService).deleteByRecipe(recipeId);
             verify(recipeIdentifyService).delete(videoUrl);
 
             // Ban 및 성공 처리는 되지 않아야 함
