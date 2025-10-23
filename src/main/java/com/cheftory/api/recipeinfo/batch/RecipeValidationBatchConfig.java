@@ -1,4 +1,4 @@
-package com.cheftory.api.batch;
+package com.cheftory.api.recipeinfo.batch;
 
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaRepository;

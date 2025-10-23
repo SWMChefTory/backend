@@ -42,19 +42,19 @@ public record CategorizedRecipesResponse(
       @JsonProperty("tags") List<Tag> tags) {
     public static CategorizedRecipe from(RecipeHistoryOverview info) {
       return new CategorizedRecipe(
-          info.getRecipeHistory().getViewedAt(),
-          info.getRecipeHistory().getLastPlaySeconds(),
-          info.getRecipe().getId(),
-          info.getYoutubeMeta().getTitle(),
-          info.getYoutubeMeta().getThumbnailUrl(),
-          info.getYoutubeMeta().getVideoId(),
-          info.getYoutubeMeta().getVideoSeconds(),
-          info.getRecipeHistory().getRecipeCategoryId(),
-          info.getDetailMeta() != null ? info.getDetailMeta().getDescription() : null,
-          info.getDetailMeta() != null ? info.getDetailMeta().getCookTime() : null,
-          info.getDetailMeta() != null ? info.getDetailMeta().getServings() : null,
-          info.getDetailMeta() != null ? info.getDetailMeta().getCreatedAt() : null,
-          info.getTags() != null ? info.getTags().stream().map(Tag::from).toList() : null);
+          info.getViewedAt(),
+          info.getLastPlaySeconds(),
+          info.getRecipeId(),
+          info.getVideoTitle(),
+          info.getThumbnailUrl(),
+          info.getVideoId(),
+          info.getVideoSeconds(),
+          info.getRecipeCategoryId(),
+          info.getDescription(),
+          info.getCookTime(),
+          info.getServings(),
+          info.getRecipeCreatedAt(),
+          info.getTags() != null ? info.getTags().stream().map(Tag::new).toList() : null);
     }
   }
 

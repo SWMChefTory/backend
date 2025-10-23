@@ -417,7 +417,8 @@ public class VideoInfoClientTest {
 
       org.assertj.core.api.Assertions.assertThatThrownBy(
               () -> videoInfoClient.fetchVideoInfo(youtubeUri))
-          .isInstanceOf(org.springframework.web.reactive.function.client.WebClientResponseException.class);
+          .isInstanceOf(
+              org.springframework.web.reactive.function.client.WebClientResponseException.class);
 
       // 플레이리스트 조회도 시도했는지 확인
       mockWebServer.takeRequest(); // video request

@@ -1,8 +1,5 @@
 package com.cheftory.api.recipeinfo.model;
 
-import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
-import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.List;
@@ -36,41 +33,27 @@ public record SearchedRecipesResponse(
     private record DetailMeta(
         @JsonProperty("description") String description,
         @JsonProperty("servings") Integer servings,
-        @JsonProperty("cookingTime") Integer cookingTime) {
-
-      public static DetailMeta from(RecipeDetailMeta detailMeta) {
-        return new DetailMeta(
-            detailMeta.getDescription(), detailMeta.getServings(), detailMeta.getCookTime());
-      }
-    }
+        @JsonProperty("cookingTime") Integer cookingTime) {}
 
     private record VideoInfo(
         @JsonProperty("video_id") String videoId,
         @JsonProperty("video_title") String title,
         @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
-        @JsonProperty("video_seconds") Integer videoSeconds) {
-      public static VideoInfo from(RecipeYoutubeMeta youtubeMeta) {
-        return new VideoInfo(
-            youtubeMeta.getVideoId(),
-            youtubeMeta.getTitle(),
-            youtubeMeta.getThumbnailUrl(),
-            youtubeMeta.getVideoSeconds());
-      }
-    }
+        @JsonProperty("video_seconds") Integer videoSeconds) {}
 
-    private record Tag(@JsonProperty("name") String name) {
-      public static Tag from(RecipeTag tag) {
-        return new Tag(tag.getTag());
-      }
-    }
+    private record Tag(@JsonProperty("name") String name) {}
 
     public static SearchedRecipe from(RecipeOverview recipe) {
       return new SearchedRecipe(
-          recipe.getRecipe().getId().toString(),
-          recipe.getYoutubeMeta().getTitle(),
-          recipe.getTags().stream().map(Tag::from).toList(),
-          DetailMeta.from(recipe.getDetailMeta()),
-          VideoInfo.from(recipe.getYoutubeMeta()),
+          recipe.getRecipeId().toString(),
+          recipe.getVideoTitle(),
+          recipe.getTags().stream().map(Tag::new).toList(),
+          new DetailMeta(recipe.getDescription(), recipe.getServings(), recipe.getCookTime()),
+          new VideoInfo(
+              recipe.getVideoId(),
+              recipe.getVideoTitle(),
+              recipe.getThumbnailUrl(),
+              recipe.getVideoSeconds()),
           recipe.getIsViewed());
     }
   }
