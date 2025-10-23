@@ -2879,4 +2879,152 @@ public class RecipeInfoControllerTest extends RestDocsTest {
       }
     }
   }
+
+  @Nested
+  @DisplayName("트렌딩 레시피 조회")
+  class GetTrendingRecipes {
+
+    private UUID userId;
+
+    @BeforeEach
+    void setUp() {
+      userId = UUID.randomUUID();
+      var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+    class GivenValidUserId {
+
+      @Test
+      @DisplayName("Then - 트렌딩 레시피 목록을 성공적으로 조회한다")
+      void thenShouldGetTrendingRecipesSuccessfully() {
+        var recipeId1 = UUID.randomUUID();
+        var recipeId2 = UUID.randomUUID();
+        var recipeOverview1 = mock(RecipeOverview.class);
+        var recipeOverview2 = mock(RecipeOverview.class);
+
+        doReturn(recipeId1).when(recipeOverview1).getRecipeId();
+        doReturn("트렌딩 레시피 1").when(recipeOverview1).getVideoTitle();
+        doReturn(URI.create("https://example.com/thumb1.jpg")).when(recipeOverview1).getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=1")).when(recipeOverview1).getVideoUri();
+        doReturn(1000).when(recipeOverview1).getViewCount();
+        doReturn("video1").when(recipeOverview1).getVideoId();
+        doReturn(false).when(recipeOverview1).getIsViewed();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview1).getVideoType();
+
+        doReturn(recipeId2).when(recipeOverview2).getRecipeId();
+        doReturn("트렌딩 레시피 2").when(recipeOverview2).getVideoTitle();
+        doReturn(URI.create("https://example.com/thumb2.jpg")).when(recipeOverview2).getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=2")).when(recipeOverview2).getVideoUri();
+        doReturn(2000).when(recipeOverview2).getViewCount();
+        doReturn("video2").when(recipeOverview2).getVideoId();
+        doReturn(false).when(recipeOverview2).getIsViewed();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview2).getVideoType();
+
+        var recipes = List.of(recipeOverview1, recipeOverview2);
+        var page = new PageImpl<>(recipes, Pageable.ofSize(20), 2);
+
+        doReturn(page).when(recipeInfoService).getTrendRecipes(userId, 0);
+
+        given()
+            .queryParam("page", 0)
+            .get("/api/v1/recipes/trending")
+            .then()
+            .status(HttpStatus.OK)
+            .body("trend_recipes", hasSize(2))
+            .body("trend_recipes[0].recipe_id", equalTo(recipeId1.toString()))
+            .body("trend_recipes[0].recipe_title", equalTo("트렌딩 레시피 1"))
+            .body("trend_recipes[0].video_thumbnail_url", equalTo("https://example.com/thumb1.jpg"))
+            .body("trend_recipes[0].video_url", equalTo("https://youtube.com/watch?v=1"))
+            .body("trend_recipes[0].count", equalTo(1000))
+            .body("trend_recipes[1].recipe_id", equalTo(recipeId2.toString()))
+            .body("trend_recipes[1].recipe_title", equalTo("트렌딩 레시피 2"))
+            .body("trend_recipes[1].video_thumbnail_url", equalTo("https://example.com/thumb2.jpg"))
+            .body("trend_recipes[1].video_url", equalTo("https://youtube.com/watch?v=2"))
+            .body("trend_recipes[1].count", equalTo(2000))
+            .body("total_pages", equalTo(1))
+            .body("total_elements", equalTo(2))
+            .body("current_page", equalTo(0))
+            .body("has_next", equalTo(false));
+
+        verify(recipeInfoService).getTrendRecipes(userId, 0);
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("셰프 레시피 조회")
+  class GetChefRecipes {
+
+    private UUID userId;
+
+    @BeforeEach
+    void setUp() {
+      userId = UUID.randomUUID();
+      var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+    class GivenValidUserId {
+
+      @Test
+      @DisplayName("Then - 셰프 레시피 목록을 성공적으로 조회한다")
+      void thenShouldGetChefRecipesSuccessfully() {
+        var recipeId1 = UUID.randomUUID();
+        var recipeId2 = UUID.randomUUID();
+        var recipeOverview1 = mock(RecipeOverview.class);
+        var recipeOverview2 = mock(RecipeOverview.class);
+
+        doReturn(recipeId1).when(recipeOverview1).getRecipeId();
+        doReturn("셰프 레시피 1").when(recipeOverview1).getVideoTitle();
+        doReturn(URI.create("https://example.com/chef1.jpg")).when(recipeOverview1).getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=chef1")).when(recipeOverview1).getVideoUri();
+        doReturn(5000).when(recipeOverview1).getViewCount();
+        doReturn("chef1").when(recipeOverview1).getVideoId();
+        doReturn(false).when(recipeOverview1).getIsViewed();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview1).getVideoType();
+
+        doReturn(recipeId2).when(recipeOverview2).getRecipeId();
+        doReturn("셰프 레시피 2").when(recipeOverview2).getVideoTitle();
+        doReturn(URI.create("https://example.com/chef2.jpg")).when(recipeOverview2).getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=chef2")).when(recipeOverview2).getVideoUri();
+        doReturn(8000).when(recipeOverview2).getViewCount();
+        doReturn("chef2").when(recipeOverview2).getVideoId();
+        doReturn(false).when(recipeOverview2).getIsViewed();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview2).getVideoType();
+
+        var recipes = List.of(recipeOverview1, recipeOverview2);
+        var page = new PageImpl<>(recipes, Pageable.ofSize(20), 2);
+
+        doReturn(page).when(recipeInfoService).getChefRecipes(userId, 0);
+
+        given()
+            .queryParam("page", 0)
+            .get("/api/v1/recipes/chef")
+            .then()
+            .status(HttpStatus.OK)
+            .body("trend_recipes", hasSize(2))
+            .body("trend_recipes[0].recipe_id", equalTo(recipeId1.toString()))
+            .body("trend_recipes[0].recipe_title", equalTo("셰프 레시피 1"))
+            .body("trend_recipes[0].video_thumbnail_url", equalTo("https://example.com/chef1.jpg"))
+            .body("trend_recipes[0].video_url", equalTo("https://youtube.com/watch?v=chef1"))
+            .body("trend_recipes[0].count", equalTo(5000))
+            .body("trend_recipes[1].recipe_id", equalTo(recipeId2.toString()))
+            .body("trend_recipes[1].recipe_title", equalTo("셰프 레시피 2"))
+            .body("trend_recipes[1].video_thumbnail_url", equalTo("https://example.com/chef2.jpg"))
+            .body("trend_recipes[1].video_url", equalTo("https://youtube.com/watch?v=chef2"))
+            .body("trend_recipes[1].count", equalTo(8000))
+            .body("total_pages", equalTo(1))
+            .body("total_elements", equalTo(2))
+            .body("current_page", equalTo(0))
+            .body("has_next", equalTo(false));
+
+        verify(recipeInfoService).getChefRecipes(userId, 0);
+      }
+    }
+  }
 }
