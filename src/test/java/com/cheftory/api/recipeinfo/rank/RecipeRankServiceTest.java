@@ -2,8 +2,6 @@ package com.cheftory.api.recipeinfo.rank;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -142,13 +140,15 @@ public class RecipeRankServiceTest {
         rankingType = RankingType.TRENDING;
         page = 0;
         latestKey = "trendRecipe:latest";
+        String actualRankingKey = "trendRecipe:ranking:20240101120000";
         UUID recipeId1 = UUID.randomUUID();
         UUID recipeId2 = UUID.randomUUID();
         expectedRecipeIds = List.of(recipeId1, recipeId2);
         recipeIdStrings = Set.of(recipeId1.toString(), recipeId2.toString());
 
         doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
-        doReturn(recipeIdStrings).when(recipeRankRepository).findRecipeIds(latestKey, 0L, 9L);
+        doReturn(Optional.of(actualRankingKey)).when(recipeRankRepository).findLatest(latestKey);
+        doReturn(recipeIdStrings).when(recipeRankRepository).findRecipeIds(actualRankingKey, 0L, 9L);
       }
 
       @Nested
@@ -162,7 +162,8 @@ public class RecipeRankServiceTest {
 
           assertThat(result).hasSize(2);
           assertThat(result).containsExactlyInAnyOrderElementsOf(expectedRecipeIds);
-          verify(recipeRankRepository).findRecipeIds(latestKey, 0L, 9L);
+          verify(recipeRankRepository).findLatest(latestKey);
+          verify(recipeRankRepository).findRecipeIds("trendRecipe:ranking:20240101120000", 0L, 9L);
         }
       }
     }
@@ -181,12 +182,14 @@ public class RecipeRankServiceTest {
         rankingType = RankingType.CHEF;
         page = 1;
         latestKey = "chefRecipe:latest";
+        String actualRankingKey = "chefRecipe:ranking:20240101120000";
         UUID recipeId1 = UUID.randomUUID();
         UUID recipeId2 = UUID.randomUUID();
         recipeIdStrings = Set.of(recipeId1.toString(), recipeId2.toString());
 
         doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
-        doReturn(recipeIdStrings).when(recipeRankRepository).findRecipeIds(latestKey, 10L, 19L);
+        doReturn(Optional.of(actualRankingKey)).when(recipeRankRepository).findLatest(latestKey);
+        doReturn(recipeIdStrings).when(recipeRankRepository).findRecipeIds(actualRankingKey, 10L, 19L);
       }
 
       @Nested
@@ -199,14 +202,15 @@ public class RecipeRankServiceTest {
           List<UUID> result = recipeRankService.getRecipeIds(rankingType, page);
 
           assertThat(result).hasSize(2);
-          verify(recipeRankRepository).findRecipeIds(latestKey, 10L, 19L);
+          verify(recipeRankRepository).findLatest(latestKey);
+          verify(recipeRankRepository).findRecipeIds("chefRecipe:ranking:20240101120000", 10L, 19L);
         }
       }
     }
 
     @Nested
-    @DisplayName("Given - 조회 결과가 null일 때")
-    class GivenNullResults {
+    @DisplayName("Given - 랭킹이 존재하지 않을 때")
+    class GivenNonExistentRanking {
 
       private RankingType rankingType;
       private Integer page;
@@ -219,9 +223,7 @@ public class RecipeRankServiceTest {
         latestKey = "trendRecipe:latest";
 
         doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
-        doReturn(null)
-            .when(recipeRankRepository)
-            .findRecipeIds(anyString(), any(Long.class), any(Long.class));
+        doReturn(Optional.empty()).when(recipeRankRepository).findLatest(latestKey);
       }
 
       @Nested
@@ -229,11 +231,12 @@ public class RecipeRankServiceTest {
       class WhenGettingRecipeIds {
 
         @Test
-        @DisplayName("Then - 빈 목록을 반환해야 한다")
-        void thenShouldReturnEmptyList() {
-          List<UUID> result = recipeRankService.getRecipeIds(rankingType, page);
-
-          assertThat(result).isEmpty();
+        @DisplayName("Then - RecipeRankException을 던져야 한다")
+        void thenShouldThrowRecipeRankException() {
+          assertThatThrownBy(() -> recipeRankService.getRecipeIds(rankingType, page))
+              .isInstanceOf(RecipeRankException.class)
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", RecipeRankErrorCode.RECIPE_RANK_NOT_FOUND);
         }
       }
     }
@@ -245,17 +248,20 @@ public class RecipeRankServiceTest {
       private RankingType rankingType;
       private Integer page;
       private String latestKey;
+      private String actualRankingKey;
 
       @BeforeEach
       void setUp() {
         rankingType = RankingType.TRENDING;
         page = 0;
         latestKey = "trendRecipe:latest";
+        actualRankingKey = "trendRecipe:ranking:20240101120000";
 
         doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
+        doReturn(Optional.of(actualRankingKey)).when(recipeRankRepository).findLatest(latestKey);
         doReturn(Set.of())
             .when(recipeRankRepository)
-            .findRecipeIds(anyString(), any(Long.class), any(Long.class));
+            .findRecipeIds(actualRankingKey, 0L, 9L);
       }
 
       @Nested
@@ -268,6 +274,8 @@ public class RecipeRankServiceTest {
           List<UUID> result = recipeRankService.getRecipeIds(rankingType, page);
 
           assertThat(result).isEmpty();
+          verify(recipeRankRepository).findLatest(latestKey);
+          verify(recipeRankRepository).findRecipeIds(actualRankingKey, 0L, 9L);
         }
       }
     }
