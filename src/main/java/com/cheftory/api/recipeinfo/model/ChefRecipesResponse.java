@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 
 public record ChefRecipesResponse(
-    @JsonProperty("trend_recipes") List<ChefRecipeResponse> recommendRecipes,
+    @JsonProperty("chef_recipes") List<ChefRecipeResponse> recommendRecipes,
     @JsonProperty("current_page") int currentPage,
     @JsonProperty("total_pages") int totalPages,
     @JsonProperty("total_elements") long totalElements,
