@@ -1242,7 +1242,7 @@ public class RecipeInfoServiceTest {
                 createMockRecipeTag(recipeId1, "찌개"),
                 createMockRecipeTag(recipeId2, "한식"));
 
-        doReturn(searchResults).when(recipeSearchService).search(query, page);
+        doReturn(searchResults).when(recipeSearchService).search(eq(userId), eq(query), eq(page));
         doReturn(recipes).when(recipeService).gets(anyList());
         doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
         doReturn(detailMetas).when(recipeDetailMetaService).getIn(anyList());
@@ -1267,7 +1267,7 @@ public class RecipeInfoServiceTest {
                           && overview.getVideoTitle() != null
                           && overview.getDescription() != null
                           && overview.getTags() != null);
-          verify(recipeSearchService).search(query, page);
+          verify(recipeSearchService).search(eq(userId), eq(query), eq(page));
           verify(recipeService).gets(anyList());
           verify(recipeYoutubeMetaService).getByRecipes(anyList());
           verify(recipeDetailMetaService).getIn(anyList());
@@ -1324,7 +1324,7 @@ public class RecipeInfoServiceTest {
 
         tags = List.of(createMockRecipeTag(recipeId1, "한식"), createMockRecipeTag(recipeId2, "한식"));
 
-        doReturn(searchResults).when(recipeSearchService).search(query, page);
+        doReturn(searchResults).when(recipeSearchService).search(eq(userId), eq(query), eq(page));
         doReturn(recipes).when(recipeService).gets(anyList());
         doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
         doReturn(detailMetas).when(recipeDetailMetaService).getIn(anyList());
@@ -1383,7 +1383,9 @@ public class RecipeInfoServiceTest {
         emptySearchResults = new PageImpl<>(List.of());
         userId = UUID.randomUUID();
 
-        doReturn(emptySearchResults).when(recipeSearchService).search(query, page);
+        doReturn(emptySearchResults)
+            .when(recipeSearchService)
+            .search(eq(userId), eq(query), eq(page));
       }
 
       @Nested
@@ -1397,7 +1399,7 @@ public class RecipeInfoServiceTest {
 
           assertThat(result.getContent()).isEmpty();
           assertThat(result.getTotalElements()).isEqualTo(0);
-          verify(recipeSearchService).search(query, page);
+          verify(recipeSearchService).search(eq(userId), eq(query), eq(page));
         }
       }
     }
@@ -1425,7 +1427,7 @@ public class RecipeInfoServiceTest {
         searchResults = new PageImpl<>(List.of(search));
         recipes = List.of(createMockRecipe(recipeId, RecipeStatus.SUCCESS));
 
-        doReturn(searchResults).when(recipeSearchService).search(query, page);
+        doReturn(searchResults).when(recipeSearchService).search(eq(userId), eq(query), eq(page));
         doReturn(recipes).when(recipeService).gets(anyList());
         doReturn(List.of()).when(recipeYoutubeMetaService).getByRecipes(anyList()); // 메타 누락
         doReturn(List.of()).when(recipeDetailMetaService).getIn(anyList());
@@ -1443,7 +1445,7 @@ public class RecipeInfoServiceTest {
           Page<RecipeOverview> result = recipeInfoService.searchRecipes(page, query, userId);
 
           assertThat(result.getContent()).isEmpty();
-          verify(recipeSearchService).search(query, page);
+          verify(recipeSearchService).search(eq(userId), eq(query), eq(page));
           verify(recipeService).gets(anyList());
           verify(recipeYoutubeMetaService).getByRecipes(anyList());
         }
@@ -1480,7 +1482,7 @@ public class RecipeInfoServiceTest {
         detailMeta = createMockRecipeDetailMeta(recipeId, "구수한 된장찌개");
         tags = List.of(createMockRecipeTag(recipeId, "한식"));
 
-        doReturn(searchResults).when(recipeSearchService).search(query, page);
+        doReturn(searchResults).when(recipeSearchService).search(eq(userId), eq(query), eq(page));
         doReturn(List.of(recipe)).when(recipeService).gets(anyList());
         doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).getByRecipes(anyList());
         doReturn(List.of(detailMeta)).when(recipeDetailMetaService).getIn(anyList());
@@ -1500,7 +1502,7 @@ public class RecipeInfoServiceTest {
           assertThat(result.getContent()).hasSize(1);
           assertThat(result.getTotalElements()).isEqualTo(25);
           assertThat(result.getNumber()).isEqualTo(1);
-          verify(recipeSearchService).search(query, page);
+          verify(recipeSearchService).search(eq(userId), eq(query), eq(page));
         }
       }
     }

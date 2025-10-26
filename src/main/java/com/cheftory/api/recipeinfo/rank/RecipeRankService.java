@@ -2,6 +2,7 @@ package com.cheftory.api.recipeinfo.rank;
 
 import com.cheftory.api.recipeinfo.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipeinfo.rank.exception.RecipeRankException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,7 +19,7 @@ public class RecipeRankService {
   private final RankingKeyGenerator rankingKeyGenerator;
 
   private static final Integer PAGE_SIZE = 10;
-  private static final Long EXPIRY_SECONDS = 172800L;
+  private static final Duration TTL = Duration.ofDays(2);
 
   public void updateRecipes(RankingType type, List<UUID> recipeIds) {
     String newKey = rankingKeyGenerator.generateKey(type);
@@ -27,7 +28,7 @@ public class RecipeRankService {
         .boxed()
         .forEach(i -> recipeRankRepository.saveRanking(newKey, recipeIds.get(i), i + 1));
 
-    recipeRankRepository.setExpire(newKey, EXPIRY_SECONDS);
+    recipeRankRepository.setExpire(newKey, TTL);
     recipeRankRepository.saveLatest(rankingKeyGenerator.getLatestKey(type), newKey);
   }
 
