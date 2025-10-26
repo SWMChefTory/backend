@@ -34,9 +34,10 @@ public class RecipeRankService {
   public List<UUID> getRecipeIds(RankingType type, Integer page) {
     String latestPointerKey = rankingKeyGenerator.getLatestKey(type);
 
-    String actualRankingKey = recipeRankRepository
-        .findLatest(latestPointerKey)
-        .orElseThrow(() -> new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_NOT_FOUND));
+    String actualRankingKey =
+        recipeRankRepository
+            .findLatest(latestPointerKey)
+            .orElseThrow(() -> new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_NOT_FOUND));
 
     Long offset = page.longValue() * PAGE_SIZE;
     Long limitEnd = offset + PAGE_SIZE - 1;

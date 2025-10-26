@@ -148,7 +148,9 @@ public class RecipeRankServiceTest {
 
         doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
         doReturn(Optional.of(actualRankingKey)).when(recipeRankRepository).findLatest(latestKey);
-        doReturn(recipeIdStrings).when(recipeRankRepository).findRecipeIds(actualRankingKey, 0L, 9L);
+        doReturn(recipeIdStrings)
+            .when(recipeRankRepository)
+            .findRecipeIds(actualRankingKey, 0L, 9L);
       }
 
       @Nested
@@ -189,7 +191,9 @@ public class RecipeRankServiceTest {
 
         doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
         doReturn(Optional.of(actualRankingKey)).when(recipeRankRepository).findLatest(latestKey);
-        doReturn(recipeIdStrings).when(recipeRankRepository).findRecipeIds(actualRankingKey, 10L, 19L);
+        doReturn(recipeIdStrings)
+            .when(recipeRankRepository)
+            .findRecipeIds(actualRankingKey, 10L, 19L);
       }
 
       @Nested
@@ -259,9 +263,7 @@ public class RecipeRankServiceTest {
 
         doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
         doReturn(Optional.of(actualRankingKey)).when(recipeRankRepository).findLatest(latestKey);
-        doReturn(Set.of())
-            .when(recipeRankRepository)
-            .findRecipeIds(actualRankingKey, 0L, 9L);
+        doReturn(Set.of()).when(recipeRankRepository).findRecipeIds(actualRankingKey, 0L, 9L);
       }
 
       @Nested
