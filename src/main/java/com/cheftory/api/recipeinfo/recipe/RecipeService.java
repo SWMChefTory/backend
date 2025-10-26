@@ -22,7 +22,7 @@ public class RecipeService {
   private final RecipeRepository recipeRepository;
   private final Clock clock;
 
-  public Recipe findSuccess(UUID recipeId) {
+  public Recipe getSuccess(UUID recipeId) {
 
     Recipe recipe =
         recipeRepository
@@ -37,7 +37,7 @@ public class RecipeService {
     return recipe;
   }
 
-  public Recipe findNotFailed(List<UUID> recipeIds) {
+  public Recipe getNotFailed(List<UUID> recipeIds) {
     List<Recipe> recipes = recipeRepository.findAllByIdIn(recipeIds);
 
     if (recipes.isEmpty()) {
@@ -66,14 +66,19 @@ public class RecipeService {
     return recipe.getId();
   }
 
-  public List<Recipe> findsNotFailed(List<UUID> recipeIds) {
+  public List<Recipe> getValidRecipes(List<UUID> recipeIds) {
     return recipeRepository
-        .findRecipesByIdInAndRecipeStatusNot(recipeIds, RecipeStatus.FAILED)
+        .findRecipesByIdInAndRecipeStatusIn(
+            recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS))
         .stream()
         .toList();
   }
 
-  public Page<Recipe> findsSuccess(Integer page) {
+  public List<Recipe> gets(List<UUID> recipeIds) {
+    return recipeRepository.findAllByIdIn(recipeIds);
+  }
+
+  public Page<Recipe> getPopulars(Integer page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
     return recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
   }
@@ -96,13 +101,32 @@ public class RecipeService {
     return recipeRepository.save(recipe);
   }
 
+  public void block(UUID recipeId) {
+    Recipe recipe =
+        recipeRepository
+            .findById(recipeId)
+            .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
+    recipe.block(clock);
+    recipeRepository.save(recipe);
+  }
+
   public boolean exists(UUID recipeId) {
     return recipeRepository.existsById(recipeId);
   }
 
-  public Recipe find(UUID recipeId) {
+  public Recipe get(UUID recipeId) {
     return recipeRepository
         .findById(recipeId)
         .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
+  }
+
+  public Page<Recipe> getPopularNormals(Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+    return recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable);
+  }
+
+  public Page<Recipe> getPopularShorts(Integer page) {
+    Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+    return recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable);
   }
 }

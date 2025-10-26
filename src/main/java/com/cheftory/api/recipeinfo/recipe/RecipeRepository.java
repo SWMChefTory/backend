@@ -18,9 +18,30 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
   @Query("update Recipe r set r.viewCount = r.viewCount + 1 where r.id = :id")
   void increaseCount(UUID id);
 
-  List<Recipe> findRecipesByIdInAndRecipeStatusNot(List<UUID> recipeIds, RecipeStatus status);
+  List<Recipe> findRecipesByIdInAndRecipeStatusIn(
+      List<UUID> recipeIds, List<RecipeStatus> statuses);
 
   Page<Recipe> findByRecipeStatus(RecipeStatus status, Pageable pageable);
 
   List<Recipe> findAllByIdIn(List<UUID> ids);
+
+  @Query(
+      "SELECT r FROM Recipe r "
+          + "WHERE r.recipeStatus = :recipeStatus "
+          + "AND EXISTS ("
+          + "  SELECT 1 FROM RecipeYoutubeMeta m "
+          + "  WHERE m.recipeId = r.id "
+          + "  AND m.type = 'SHORTS'"
+          + ")")
+  Page<Recipe> findShortsRecipes(RecipeStatus recipeStatus, Pageable pageable);
+
+  @Query(
+      "SELECT r FROM Recipe r "
+          + "WHERE r.recipeStatus = :recipeStatus "
+          + "AND EXISTS ("
+          + "  SELECT 1 FROM RecipeYoutubeMeta m "
+          + "  WHERE m.recipeId = r.id "
+          + "  AND m.type = 'NORMAL'"
+          + ")")
+  Page<Recipe> findNormalRecipes(RecipeStatus recipeStatus, Pageable pageable);
 }

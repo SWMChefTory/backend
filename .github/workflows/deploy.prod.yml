@@ -92,8 +92,15 @@ jobs:
             APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
             SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}
             SENTRY_DSN=${{secrets.SENTRY_DSN}}
+            OPENSEARCH_HOST=${{ secrets.OPENSEARCH_HOST }}
+            OPENSEARCH_PORT=${{ secrets.OPENSEARCH_PORT }}
+            OPENSEARCH_USERNAME=${{ secrets.OPENSEARCH_USERNAME }}
+            OPENSEARCH_PASSWORD=${{ secrets.OPENSEARCH_PASSWORD }}    
+            REDIS_HOST=${{ secrets.REDIS_HOST }}
+            REDIS_PORT=${{ secrets.REDIS_PORT }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
             EOF
-
+            
 
       - name: Copy docker-compose.prod.yml to EC2
         uses: appleboy/scp-action@v0.1.7

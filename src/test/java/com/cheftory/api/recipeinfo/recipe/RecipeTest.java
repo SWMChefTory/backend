@@ -106,8 +106,77 @@ public class RecipeTest {
         void thenRecipeStatusIsFailed() {
           assertThat(recipe.isFailed()).isTrue();
           assertThat(recipe.isSuccess()).isFalse();
+          assertThat(recipe.isBlocked()).isFalse();
           assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.FAILED);
         }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 상태 확인")
+  class CheckRecipeStatus {
+
+    @Nested
+    @DisplayName("Given - SUCCESS 상태의 레시피가 있을 때")
+    class GivenSuccessRecipe {
+
+      private Recipe recipe;
+
+      @BeforeEach
+      void setUp() {
+        recipe = Recipe.create(clock);
+        recipe.success(clock);
+      }
+
+      @Test
+      @DisplayName("Then - isSuccess는 true, isFailed와 isBlocked는 false를 반환한다")
+      void thenSuccessCheckMethodsWork() {
+        assertThat(recipe.isSuccess()).isTrue();
+        assertThat(recipe.isFailed()).isFalse();
+        assertThat(recipe.isBlocked()).isFalse();
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - FAILED 상태의 레시피가 있을 때")
+    class GivenFailedRecipe {
+
+      private Recipe recipe;
+
+      @BeforeEach
+      void setUp() {
+        recipe = Recipe.create(clock);
+        recipe.failed(clock);
+      }
+
+      @Test
+      @DisplayName("Then - isFailed는 true, isSuccess와 isBlocked는 false를 반환한다")
+      void thenFailedCheckMethodsWork() {
+        assertThat(recipe.isFailed()).isTrue();
+        assertThat(recipe.isSuccess()).isFalse();
+        assertThat(recipe.isBlocked()).isFalse();
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - IN_PROGRESS 상태의 레시피가 있을 때")
+    class GivenInProgressRecipe {
+
+      private Recipe recipe;
+
+      @BeforeEach
+      void setUp() {
+        recipe = Recipe.create(clock);
+      }
+
+      @Test
+      @DisplayName("Then - 모든 상태 체크 메서드가 false를 반환한다")
+      void thenInProgressCheckMethodsWork() {
+        assertThat(recipe.isSuccess()).isFalse();
+        assertThat(recipe.isFailed()).isFalse();
+        assertThat(recipe.isBlocked()).isFalse();
+        assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
       }
     }
   }

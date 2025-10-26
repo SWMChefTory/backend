@@ -6,6 +6,7 @@ services:
       - "8081"
     depends_on:
       - mysql
+      - redis
     env_file:
       - .env
 
@@ -15,6 +16,9 @@ services:
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
       DATABASE_NAME: ${DATABASE_NAME}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       AI_RECIPE_SUMMARY_HOST: ${AI_RECIPE_SUMMARY_HOST}
@@ -24,6 +28,10 @@ services:
       JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
       JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
       APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
+      OPENSEARCH_HOST: ${OPENSEARCH_HOST}
+      OPENSEARCH_PORT: ${OPENSEARCH_PORT}
+      OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD}
       TZ: Asia/Seoul
     networks:
       - cheftory_network
@@ -48,6 +56,18 @@ services:
     ]
     networks:
       - cheftory_network
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - "6379"
+    volumes:
+      - ./data/redis-data:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - cheftory_network
+    restart: always
 
 networks:
   cheftory_network:

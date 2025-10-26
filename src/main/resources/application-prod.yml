@@ -3,7 +3,7 @@ spring:
     name: api
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?rewriteBatchedStatements=true
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 
@@ -14,6 +14,27 @@ spring:
       hibernate:
         show_sql: false
         format_sql: false
+        jdbc:
+          batch_size: 50
+        order_updates: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  batch:
+    job:
+      enabled: true
+    jdbc:
+      initialize-schema: never
+
+opensearch:
+  host: ${OPENSEARCH_HOST}
+  port: ${OPENSEARCH_PORT}
+  username: ${OPENSEARCH_USERNAME}
+  password: ${OPENSEARCH_PASSWORD}
 
 management:
   endpoints:

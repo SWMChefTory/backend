@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.model;
 
+import com.cheftory.api.recipeinfo.tag.RecipeTag;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ public record CategorizedRecipesResponse(
     @JsonProperty("total_pages") int totalPages,
     @JsonProperty("total_elements") long totalElements,
     @JsonProperty("has_next") boolean hasNext) {
-  public static CategorizedRecipesResponse from(Page<RecipeHistory> categorizedRecipes) {
+  public static CategorizedRecipesResponse from(Page<RecipeHistoryOverview> categorizedRecipes) {
 
     List<CategorizedRecipe> responses =
         categorizedRecipes.stream().map(CategorizedRecipe::from).toList();
@@ -33,17 +34,33 @@ public record CategorizedRecipesResponse(
       @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
       @JsonProperty("video_id") String videoId,
       @JsonProperty("video_seconds") Integer videoSeconds,
-      @JsonProperty("category_id") UUID categoryId) {
-    public static CategorizedRecipe from(RecipeHistory info) {
+      @JsonProperty("category_id") UUID categoryId,
+      @JsonProperty("description") String description,
+      @JsonProperty("cook_time") Integer cookTime,
+      @JsonProperty("servings") Integer servings,
+      @JsonProperty("created_at") LocalDateTime createdAt,
+      @JsonProperty("tags") List<Tag> tags) {
+    public static CategorizedRecipe from(RecipeHistoryOverview info) {
       return new CategorizedRecipe(
-          info.getRecipeViewStatus().getViewedAt(),
-          info.getRecipeViewStatus().getLastPlaySeconds(),
-          info.getRecipe().getId(),
-          info.getYoutubeMeta().getTitle(),
-          info.getYoutubeMeta().getThumbnailUrl(),
-          info.getYoutubeMeta().getVideoId(),
-          info.getYoutubeMeta().getVideoSeconds(),
-          info.getRecipeViewStatus().getRecipeCategoryId());
+          info.getViewedAt(),
+          info.getLastPlaySeconds(),
+          info.getRecipeId(),
+          info.getVideoTitle(),
+          info.getThumbnailUrl(),
+          info.getVideoId(),
+          info.getVideoSeconds(),
+          info.getRecipeCategoryId(),
+          info.getDescription(),
+          info.getCookTime(),
+          info.getServings(),
+          info.getRecipeCreatedAt(),
+          info.getTags() != null ? info.getTags().stream().map(Tag::new).toList() : null);
+    }
+  }
+
+  private record Tag(@JsonProperty("name") String name) {
+    public static Tag from(RecipeTag tag) {
+      return new Tag(tag.getTag());
     }
   }
 }

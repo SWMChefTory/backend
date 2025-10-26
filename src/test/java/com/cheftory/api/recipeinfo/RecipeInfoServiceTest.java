@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -17,30 +18,39 @@ import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipeinfo.exception.RecipeInfoException;
+import com.cheftory.api.recipeinfo.history.RecipeHistory;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryCategorizedCount;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryService;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryUnCategorizedCount;
 import com.cheftory.api.recipeinfo.identify.RecipeIdentifyService;
 import com.cheftory.api.recipeinfo.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
-import com.cheftory.api.recipeinfo.model.CountRecipeCategory;
-import com.cheftory.api.recipeinfo.model.FullRecipeInfo;
-import com.cheftory.api.recipeinfo.model.RecipeHistory;
+import com.cheftory.api.recipeinfo.model.FullRecipe;
+import com.cheftory.api.recipeinfo.model.RecipeCreationTarget;
+import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.progress.RecipeProgress;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressService;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressStep;
+import com.cheftory.api.recipeinfo.rank.RankingType;
+import com.cheftory.api.recipeinfo.rank.RecipeRankService;
 import com.cheftory.api.recipeinfo.recipe.RecipeService;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.recipe.exception.RecipeErrorCode;
+import com.cheftory.api.recipeinfo.search.RecipeSearch;
+import com.cheftory.api.recipeinfo.search.RecipeSearchPageRequest;
+import com.cheftory.api.recipeinfo.search.RecipeSearchService;
 import com.cheftory.api.recipeinfo.step.RecipeStepService;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
 import com.cheftory.api.recipeinfo.tag.RecipeTagService;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatus;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatusCount;
-import com.cheftory.api.recipeinfo.viewstatus.RecipeViewStatusService;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaService;
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import java.net.URI;
@@ -61,7 +71,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class RecipeInfoServiceTest {
 
   private RecipeService recipeService;
-  private RecipeViewStatusService recipeViewStatusService;
+  private RecipeHistoryService recipeHistoryService;
   private RecipeCategoryService recipeCategoryService;
   private RecipeYoutubeMetaService recipeYoutubeMetaService;
   private RecipeStepService recipeStepService;
@@ -71,13 +81,15 @@ public class RecipeInfoServiceTest {
   private RecipeTagService recipeTagService;
   private RecipeIdentifyService recipeIdentifyService;
   private RecipeBriefingService recipeBriefingService;
-  private AsyncRecipeInfoCreationService asyncRecipeCreationService;
+  private AsyncRecipeInfoCreationService asyncRecipeInfoCreationService;
   private RecipeInfoService recipeInfoService;
+  private RecipeSearchService recipeSearchService;
+  private RecipeRankService recipeRankService;
 
   @BeforeEach
   void setUp() {
     recipeService = mock(RecipeService.class);
-    recipeViewStatusService = mock(RecipeViewStatusService.class);
+    recipeHistoryService = mock(RecipeHistoryService.class);
     recipeCategoryService = mock(RecipeCategoryService.class);
     recipeYoutubeMetaService = mock(RecipeYoutubeMetaService.class);
     recipeStepService = mock(RecipeStepService.class);
@@ -87,13 +99,15 @@ public class RecipeInfoServiceTest {
     recipeTagService = mock(RecipeTagService.class);
     recipeIdentifyService = mock(RecipeIdentifyService.class);
     recipeBriefingService = mock(RecipeBriefingService.class);
-    asyncRecipeCreationService = mock(AsyncRecipeInfoCreationService.class);
+    asyncRecipeInfoCreationService = mock(AsyncRecipeInfoCreationService.class);
+    recipeSearchService = mock(RecipeSearchService.class);
+    recipeRankService = mock(RecipeRankService.class);
 
     recipeInfoService =
         new RecipeInfoService(
-            asyncRecipeCreationService,
+            asyncRecipeInfoCreationService,
             recipeStepService,
-            recipeViewStatusService,
+            recipeHistoryService,
             recipeCategoryService,
             recipeYoutubeMetaService,
             recipeIngredientService,
@@ -102,7 +116,74 @@ public class RecipeInfoServiceTest {
             recipeTagService,
             recipeIdentifyService,
             recipeBriefingService,
-            recipeService);
+            recipeService,
+            recipeSearchService,
+            recipeRankService);
+  }
+
+  @Nested
+  @DisplayName("레시피 차단")
+  class BlockRecipeFeature {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+    class GivenValidRecipeId {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 차단을 요청하면")
+      class WhenBlockingRecipe {
+
+        @Test
+        @DisplayName("Then - 메타 차단, 레시피 차단, 히스토리 차단이 순서대로 호출된다")
+        void thenCallsBlockServices() {
+          recipeInfoService.blockRecipe(recipeId);
+
+          verify(recipeYoutubeMetaService).block(recipeId);
+          verify(recipeService).block(recipeId);
+          verify(recipeHistoryService).blockByRecipe(recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 차단되지 않은 영상일 때")
+    class GivenNotBlockedVideo {
+
+      private UUID recipeId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        doThrow(new RecipeInfoException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO))
+            .when(recipeYoutubeMetaService)
+            .block(recipeId);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 차단을 요청하면")
+      class WhenBlockingRecipe {
+
+        @Test
+        @DisplayName("Then - RECIPE_NOT_BLOCKED_VIDEO 예외가 발생하고 이후 서비스는 호출되지 않는다")
+        void thenThrowsNotBlockedAndStop() {
+          assertThatThrownBy(() -> recipeInfoService.blockRecipe(recipeId))
+              .isInstanceOf(RecipeInfoException.class)
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", RecipeInfoErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
+
+          verify(recipeYoutubeMetaService).block(recipeId);
+          verify(recipeService, never()).block(any());
+          verify(recipeHistoryService, never()).blockByRecipe(any());
+        }
+      }
+    }
   }
 
   @Nested
@@ -121,13 +202,14 @@ public class RecipeInfoServiceTest {
       Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
 
       doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
-      doReturn(recipe).when(recipeService).findNotFailed(List.of(recipeId));
+      doReturn(recipe).when(recipeService).getNotFailed(List.of(recipeId));
 
-      UUID result = recipeInfoService.create(uri, userId);
+      RecipeCreationTarget target = new RecipeCreationTarget.User(uri, userId);
+      UUID result = recipeInfoService.create(target);
 
       assertThat(result).isEqualTo(recipeId);
-      verify(recipeViewStatusService).create(userId, recipeId);
-      verify(asyncRecipeCreationService, never()).create(any(), any(), any());
+      verify(recipeHistoryService).create(userId, recipeId);
+      verify(asyncRecipeInfoCreationService, never()).create(any(), any(), any());
     }
 
     @Test
@@ -140,7 +222,8 @@ public class RecipeInfoServiceTest {
           .when(recipeYoutubeMetaService)
           .getByUrl(uri);
 
-      assertThatThrownBy(() -> recipeInfoService.create(uri, userId))
+      RecipeCreationTarget target = new RecipeCreationTarget.User(uri, userId);
+      assertThatThrownBy(() -> recipeInfoService.create(target))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_CREATE_FAIL);
     }
@@ -159,11 +242,49 @@ public class RecipeInfoServiceTest {
       doReturn(List.of(bannedMeta)).when(recipeYoutubeMetaService).getByUrl(uri);
       doThrow(new RecipeInfoException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED))
           .when(recipeService)
-          .findNotFailed(anyList());
+          .getNotFailed(anyList());
 
-      assertThatThrownBy(() -> recipeInfoService.create(uri, userId))
+      RecipeCreationTarget target = new RecipeCreationTarget.User(uri, userId);
+      assertThatThrownBy(() -> recipeInfoService.create(target))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_BANNED);
+    }
+
+    @Test
+    @DisplayName("블락된 유튜브 영상이면 예외를 던진다")
+    void shouldThrowExceptionWhenYoutubeVideoIsBlocked() {
+      URI uri = URI.create("https://youtube.com/watch?v=blocked");
+      UUID userId = UUID.randomUUID();
+
+      doThrow(new RecipeInfoException(YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED))
+          .when(recipeYoutubeMetaService)
+          .getByUrl(uri);
+
+      RecipeCreationTarget target = new RecipeCreationTarget.User(uri, userId);
+      assertThatThrownBy(() -> recipeInfoService.create(target))
+          .isInstanceOf(RecipeInfoException.class)
+          .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_CREATE_FAIL);
+    }
+
+    @Test
+    @DisplayName("Crawler 소스로 레시피 생성 시 히스토리를 생성하지 않는다")
+    void shouldNotCreateHistoryWhenCreatingWithCrawlerSource() {
+      URI uri = URI.create("https://youtube.com/watch?v=crawler");
+      UUID metaId = UUID.randomUUID();
+      UUID recipeId = UUID.randomUUID();
+
+      RecipeYoutubeMeta meta = createMockRecipeYoutubeMeta(metaId, "크롤러 영상", recipeId);
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+
+      doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
+      doReturn(recipe).when(recipeService).getNotFailed(List.of(recipeId));
+
+      RecipeCreationTarget target = new RecipeCreationTarget.Crawler(uri);
+      UUID result = recipeInfoService.create(target);
+
+      assertThat(result).isEqualTo(recipeId);
+      verify(recipeHistoryService, never()).create(any(), any());
+      verify(asyncRecipeInfoCreationService, never()).create(any(), any(), any());
     }
   }
 
@@ -182,17 +303,18 @@ public class RecipeInfoServiceTest {
 
       doThrow(new RecipeInfoException(RecipeErrorCode.RECIPE_NOT_FOUND))
           .when(recipeService)
-          .findNotFailed(anyList());
+          .getNotFailed(anyList());
       doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
       doReturn(recipeId).when(recipeService).create();
 
-      UUID result = recipeInfoService.createNewRecipe(uri, userId);
+      RecipeCreationTarget target = new RecipeCreationTarget.User(uri, userId);
+      UUID result = recipeInfoService.create(target);
 
       assertThat(result).isEqualTo(recipeId);
       verify(recipeIdentifyService).create(uri);
       verify(recipeYoutubeMetaService).create(videoInfo, recipeId);
-      verify(asyncRecipeCreationService).create(recipeId, videoInfo.getVideoId(), uri);
-      verify(recipeViewStatusService).create(userId, recipeId);
+      verify(asyncRecipeInfoCreationService).create(recipeId, videoInfo.getVideoId(), uri);
+      verify(recipeHistoryService).create(userId, recipeId);
     }
 
     @Test
@@ -212,12 +334,13 @@ public class RecipeInfoServiceTest {
           .when(recipeIdentifyService)
           .create(uri);
       doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
-      doReturn(recipe).when(recipeService).findNotFailed(List.of(recipeId));
+      doReturn(recipe).when(recipeService).getNotFailed(List.of(recipeId));
 
-      UUID result = recipeInfoService.createNewRecipe(uri, userId);
+      RecipeCreationTarget target = new RecipeCreationTarget.User(uri, userId);
+      UUID result = recipeInfoService.create(target);
 
       assertThat(result).isEqualTo(recipeId);
-      verify(recipeViewStatusService).create(userId, recipeId);
+      verify(recipeHistoryService).create(userId, recipeId);
     }
 
     @Test
@@ -228,12 +351,13 @@ public class RecipeInfoServiceTest {
 
       doThrow(new RecipeInfoException(RecipeErrorCode.RECIPE_NOT_FOUND))
           .when(recipeService)
-          .findNotFailed(anyList());
+          .getNotFailed(anyList());
       doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_CREATE_FAIL))
           .when(recipeYoutubeMetaService)
           .getVideoInfo(uri);
 
-      assertThatThrownBy(() -> recipeInfoService.createNewRecipe(uri, userId))
+      RecipeCreationTarget target = new RecipeCreationTarget.User(uri, userId);
+      assertThatThrownBy(() -> recipeInfoService.create(target))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_CREATE_FAIL);
     }
@@ -248,13 +372,14 @@ public class RecipeInfoServiceTest {
 
       doThrow(new RecipeInfoException(RecipeErrorCode.RECIPE_NOT_FOUND))
           .when(recipeService)
-          .findNotFailed(anyList());
+          .getNotFailed(anyList());
       doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
       doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_CREATE_FAIL))
           .when(recipeService)
           .create();
 
-      assertThatThrownBy(() -> recipeInfoService.createNewRecipe(uri, userId))
+      RecipeCreationTarget target = new RecipeCreationTarget.User(uri, userId);
+      assertThatThrownBy(() -> recipeInfoService.create(target))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_CREATE_FAIL);
     }
@@ -273,12 +398,12 @@ public class RecipeInfoServiceTest {
       Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
 
       setupFullRecipeInfoMocks(recipeId, userId, recipe);
-      doReturn(recipe).when(recipeService).findSuccess(recipeId);
+      doReturn(recipe).when(recipeService).getSuccess(recipeId);
 
-      FullRecipeInfo result = recipeInfoService.findFullRecipe(recipeId, userId);
+      FullRecipe result = recipeInfoService.getFullRecipe(recipeId, userId);
 
       assertThat(result).isNotNull();
-      verify(recipeService).findSuccess(recipeId);
+      verify(recipeService).getSuccess(recipeId);
     }
 
     @Test
@@ -289,9 +414,9 @@ public class RecipeInfoServiceTest {
 
       doThrow(new RecipeInfoException(RecipeErrorCode.RECIPE_NOT_FOUND))
           .when(recipeService)
-          .findSuccess(recipeId);
+          .getSuccess(recipeId);
 
-      assertThatThrownBy(() -> recipeInfoService.findFullRecipe(recipeId, userId))
+      assertThatThrownBy(() -> recipeInfoService.getFullRecipe(recipeId, userId))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
     }
@@ -304,9 +429,9 @@ public class RecipeInfoServiceTest {
 
       doThrow(new RecipeInfoException(RecipeErrorCode.RECIPE_FAILED))
           .when(recipeService)
-          .findSuccess(recipeId);
+          .getSuccess(recipeId);
 
-      assertThatThrownBy(() -> recipeInfoService.findFullRecipe(recipeId, userId))
+      assertThatThrownBy(() -> recipeInfoService.getFullRecipe(recipeId, userId))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_FAILED);
     }
@@ -319,9 +444,9 @@ public class RecipeInfoServiceTest {
 
       doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_CREATE_FAIL))
           .when(recipeService)
-          .findSuccess(recipeId);
+          .getSuccess(recipeId);
 
-      assertThatThrownBy(() -> recipeInfoService.findFullRecipe(recipeId, userId))
+      assertThatThrownBy(() -> recipeInfoService.getFullRecipe(recipeId, userId))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_CREATE_FAIL);
     }
@@ -337,19 +462,21 @@ public class RecipeInfoServiceTest {
       Integer page = 0;
       UUID recipeId1 = UUID.randomUUID();
       UUID recipeId2 = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
 
       Recipe recipe1 = createMockRecipe(recipeId1, RecipeStatus.SUCCESS);
       Recipe recipe2 = createMockRecipe(recipeId2, RecipeStatus.SUCCESS);
       Page<Recipe> recipePage = new PageImpl<>(List.of(recipe1, recipe2));
 
       setupPopularMocks(List.of(recipeId1, recipeId2));
-      doReturn(recipePage).when(recipeService).findsSuccess(page);
+      doReturn(recipePage).when(recipeService).getPopulars(page);
 
-      Page<RecipeOverview> result = recipeInfoService.findPopulars(page);
+      Page<RecipeOverview> result =
+          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
 
       assertThat(result.getContent()).hasSize(2);
-      assertThat(result.getContent()).allMatch(overview -> overview.getRecipe() != null);
-      verify(recipeService).findsSuccess(page);
+      assertThat(result.getContent()).allMatch(overview -> overview.getRecipeId() != null);
+      verify(recipeService).getPopulars(page);
     }
 
     @Test
@@ -357,14 +484,16 @@ public class RecipeInfoServiceTest {
     void shouldReturnEmptyListWhenNoSuccessfulRecipes() {
       Integer page = 0;
       Page<Recipe> emptyRecipePage = new PageImpl<>(List.of());
+      UUID userId = UUID.randomUUID();
 
-      doReturn(emptyRecipePage).when(recipeService).findsSuccess(page);
+      doReturn(emptyRecipePage).when(recipeService).getPopulars(page);
 
-      Page<RecipeOverview> result = recipeInfoService.findPopulars(page);
+      Page<RecipeOverview> result =
+          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
 
       assertThat(result.getContent()).isEmpty();
       assertThat(result.getTotalElements()).isEqualTo(0);
-      verify(recipeService).findsSuccess(page);
+      verify(recipeService).getPopulars(page);
     }
 
     @Test
@@ -373,6 +502,7 @@ public class RecipeInfoServiceTest {
       Integer page = 0;
       UUID recipeId1 = UUID.randomUUID();
       UUID recipeId2 = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
 
       Recipe recipe1 = createMockRecipe(recipeId1, RecipeStatus.SUCCESS);
       Recipe recipe2 = createMockRecipe(recipeId2, RecipeStatus.SUCCESS);
@@ -381,17 +511,163 @@ public class RecipeInfoServiceTest {
       List<RecipeYoutubeMeta> youtubeMetas =
           List.of(createMockRecipeYoutubeMeta(UUID.randomUUID(), "정상 영상", recipeId1));
 
-      doReturn(recipePage).when(recipeService).findsSuccess(page);
+      doReturn(recipePage).when(recipeService).getPopulars(page);
       doReturn(youtubeMetas)
           .when(recipeYoutubeMetaService)
-          .findsByRecipes(List.of(recipeId1, recipeId2));
-      doReturn(List.of()).when(recipeDetailMetaService).findIn(List.of(recipeId1, recipeId2));
-      doReturn(List.of()).when(recipeTagService).findIn(List.of(recipeId1, recipeId2));
+          .getByRecipes(List.of(recipeId1, recipeId2));
+      doReturn(List.of()).when(recipeDetailMetaService).getIn(List.of(recipeId1, recipeId2));
+      doReturn(List.of()).when(recipeTagService).getIn(List.of(recipeId1, recipeId2));
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
-      Page<RecipeOverview> result = recipeInfoService.findPopulars(page);
+      Page<RecipeOverview> result =
+          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
 
       assertThat(result.getContent()).hasSize(1);
-      assertThat(result.getContent().get(0).getRecipe().getId()).isEqualTo(recipeId1);
+      assertThat(result.getContent().get(0).getRecipeId()).isEqualTo(recipeId1);
+    }
+
+    @Test
+    @DisplayName("사용자가 이미 본 레시피는 isViewed가 true로 표시된다")
+    void shouldMarkViewedRecipesCorrectly() {
+      Integer page = 0;
+      UUID recipeId1 = UUID.randomUUID();
+      UUID recipeId2 = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe1 = createMockRecipe(recipeId1, RecipeStatus.SUCCESS);
+      Recipe recipe2 = createMockRecipe(recipeId2, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe1, recipe2));
+
+      List<RecipeYoutubeMeta> youtubeMetas =
+          List.of(
+              createMockRecipeYoutubeMeta(UUID.randomUUID(), "영상1", recipeId1),
+              createMockRecipeYoutubeMeta(UUID.randomUUID(), "영상2", recipeId2));
+
+      List<RecipeDetailMeta> detailMetas =
+          List.of(
+              createMockRecipeDetailMeta(recipeId1, "설명1"),
+              createMockRecipeDetailMeta(recipeId2, "설명2"));
+
+      List<RecipeTag> tags =
+          List.of(createMockRecipeTag(recipeId1, "태그1"), createMockRecipeTag(recipeId2, "태그2"));
+
+      // recipeId1만 본 상태
+      RecipeHistory viewStatus1 = createMockRecipeHistory(recipeId1, userId);
+      List<RecipeHistory> viewStatuses = List.of(viewStatus1);
+
+      doReturn(recipePage).when(recipeService).getPopulars(page);
+      doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
+      doReturn(detailMetas).when(recipeDetailMetaService).getIn(anyList());
+      doReturn(tags).when(recipeTagService).getIn(anyList());
+      doReturn(viewStatuses).when(recipeHistoryService).getByRecipes(anyList(), eq(userId));
+
+      Page<RecipeOverview> result =
+          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+
+      assertThat(result.getContent()).hasSize(2);
+
+      RecipeOverview overview1 =
+          result.getContent().stream()
+              .filter(o -> o.getRecipeId().equals(recipeId1))
+              .findFirst()
+              .orElse(null);
+      RecipeOverview overview2 =
+          result.getContent().stream()
+              .filter(o -> o.getRecipeId().equals(recipeId2))
+              .findFirst()
+              .orElse(null);
+
+      assertThat(overview1).isNotNull();
+      assertThat(overview1.getIsViewed()).isTrue();
+      assertThat(overview2).isNotNull();
+      assertThat(overview2.getIsViewed()).isFalse();
+      verify(recipeHistoryService).getByRecipes(anyList(), eq(userId));
+    }
+
+    @Test
+    @DisplayName("모든 서비스가 올바르게 호출되어야 한다")
+    void shouldCallAllServicesCorrectly() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage).when(recipeService).getPopulars(page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+
+      verify(recipeService).getPopulars(page);
+      verify(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
+      verify(recipeDetailMetaService).getIn(List.of(recipeId));
+      verify(recipeTagService).getIn(List.of(recipeId));
+      verify(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+    }
+
+    @Test
+    @DisplayName("Query가 ALL이면 getPopulars를 호출한다")
+    void shouldCallGetPopularsWhenQueryIsAll() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage).when(recipeService).getPopulars(page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+
+      verify(recipeService).getPopulars(page);
+      verify(recipeService, never()).getPopularNormals(any());
+      verify(recipeService, never()).getPopularShorts(any());
+    }
+
+    @Test
+    @DisplayName("Query가 NORMAL이면 getPopularNormals를 호출한다")
+    void shouldCallGetPopularNormalsWhenQueryIsNormal() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage).when(recipeService).getPopularNormals(page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.NORMAL);
+
+      verify(recipeService).getPopularNormals(page);
+      verify(recipeService, never()).getPopulars(any());
+      verify(recipeService, never()).getPopularShorts(any());
+    }
+
+    @Test
+    @DisplayName("Query가 SHORTS이면 getPopularShorts를 호출한다")
+    void shouldCallGetPopularShortsWhenQueryIsShorts() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage).when(recipeService).getPopularShorts(page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.SHORTS);
+
+      verify(recipeService).getPopularShorts(page);
+      verify(recipeService, never()).getPopulars(any());
+      verify(recipeService, never()).getPopularNormals(any());
     }
   }
 
@@ -404,7 +680,7 @@ public class RecipeInfoServiceTest {
     class GivenValidUserId {
 
       private UUID userId;
-      private Page<RecipeViewStatus> viewStatuses;
+      private Page<RecipeHistory> viewStatuses;
       private List<Recipe> recipes;
       private List<RecipeYoutubeMeta> youtubeMetas;
       private Integer page;
@@ -419,8 +695,8 @@ public class RecipeInfoServiceTest {
         viewStatuses =
             new PageImpl<>(
                 List.of(
-                    createMockRecipeViewStatus(recipeId1, userId),
-                    createMockRecipeViewStatus(recipeId2, userId)));
+                    createMockRecipeHistory(recipeId1, userId),
+                    createMockRecipeHistory(recipeId2, userId)));
 
         recipes =
             List.of(
@@ -432,9 +708,9 @@ public class RecipeInfoServiceTest {
                 createMockRecipeYoutubeMeta(UUID.randomUUID(), "김치찌개 만들기", recipeId1),
                 createMockRecipeYoutubeMeta(UUID.randomUUID(), "된장찌개 만들기", recipeId2));
 
-        doReturn(viewStatuses).when(recipeViewStatusService).findRecentUsers(userId, page);
-        doReturn(recipes).when(recipeService).findsNotFailed(anyList());
-        doReturn(youtubeMetas).when(recipeYoutubeMetaService).findsByRecipes(anyList());
+        doReturn(viewStatuses).when(recipeHistoryService).getRecents(userId, page);
+        doReturn(recipes).when(recipeService).getValidRecipes(anyList());
+        doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
       }
 
       @Nested
@@ -443,19 +719,19 @@ public class RecipeInfoServiceTest {
 
         @Test
         @DisplayName("Then - 최근 레시피 히스토리 목록을 반환해야 한다")
-        void thenShouldReturnRecentRecipeHistories() {
-          Page<RecipeHistory> result = recipeInfoService.findRecents(userId, page);
+        void thenShouldReturnRecentRecipeRecords() {
+          Page<RecipeHistoryOverview> result = recipeInfoService.getRecents(userId, page);
 
           assertThat(result.getContent()).hasSize(2);
           assertThat(result.getContent())
               .allMatch(
                   history ->
-                      history.getRecipe() != null
-                          && history.getRecipeViewStatus() != null
-                          && history.getYoutubeMeta() != null);
-          verify(recipeViewStatusService).findRecentUsers(userId, page);
-          verify(recipeService).findsNotFailed(anyList());
-          verify(recipeYoutubeMetaService).findsByRecipes(anyList());
+                      history.getRecipeId() != null
+                          && history.getViewedAt() != null
+                          && history.getVideoTitle() != null);
+          verify(recipeHistoryService).getRecents(userId, page);
+          verify(recipeService).getValidRecipes(anyList());
+          verify(recipeYoutubeMetaService).getByRecipes(anyList());
         }
       }
     }
@@ -465,7 +741,7 @@ public class RecipeInfoServiceTest {
     class GivenUserWithNoViewStatuses {
 
       private UUID userId;
-      private Page<RecipeViewStatus> emptyViewStatuses;
+      private Page<RecipeHistory> emptyViewStatuses;
       private Integer page;
 
       @BeforeEach
@@ -474,7 +750,7 @@ public class RecipeInfoServiceTest {
         page = 0;
         emptyViewStatuses = new PageImpl<>(List.of());
 
-        doReturn(emptyViewStatuses).when(recipeViewStatusService).findRecentUsers(userId, page);
+        doReturn(emptyViewStatuses).when(recipeHistoryService).getRecents(userId, page);
       }
 
       @Nested
@@ -484,11 +760,11 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 빈 히스토리 목록을 반환해야 한다")
         void thenShouldReturnEmptyHistory() {
-          Page<RecipeHistory> result = recipeInfoService.findRecents(userId, page);
+          Page<RecipeHistoryOverview> result = recipeInfoService.getRecents(userId, page);
 
           assertThat(result.getContent()).isEmpty();
           assertThat(result.getTotalElements()).isEqualTo(0);
-          verify(recipeViewStatusService).findRecentUsers(userId, page);
+          verify(recipeHistoryService).getRecents(userId, page);
         }
       }
     }
@@ -498,7 +774,7 @@ public class RecipeInfoServiceTest {
     class GivenOnlyFailedRecipes {
 
       private UUID userId;
-      private Page<RecipeViewStatus> viewStatuses;
+      private Page<RecipeHistory> viewStatuses;
       private Integer page;
 
       @BeforeEach
@@ -507,11 +783,11 @@ public class RecipeInfoServiceTest {
         page = 0;
         UUID recipeId = UUID.randomUUID();
 
-        viewStatuses = new PageImpl<>(List.of(createMockRecipeViewStatus(recipeId, userId)));
+        viewStatuses = new PageImpl<>(List.of(createMockRecipeHistory(recipeId, userId)));
 
-        doReturn(viewStatuses).when(recipeViewStatusService).findRecentUsers(userId, page);
-        doReturn(List.of()).when(recipeService).findsNotFailed(anyList()); // 실패한 레시피는 제외
-        doReturn(List.of()).when(recipeYoutubeMetaService).findsByRecipes(anyList());
+        doReturn(viewStatuses).when(recipeHistoryService).getRecents(userId, page);
+        doReturn(List.of()).when(recipeService).getValidRecipes(anyList()); // 실패한 레시피는 제외
+        doReturn(List.of()).when(recipeYoutubeMetaService).getByRecipes(anyList());
       }
 
       @Nested
@@ -521,11 +797,11 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 빈 히스토리 목록을 반환해야 한다")
         void thenShouldReturnEmptyHistoryForFailedRecipes() {
-          Page<RecipeHistory> result = recipeInfoService.findRecents(userId, page);
+          Page<RecipeHistoryOverview> result = recipeInfoService.getRecents(userId, page);
 
           assertThat(result.getContent()).isEmpty();
-          verify(recipeViewStatusService).findRecentUsers(userId, page);
-          verify(recipeService).findsNotFailed(anyList());
+          verify(recipeHistoryService).getRecents(userId, page);
+          verify(recipeService).getValidRecipes(anyList());
         }
       }
     }
@@ -541,7 +817,7 @@ public class RecipeInfoServiceTest {
 
       private UUID userId;
       private UUID recipeCategoryId;
-      private Page<RecipeViewStatus> viewStatuses;
+      private Page<RecipeHistory> viewStatuses;
       private List<Recipe> recipes;
       private List<RecipeYoutubeMeta> youtubeMetas;
       private Integer page;
@@ -553,15 +829,15 @@ public class RecipeInfoServiceTest {
         page = 0;
         UUID recipeId1 = UUID.randomUUID();
 
-        viewStatuses = new PageImpl<>(List.of(createMockRecipeViewStatus(recipeId1, userId)));
+        viewStatuses = new PageImpl<>(List.of(createMockRecipeHistory(recipeId1, userId)));
         recipes = List.of(createMockRecipe(recipeId1, RecipeStatus.SUCCESS));
         youtubeMetas = List.of(createMockRecipeYoutubeMeta(UUID.randomUUID(), "한식 요리", recipeId1));
 
         doReturn(viewStatuses)
-            .when(recipeViewStatusService)
-            .findCategories(userId, recipeCategoryId, page);
-        doReturn(recipes).when(recipeService).findsNotFailed(anyList());
-        doReturn(youtubeMetas).when(recipeYoutubeMetaService).findsByRecipes(anyList());
+            .when(recipeHistoryService)
+            .getCategorized(userId, recipeCategoryId, page);
+        doReturn(recipes).when(recipeService).getValidRecipes(anyList());
+        doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
       }
 
       @Nested
@@ -570,16 +846,16 @@ public class RecipeInfoServiceTest {
 
         @Test
         @DisplayName("Then - 해당 카테고리의 레시피 히스토리 목록을 반환해야 한다")
-        void thenShouldReturnCategorizedRecipeHistories() {
-          Page<RecipeHistory> result =
-              recipeInfoService.findCategorized(userId, recipeCategoryId, page);
+        void thenShouldReturnCategorizedRecipeRecords() {
+          Page<RecipeHistoryOverview> result =
+              recipeInfoService.getCategorized(userId, recipeCategoryId, page);
 
           assertThat(result.getContent()).hasSize(1);
-          assertThat(result.getContent().get(0).getRecipe()).isNotNull();
-          assertThat(result.getContent().get(0).getRecipeViewStatus()).isNotNull();
-          assertThat(result.getContent().get(0).getYoutubeMeta()).isNotNull();
-          verify(recipeViewStatusService).findCategories(userId, recipeCategoryId, page);
-          verify(recipeService).findsNotFailed(anyList());
+          assertThat(result.getContent().get(0).getRecipeId()).isNotNull();
+          assertThat(result.getContent().get(0).getViewedAt()).isNotNull();
+          assertThat(result.getContent().get(0).getVideoTitle()).isNotNull();
+          verify(recipeHistoryService).getCategorized(userId, recipeCategoryId, page);
+          verify(recipeService).getValidRecipes(anyList());
         }
       }
     }
@@ -590,7 +866,7 @@ public class RecipeInfoServiceTest {
 
       private UUID userId;
       private UUID recipeCategoryId;
-      private Page<RecipeViewStatus> emptyViewStatuses;
+      private Page<RecipeHistory> emptyViewStatuses;
       private Integer page;
 
       @BeforeEach
@@ -601,8 +877,8 @@ public class RecipeInfoServiceTest {
         emptyViewStatuses = new PageImpl<>(List.of());
 
         doReturn(emptyViewStatuses)
-            .when(recipeViewStatusService)
-            .findCategories(userId, recipeCategoryId, page);
+            .when(recipeHistoryService)
+            .getCategorized(userId, recipeCategoryId, page);
       }
 
       @Nested
@@ -612,12 +888,12 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 빈 히스토리 목록을 반환해야 한다")
         void thenShouldReturnEmptyHistoryForCategory() {
-          Page<RecipeHistory> result =
-              recipeInfoService.findCategorized(userId, recipeCategoryId, page);
+          Page<RecipeHistoryOverview> result =
+              recipeInfoService.getCategorized(userId, recipeCategoryId, page);
 
           assertThat(result.getContent()).isEmpty();
           assertThat(result.getTotalElements()).isEqualTo(0);
-          verify(recipeViewStatusService).findCategories(userId, recipeCategoryId, page);
+          verify(recipeHistoryService).getCategorized(userId, recipeCategoryId, page);
         }
       }
     }
@@ -632,7 +908,7 @@ public class RecipeInfoServiceTest {
     class GivenValidUserId {
 
       private UUID userId;
-      private Page<RecipeViewStatus> viewStatuses;
+      private Page<RecipeHistory> viewStatuses;
       private List<Recipe> recipes;
       private List<RecipeYoutubeMeta> youtubeMetas;
       private Integer page;
@@ -643,13 +919,13 @@ public class RecipeInfoServiceTest {
         page = 0;
         UUID recipeId1 = UUID.randomUUID();
 
-        viewStatuses = new PageImpl<>(List.of(createMockRecipeViewStatus(recipeId1, userId)));
+        viewStatuses = new PageImpl<>(List.of(createMockRecipeHistory(recipeId1, userId)));
         recipes = List.of(createMockRecipe(recipeId1, RecipeStatus.SUCCESS));
         youtubeMetas = List.of(createMockRecipeYoutubeMeta(UUID.randomUUID(), "미분류 요리", recipeId1));
 
-        doReturn(viewStatuses).when(recipeViewStatusService).findUnCategories(userId, page);
-        doReturn(recipes).when(recipeService).findsNotFailed(anyList());
-        doReturn(youtubeMetas).when(recipeYoutubeMetaService).findsByRecipes(anyList());
+        doReturn(viewStatuses).when(recipeHistoryService).getUnCategorized(userId, page);
+        doReturn(recipes).when(recipeService).getValidRecipes(anyList());
+        doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
       }
 
       @Nested
@@ -658,15 +934,15 @@ public class RecipeInfoServiceTest {
 
         @Test
         @DisplayName("Then - 미분류 레시피 히스토리 목록을 반환해야 한다")
-        void thenShouldReturnUnCategorizedRecipeHistories() {
-          Page<RecipeHistory> result = recipeInfoService.findUnCategorized(userId, page);
+        void thenShouldReturnUnCategorizedRecipeRecords() {
+          Page<RecipeHistoryOverview> result = recipeInfoService.getUnCategorized(userId, page);
 
           assertThat(result.getContent()).hasSize(1);
-          assertThat(result.getContent().get(0).getRecipe()).isNotNull();
-          assertThat(result.getContent().get(0).getRecipeViewStatus()).isNotNull();
-          assertThat(result.getContent().get(0).getYoutubeMeta()).isNotNull();
-          verify(recipeViewStatusService).findUnCategories(userId, page);
-          verify(recipeService).findsNotFailed(anyList());
+          assertThat(result.getContent().get(0).getRecipeId()).isNotNull();
+          assertThat(result.getContent().get(0).getViewedAt()).isNotNull();
+          assertThat(result.getContent().get(0).getVideoTitle()).isNotNull();
+          verify(recipeHistoryService).getUnCategorized(userId, page);
+          verify(recipeService).getValidRecipes(anyList());
         }
       }
     }
@@ -676,7 +952,7 @@ public class RecipeInfoServiceTest {
     class GivenNoUnCategorizedRecipes {
 
       private UUID userId;
-      private Page<RecipeViewStatus> emptyViewStatuses;
+      private Page<RecipeHistory> emptyViewStatuses;
       private Integer page;
 
       @BeforeEach
@@ -685,7 +961,7 @@ public class RecipeInfoServiceTest {
         page = 0;
         emptyViewStatuses = new PageImpl<>(List.of());
 
-        doReturn(emptyViewStatuses).when(recipeViewStatusService).findUnCategories(userId, page);
+        doReturn(emptyViewStatuses).when(recipeHistoryService).getUnCategorized(userId, page);
       }
 
       @Nested
@@ -695,11 +971,11 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 빈 히스토리 목록을 반환해야 한다")
         void thenShouldReturnEmptyHistoryForUnCategorized() {
-          Page<RecipeHistory> result = recipeInfoService.findUnCategorized(userId, page);
+          Page<RecipeHistoryOverview> result = recipeInfoService.getUnCategorized(userId, page);
 
           assertThat(result.getContent()).isEmpty();
           assertThat(result.getTotalElements()).isEqualTo(0);
-          verify(recipeViewStatusService).findUnCategories(userId, page);
+          verify(recipeHistoryService).getUnCategorized(userId, page);
         }
       }
     }
@@ -707,7 +983,7 @@ public class RecipeInfoServiceTest {
 
   @Nested
   @DisplayName("카테고리별 레시피 개수 조회")
-  class FindCategories {
+  class FindCategoryCounts {
 
     @Nested
     @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
@@ -715,7 +991,7 @@ public class RecipeInfoServiceTest {
 
       private UUID userId;
       private List<RecipeCategory> categories;
-      private List<RecipeViewStatusCount> counts;
+      private List<RecipeHistoryCategorizedCount> counts;
 
       @BeforeEach
       void setUp() {
@@ -730,11 +1006,14 @@ public class RecipeInfoServiceTest {
 
         counts =
             List.of(
-                createMockRecipeViewStatusCount(categoryId1, 5),
-                createMockRecipeViewStatusCount(categoryId2, 3));
+                createMockRecipeHistoryCount(categoryId1, 5),
+                createMockRecipeHistoryCount(categoryId2, 3));
 
-        doReturn(categories).when(recipeCategoryService).findUsers(userId);
-        doReturn(counts).when(recipeViewStatusService).countByCategories(anyList());
+        doReturn(categories).when(recipeCategoryService).getUsers(userId);
+        doReturn(counts).when(recipeHistoryService).countByCategories(anyList());
+        doReturn(RecipeHistoryUnCategorizedCount.of(2))
+            .when(recipeHistoryService)
+            .countUncategorized(userId);
       }
 
       @Nested
@@ -742,14 +1021,18 @@ public class RecipeInfoServiceTest {
       class WhenFindingCategories {
 
         @Test
-        @DisplayName("Then - 카테고리별 레시피 개수 목록을 반환해야 한다")
-        void thenShouldReturnCategoriesWithCount() {
-          List<CountRecipeCategory> result = recipeInfoService.findCategories(userId);
+        @DisplayName("Then - 카테고리별 레시피 개수와 totalCount가 올바르게 반환되어야 한다")
+        void thenShouldReturnCategoriesWithCountAndTotal() {
+          var result = recipeInfoService.getCategoryCounts(userId);
 
-          assertThat(result).hasSize(2);
-          assertThat(result).allMatch(category -> category.getCategory() != null);
-          verify(recipeCategoryService).findUsers(userId);
-          verify(recipeViewStatusService).countByCategories(anyList());
+          assertThat(result.getCategorizedCounts()).hasSize(2);
+          assertThat(result.getCategorizedCounts())
+              .allMatch(category -> category.getCategory() != null);
+          assertThat(result.getUncategorizedCount()).isEqualTo(2);
+          assertThat(result.getTotalCount()).isEqualTo(10); // 5 + 3 + 2
+          verify(recipeCategoryService).getUsers(userId);
+          verify(recipeHistoryService).countByCategories(anyList());
+          verify(recipeHistoryService).countUncategorized(userId);
         }
       }
     }
@@ -760,7 +1043,7 @@ public class RecipeInfoServiceTest {
 
       private UUID userId;
       private List<RecipeCategory> categories;
-      private List<RecipeViewStatusCount> counts;
+      private List<RecipeHistoryCategorizedCount> counts;
 
       @BeforeEach
       void setUp() {
@@ -770,8 +1053,11 @@ public class RecipeInfoServiceTest {
         categories = List.of(createMockRecipeCategory(categoryId1, "빈 카테고리"));
         counts = List.of();
 
-        doReturn(categories).when(recipeCategoryService).findUsers(userId);
-        doReturn(counts).when(recipeViewStatusService).countByCategories(anyList());
+        doReturn(categories).when(recipeCategoryService).getUsers(userId);
+        doReturn(counts).when(recipeHistoryService).countByCategories(anyList());
+        doReturn(RecipeHistoryUnCategorizedCount.of(0))
+            .when(recipeHistoryService)
+            .countUncategorized(userId);
       }
 
       @Nested
@@ -781,12 +1067,56 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 카테고리 개수가 0으로 반환되어야 한다")
         void thenShouldReturnCategoriesWithZeroCount() {
-          List<CountRecipeCategory> result = recipeInfoService.findCategories(userId);
+          var result = recipeInfoService.getCategoryCounts(userId);
 
-          assertThat(result).hasSize(1);
-          assertThat(result.get(0).getCategory()).isNotNull();
-          verify(recipeCategoryService).findUsers(userId);
-          verify(recipeViewStatusService).countByCategories(anyList());
+          assertThat(result.getCategorizedCounts()).hasSize(1);
+          assertThat(result.getCategorizedCounts().get(0).getCategory()).isNotNull();
+          assertThat(result.getUncategorizedCount()).isEqualTo(0);
+          assertThat(result.getTotalCount()).isEqualTo(0);
+          verify(recipeCategoryService).getUsers(userId);
+          verify(recipeHistoryService).countByCategories(anyList());
+          verify(recipeHistoryService).countUncategorized(userId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 미분류 레시피만 있을 때")
+    class GivenOnlyUncategorizedRecipes {
+
+      private UUID userId;
+      private List<RecipeCategory> categories;
+      private List<RecipeHistoryCategorizedCount> counts;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+
+        categories = List.of();
+        counts = List.of();
+
+        doReturn(categories).when(recipeCategoryService).getUsers(userId);
+        doReturn(counts).when(recipeHistoryService).countByCategories(anyList());
+        doReturn(RecipeHistoryUnCategorizedCount.of(7))
+            .when(recipeHistoryService)
+            .countUncategorized(userId);
+      }
+
+      @Nested
+      @DisplayName("When - 카테고리별 레시피 개수를 조회한다면")
+      class WhenFindingCategories {
+
+        @Test
+        @DisplayName("Then - 미분류 개수만 반환되고 totalCount가 올바르게 계산되어야 한다")
+        void thenShouldReturnOnlyUncategorizedCount() {
+          var result = recipeInfoService.getCategoryCounts(userId);
+
+          assertThat(result.getCategorizedCounts()).isEmpty();
+          assertThat(result.getUncategorizedCount()).isEqualTo(7);
+          assertThat(result.getTotalCount()).isEqualTo(7);
+          verify(recipeCategoryService).getUsers(userId);
+          verify(recipeHistoryService).countByCategories(List.of());
+          verify(recipeHistoryService).countUncategorized(userId);
         }
       }
     }
@@ -816,7 +1146,7 @@ public class RecipeInfoServiceTest {
         void thenShouldDeleteCategoryAndRelatedViewStatus() {
           recipeInfoService.deleteCategory(categoryId);
 
-          verify(recipeViewStatusService).deleteCategories(categoryId);
+          verify(recipeHistoryService).unCategorize(categoryId);
           verify(recipeCategoryService).delete(categoryId);
         }
       }
@@ -832,8 +1162,11 @@ public class RecipeInfoServiceTest {
       void setUp() {
         userId = UUID.randomUUID();
 
-        doReturn(List.of()).when(recipeCategoryService).findUsers(userId);
-        doReturn(List.of()).when(recipeViewStatusService).countByCategories(List.of());
+        doReturn(List.of()).when(recipeCategoryService).getUsers(userId);
+        doReturn(List.of()).when(recipeHistoryService).countByCategories(List.of());
+        doReturn(RecipeHistoryUnCategorizedCount.of(0))
+            .when(recipeHistoryService)
+            .countUncategorized(userId);
       }
 
       @Nested
@@ -843,11 +1176,331 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 빈 카테고리 목록을 반환해야 한다")
         void thenShouldReturnEmptyCategories() {
-          List<CountRecipeCategory> result = recipeInfoService.findCategories(userId);
+          var result = recipeInfoService.getCategoryCounts(userId);
 
-          assertThat(result).isEmpty();
-          verify(recipeCategoryService).findUsers(userId);
-          verify(recipeViewStatusService).countByCategories(List.of());
+          assertThat(result.getCategorizedCounts()).isEmpty();
+          assertThat(result.getUncategorizedCount()).isEqualTo(0);
+          assertThat(result.getTotalCount()).isEqualTo(0);
+          verify(recipeCategoryService).getUsers(userId);
+          verify(recipeHistoryService).countByCategories(List.of());
+          verify(recipeHistoryService).countUncategorized(userId);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 검색")
+  class SearchRecipes {
+
+    @Nested
+    @DisplayName("Given - 유효한 검색어가 주어졌을 때")
+    class GivenValidSearchQuery {
+
+      private String query;
+      private Integer page;
+      private Page<RecipeSearch> searchResults;
+      private List<Recipe> recipes;
+      private List<RecipeYoutubeMeta> youtubeMetas;
+      private List<RecipeDetailMeta> detailMetas;
+      private List<RecipeTag> tags;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        query = "김치찌개";
+        page = 0;
+        UUID recipeId1 = UUID.randomUUID();
+        UUID recipeId2 = UUID.randomUUID();
+        userId = UUID.randomUUID();
+
+        RecipeSearch search1 = mock(RecipeSearch.class);
+        RecipeSearch search2 = mock(RecipeSearch.class);
+        doReturn(recipeId1.toString()).when(search1).getId();
+        doReturn(recipeId2.toString()).when(search2).getId();
+
+        searchResults = new PageImpl<>(List.of(search1, search2));
+
+        recipes =
+            List.of(
+                createMockRecipe(recipeId1, RecipeStatus.SUCCESS),
+                createMockRecipe(recipeId2, RecipeStatus.SUCCESS));
+
+        youtubeMetas =
+            List.of(
+                createMockRecipeYoutubeMeta(UUID.randomUUID(), "김치찌개 만들기", recipeId1),
+                createMockRecipeYoutubeMeta(UUID.randomUUID(), "김치찌개 레시피", recipeId2));
+
+        detailMetas =
+            List.of(
+                createMockRecipeDetailMeta(recipeId1, "맛있는 김치찌개"),
+                createMockRecipeDetailMeta(recipeId2, "전통 김치찌개"));
+
+        tags =
+            List.of(
+                createMockRecipeTag(recipeId1, "한식"),
+                createMockRecipeTag(recipeId1, "찌개"),
+                createMockRecipeTag(recipeId2, "한식"));
+
+        doReturn(searchResults).when(recipeSearchService).search(query, page);
+        doReturn(recipes).when(recipeService).gets(anyList());
+        doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
+        doReturn(detailMetas).when(recipeDetailMetaService).getIn(anyList());
+        doReturn(tags).when(recipeTagService).getIn(anyList());
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피를 검색한다면")
+      class WhenSearchingRecipes {
+
+        @Test
+        @DisplayName("Then - 검색 결과를 반환해야 한다")
+        void thenShouldReturnSearchResults() {
+          Page<RecipeOverview> result = recipeInfoService.searchRecipes(page, query, userId);
+
+          assertThat(result.getContent()).hasSize(2);
+          assertThat(result.getContent())
+              .allMatch(
+                  overview ->
+                      overview.getRecipeId() != null
+                          && overview.getVideoTitle() != null
+                          && overview.getDescription() != null
+                          && overview.getTags() != null);
+          verify(recipeSearchService).search(query, page);
+          verify(recipeService).gets(anyList());
+          verify(recipeYoutubeMetaService).getByRecipes(anyList());
+          verify(recipeDetailMetaService).getIn(anyList());
+          verify(recipeTagService).getIn(anyList());
+          verify(recipeHistoryService).getByRecipes(anyList(), eq(userId));
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 사용자가 일부 레시피를 본 경우")
+    class GivenUserViewedSomeRecipes {
+
+      private String query;
+      private Integer page;
+      private UUID recipeId1;
+      private UUID recipeId2;
+      private UUID userId;
+      private Page<RecipeSearch> searchResults;
+      private List<Recipe> recipes;
+      private List<RecipeYoutubeMeta> youtubeMetas;
+      private List<RecipeDetailMeta> detailMetas;
+      private List<RecipeTag> tags;
+
+      @BeforeEach
+      void setUp() {
+        query = "김치찌개";
+        page = 0;
+        recipeId1 = UUID.randomUUID();
+        recipeId2 = UUID.randomUUID();
+        userId = UUID.randomUUID();
+
+        RecipeSearch search1 = mock(RecipeSearch.class);
+        RecipeSearch search2 = mock(RecipeSearch.class);
+        doReturn(recipeId1.toString()).when(search1).getId();
+        doReturn(recipeId2.toString()).when(search2).getId();
+
+        searchResults = new PageImpl<>(List.of(search1, search2));
+
+        recipes =
+            List.of(
+                createMockRecipe(recipeId1, RecipeStatus.SUCCESS),
+                createMockRecipe(recipeId2, RecipeStatus.SUCCESS));
+
+        youtubeMetas =
+            List.of(
+                createMockRecipeYoutubeMeta(UUID.randomUUID(), "김치찌개 만들기", recipeId1),
+                createMockRecipeYoutubeMeta(UUID.randomUUID(), "김치찌개 레시피", recipeId2));
+
+        detailMetas =
+            List.of(
+                createMockRecipeDetailMeta(recipeId1, "맛있는 김치찌개"),
+                createMockRecipeDetailMeta(recipeId2, "전통 김치찌개"));
+
+        tags = List.of(createMockRecipeTag(recipeId1, "한식"), createMockRecipeTag(recipeId2, "한식"));
+
+        doReturn(searchResults).when(recipeSearchService).search(query, page);
+        doReturn(recipes).when(recipeService).gets(anyList());
+        doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
+        doReturn(detailMetas).when(recipeDetailMetaService).getIn(anyList());
+        doReturn(tags).when(recipeTagService).getIn(anyList());
+
+        // recipeId1만 본 상태로 설정
+        RecipeHistory viewStatus1 = createMockRecipeHistory(recipeId1, userId);
+        doReturn(List.of(viewStatus1))
+            .when(recipeHistoryService)
+            .getByRecipes(anyList(), eq(userId));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피를 검색한다면")
+      class WhenSearchingRecipes {
+
+        @Test
+        @DisplayName("Then - 사용자가 본 레시피와 안 본 레시피가 올바르게 구분되어야 한다")
+        void thenShouldDistinguishViewedAndNotViewedRecipes() {
+          Page<RecipeOverview> result = recipeInfoService.searchRecipes(page, query, userId);
+
+          assertThat(result.getContent()).hasSize(2);
+
+          RecipeOverview overview1 =
+              result.getContent().stream()
+                  .filter(o -> o.getRecipeId().equals(recipeId1))
+                  .findFirst()
+                  .orElse(null);
+          RecipeOverview overview2 =
+              result.getContent().stream()
+                  .filter(o -> o.getRecipeId().equals(recipeId2))
+                  .findFirst()
+                  .orElse(null);
+
+          assertThat(overview1).isNotNull();
+          assertThat(overview1.getIsViewed()).isTrue();
+          assertThat(overview2).isNotNull();
+          assertThat(overview2.getIsViewed()).isFalse();
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 검색 결과가 없을 때")
+    class GivenNoSearchResults {
+
+      private String query;
+      private Integer page;
+      private Page<RecipeSearch> emptySearchResults;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        query = "존재하지않는레시피";
+        page = 0;
+        emptySearchResults = new PageImpl<>(List.of());
+        userId = UUID.randomUUID();
+
+        doReturn(emptySearchResults).when(recipeSearchService).search(query, page);
+      }
+
+      @Nested
+      @DisplayName("When - 레시피를 검색한다면")
+      class WhenSearchingRecipes {
+
+        @Test
+        @DisplayName("Then - 빈 결과를 반환해야 한다")
+        void thenShouldReturnEmptyResults() {
+          Page<RecipeOverview> result = recipeInfoService.searchRecipes(page, query, userId);
+
+          assertThat(result.getContent()).isEmpty();
+          assertThat(result.getTotalElements()).isEqualTo(0);
+          verify(recipeSearchService).search(query, page);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 검색된 레시피의 유튜브 메타가 누락되었을 때")
+    class GivenSearchResultWithMissingYoutubeMeta {
+
+      private String query;
+      private Integer page;
+      private Page<RecipeSearch> searchResults;
+      private List<Recipe> recipes;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        query = "파스타";
+        page = 0;
+        UUID recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+
+        RecipeSearch search = mock(RecipeSearch.class);
+        doReturn(recipeId.toString()).when(search).getId();
+
+        searchResults = new PageImpl<>(List.of(search));
+        recipes = List.of(createMockRecipe(recipeId, RecipeStatus.SUCCESS));
+
+        doReturn(searchResults).when(recipeSearchService).search(query, page);
+        doReturn(recipes).when(recipeService).gets(anyList());
+        doReturn(List.of()).when(recipeYoutubeMetaService).getByRecipes(anyList()); // 메타 누락
+        doReturn(List.of()).when(recipeDetailMetaService).getIn(anyList());
+        doReturn(List.of()).when(recipeTagService).getIn(anyList());
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피를 검색한다면")
+      class WhenSearchingRecipes {
+
+        @Test
+        @DisplayName("Then - 유튜브 메타가 없는 레시피는 제외되어야 한다")
+        void thenShouldExcludeRecipesWithoutYoutubeMeta() {
+          Page<RecipeOverview> result = recipeInfoService.searchRecipes(page, query, userId);
+
+          assertThat(result.getContent()).isEmpty();
+          verify(recipeSearchService).search(query, page);
+          verify(recipeService).gets(anyList());
+          verify(recipeYoutubeMetaService).getByRecipes(anyList());
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 여러 페이지의 검색 결과가 있을 때")
+    class GivenMultiplePages {
+
+      private String query;
+      private Integer page;
+      private Page<RecipeSearch> searchResults;
+      private Recipe recipe;
+      private RecipeYoutubeMeta youtubeMeta;
+      private RecipeDetailMeta detailMeta;
+      private List<RecipeTag> tags;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        query = "찌개";
+        page = 1;
+        UUID recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+
+        RecipeSearch search = mock(RecipeSearch.class);
+        doReturn(recipeId.toString()).when(search).getId();
+
+        // 전체 25개 결과 중 두 번째 페이지
+        searchResults = new PageImpl<>(List.of(search), RecipeSearchPageRequest.create(1), 25);
+        recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+        youtubeMeta = createMockRecipeYoutubeMeta(UUID.randomUUID(), "된장찌개", recipeId);
+        detailMeta = createMockRecipeDetailMeta(recipeId, "구수한 된장찌개");
+        tags = List.of(createMockRecipeTag(recipeId, "한식"));
+
+        doReturn(searchResults).when(recipeSearchService).search(query, page);
+        doReturn(List.of(recipe)).when(recipeService).gets(anyList());
+        doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).getByRecipes(anyList());
+        doReturn(List.of(detailMeta)).when(recipeDetailMetaService).getIn(anyList());
+        doReturn(tags).when(recipeTagService).getIn(anyList());
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+      }
+
+      @Nested
+      @DisplayName("When - 두 번째 페이지를 검색한다면")
+      class WhenSearchingSecondPage {
+
+        @Test
+        @DisplayName("Then - 올바른 페이지 정보와 함께 결과를 반환해야 한다")
+        void thenShouldReturnCorrectPageInfo() {
+          Page<RecipeOverview> result = recipeInfoService.searchRecipes(page, query, userId);
+
+          assertThat(result.getContent()).hasSize(1);
+          assertThat(result.getTotalElements()).isEqualTo(25);
+          assertThat(result.getNumber()).isEqualTo(1);
+          verify(recipeSearchService).search(query, page);
         }
       }
     }
@@ -884,8 +1537,8 @@ public class RecipeInfoServiceTest {
 
         progresses = List.of(progress1, progress2, progress3);
 
-        doReturn(progresses).when(recipeProgressService).finds(recipeId);
-        doReturn(recipe).when(recipeService).find(recipeId);
+        doReturn(progresses).when(recipeProgressService).gets(recipeId);
+        doReturn(recipe).when(recipeService).get(recipeId);
       }
 
       @Nested
@@ -895,11 +1548,11 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 레시피 진행 상황을 반환해야 한다")
         void thenShouldReturnRecipeProgress() {
-          RecipeProgressStatus result = recipeInfoService.findRecipeProgress(recipeId);
+          RecipeProgressStatus result = recipeInfoService.getRecipeProgress(recipeId);
 
           assertThat(result).isNotNull();
-          verify(recipeProgressService).finds(recipeId);
-          verify(recipeService).find(recipeId);
+          verify(recipeProgressService).gets(recipeId);
+          verify(recipeService).get(recipeId);
         }
       }
     }
@@ -916,8 +1569,8 @@ public class RecipeInfoServiceTest {
         recipeId = UUID.randomUUID();
         recipe = createMockRecipe(recipeId, RecipeStatus.IN_PROGRESS);
 
-        doReturn(List.of()).when(recipeProgressService).finds(recipeId);
-        doReturn(recipe).when(recipeService).find(recipeId);
+        doReturn(List.of()).when(recipeProgressService).gets(recipeId);
+        doReturn(recipe).when(recipeService).get(recipeId);
       }
 
       @Nested
@@ -927,11 +1580,11 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 빈 진행 상황과 레시피를 반환해야 한다")
         void thenShouldReturnEmptyProgressWithRecipe() {
-          RecipeProgressStatus result = recipeInfoService.findRecipeProgress(recipeId);
+          RecipeProgressStatus result = recipeInfoService.getRecipeProgress(recipeId);
 
           assertThat(result).isNotNull();
-          verify(recipeProgressService).finds(recipeId);
-          verify(recipeService).find(recipeId);
+          verify(recipeProgressService).gets(recipeId);
+          verify(recipeService).get(recipeId);
         }
       }
     }
@@ -948,7 +1601,7 @@ public class RecipeInfoServiceTest {
 
         doThrow(new RecipeInfoException(RecipeErrorCode.RECIPE_NOT_FOUND))
             .when(recipeService)
-            .find(recipeId);
+            .get(recipeId);
       }
 
       @Nested
@@ -958,11 +1611,11 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - RECIPE_NOT_FOUND 예외가 발생해야 한다")
         void thenShouldThrowRecipeNotFoundException() {
-          assertThatThrownBy(() -> recipeInfoService.findRecipeProgress(recipeId))
+          assertThatThrownBy(() -> recipeInfoService.getRecipeProgress(recipeId))
               .isInstanceOf(RecipeInfoException.class)
               .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_FOUND);
 
-          verify(recipeService).find(recipeId);
+          verify(recipeService).get(recipeId);
         }
       }
     }
@@ -998,8 +1651,8 @@ public class RecipeInfoServiceTest {
 
         progresses = List.of(progress1, progress2, progress3, progress4);
 
-        doReturn(progresses).when(recipeProgressService).finds(recipeId);
-        doReturn(recipe).when(recipeService).find(recipeId);
+        doReturn(progresses).when(recipeProgressService).gets(recipeId);
+        doReturn(recipe).when(recipeService).get(recipeId);
       }
 
       @Nested
@@ -1009,11 +1662,11 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 브리핑을 포함한 진행 상황을 반환해야 한다")
         void thenShouldReturnProgressWithBriefing() {
-          RecipeProgressStatus result = recipeInfoService.findRecipeProgress(recipeId);
+          RecipeProgressStatus result = recipeInfoService.getRecipeProgress(recipeId);
 
           assertThat(result).isNotNull();
-          verify(recipeProgressService).finds(recipeId);
-          verify(recipeService).find(recipeId);
+          verify(recipeProgressService).gets(recipeId);
+          verify(recipeService).get(recipeId);
         }
       }
     }
@@ -1069,8 +1722,8 @@ public class RecipeInfoServiceTest {
                 progress1, progress2, progress3, progress4, progress5, progress6, progress7,
                 progress8);
 
-        doReturn(progresses).when(recipeProgressService).finds(recipeId);
-        doReturn(recipe).when(recipeService).find(recipeId);
+        doReturn(progresses).when(recipeProgressService).gets(recipeId);
+        doReturn(recipe).when(recipeService).get(recipeId);
       }
 
       @Nested
@@ -1080,19 +1733,19 @@ public class RecipeInfoServiceTest {
         @Test
         @DisplayName("Then - 모든 복잡한 진행 단계를 포함한 상황을 반환해야 한다")
         void thenShouldReturnComplexProgress() {
-          RecipeProgressStatus result = recipeInfoService.findRecipeProgress(recipeId);
+          RecipeProgressStatus result = recipeInfoService.getRecipeProgress(recipeId);
 
           assertThat(result).isNotNull();
-          verify(recipeProgressService).finds(recipeId);
-          verify(recipeService).find(recipeId);
+          verify(recipeProgressService).gets(recipeId);
+          verify(recipeService).get(recipeId);
         }
       }
     }
   }
 
   // Helper Methods
-  private RecipeViewStatus createMockRecipeViewStatus(UUID recipeId, UUID userId) {
-    RecipeViewStatus viewStatus = mock(RecipeViewStatus.class);
+  private RecipeHistory createMockRecipeHistory(UUID recipeId, UUID userId) {
+    RecipeHistory viewStatus = mock(RecipeHistory.class);
     doReturn(recipeId).when(viewStatus).getRecipeId();
     doReturn(userId).when(viewStatus).getUserId();
     doReturn(LocalDateTime.now()).when(viewStatus).getViewedAt();
@@ -1125,6 +1778,7 @@ public class RecipeInfoServiceTest {
         .getThumbnailUrl();
     doReturn(300).when(youtubeMeta).getVideoSeconds();
     doReturn(false).when(youtubeMeta).isBanned();
+    doReturn(false).when(youtubeMeta).isBlocked();
     doReturn(LocalDateTime.now()).when(youtubeMeta).getCreatedAt();
     return youtubeMeta;
   }
@@ -1137,8 +1791,8 @@ public class RecipeInfoServiceTest {
     return category;
   }
 
-  private RecipeViewStatusCount createMockRecipeViewStatusCount(UUID categoryId, int count) {
-    RecipeViewStatusCount statusCount = mock(RecipeViewStatusCount.class);
+  private RecipeHistoryCategorizedCount createMockRecipeHistoryCount(UUID categoryId, int count) {
+    RecipeHistoryCategorizedCount statusCount = mock(RecipeHistoryCategorizedCount.class);
     doReturn(categoryId).when(statusCount).getCategoryId();
     doReturn(count).when(statusCount).getCount();
     return statusCount;
@@ -1147,28 +1801,30 @@ public class RecipeInfoServiceTest {
   private YoutubeVideoInfo createMockYoutubeVideoInfo() {
     UriComponents uriComponents =
         UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=test_video_id").build();
-
+    URI uri = uriComponents.toUri();
+    YoutubeUri youtubeUri = YoutubeUri.from(uri);
     return YoutubeVideoInfo.from(
-        uriComponents,
+        youtubeUri,
         "테스트 요리 영상",
         URI.create("https://img.youtube.com/vi/test_video_id/maxresdefault.jpg"),
-        300);
+        300,
+        YoutubeMetaType.NORMAL);
   }
 
   private void setupFullRecipeInfoMocks(UUID recipeId, UUID userId, Recipe recipe) {
-    doReturn(Collections.emptyList()).when(recipeStepService).finds(recipeId);
-    doReturn(Collections.emptyList()).when(recipeIngredientService).finds(recipeId);
-    doReturn(mock(RecipeDetailMeta.class)).when(recipeDetailMetaService).find(recipeId);
-    doReturn(Collections.emptyList()).when(recipeProgressService).finds(recipeId);
-    doReturn(Collections.emptyList()).when(recipeTagService).finds(recipeId);
-    doReturn(Collections.emptyList()).when(recipeBriefingService).finds(recipeId);
+    doReturn(Collections.emptyList()).when(recipeStepService).gets(recipeId);
+    doReturn(Collections.emptyList()).when(recipeIngredientService).gets(recipeId);
+    doReturn(mock(RecipeDetailMeta.class)).when(recipeDetailMetaService).get(recipeId);
+    doReturn(Collections.emptyList()).when(recipeProgressService).gets(recipeId);
+    doReturn(Collections.emptyList()).when(recipeTagService).gets(recipeId);
+    doReturn(Collections.emptyList()).when(recipeBriefingService).gets(recipeId);
 
     RecipeYoutubeMeta youtubeMeta =
         createMockRecipeYoutubeMeta(UUID.randomUUID(), "테스트 영상", recipeId);
-    doReturn(youtubeMeta).when(recipeYoutubeMetaService).find(recipeId);
+    doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
 
-    RecipeViewStatus viewStatus = createMockRecipeViewStatus(recipeId, userId);
-    doReturn(viewStatus).when(recipeViewStatusService).find(userId, recipeId);
+    RecipeHistory viewStatus = createMockRecipeHistory(recipeId, userId);
+    doReturn(viewStatus).when(recipeHistoryService).get(userId, recipeId);
   }
 
   private void setupPopularMocks(List<UUID> recipeIds) {
@@ -1197,9 +1853,9 @@ public class RecipeInfoServiceTest {
                         .stream())
             .toList();
 
-    doReturn(youtubeMetas).when(recipeYoutubeMetaService).findsByRecipes(recipeIds);
-    doReturn(detailMetas).when(recipeDetailMetaService).findIn(recipeIds);
-    doReturn(tags).when(recipeTagService).findIn(recipeIds);
+    doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(recipeIds);
+    doReturn(detailMetas).when(recipeDetailMetaService).getIn(recipeIds);
+    doReturn(tags).when(recipeTagService).getIn(recipeIds);
   }
 
   private RecipeTag createMockRecipeTag(UUID recipeId, String tagName) {
@@ -1207,5 +1863,125 @@ public class RecipeInfoServiceTest {
     doReturn(recipeId).when(tag).getRecipeId();
     doReturn(tagName).when(tag).getTag();
     return tag;
+  }
+
+  private RecipeDetailMeta createMockRecipeDetailMeta(UUID recipeId, String description) {
+    RecipeDetailMeta detailMeta = mock(RecipeDetailMeta.class);
+    doReturn(recipeId).when(detailMeta).getRecipeId();
+    doReturn(description).when(detailMeta).getDescription();
+    doReturn(2).when(detailMeta).getServings();
+    doReturn(30).when(detailMeta).getCookTime();
+    doReturn(LocalDateTime.now()).when(detailMeta).getCreatedAt();
+    return detailMeta;
+  }
+
+  @Nested
+  @DisplayName("트렌드 레시피 조회")
+  class GetTrendRecipes {
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID와 페이지가 주어졌을 때")
+    class GivenValidUserIdAndPage {
+
+      private UUID userId;
+      private Integer page;
+      private List<UUID> recipeIds;
+      private List<Recipe> recipes;
+      private Long totalCount;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        page = 0;
+        UUID recipeId1 = UUID.randomUUID();
+        UUID recipeId2 = UUID.randomUUID();
+
+        recipeIds = List.of(recipeId1, recipeId2);
+        recipes =
+            List.of(
+                createMockRecipe(recipeId1, RecipeStatus.SUCCESS),
+                createMockRecipe(recipeId2, RecipeStatus.SUCCESS));
+        totalCount = 50L;
+
+        doReturn(recipeIds).when(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
+        doReturn(totalCount).when(recipeRankService).getTotalCount(RankingType.TRENDING);
+        doReturn(recipes).when(recipeService).getValidRecipes(recipeIds);
+        setupPopularMocks(recipeIds);
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+      }
+
+      @Nested
+      @DisplayName("When - 트렌드 레시피를 조회한다면")
+      class WhenGettingTrendRecipes {
+
+        @Test
+        @DisplayName("Then - 트렌드 레시피 목록을 반환해야 한다")
+        void thenShouldReturnTrendRecipes() {
+          Page<RecipeOverview> result = recipeInfoService.getTrendRecipes(userId, page);
+
+          assertThat(result.getContent()).hasSize(2);
+          assertThat(result.getTotalElements()).isEqualTo(totalCount);
+          assertThat(result.getNumber()).isEqualTo(page);
+          verify(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
+          verify(recipeRankService).getTotalCount(RankingType.TRENDING);
+          verify(recipeService).getValidRecipes(recipeIds);
+        }
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("셰프 레시피 조회")
+  class GetChefRecipes {
+
+    @Nested
+    @DisplayName("Given - 유효한 사용자 ID와 페이지가 주어졌을 때")
+    class GivenValidUserIdAndPage {
+
+      private UUID userId;
+      private Integer page;
+      private List<UUID> recipeIds;
+      private List<Recipe> recipes;
+      private Long totalCount;
+
+      @BeforeEach
+      void setUp() {
+        userId = UUID.randomUUID();
+        page = 0;
+        UUID recipeId1 = UUID.randomUUID();
+        UUID recipeId2 = UUID.randomUUID();
+
+        recipeIds = List.of(recipeId1, recipeId2);
+        recipes =
+            List.of(
+                createMockRecipe(recipeId1, RecipeStatus.SUCCESS),
+                createMockRecipe(recipeId2, RecipeStatus.SUCCESS));
+        totalCount = 30L;
+
+        doReturn(recipeIds).when(recipeRankService).getRecipeIds(RankingType.CHEF, page);
+        doReturn(totalCount).when(recipeRankService).getTotalCount(RankingType.CHEF);
+        doReturn(recipes).when(recipeService).getValidRecipes(recipeIds);
+        setupPopularMocks(recipeIds);
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+      }
+
+      @Nested
+      @DisplayName("When - 셰프 레시피를 조회한다면")
+      class WhenGettingChefRecipes {
+
+        @Test
+        @DisplayName("Then - 셰프 레시피 목록을 반환해야 한다")
+        void thenShouldReturnChefRecipes() {
+          Page<RecipeOverview> result = recipeInfoService.getChefRecipes(userId, page);
+
+          assertThat(result.getContent()).hasSize(2);
+          assertThat(result.getTotalElements()).isEqualTo(totalCount);
+          assertThat(result.getNumber()).isEqualTo(page);
+          verify(recipeRankService).getRecipeIds(RankingType.CHEF, page);
+          verify(recipeRankService).getTotalCount(RankingType.CHEF);
+          verify(recipeService).getValidRecipes(recipeIds);
+        }
+      }
+    }
   }
 }

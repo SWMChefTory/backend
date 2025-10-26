@@ -178,7 +178,7 @@ public class RecipeBriefingServiceTest {
       @Test
       @DisplayName("When - 브리핑 목록을 조회하면 Then - 해당 브리핑 목록이 반환된다")
       void whenFindsByRecipeId_thenReturnsBriefings() {
-        List<RecipeBriefing> result = recipeBriefingService.finds(recipeId);
+        List<RecipeBriefing> result = recipeBriefingService.gets(recipeId);
 
         assertThat(result).isEqualTo(expectedBriefings);
         assertThat(result).hasSize(2);
@@ -200,7 +200,7 @@ public class RecipeBriefingServiceTest {
       @Test
       @DisplayName("When - 브리핑 목록을 조회하면 Then - 빈 목록이 반환된다")
       void whenFindsByRecipeId_thenReturnsEmptyList() {
-        List<RecipeBriefing> result = recipeBriefingService.finds(recipeId);
+        List<RecipeBriefing> result = recipeBriefingService.gets(recipeId);
 
         assertThat(result).isEmpty();
         verify(recipeBriefingRepository).findAllByRecipeId(recipeId);

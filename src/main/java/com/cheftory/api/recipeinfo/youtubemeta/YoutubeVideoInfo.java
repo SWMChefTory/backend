@@ -3,8 +3,6 @@ package com.cheftory.api.recipeinfo.youtubemeta;
 import jakarta.persistence.Embeddable;
 import java.net.URI;
 import lombok.*;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Getter
 @NoArgsConstructor
@@ -13,21 +11,25 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Embeddable
 public class YoutubeVideoInfo {
   private URI videoUri;
+  private String videoId;
   private String title;
   private URI thumbnailUrl;
   private Integer videoSeconds;
+  private YoutubeMetaType videoType;
 
   public static YoutubeVideoInfo from(
-      UriComponents uriComponents, String title, URI thumbnailUrl, Integer videoSeconds) {
+      YoutubeUri youtubeUri,
+      String title,
+      URI thumbnailUrl,
+      Integer videoSeconds,
+      YoutubeMetaType videoType) {
     return YoutubeVideoInfo.builder()
-        .videoUri(uriComponents.toUri())
+        .videoUri(youtubeUri.getNormalizedUrl())
         .title(title)
         .thumbnailUrl(thumbnailUrl)
+        .videoId(youtubeUri.getVideoId())
         .videoSeconds(videoSeconds)
+        .videoType(videoType)
         .build();
-  }
-
-  public String getVideoId() {
-    return UriComponentsBuilder.fromUri(videoUri).build().getQueryParams().getFirst("v");
   }
 }

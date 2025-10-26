@@ -9,6 +9,7 @@ import com.cheftory.api.recipeinfo.detail.RecipeDetail;
 import com.cheftory.api.recipeinfo.detail.RecipeDetailService;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipeinfo.exception.RecipeInfoException;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryService;
 import com.cheftory.api.recipeinfo.identify.RecipeIdentifyService;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
@@ -43,6 +44,7 @@ public class AsyncRecipeInfoCreationService {
   private final RecipeYoutubeMetaService recipeYoutubeMetaService;
   private final RecipeIdentifyService recipeIdentifyService;
   private final RecipeBriefingService recipeBriefingService;
+  private final RecipeHistoryService recipeHistoryService;
   private final AsyncTaskExecutor recipeInfoCreateExecutor;
 
   @Async("recipeInfoCreateExecutor")
@@ -122,7 +124,7 @@ public class AsyncRecipeInfoCreationService {
     UUID captionId = recipeCaptionService.create(videoId, recipeId);
     recipeProgressService.create(
         recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
-    return recipeCaptionService.find(captionId);
+    return recipeCaptionService.get(captionId);
   }
 
   private void progressBriefing(UUID recipeId, String videoId) {
@@ -139,5 +141,6 @@ public class AsyncRecipeInfoCreationService {
 
   private void failedRecipe(UUID recipeId) {
     recipeService.failed(recipeId);
+    recipeHistoryService.deleteByRecipe(recipeId);
   }
 }

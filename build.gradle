@@ -15,6 +15,7 @@ spotless {
 		removeUnusedImports()
 		trimTrailingWhitespace()
 		endWithNewline()
+		targetExclude 'src/main/resources/static/docs/**'
 	}
 }
 
@@ -40,6 +41,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 def isProd = System.getenv('SPRING_PROFILES_ACTIVE') == 'prod'
@@ -85,9 +87,20 @@ dependencies {
 	testImplementation 'io.rest-assured:spring-mock-mvc'
 	testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
-
+	
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	runtimeOnly  'io.micrometer:micrometer-registry-prometheus'
+
+	implementation("org.opensearch.client:spring-data-opensearch-starter:2.0.2") {
+		exclude group: "org.opensearch.client", module: "opensearch-rest-high-level-client"
+	}
+	implementation("org.opensearch.client:opensearch-java:3.1.0")
+
+	implementation 'org.springframework.boot:spring-boot-starter-batch'
+	testImplementation 'org.springframework.batch:spring-batch-test'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
 }
 
 def snippetsDir = file("build/generated-snippets")

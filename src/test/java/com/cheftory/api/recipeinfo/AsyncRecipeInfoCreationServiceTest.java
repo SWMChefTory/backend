@@ -14,6 +14,7 @@ import com.cheftory.api.recipeinfo.caption.exception.RecipeCaptionException;
 import com.cheftory.api.recipeinfo.detail.RecipeDetail;
 import com.cheftory.api.recipeinfo.detail.RecipeDetailService;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
+import com.cheftory.api.recipeinfo.history.RecipeHistoryService;
 import com.cheftory.api.recipeinfo.identify.RecipeIdentifyService;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
@@ -47,6 +48,7 @@ class AsyncRecipeInfoCreationServiceTest {
   private RecipeYoutubeMetaService recipeYoutubeMetaService;
   private RecipeIdentifyService recipeIdentifyService;
   private RecipeBriefingService recipeBriefingService;
+  private RecipeHistoryService recipeHistoryService;
 
   private AsyncTaskExecutor directExecutor;
 
@@ -65,6 +67,7 @@ class AsyncRecipeInfoCreationServiceTest {
     recipeYoutubeMetaService = mock(RecipeYoutubeMetaService.class);
     recipeIdentifyService = mock(RecipeIdentifyService.class);
     recipeBriefingService = mock(RecipeBriefingService.class);
+    recipeHistoryService = mock(RecipeHistoryService.class);
 
     directExecutor = Runnable::run;
 
@@ -81,6 +84,7 @@ class AsyncRecipeInfoCreationServiceTest {
             recipeYoutubeMetaService,
             recipeIdentifyService,
             recipeBriefingService,
+            recipeHistoryService,
             directExecutor);
   }
 
@@ -117,7 +121,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
         // Service mock 설정
         doReturn(captionId).when(recipeCaptionService).create(videoId, recipeId);
-        doReturn(caption).when(recipeCaptionService).find(captionId);
+        doReturn(caption).when(recipeCaptionService).get(captionId);
         doReturn(detail).when(recipeDetailService).getRecipeDetails(videoId, caption);
       }
 
@@ -140,7 +144,7 @@ class AsyncRecipeInfoCreationServiceTest {
           inOrder
               .verify(recipeProgressService)
               .create(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
-          inOrder.verify(recipeCaptionService).find(captionId);
+          inOrder.verify(recipeCaptionService).get(captionId);
 
           // 병렬 구간: 호출 여부 검증
           verify(recipeDetailService).getRecipeDetails(videoId, caption);
@@ -219,6 +223,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
             // Then
             verify(recipeService).failed(recipeId);
+            verify(recipeHistoryService).deleteByRecipe(recipeId);
             verify(recipeYoutubeMetaService).ban(recipeId);
             verify(recipeIdentifyService).delete(videoUrl);
 
@@ -266,6 +271,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
             // Then
             verify(recipeService).failed(recipeId);
+            verify(recipeHistoryService).deleteByRecipe(recipeId);
             verify(recipeIdentifyService).delete(videoUrl);
 
             // Ban 처리는 되지 않아야 함
@@ -313,7 +319,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
           // 캡션까지는 성공
           doReturn(captionId).when(recipeCaptionService).create(videoId, recipeId);
-          doReturn(caption).when(recipeCaptionService).find(captionId);
+          doReturn(caption).when(recipeCaptionService).get(captionId);
           doReturn(detail).when(recipeDetailService).getRecipeDetails(videoId, caption);
 
           // 브리핑 생성 실패
@@ -334,6 +340,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
             // Then
             verify(recipeService).failed(recipeId);
+            verify(recipeHistoryService).deleteByRecipe(recipeId);
             verify(recipeIdentifyService).delete(videoUrl);
 
             // Ban 처리는 되지 않아야 함
@@ -388,6 +395,7 @@ class AsyncRecipeInfoCreationServiceTest {
 
             // Then
             verify(recipeService).failed(recipeId);
+            verify(recipeHistoryService).deleteByRecipe(recipeId);
             verify(recipeIdentifyService).delete(videoUrl);
 
             // Ban 및 성공 처리는 되지 않아야 함

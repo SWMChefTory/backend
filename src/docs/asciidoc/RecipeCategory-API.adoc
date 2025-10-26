@@ -8,6 +8,9 @@
 ==== 요청
 include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/http-request.adoc[]
 
+==== 요청 헤더
+include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/request-headers.adoc[]
+
 ==== 요청 본문
 include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/request-body.adoc[]
 

@@ -39,7 +39,7 @@ public class RecipeCaptionService {
         .orElseThrow(() -> new RecipeCaptionException(RecipeCaptionErrorCode.CAPTION_NOT_FOUND));
   }
 
-  public RecipeCaption find(UUID captionId) {
+  public RecipeCaption get(UUID captionId) {
     return recipeCaptionRepository
         .findById((captionId))
         .orElseThrow(() -> new RecipeCaptionException(RecipeCaptionErrorCode.CAPTION_NOT_FOUND));

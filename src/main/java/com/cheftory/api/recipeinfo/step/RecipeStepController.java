@@ -20,7 +20,7 @@ public class RecipeStepController {
 
   @GetMapping("/{recipeId}/steps")
   public RecipeStepsResponse getRecipeSteps(@PathVariable @ExistsRecipeId UUID recipeId) {
-    List<RecipeStep> recipesStep = recipeStepService.finds(recipeId);
+    List<RecipeStep> recipesStep = recipeStepService.gets(recipeId);
     return RecipeStepsResponse.from(recipesStep);
   }
 }

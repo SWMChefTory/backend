@@ -63,7 +63,7 @@ public class RecipeProgressServiceTest {
         @DisplayName("Then - 해당 레시피의 진행 상황 목록이 반환된다")
         @Test
         void shouldReturnRecipeProgressList() {
-          List<RecipeProgress> results = recipeProgressService.finds(recipeId);
+          List<RecipeProgress> results = recipeProgressService.gets(recipeId);
           assert results.size() == 2;
           assert results.get(0).getStep() == RecipeProgressStep.READY;
           assert results.get(1).getDetail() == RecipeProgressDetail.CAPTION;
@@ -72,7 +72,7 @@ public class RecipeProgressServiceTest {
         @DisplayName("Then - Repository에서 정렬 파라미터와 함께 호출된다")
         @Test
         void shouldCallRepositoryWithSortParameter() {
-          recipeProgressService.finds(recipeId);
+          recipeProgressService.gets(recipeId);
           verify(recipeProgressRepository)
               .findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
         }
@@ -119,7 +119,7 @@ public class RecipeProgressServiceTest {
         @DisplayName("Then - createdAt 오름차순으로 정렬된 결과가 반환된다")
         @Test
         void shouldReturnRecipeProgressListSortedByCreatedAtAsc() {
-          List<RecipeProgress> results = recipeProgressService.finds(recipeId);
+          List<RecipeProgress> results = recipeProgressService.gets(recipeId);
 
           assert results.size() == 4;
           assert results.get(0).getStep() == RecipeProgressStep.READY;
