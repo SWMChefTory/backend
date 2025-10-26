@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.SortOrder;
 import org.opensearch.client.opensearch._types.query_dsl.FieldValueFactorModifier;
 import org.opensearch.client.opensearch._types.query_dsl.FunctionBoostMode;
 import org.opensearch.client.opensearch._types.query_dsl.FunctionScore;
@@ -26,9 +27,10 @@ public class RecipeAutocompleteRepository {
 
   public List<RecipeAutocomplete> searchAutocomplete(String keyword, Pageable pageable) {
     try {
+      SearchRequest request = buildRequest(keyword, pageable);
+
       SearchResponse<RecipeAutocomplete> response =
-          openSearchClient.search(
-              buildAutocompleteRequest(keyword, pageable), RecipeAutocomplete.class);
+          openSearchClient.search(request, RecipeAutocomplete.class);
 
       return response.hits().hits().stream().map(Hit::source).toList();
 
@@ -38,11 +40,28 @@ public class RecipeAutocompleteRepository {
     }
   }
 
+  private SearchRequest buildRequest(String keyword, Pageable pageable) {
+    if (keyword == null || keyword.isBlank()) {
+      return buildCountSortedRequest(pageable);
+    }
+    return buildAutocompleteRequest(keyword, pageable);
+  }
+
   private SearchRequest buildAutocompleteRequest(String keyword, Pageable pageable) {
     return SearchRequest.of(
         s ->
             s.index("autocomplete")
                 .query(buildFunctionScoreQuery(keyword))
+                .from((int) pageable.getOffset())
+                .size(pageable.getPageSize()));
+  }
+
+  private SearchRequest buildCountSortedRequest(Pageable pageable) {
+    return SearchRequest.of(
+        s ->
+            s.index("autocomplete")
+                .query(q -> q.matchAll(m -> m))
+                .sort(sort -> sort.field(f -> f.field("count").order(SortOrder.Desc)))
                 .from((int) pageable.getOffset())
                 .size(pageable.getPageSize()));
   }
