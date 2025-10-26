@@ -357,7 +357,7 @@ public class RecipeInfoService {
 
   public Page<RecipeOverview> searchRecipes(Integer page, String query, UUID userId) {
 
-    Page<RecipeSearch> searchResults = recipeSearchService.search(query, page);
+    Page<RecipeSearch> searchResults = recipeSearchService.search(userId, query, page);
 
     List<UUID> recipeIds =
         searchResults.getContent().stream().map(RecipeSearch::getId).map(UUID::fromString).toList();

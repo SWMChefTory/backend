@@ -6,7 +6,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.recipeinfo.search.history.RecipeSearchHistoryService;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 public class RecipeSearchServiceTest {
 
   @Mock private RecipeSearchRepository recipeSearchRepository;
+  @Mock private RecipeSearchHistoryService recipeSearchHistoryService;
 
   @InjectMocks private RecipeSearchService recipeSearchService;
 
@@ -33,6 +36,7 @@ public class RecipeSearchServiceTest {
     @Test
     @DisplayName("Given - 유효한 검색어가 주어졌을 때 When - 첫 페이지를 검색한다면 Then - 검색 결과를 반환해야 한다")
     void givenValidKeyword_whenSearchingFirstPage_thenShouldReturnSearchResults() {
+      UUID userId = UUID.randomUUID();
       String keyword = "김치찌개";
 
       RecipeSearch recipe1 = RecipeSearch.builder().id("1").searchText("김치찌개").build();
@@ -47,7 +51,7 @@ public class RecipeSearchServiceTest {
           .when(recipeSearchRepository)
           .searchByKeyword(eq(keyword), any(Pageable.class));
 
-      Page<RecipeSearch> result = recipeSearchService.search(keyword, 0);
+      Page<RecipeSearch> result = recipeSearchService.search(userId, keyword, 0);
 
       assertThat(result.getContent()).hasSize(3);
       assertThat(result.getContent().get(0).getSearchText()).isEqualTo("김치찌개");
@@ -55,11 +59,13 @@ public class RecipeSearchServiceTest {
       assertThat(result.getContent().get(2).getSearchText()).isEqualTo("맛있는 김치찌개");
       assertThat(result.getTotalElements()).isEqualTo(3);
       verify(recipeSearchRepository).searchByKeyword(keyword, RecipeSearchPageRequest.create(0));
+      verify(recipeSearchHistoryService).create(userId, keyword);
     }
 
     @Test
     @DisplayName("Given - 검색 결과가 없는 검색어가 주어졌을 때 When - 검색한다면 Then - 빈 페이지를 반환해야 한다")
     void givenKeywordWithNoResults_whenSearching_thenShouldReturnEmptyPage() {
+      UUID userId = UUID.randomUUID();
       String keyword = "존재하지않는검색어";
 
       Pageable pageable = RecipeSearchPageRequest.create(0);
@@ -69,16 +75,18 @@ public class RecipeSearchServiceTest {
           .when(recipeSearchRepository)
           .searchByKeyword(eq(keyword), any(Pageable.class));
 
-      Page<RecipeSearch> result = recipeSearchService.search(keyword, 0);
+      Page<RecipeSearch> result = recipeSearchService.search(userId, keyword, 0);
 
       assertThat(result.getContent()).isEmpty();
       assertThat(result.getTotalElements()).isEqualTo(0);
       verify(recipeSearchRepository).searchByKeyword(keyword, RecipeSearchPageRequest.create(0));
+      verify(recipeSearchHistoryService).create(userId, keyword);
     }
 
     @Test
     @DisplayName("Given - 여러 페이지의 검색 결과가 있을 때 When - 첫 페이지를 검색한다면 Then - 첫 페이지 결과를 반환해야 한다")
     void givenMultiplePages_whenSearchingFirstPage_thenShouldReturnFirstPageResults() {
+      UUID userId = UUID.randomUUID();
       String keyword = "찌개";
 
       List<RecipeSearch> firstPageContent =
@@ -94,18 +102,20 @@ public class RecipeSearchServiceTest {
           .when(recipeSearchRepository)
           .searchByKeyword(eq(keyword), any(Pageable.class));
 
-      Page<RecipeSearch> result = recipeSearchService.search(keyword, 0);
+      Page<RecipeSearch> result = recipeSearchService.search(userId, keyword, 0);
 
       assertThat(result.getContent()).hasSize(3);
       assertThat(result.getContent().getFirst().getSearchText()).isEqualTo("김치찌개");
       assertThat(result.getTotalElements()).isEqualTo(15);
       assertThat(result.getNumber()).isEqualTo(0);
       verify(recipeSearchRepository).searchByKeyword(keyword, RecipeSearchPageRequest.create(0));
+      verify(recipeSearchHistoryService).create(userId, keyword);
     }
 
     @Test
     @DisplayName("Given - 공백이 포함된 검색어가 주어졌을 때 When - 검색한다면 Then - 검색 결과를 반환해야 한다")
     void givenKeywordWithSpaces_whenSearching_thenShouldReturnSearchResults() {
+      UUID userId = UUID.randomUUID();
       String keyword = "김치 찌개 레시피";
 
       RecipeSearch recipe1 = RecipeSearch.builder().id("1").searchText("김치찌개 맛있는 레시피").build();
@@ -118,12 +128,13 @@ public class RecipeSearchServiceTest {
           .when(recipeSearchRepository)
           .searchByKeyword(eq(keyword), any(Pageable.class));
 
-      Page<RecipeSearch> result = recipeSearchService.search(keyword, 0);
+      Page<RecipeSearch> result = recipeSearchService.search(userId, keyword, 0);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().getFirst().getSearchText()).contains("김치찌개");
       assertThat(result.getContent().getFirst().getSearchText()).contains("레시피");
       verify(recipeSearchRepository).searchByKeyword(keyword, RecipeSearchPageRequest.create(0));
+      verify(recipeSearchHistoryService).create(userId, keyword);
     }
   }
 }

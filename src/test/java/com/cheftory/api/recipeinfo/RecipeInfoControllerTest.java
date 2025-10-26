@@ -3100,21 +3100,29 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
         doReturn(recipeId1).when(recipeOverview1).getRecipeId();
         doReturn("트렌딩 레시피 1").when(recipeOverview1).getVideoTitle();
-        doReturn(URI.create("https://example.com/thumb1.jpg")).when(recipeOverview1).getThumbnailUrl();
+        doReturn(URI.create("https://example.com/thumb1.jpg"))
+            .when(recipeOverview1)
+            .getThumbnailUrl();
         doReturn(URI.create("https://youtube.com/watch?v=1")).when(recipeOverview1).getVideoUri();
         doReturn(1000).when(recipeOverview1).getViewCount();
         doReturn("video1").when(recipeOverview1).getVideoId();
         doReturn(false).when(recipeOverview1).getIsViewed();
-        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview1).getVideoType();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL)
+            .when(recipeOverview1)
+            .getVideoType();
 
         doReturn(recipeId2).when(recipeOverview2).getRecipeId();
         doReturn("트렌딩 레시피 2").when(recipeOverview2).getVideoTitle();
-        doReturn(URI.create("https://example.com/thumb2.jpg")).when(recipeOverview2).getThumbnailUrl();
+        doReturn(URI.create("https://example.com/thumb2.jpg"))
+            .when(recipeOverview2)
+            .getThumbnailUrl();
         doReturn(URI.create("https://youtube.com/watch?v=2")).when(recipeOverview2).getVideoUri();
         doReturn(2000).when(recipeOverview2).getViewCount();
         doReturn("video2").when(recipeOverview2).getVideoId();
         doReturn(false).when(recipeOverview2).getIsViewed();
-        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview2).getVideoType();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL)
+            .when(recipeOverview2)
+            .getVideoType();
 
         var recipes = List.of(recipeOverview1, recipeOverview2);
         var page = new PageImpl<>(recipes, Pageable.ofSize(20), 2);
@@ -3174,21 +3182,33 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
         doReturn(recipeId1).when(recipeOverview1).getRecipeId();
         doReturn("셰프 레시피 1").when(recipeOverview1).getVideoTitle();
-        doReturn(URI.create("https://example.com/chef1.jpg")).when(recipeOverview1).getThumbnailUrl();
-        doReturn(URI.create("https://youtube.com/watch?v=chef1")).when(recipeOverview1).getVideoUri();
+        doReturn(URI.create("https://example.com/chef1.jpg"))
+            .when(recipeOverview1)
+            .getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=chef1"))
+            .when(recipeOverview1)
+            .getVideoUri();
         doReturn(5000).when(recipeOverview1).getViewCount();
         doReturn("chef1").when(recipeOverview1).getVideoId();
         doReturn(false).when(recipeOverview1).getIsViewed();
-        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview1).getVideoType();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL)
+            .when(recipeOverview1)
+            .getVideoType();
 
         doReturn(recipeId2).when(recipeOverview2).getRecipeId();
         doReturn("셰프 레시피 2").when(recipeOverview2).getVideoTitle();
-        doReturn(URI.create("https://example.com/chef2.jpg")).when(recipeOverview2).getThumbnailUrl();
-        doReturn(URI.create("https://youtube.com/watch?v=chef2")).when(recipeOverview2).getVideoUri();
+        doReturn(URI.create("https://example.com/chef2.jpg"))
+            .when(recipeOverview2)
+            .getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=chef2"))
+            .when(recipeOverview2)
+            .getVideoUri();
         doReturn(8000).when(recipeOverview2).getViewCount();
         doReturn("chef2").when(recipeOverview2).getVideoId();
         doReturn(false).when(recipeOverview2).getIsViewed();
-        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL).when(recipeOverview2).getVideoType();
+        doReturn(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL)
+            .when(recipeOverview2)
+            .getVideoType();
 
         var recipes = List.of(recipeOverview1, recipeOverview2);
         var page = new PageImpl<>(recipes, Pageable.ofSize(20), 2);

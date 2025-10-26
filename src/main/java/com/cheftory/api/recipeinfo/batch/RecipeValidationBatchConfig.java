@@ -70,36 +70,42 @@ public class RecipeValidationBatchConfig {
   @Bean
   public JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter() {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .sql("UPDATE recipe_youtube_meta SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .sql(
+            "UPDATE recipe_youtube_meta SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
         .dataSource(dataSource)
         .assertUpdates(false)
-        .itemPreparedStatementSetter((item, ps) -> {
-          ps.setBytes(1, uuidToBytes(item.getId()));
-        })
+        .itemPreparedStatementSetter(
+            (item, ps) -> {
+              ps.setBytes(1, uuidToBytes(item.getId()));
+            })
         .build();
   }
 
   @Bean
   public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter() {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .sql("UPDATE recipe SET recipe_status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .sql(
+            "UPDATE recipe SET recipe_status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
         .dataSource(dataSource)
         .assertUpdates(false)
-        .itemPreparedStatementSetter((item, ps) -> {
-          ps.setBytes(1, uuidToBytes(item.getRecipeId()));
-        })
+        .itemPreparedStatementSetter(
+            (item, ps) -> {
+              ps.setBytes(1, uuidToBytes(item.getRecipeId()));
+            })
         .build();
   }
 
   @Bean
   public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter() {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .sql("UPDATE recipe_history SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE recipe_id = ?")
+        .sql(
+            "UPDATE recipe_history SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE recipe_id = ?")
         .dataSource(dataSource)
         .assertUpdates(false)
-        .itemPreparedStatementSetter((item, ps) -> {
-          ps.setBytes(1, uuidToBytes(item.getRecipeId()));
-        })
+        .itemPreparedStatementSetter(
+            (item, ps) -> {
+              ps.setBytes(1, uuidToBytes(item.getRecipeId()));
+            })
         .build();
   }
 
