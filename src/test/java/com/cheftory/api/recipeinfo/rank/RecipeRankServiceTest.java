@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api.recipeinfo.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipeinfo.rank.exception.RecipeRankException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -71,7 +72,7 @@ public class RecipeRankServiceTest {
           // 두 번째 레시피는 순위 2
           verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(1), 2);
 
-          verify(recipeRankRepository).setExpire(newKey, 172800L);
+          verify(recipeRankRepository).setExpire(newKey, Duration.ofDays(2));
           verify(recipeRankRepository).saveLatest(latestKey, newKey);
         }
       }
@@ -114,7 +115,7 @@ public class RecipeRankServiceTest {
           verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(1), 2);
           verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(2), 3);
 
-          verify(recipeRankRepository).setExpire(newKey, 172800L);
+          verify(recipeRankRepository).setExpire(newKey, Duration.ofDays(2));
           verify(recipeRankRepository).saveLatest(latestKey, newKey);
         }
       }

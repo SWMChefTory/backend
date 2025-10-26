@@ -1,9 +1,9 @@
 package com.cheftory.api.recipeinfo.rank;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -18,8 +18,8 @@ public class RecipeRankRepository {
     redisTemplate.opsForZSet().add(key, recipeId.toString(), rank.doubleValue());
   }
 
-  public void setExpire(String key, Long seconds) {
-    redisTemplate.expire(key, seconds, TimeUnit.SECONDS);
+  public void setExpire(String key, Duration duration) {
+    redisTemplate.expire(key, duration);
   }
 
   public void saveLatest(String pointerKey, String realKey) {
