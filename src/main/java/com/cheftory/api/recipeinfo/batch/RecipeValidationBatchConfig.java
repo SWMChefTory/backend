@@ -5,7 +5,9 @@ import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaRepository;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.client.VideoInfoClient;
+import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.UUID;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,39 +70,44 @@ public class RecipeValidationBatchConfig {
   @Bean
   public JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter() {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .beanMapped()
-        .sql(
-            "UPDATE recipe_youtube_meta SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE id = :id")
+        .sql("UPDATE recipe_youtube_meta SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
         .dataSource(dataSource)
+        .assertUpdates(false)
+        .itemPreparedStatementSetter((item, ps) -> {
+          ps.setBytes(1, uuidToBytes(item.getId()));
+        })
         .build();
   }
 
   @Bean
   public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter() {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .beanMapped()
-        .sql(
-            """
-          UPDATE recipe
-          SET recipe_status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
-          WHERE id = :recipeId
-         """)
+        .sql("UPDATE recipe SET recipe_status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
         .dataSource(dataSource)
+        .assertUpdates(false)
+        .itemPreparedStatementSetter((item, ps) -> {
+          ps.setBytes(1, uuidToBytes(item.getRecipeId()));
+        })
         .build();
   }
 
   @Bean
   public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter() {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .beanMapped()
-        .sql(
-            """
-          UPDATE recipe_history
-            SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
-          WHERE recipe_id = :recipeId
-         """)
+        .sql("UPDATE recipe_history SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP WHERE recipe_id = ?")
         .dataSource(dataSource)
+        .assertUpdates(false)
+        .itemPreparedStatementSetter((item, ps) -> {
+          ps.setBytes(1, uuidToBytes(item.getRecipeId()));
+        })
         .build();
+  }
+
+  private byte[] uuidToBytes(UUID uuid) {
+    ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+    bb.putLong(uuid.getMostSignificantBits());
+    bb.putLong(uuid.getLeastSignificantBits());
+    return bb.array();
   }
 
   @Bean
@@ -115,23 +122,13 @@ public class RecipeValidationBatchConfig {
   @Bean
   public ItemProcessor<RecipeYoutubeMeta, RecipeYoutubeMeta> youtubeUrlProcessor() {
     return item -> {
-      try {
-        boolean isValid = checkYoutubeUrlWithApi(item);
-        if (!isValid) {
-          log.warn("Invalid video - ID: {}, URI: {}", item.getVideoId(), item.getVideoUri());
-          item.block();
-          return item;
-        }
-        return null;
-      } catch (Exception e) {
-        log.error(
-            "Error processing video - ID: {}, URI: {}, Error: {}",
-            item.getVideoId(),
-            item.getVideoUri(),
-            e.getMessage());
+      boolean isValid = checkYoutubeUrlWithApi(item);
+      if (!isValid) {
+        log.warn("Invalid video - ID: {}, URI: {}", item.getVideoId(), item.getVideoUri());
         item.block();
         return item;
       }
+      return null;
     };
   }
 
