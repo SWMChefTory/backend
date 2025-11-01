@@ -14,7 +14,11 @@ public record YoutubeVideoResponse(List<Item> items) {
   }
 
   public Long getSecondsDuration() {
-    return Iso8601DurationToSecondConverter.convert(items.getFirst().contentDetails().duration());
+    String duration = items.getFirst().contentDetails().duration();
+    if (duration == null) {
+      return null;
+    }
+    return Iso8601DurationToSecondConverter.convert(duration);
   }
 
   public String getChannelId() {
