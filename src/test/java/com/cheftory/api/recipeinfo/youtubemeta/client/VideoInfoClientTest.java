@@ -289,8 +289,8 @@ public class VideoInfoClientTest {
     }
 
     @Test
-    @DisplayName("Shorts 플레이리스트에 없는 비디오는 NORMAL 타입으로 반환한다")
-    void returnsNormalTypeWhenVideoNotInShortsPlaylist() {
+    @DisplayName("Shorts 플레이리스트에 없고 60초를 초과하는 비디오는 NORMAL 타입으로 반환한다")
+    void returnsNormalTypeWhenVideoNotInShortsPlaylistAndOverSixtySeconds() {
       String videoResponseBody =
           """
           {
@@ -382,8 +382,8 @@ public class VideoInfoClientTest {
     }
 
     @Test
-    @DisplayName("플레이리스트 조회 실패 시 예외가 발생한다")
-    void throwsExceptionWhenPlaylistCheckFails() throws InterruptedException {
+    @DisplayName("플레이리스트 조회 실패 시 예외를 로그하고 NORMAL 타입으로 반환한다 (5분 영상)")
+    void returnsNormalTypeWhenPlaylistCheckFailsAndOverSixtySeconds() throws InterruptedException {
       String videoResponseBody =
           """
           {
@@ -415,10 +415,12 @@ public class VideoInfoClientTest {
 
       mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-      org.assertj.core.api.Assertions.assertThatThrownBy(
-              () -> videoInfoClient.fetchVideoInfo(youtubeUri))
-          .isInstanceOf(
-              org.springframework.web.reactive.function.client.WebClientResponseException.class);
+      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+          videoInfoClient.fetchVideoInfo(youtubeUri);
+
+      assertThat(result).isNotNull();
+      assertThat(result.getVideoType())
+          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
 
       // 플레이리스트 조회도 시도했는지 확인
       mockWebServer.takeRequest(); // video request
@@ -427,8 +429,8 @@ public class VideoInfoClientTest {
     }
 
     @Test
-    @DisplayName("channelId가 null이면 NORMAL 타입으로 반환한다")
-    void returnsNormalTypeWhenChannelIdIsNull() {
+    @DisplayName("channelId가 null이고 60초를 초과하면 NORMAL 타입으로 반환한다")
+    void returnsNormalTypeWhenChannelIdIsNullAndOverSixtySeconds() {
       String videoResponseBody =
           """
           {
@@ -463,6 +465,239 @@ public class VideoInfoClientTest {
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
           .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
+    }
+
+    @Test
+    @DisplayName("Shorts 플레이리스트에 없지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
+    void returnsShortsTypeWhenNotInPlaylistButUnderSixtySeconds() {
+      String videoResponseBody =
+          """
+          {
+            "items": [
+              {
+                "snippet": {
+                  "title": "짧은 요리 팁",
+                  "channelId": "%s",
+                  "thumbnails": {
+                    "maxres": {
+                      "url": "https://i.ytimg.com/vi/%s/maxresdefault.jpg"
+                    }
+                  }
+                },
+                "contentDetails": {
+                  "duration": "PT50S"
+                }
+              }
+            ]
+          }
+          """
+              .formatted(channelId, videoId);
+
+      String emptyPlaylistResponseBody =
+          """
+          {
+            "items": []
+          }
+          """;
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(videoResponseBody));
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(emptyPlaylistResponseBody));
+
+      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+          videoInfoClient.fetchVideoInfo(youtubeUri);
+
+      assertThat(result).isNotNull();
+      assertThat(result.getVideoType())
+          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+    }
+
+    @Test
+    @DisplayName("플레이리스트 조회 실패했지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
+    void returnsShortsTypeWhenPlaylistCheckFailsButUnderSixtySeconds()
+        throws InterruptedException {
+      String videoResponseBody =
+          """
+          {
+            "items": [
+              {
+                "snippet": {
+                  "title": "짧은 요리 팁",
+                  "channelId": "%s",
+                  "thumbnails": {
+                    "maxres": {
+                      "url": "https://i.ytimg.com/vi/%s/maxresdefault.jpg"
+                    }
+                  }
+                },
+                "contentDetails": {
+                  "duration": "PT45S"
+                }
+              }
+            ]
+          }
+          """
+              .formatted(channelId, videoId);
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(videoResponseBody));
+
+      mockWebServer.enqueue(new MockResponse().setResponseCode(500));
+
+      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+          videoInfoClient.fetchVideoInfo(youtubeUri);
+
+      assertThat(result).isNotNull();
+      assertThat(result.getVideoType())
+          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+
+      // 플레이리스트 조회도 시도했는지 확인
+      mockWebServer.takeRequest(); // video request
+      RecordedRequest playlistRequest = mockWebServer.takeRequest();
+      assertThat(playlistRequest.getPath()).contains("/playlistItems");
+    }
+
+    @Test
+    @DisplayName("60초 정확히인 경우 SHORTS 타입으로 반환한다 (경계값)")
+    void returnsShortsTypeWhenExactlySixtySeconds() {
+      String videoResponseBody =
+          """
+          {
+            "items": [
+              {
+                "snippet": {
+                  "title": "정확히 1분 요리",
+                  "channelId": "%s",
+                  "thumbnails": {
+                    "maxres": {
+                      "url": "https://i.ytimg.com/vi/%s/maxresdefault.jpg"
+                    }
+                  }
+                },
+                "contentDetails": {
+                  "duration": "PT1M"
+                }
+              }
+            ]
+          }
+          """
+              .formatted(channelId, videoId);
+
+      String emptyPlaylistResponseBody =
+          """
+          {
+            "items": []
+          }
+          """;
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(videoResponseBody));
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(emptyPlaylistResponseBody));
+
+      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+          videoInfoClient.fetchVideoInfo(youtubeUri);
+
+      assertThat(result).isNotNull();
+      assertThat(result.getVideoType())
+          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+    }
+
+    @Test
+    @DisplayName("channelId가 null이고 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
+    void returnsShortsTypeWhenChannelIdIsNullButUnderSixtySeconds() {
+      String videoResponseBody =
+          """
+          {
+            "items": [
+              {
+                "snippet": {
+                  "title": "짧은 요리 영상",
+                  "thumbnails": {
+                    "maxres": {
+                      "url": "https://i.ytimg.com/vi/%s/maxresdefault.jpg"
+                    }
+                  }
+                },
+                "contentDetails": {
+                  "duration": "PT30S"
+                }
+              }
+            ]
+          }
+          """
+              .formatted(videoId);
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(videoResponseBody));
+
+      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+          videoInfoClient.fetchVideoInfo(youtubeUri);
+
+      assertThat(result).isNotNull();
+      assertThat(result.getVideoType())
+          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+    }
+
+    @Test
+    @DisplayName("channelId가 UC로 시작하지 않지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
+    void returnsShortsTypeWhenChannelIdNotStartsWithUCButUnderSixtySeconds() {
+      String videoResponseBody =
+          """
+          {
+            "items": [
+              {
+                "snippet": {
+                  "title": "짧은 요리 팁",
+                  "channelId": "CHabcdefg12345",
+                  "thumbnails": {
+                    "maxres": {
+                      "url": "https://i.ytimg.com/vi/%s/maxresdefault.jpg"
+                    }
+                  }
+                },
+                "contentDetails": {
+                  "duration": "PT55S"
+                }
+              }
+            ]
+          }
+          """
+              .formatted(videoId);
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(videoResponseBody));
+
+      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+          videoInfoClient.fetchVideoInfo(youtubeUri);
+
+      assertThat(result).isNotNull();
+      assertThat(result.getVideoType())
+          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
     }
   }
 }
