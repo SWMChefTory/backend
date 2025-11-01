@@ -1,5 +1,7 @@
 package com.cheftory.api.recipeinfo.youtubemeta.client;
 
+import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
 
 @Slf4j
 @Component
@@ -19,7 +22,7 @@ public class VideoInfoClient {
   private final WebClient webClient;
 
   @Value("${youtube.api-token}")
-  private String YOUTUBE_KEY;
+  private String youtubeKey;
 
   public VideoInfoClient(@Qualifier("youtubeClient") WebClient webClient) {
     this.webClient = webClient;
@@ -36,17 +39,23 @@ public class VideoInfoClient {
                     uriBuilder
                         .path("/videos")
                         .queryParam("id", videoId)
-                        .queryParam("key", YOUTUBE_KEY)
+                        .queryParam("key", youtubeKey)
                         .queryParam("part", "snippet,contentDetails")
                         .build())
             .retrieve()
             .bodyToMono(YoutubeVideoResponse.class)
             .block();
 
-    Objects.requireNonNull(youtubeVideoResponse, "비디오 응답이 null 입니다.");
+    if (youtubeVideoResponse == null || youtubeVideoResponse.items().isEmpty()) {
+      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
+    }
 
     String channelId = youtubeVideoResponse.getChannelId();
     Long duration = youtubeVideoResponse.getSecondsDuration();
+
+    if (duration == null) {
+      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
+    }
 
     boolean isShorts = Optional.ofNullable(channelId)
         .filter(id -> id.startsWith("UC"))
@@ -82,7 +91,7 @@ public class VideoInfoClient {
                           .queryParam("part", "snippet")
                           .queryParam("playlistId", shortsPlaylistId)
                           .queryParam("videoId", videoId)
-                          .queryParam("key", YOUTUBE_KEY)
+                          .queryParam("key", youtubeKey)
                           .build())
               .retrieve()
               .bodyToMono(YoutubePlaylistResponse.class)
@@ -91,7 +100,7 @@ public class VideoInfoClient {
       Objects.requireNonNull(playlistResponse, "플레이리스트 응답이 null 입니다.");
 
       return playlistResponse.hasItems();
-    } catch (Exception e) {
+    } catch (WebClientException e) {
       log.warn("쇼츠 재생목록 검사 중 예기치 않은 오류가 발생했습니다: videoId={}, playlistId={}",
           videoId, shortsPlaylistId, e);
       return false;
@@ -109,7 +118,7 @@ public class VideoInfoClient {
                     uriBuilder
                         .path("/videos")
                         .queryParam("id", videoId)
-                        .queryParam("key", YOUTUBE_KEY)
+                        .queryParam("key", youtubeKey)
                         .queryParam("part", "id")
                         .build())
             .retrieve()

@@ -1,11 +1,15 @@
 package com.cheftory.api.recipeinfo.youtubemeta.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
+import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.io.IOException;
 import java.net.URI;
 import okhttp3.mockwebserver.MockResponse;
@@ -36,7 +40,7 @@ public class VideoInfoClientTest {
     WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 
     videoInfoClient = new VideoInfoClient(webClient);
-    ReflectionTestUtils.setField(videoInfoClient, "YOUTUBE_KEY", YOUTUBE_API_KEY);
+    ReflectionTestUtils.setField(videoInfoClient, "youtubeKey", YOUTUBE_API_KEY);
   }
 
   @AfterEach
@@ -130,7 +134,7 @@ public class VideoInfoClientTest {
           assertThat(result.getVideoSeconds()).isEqualTo(630);
           assertThat(result.getVideoId()).isEqualTo(videoId);
           assertThat(result.getVideoType())
-              .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
+              .isEqualTo(YoutubeMetaType.NORMAL);
 
           RecordedRequest recordedRequest = mockWebServer.takeRequest();
           assertThat(recordedRequest.getMethod()).isEqualTo("GET");
@@ -139,6 +143,78 @@ public class VideoInfoClientTest {
               .contains("id=" + videoId)
               .contains("key=" + YOUTUBE_API_KEY)
               .contains("part=snippet,contentDetails");
+        }
+      }
+
+      @Nested
+      @DisplayName("When - YouTube API가 빈 items를 반환하면")
+      class WhenYoutubeApiReturnsEmptyItems {
+
+        @BeforeEach
+        void setUp() {
+          String responseBody =
+              """
+              {
+                "items": []
+              }
+              """;
+
+          mockWebServer.enqueue(
+              new MockResponse()
+                  .setResponseCode(200)
+                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .setBody(responseBody));
+
+          doReturn(videoId).when(youtubeUri).getVideoId();
+        }
+
+        @Test
+        @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_FOUND)을 던진다")
+        void thenThrowsYoutubeMetaException() {
+          assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
+              .isInstanceOf(YoutubeMetaException.class);
+        }
+      }
+
+      @Nested
+      @DisplayName("When - YouTube API가 duration 없이 응답하면")
+      class WhenYoutubeApiReturnsWithoutDuration {
+
+        @BeforeEach
+        void setUp() {
+          String responseBody =
+              """
+              {
+                "items": [
+                  {
+                    "snippet": {
+                      "title": "제목 없는 영상",
+                      "thumbnails": {
+                        "maxres": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+                        }
+                      }
+                    },
+                    "contentDetails": {}
+                  }
+                ]
+              }
+              """;
+
+          mockWebServer.enqueue(
+              new MockResponse()
+                  .setResponseCode(200)
+                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .setBody(responseBody));
+
+          doReturn(videoId).when(youtubeUri).getVideoId();
+        }
+
+        @Test
+        @DisplayName("Then - YoutubeMetaException(DURATION_NOT_FOUND)을 던진다")
+        void thenThrowsYoutubeMetaException() {
+          assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
+              .isInstanceOf(YoutubeMetaException.class);
         }
       }
     }
@@ -270,12 +346,12 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(playlistResponseBody));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+          .isEqualTo(YoutubeMetaType.SHORTS);
 
       // API 호출 검증
       RecordedRequest videoRequest = mockWebServer.takeRequest();
@@ -333,12 +409,12 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(emptyPlaylistResponseBody));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
+          .isEqualTo(YoutubeMetaType.NORMAL);
     }
 
     @Test
@@ -373,12 +449,12 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(videoResponseBody));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
+          .isEqualTo(YoutubeMetaType.NORMAL);
     }
 
     @Test
@@ -415,12 +491,12 @@ public class VideoInfoClientTest {
 
       mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
+          .isEqualTo(YoutubeMetaType.NORMAL);
 
       // 플레이리스트 조회도 시도했는지 확인
       mockWebServer.takeRequest(); // video request
@@ -459,12 +535,12 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(videoResponseBody));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
+          .isEqualTo(YoutubeMetaType.NORMAL);
     }
 
     @Test
@@ -512,12 +588,12 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(emptyPlaylistResponseBody));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+          .isEqualTo(YoutubeMetaType.SHORTS);
     }
 
     @Test
@@ -555,12 +631,12 @@ public class VideoInfoClientTest {
 
       mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+          .isEqualTo(YoutubeMetaType.SHORTS);
 
       // 플레이리스트 조회도 시도했는지 확인
       mockWebServer.takeRequest(); // video request
@@ -613,12 +689,12 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(emptyPlaylistResponseBody));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+          .isEqualTo(YoutubeMetaType.SHORTS);
     }
 
     @Test
@@ -652,12 +728,12 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(videoResponseBody));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+          .isEqualTo(YoutubeMetaType.SHORTS);
     }
 
     @Test
@@ -692,12 +768,12 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(videoResponseBody));
 
-      com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo result =
+      YoutubeVideoInfo result =
           videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
       assertThat(result.getVideoType())
-          .isEqualTo(com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.SHORTS);
+          .isEqualTo(YoutubeMetaType.SHORTS);
     }
   }
 }
