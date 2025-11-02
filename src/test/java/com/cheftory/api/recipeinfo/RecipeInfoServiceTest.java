@@ -1821,13 +1821,14 @@ public class RecipeInfoServiceTest {
       setupPopularMocks(List.of(recipeId1, recipeId2));
       doReturn(recipePage)
           .when(recipeService)
-          .getCuisines(RecipeInfoCuisineType.KOREAN.name(), page);
+          .getCuisines(RecipeInfoCuisineType.KOREAN.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
       Page<RecipeOverview> result =
           recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.KOREAN, userId, page);
 
       assertThat(result.getContent()).hasSize(2);
-      verify(recipeService).getCuisines(RecipeInfoCuisineType.KOREAN.name(), page);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.KOREAN.getKoreanName(), page);
     }
 
     @Test
@@ -1843,14 +1844,103 @@ public class RecipeInfoServiceTest {
       setupPopularMocks(List.of(recipeId));
       doReturn(recipePage)
           .when(recipeService)
-          .getCuisines(RecipeInfoCuisineType.CHINESE.name(), page);
+          .getCuisines(RecipeInfoCuisineType.CHINESE.getKoreanName(), page);
       doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
       Page<RecipeOverview> result =
           recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.CHINESE, userId, page);
 
       assertThat(result.getContent()).hasSize(1);
-      verify(recipeService).getCuisines(RecipeInfoCuisineType.CHINESE.name(), page);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.CHINESE.getKoreanName(), page);
+    }
+
+    @Test
+    @DisplayName("일식 레시피를 조회한다")
+    void shouldReturnJapaneseRecipes() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.JAPANESE.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.JAPANESE, userId, page);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.JAPANESE.getKoreanName(), page);
+    }
+
+    @Test
+    @DisplayName("양식 레시피를 조회한다")
+    void shouldReturnWesternRecipes() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.WESTERN.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.WESTERN, userId, page);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.WESTERN.getKoreanName(), page);
+    }
+
+    @Test
+    @DisplayName("분식 레시피를 조회한다")
+    void shouldReturnSnackRecipes() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.SNACK.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.SNACK, userId, page);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.SNACK.getKoreanName(), page);
+    }
+
+    @Test
+    @DisplayName("레시피가 없을 때 빈 페이지를 반환한다")
+    void shouldReturnEmptyPageWhenNoRecipes() {
+      Integer page = 0;
+      UUID userId = UUID.randomUUID();
+
+      Page<Recipe> emptyPage = new PageImpl<>(List.of());
+
+      doReturn(emptyPage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.KOREAN.getKoreanName(), page);
+
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.KOREAN, userId, page);
+
+      assertThat(result.getContent()).isEmpty();
+      assertThat(result.getTotalElements()).isEqualTo(0);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.KOREAN.getKoreanName(), page);
     }
   }
 }
