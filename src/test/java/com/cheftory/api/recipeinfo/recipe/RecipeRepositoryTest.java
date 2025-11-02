@@ -11,6 +11,8 @@ import com.cheftory.api.recipeinfo.recipe.entity.ProcessStep;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
+import com.cheftory.api.recipeinfo.tag.RecipeTag;
+import com.cheftory.api.recipeinfo.tag.RecipeTagRepository;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaRepository;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
@@ -36,6 +38,7 @@ public class RecipeRepositoryTest extends DbContextTest {
 
   @Autowired private RecipeRepository recipeRepository;
   @Autowired private RecipeYoutubeMetaRepository youtubeMetaRepository;
+  @Autowired private RecipeTagRepository recipeTagRepository;
   @MockitoBean private Clock clock;
 
   @Nested
@@ -1035,6 +1038,254 @@ public class RecipeRepositoryTest extends DbContextTest {
     }
   }
 
+  @Nested
+  @DisplayName("태그별 레시피 조회")
+  class FindCuisineRecipes {
+
+    @Nested
+    @DisplayName("Given - 한식 태그를 가진 레시피들이 존재할 때")
+    class GivenKoreanRecipesExist {
+
+      private UUID koreanRecipeId1;
+      private UUID koreanRecipeId2;
+      private UUID chineseRecipeId;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+        LocalDateTime now = LocalDateTime.now();
+        doReturn(now).when(clock).now();
+
+        // 한식 태그를 가진 레시피 생성
+        Recipe koreanRecipe1 = Recipe.create(clock);
+        koreanRecipe1.success(clock);
+        koreanRecipeId1 = recipeRepository.save(koreanRecipe1).getId();
+        createRecipeTag(koreanRecipeId1, "한식");
+
+        Recipe koreanRecipe2 = Recipe.create(clock);
+        koreanRecipe2.success(clock);
+        koreanRecipeId2 = recipeRepository.save(koreanRecipe2).getId();
+        createRecipeTag(koreanRecipeId2, "한식");
+
+        // 중식 태그를 가진 레시피 생성
+        Recipe chineseRecipe = Recipe.create(clock);
+        chineseRecipe.success(clock);
+        chineseRecipeId = recipeRepository.save(chineseRecipe).getId();
+        createRecipeTag(chineseRecipeId, "중식");
+      }
+
+      @Nested
+      @DisplayName("When - 한식 레시피를 조회하면")
+      class WhenFindingKoreanRecipes {
+
+        @Test
+        @DisplayName("Then - 한식 태그를 가진 레시피만 반환된다")
+        void thenReturnsOnlyKoreanRecipes() {
+          Page<Recipe> result =
+              recipeRepository.findCuisineRecipes("한식", RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(2);
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .contains(koreanRecipeId1, koreanRecipeId2);
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .doesNotContain(chineseRecipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 중식 태그를 가진 레시피들이 존재할 때")
+    class GivenChineseRecipesExist {
+
+      private UUID chineseRecipeId1;
+      private UUID chineseRecipeId2;
+      private UUID japaneseRecipeId;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+        LocalDateTime now = LocalDateTime.now();
+        doReturn(now).when(clock).now();
+
+        Recipe chineseRecipe1 = Recipe.create(clock);
+        chineseRecipe1.success(clock);
+        chineseRecipeId1 = recipeRepository.save(chineseRecipe1).getId();
+        createRecipeTag(chineseRecipeId1, "중식");
+
+        Recipe chineseRecipe2 = Recipe.create(clock);
+        chineseRecipe2.success(clock);
+        chineseRecipeId2 = recipeRepository.save(chineseRecipe2).getId();
+        createRecipeTag(chineseRecipeId2, "중식");
+
+        Recipe japaneseRecipe = Recipe.create(clock);
+        japaneseRecipe.success(clock);
+        japaneseRecipeId = recipeRepository.save(japaneseRecipe).getId();
+        createRecipeTag(japaneseRecipeId, "일식");
+      }
+
+      @Nested
+      @DisplayName("When - 중식 레시피를 조회하면")
+      class WhenFindingChineseRecipes {
+
+        @Test
+        @DisplayName("Then - 중식 태그를 가진 레시피만 반환된다")
+        void thenReturnsOnlyChineseRecipes() {
+          Page<Recipe> result =
+              recipeRepository.findCuisineRecipes("중식", RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(2);
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .contains(chineseRecipeId1, chineseRecipeId2);
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .doesNotContain(japaneseRecipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 진행 중 상태의 태그 레시피가 존재할 때")
+    class GivenInProgressTaggedRecipe {
+
+      private UUID inProgressRecipeId;
+      private UUID successRecipeId;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+        LocalDateTime now = LocalDateTime.now();
+        doReturn(now).when(clock).now();
+
+        Recipe inProgressRecipe = Recipe.create(clock);
+        inProgressRecipeId = recipeRepository.save(inProgressRecipe).getId();
+        createRecipeTag(inProgressRecipeId, "한식");
+
+        Recipe successRecipe = Recipe.create(clock);
+        successRecipe.success(clock);
+        successRecipeId = recipeRepository.save(successRecipe).getId();
+        createRecipeTag(successRecipeId, "한식");
+      }
+
+      @Nested
+      @DisplayName("When - SUCCESS 상태의 한식 레시피를 조회하면")
+      class WhenFindingSuccessKoreanRecipes {
+
+        @Test
+        @DisplayName("Then - SUCCESS 상태의 한식 태그 레시피만 반환된다")
+        void thenReturnsOnlySuccessKoreanRecipes() {
+          Page<Recipe> result =
+              recipeRepository.findCuisineRecipes("한식", RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .contains(successRecipeId);
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .doesNotContain(inProgressRecipeId);
+          result
+              .getContent()
+              .forEach(
+                  recipe -> {
+                    assertThat(recipe.getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
+                  });
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 여러 태그를 가진 레시피가 존재할 때")
+    class GivenRecipeWithMultipleTags {
+
+      private UUID multiTagRecipeId;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+        LocalDateTime now = LocalDateTime.now();
+        doReturn(now).when(clock).now();
+
+        Recipe multiTagRecipe = Recipe.create(clock);
+        multiTagRecipe.success(clock);
+        multiTagRecipeId = recipeRepository.save(multiTagRecipe).getId();
+        createRecipeTag(multiTagRecipeId, "한식");
+        createRecipeTag(multiTagRecipeId, "매운맛");
+        createRecipeTag(multiTagRecipeId, "간단요리");
+      }
+
+      @Nested
+      @DisplayName("When - 한식 태그로 조회하면")
+      class WhenFindingByKoreanTag {
+
+        @Test
+        @DisplayName("Then - 한식 태그를 가진 레시피가 반환된다")
+        void thenReturnsRecipeWithKoreanTag() {
+          Page<Recipe> result =
+              recipeRepository.findCuisineRecipes("한식", RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .contains(multiTagRecipeId);
+        }
+      }
+
+      @Nested
+      @DisplayName("When - 매운맛 태그로 조회하면")
+      class WhenFindingBySpicyTag {
+
+        @Test
+        @DisplayName("Then - 매운맛 태그를 가진 레시피가 반환된다")
+        void thenReturnsRecipeWithSpicyTag() {
+          Page<Recipe> result =
+              recipeRepository.findCuisineRecipes("매운맛", RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent())
+              .extracting(Recipe::getId)
+              .contains(multiTagRecipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 태그가 없는 레시피만 존재할 때")
+    class GivenRecipeWithoutTags {
+
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        pageable = RecipePageRequest.create(0, RecipeSort.COUNT_DESC);
+        LocalDateTime now = LocalDateTime.now();
+        doReturn(now).when(clock).now();
+
+        Recipe recipeWithoutTag = Recipe.create(clock);
+        recipeWithoutTag.success(clock);
+        recipeRepository.save(recipeWithoutTag);
+      }
+
+      @Nested
+      @DisplayName("When - 한식 태그로 조회하면")
+      class WhenFindingByKoreanTag {
+
+        @Test
+        @DisplayName("Then - 빈 페이지가 반환된다")
+        void thenReturnsEmptyPage() {
+          Page<Recipe> result =
+              recipeRepository.findCuisineRecipes("한식", RecipeStatus.SUCCESS, pageable);
+
+          assertThat(result.getContent()).isEmpty();
+          assertThat(result.getTotalElements()).isEqualTo(0);
+        }
+      }
+    }
+  }
+
   private void createYoutubeMeta(UUID recipeId, YoutubeMetaType type) {
     String videoId = "test_" + UUID.randomUUID().toString().substring(0, 8);
     YoutubeVideoInfo videoInfo = mock(YoutubeVideoInfo.class);
@@ -1051,5 +1302,10 @@ public class RecipeRepositoryTest extends DbContextTest {
 
     RecipeYoutubeMeta meta = RecipeYoutubeMeta.create(videoInfo, recipeId, clock);
     youtubeMetaRepository.save(meta);
+  }
+
+  private void createRecipeTag(UUID recipeId, String tag) {
+    RecipeTag recipeTag = RecipeTag.create(tag, recipeId, clock);
+    recipeTagRepository.save(recipeTag);
   }
 }
