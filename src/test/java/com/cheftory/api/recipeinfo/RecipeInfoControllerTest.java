@@ -35,6 +35,8 @@ import com.cheftory.api.recipeinfo.model.RecipeCategoryCount;
 import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
 import com.cheftory.api.recipeinfo.model.RecipeCreationTarget;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipeinfo.model.RecipeInfoCuisineType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoRecommendType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
@@ -3115,6 +3117,96 @@ public class RecipeInfoControllerTest extends RestDocsTest {
 
         verify(recipeInfoService)
             .getRecommendRecipes(RecipeInfoRecommendType.CHEF, userId, 0, RecipeInfoVideoQuery.ALL);
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 잘못된 추천 타입이 주어졌을 때")
+    class GivenInvalidRecommendType {
+
+      @Test
+      @DisplayName("Then - 400 Bad Request와 INVALID_RECOMMEND_TYPE 에러를 반환해야 한다")
+      void thenShouldReturnInvalidRecommendTypeError() {
+        given()
+            .queryParam("page", 0)
+            .queryParam("query", "ALL")
+            .get("/api/v1/recipes/recommend/invalid")
+            .then()
+            .status(HttpStatus.BAD_REQUEST)
+            .body("errorCode", equalTo(RecipeInfoErrorCode.INVALID_RECOMMEND_TYPE.getErrorCode()))
+            .body("message", equalTo(RecipeInfoErrorCode.INVALID_RECOMMEND_TYPE.getMessage()));
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("요리 카테고리별 레시피 조회")
+  class GetCuisineRecipes {
+
+    private UUID userId;
+
+    @BeforeEach
+    void setUp() {
+      userId = UUID.randomUUID();
+      var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    @Nested
+    @DisplayName("Given - 유효한 카테고리 타입과 사용자 ID가 주어졌을 때")
+    class GivenValidCuisineType {
+
+      @Test
+      @DisplayName("Then - 요리 카테고리별 레시피 목록을 성공적으로 조회한다")
+      void thenShouldGetCuisineRecipesSuccessfully() {
+        var recipeId1 = UUID.randomUUID();
+        var recipeOverview1 = mock(RecipeOverview.class);
+
+        doReturn(recipeId1).when(recipeOverview1).getRecipeId();
+        doReturn("한식 레시피 1").when(recipeOverview1).getVideoTitle();
+        doReturn(URI.create("https://example.com/korean1.jpg"))
+            .when(recipeOverview1)
+            .getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=korean1"))
+            .when(recipeOverview1)
+            .getVideoUri();
+        doReturn(1000).when(recipeOverview1).getViewCount();
+        doReturn("korean1").when(recipeOverview1).getVideoId();
+        doReturn(false).when(recipeOverview1).getIsViewed();
+        doReturn(YoutubeMetaType.NORMAL).when(recipeOverview1).getVideoType();
+
+        var recipes = List.of(recipeOverview1);
+        var page = new PageImpl<>(recipes, Pageable.ofSize(20), 1);
+
+        doReturn(page)
+            .when(recipeInfoService)
+            .getCuisineRecipes(RecipeInfoCuisineType.KOREAN, userId, 0);
+
+        given()
+            .queryParam("page", 0)
+            .get("/api/v1/recipes/cuisine/korean")
+            .then()
+            .status(HttpStatus.OK)
+            .body("cuisine_recipes", hasSize(1));
+
+        verify(recipeInfoService).getCuisineRecipes(RecipeInfoCuisineType.KOREAN, userId, 0);
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 잘못된 카테고리 타입이 주어졌을 때")
+    class GivenInvalidCuisineType {
+
+      @Test
+      @DisplayName("Then - 400 Bad Request와 INVALID_CUISINE_TYPE 에러를 반환해야 한다")
+      void thenShouldReturnInvalidCuisineTypeError() {
+        given()
+            .queryParam("page", 0)
+            .get("/api/v1/recipes/cuisine/invalid")
+            .then()
+            .status(HttpStatus.BAD_REQUEST)
+            .body("errorCode", equalTo(RecipeInfoErrorCode.INVALID_CUISINE_TYPE.getErrorCode()))
+            .body("message", equalTo(RecipeInfoErrorCode.INVALID_CUISINE_TYPE.getMessage()));
       }
     }
   }

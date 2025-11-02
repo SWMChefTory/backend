@@ -1,8 +1,10 @@
 package com.cheftory.api.recipeinfo.model;
 
+import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipeinfo.exception.RecipeInfoException;
+import com.cheftory.api.recipeinfo.recipe.exception.RecipeErrorCode;
+
 public enum RecipeInfoCuisineType {
-  TRENDING,
-  CHEF,
   KOREAN,
   SNACK,
   CHINESE,
@@ -17,8 +19,8 @@ public enum RecipeInfoCuisineType {
     try {
       String upperCase = type.toUpperCase();
       return RecipeInfoCuisineType.valueOf(upperCase);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid cuisine type: " + type);
+    } catch (Exception e) {
+      throw new RecipeInfoException(RecipeInfoErrorCode.INVALID_CUISINE_TYPE);
     }
   }
 }
