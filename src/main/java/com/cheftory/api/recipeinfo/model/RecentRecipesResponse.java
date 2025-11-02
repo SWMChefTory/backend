@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.model;
 
+import com.cheftory.api.recipeinfo.tag.RecipeTag;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -31,7 +32,12 @@ public record RecentRecipesResponse(
       @JsonProperty("recipe_title") String recipeTitle,
       @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
       @JsonProperty("video_id") String videoId,
+      @JsonProperty("description") String description,
+      @JsonProperty("cook_time") Integer cookTime,
+      @JsonProperty("servings") Integer servings,
+      @JsonProperty("created_at") LocalDateTime createdAt,
       @JsonProperty("video_seconds") Integer videoSeconds,
+      @JsonProperty("tags") List<Tag> tags,
       @JsonProperty("recipe_status") String recipeStatus) {
     public static RecentRecipeResponse from(RecipeHistoryOverview info) {
       return new RecentRecipeResponse(
@@ -41,8 +47,19 @@ public record RecentRecipesResponse(
           info.getVideoTitle(),
           info.getThumbnailUrl(),
           info.getVideoId(),
+          info.getDescription(),
+          info.getCookTime(),
+          info.getServings(),
+          info.getRecipeCreatedAt(),
           info.getVideoSeconds(),
+          info.getTags() != null ? info.getTags().stream().map(Tag::new).toList() : null,
           info.getRecipeStatus().name());
+    }
+
+    private record Tag(@JsonProperty("name") String name) {
+      public static Tag from(RecipeTag tag) {
+        return new Tag(tag.getTag());
+      }
     }
   }
 }
