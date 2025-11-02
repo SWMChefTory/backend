@@ -704,8 +704,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                                   .description("조리 시간(분)"),
                               fieldWithPath("recommend_recipes[].video_id")
                                   .description("레시피 비디오 ID"),
-                              fieldWithPath("recommend_recipes[].video_title")
-                                  .description("레시피 비디오 제목"),
                               fieldWithPath("recommend_recipes[].video_thumbnail_url")
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("recommend_recipes[].video_seconds")
@@ -738,8 +736,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("recommend_recipes[0].cooking_time")).isEqualTo(30);
           assertThat(responseBody.getString("recommend_recipes[0].video_id"))
               .isEqualTo("sample_video_id");
-          assertThat(responseBody.getString("recommend_recipes[0].video_title"))
-              .isEqualTo("Sample Recipe Title");
           assertThat(responseBody.getString("recommend_recipes[0].video_thumbnail_url"))
               .isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getInt("recommend_recipes[0].video_seconds")).isEqualTo(180);
@@ -2041,7 +2037,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                           fieldWithPath("searched_recipes[].servings").description("인분"),
                           fieldWithPath("searched_recipes[].cooking_time").description("조리 시간(분)"),
                           fieldWithPath("searched_recipes[].video_id").description("레시피 비디오 ID"),
-                          fieldWithPath("searched_recipes[].video_title").description("레시피 비디오 제목"),
                           fieldWithPath("searched_recipes[].video_thumbnail_url")
                               .description("레시피 비디오 썸네일 URL"),
                           fieldWithPath("searched_recipes[].video_seconds")
@@ -2069,8 +2064,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("searched_recipes[0].cooking_time")).isEqualTo(30);
           assertThat(responseBody.getString("searched_recipes[0].video_id"))
               .isEqualTo("kimchi_video_id");
-          assertThat(responseBody.getString("searched_recipes[0].video_title"))
-              .isEqualTo("김치찌개 맛있게 끓이는 법");
           assertThat(responseBody.getString("searched_recipes[0].video_thumbnail_url"))
               .isEqualTo("https://example.com/kimchi_thumbnail.jpg");
           assertThat(responseBody.getInt("searched_recipes[0].video_seconds")).isEqualTo(300);
@@ -3010,7 +3003,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
             .body("recommend_recipes", hasSize(2))
             .body("recommend_recipes[0].recipe_id", equalTo(recipeId1.toString()))
             .body("recommend_recipes[0].recipe_title", equalTo("트렌딩 레시피 1"))
-            .body("recommend_recipes[0].video_title", equalTo("트렌딩 레시피 1"))
             .body(
                 "recommend_recipes[0].video_thumbnail_url",
                 equalTo("https://example.com/thumb1.jpg"))
@@ -3019,7 +3011,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
             .body("recommend_recipes[0].is_viewed", equalTo(false))
             .body("recommend_recipes[1].recipe_id", equalTo(recipeId2.toString()))
             .body("recommend_recipes[1].recipe_title", equalTo("트렌딩 레시피 2"))
-            .body("recommend_recipes[1].video_title", equalTo("트렌딩 레시피 2"))
             .body(
                 "recommend_recipes[1].video_thumbnail_url",
                 equalTo("https://example.com/thumb2.jpg"))
@@ -3105,7 +3096,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
             .body("recommend_recipes", hasSize(2))
             .body("recommend_recipes[0].recipe_id", equalTo(recipeId1.toString()))
             .body("recommend_recipes[0].recipe_title", equalTo("셰프 레시피 1"))
-            .body("recommend_recipes[0].video_title", equalTo("셰프 레시피 1"))
             .body(
                 "recommend_recipes[0].video_thumbnail_url",
                 equalTo("https://example.com/chef1.jpg"))
@@ -3114,7 +3104,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
             .body("recommend_recipes[0].is_viewed", equalTo(false))
             .body("recommend_recipes[1].recipe_id", equalTo(recipeId2.toString()))
             .body("recommend_recipes[1].recipe_title", equalTo("셰프 레시피 2"))
-            .body("recommend_recipes[1].video_title", equalTo("셰프 레시피 2"))
             .body(
                 "recommend_recipes[1].video_thumbnail_url",
                 equalTo("https://example.com/chef2.jpg"))
