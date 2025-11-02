@@ -9,10 +9,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 import reactor.netty.http.client.HttpClient;
 
 @Configuration
 public class WebclientConfig {
+
   @Value("${ai-recipe-summary.url}")
   private String recipeServerUrl;
 
@@ -49,6 +51,25 @@ public class WebclientConfig {
 
     return WebClient.builder()
         .baseUrl("https://www.googleapis.com/youtube/v3")
+        .clientConnector(new ReactorClientHttpConnector(httpClient))
+        .observationRegistry(observationRegistry)
+        .build();
+  }
+
+  @Bean
+  @Qualifier("coupangClient")
+  public WebClient webClientForCoupang() {
+    DefaultUriBuilderFactory factory =
+        new DefaultUriBuilderFactory("https://api-gateway.coupang.com");
+    factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY);
+
+    HttpClient httpClient =
+        HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+            .responseTimeout(Duration.ofSeconds(30));
+
+    return WebClient.builder()
+        .uriBuilderFactory(factory)
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .observationRegistry(observationRegistry)
         .build();

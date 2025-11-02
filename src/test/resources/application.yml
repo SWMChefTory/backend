@@ -55,6 +55,9 @@ logging:
   level:
     org.springframework.web.servlet.DispatcherServlet: DEBUG
 
+coupang-partners:
+  access-key: test
+  secret-key: test
 
 ai-recipe-summary:
   url: test

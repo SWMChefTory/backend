@@ -10,9 +10,9 @@ import com.cheftory.api.recipeinfo.model.RecipeSort;
 import com.cheftory.api.recipeinfo.recipe.entity.ProcessStep;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
-import com.cheftory.api.recipeinfo.util.RecipePageRequest;
 import com.cheftory.api.recipeinfo.tag.RecipeTag;
 import com.cheftory.api.recipeinfo.tag.RecipeTagRepository;
+import com.cheftory.api.recipeinfo.util.RecipePageRequest;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaRepository;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
@@ -1089,9 +1089,7 @@ public class RecipeRepositoryTest extends DbContextTest {
           assertThat(result.getContent())
               .extracting(Recipe::getId)
               .contains(koreanRecipeId1, koreanRecipeId2);
-          assertThat(result.getContent())
-              .extracting(Recipe::getId)
-              .doesNotContain(chineseRecipeId);
+          assertThat(result.getContent()).extracting(Recipe::getId).doesNotContain(chineseRecipeId);
         }
       }
     }
@@ -1182,9 +1180,7 @@ public class RecipeRepositoryTest extends DbContextTest {
           Page<Recipe> result =
               recipeRepository.findCuisineRecipes("한식", RecipeStatus.SUCCESS, pageable);
 
-          assertThat(result.getContent())
-              .extracting(Recipe::getId)
-              .contains(successRecipeId);
+          assertThat(result.getContent()).extracting(Recipe::getId).contains(successRecipeId);
           assertThat(result.getContent())
               .extracting(Recipe::getId)
               .doesNotContain(inProgressRecipeId);
@@ -1229,9 +1225,7 @@ public class RecipeRepositoryTest extends DbContextTest {
           Page<Recipe> result =
               recipeRepository.findCuisineRecipes("한식", RecipeStatus.SUCCESS, pageable);
 
-          assertThat(result.getContent())
-              .extracting(Recipe::getId)
-              .contains(multiTagRecipeId);
+          assertThat(result.getContent()).extracting(Recipe::getId).contains(multiTagRecipeId);
         }
       }
 
@@ -1245,9 +1239,7 @@ public class RecipeRepositoryTest extends DbContextTest {
           Page<Recipe> result =
               recipeRepository.findCuisineRecipes("매운맛", RecipeStatus.SUCCESS, pageable);
 
-          assertThat(result.getContent())
-              .extracting(Recipe::getId)
-              .contains(multiTagRecipeId);
+          assertThat(result.getContent()).extracting(Recipe::getId).contains(multiTagRecipeId);
         }
       }
     }

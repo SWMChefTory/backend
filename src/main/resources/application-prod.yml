@@ -82,3 +82,7 @@ apple:
 sentry:
   dsn: ${SENTRY_DSN}
   send-default-pii: true
+
+coupang-partners:
+  access-key: ${COUPANG_PARTNERS_ACCESS_KEY}
+  secret-key: ${COUPANG_PARTNERS_SECRET_KEY}
