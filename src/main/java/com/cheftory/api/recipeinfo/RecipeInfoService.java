@@ -363,7 +363,7 @@ public class RecipeInfoService {
 
   public Page<RecipeOverview> getCuisineRecipes(
       RecipeInfoCuisineType type, UUID userId, Integer page) {
-    Page<Recipe> recipes = recipeService.getCuisines(type.name(), page);
+    Page<Recipe> recipes = recipeService.getCuisines(type.getKoreanName(), page);
     return makeOverviews(recipes, userId);
   }
 
