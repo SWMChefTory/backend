@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.recipe;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeSort;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
@@ -78,9 +79,14 @@ public class RecipeService {
     return recipeRepository.findAllByIdIn(recipeIds);
   }
 
-  public Page<Recipe> getPopulars(Integer page) {
+  public Page<Recipe> getPopulars(Integer page, RecipeInfoVideoQuery videoQuery) {
     Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-    return recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+
+    return switch (videoQuery) {
+      case ALL -> recipeRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
+      case NORMAL, SHORTS ->
+          recipeRepository.findRecipes(RecipeStatus.SUCCESS, pageable, videoQuery.name());
+    };
   }
 
   public Recipe success(UUID recipeId) {
@@ -120,13 +126,8 @@ public class RecipeService {
         .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
   }
 
-  public Page<Recipe> getPopularNormals(Integer page) {
+  public Page<Recipe> getCuisines(String type, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-    return recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable);
-  }
-
-  public Page<Recipe> getPopularShorts(Integer page) {
-    Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-    return recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable);
+    return recipeRepository.findCuisineRecipes(type, RecipeStatus.SUCCESS, pageable);
   }
 }

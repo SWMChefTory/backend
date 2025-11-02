@@ -3,7 +3,7 @@ package com.cheftory.api.recipeinfo;
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.recipeinfo.model.CategorizedRecipesResponse;
-import com.cheftory.api.recipeinfo.model.ChefRecipesResponse;
+import com.cheftory.api.recipeinfo.model.CuisineRecipesResponse;
 import com.cheftory.api.recipeinfo.model.FullRecipe;
 import com.cheftory.api.recipeinfo.model.FullRecipeResponse;
 import com.cheftory.api.recipeinfo.model.RecentRecipesResponse;
@@ -11,15 +11,15 @@ import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
 import com.cheftory.api.recipeinfo.model.RecipeCategoryCountsResponse;
 import com.cheftory.api.recipeinfo.model.RecipeCreateRequest;
 import com.cheftory.api.recipeinfo.model.RecipeCreateResponse;
-import com.cheftory.api.recipeinfo.model.RecipeHistoriesResponse;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.model.RecipeInfoCuisineType;
+import com.cheftory.api.recipeinfo.model.RecipeInfoRecommendType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressResponse;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.model.RecommendRecipesResponse;
 import com.cheftory.api.recipeinfo.model.SearchedRecipesResponse;
-import com.cheftory.api.recipeinfo.model.TrendRecipesResponse;
 import com.cheftory.api.recipeinfo.model.UnCategorizedRecipesResponse;
 import jakarta.validation.constraints.Min;
 import java.util.UUID;
@@ -62,11 +62,25 @@ public class RecipeInfoController {
   }
 
   @GetMapping("/api/v1/recipes/recommend")
-  public RecommendRecipesResponse getRecommendedRecipes(
+  @Deprecated
+  public RecommendRecipesResponse getRecommendedRecipesDefault(
       @RequestParam(defaultValue = "0") @Min(0) Integer page,
-      @UserPrincipal UUID userId,
-      @RequestParam(defaultValue = "ALL") RecipeInfoVideoQuery query) {
-    Page<RecipeOverview> recipes = recipeInfoService.getPopulars(page, userId, query);
+      @RequestParam(defaultValue = "ALL") RecipeInfoVideoQuery query,
+      @UserPrincipal UUID userId) {
+    Page<RecipeOverview> recipes =
+        recipeInfoService.getRecommendRecipes(RecipeInfoRecommendType.POPULAR, userId, page, query);
+    return RecommendRecipesResponse.from(recipes);
+  }
+
+  @GetMapping("/api/v1/recipes/recommend/{type}")
+  public RecommendRecipesResponse getRecommendedRecipes(
+      @PathVariable String type,
+      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @RequestParam(defaultValue = "ALL") RecipeInfoVideoQuery query,
+      @UserPrincipal UUID userId) {
+    RecipeInfoRecommendType recommendType = RecipeInfoRecommendType.fromString(type);
+    Page<RecipeOverview> recipes =
+        recipeInfoService.getRecommendRecipes(recommendType, userId, page, query);
     return RecommendRecipesResponse.from(recipes);
   }
 
@@ -84,13 +98,6 @@ public class RecipeInfoController {
       @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
     Page<RecipeHistoryOverview> infos = recipeInfoService.getUnCategorized(userId, page);
     return UnCategorizedRecipesResponse.from(infos);
-  }
-
-  @GetMapping("/api/v1/recipes/histories")
-  public RecipeHistoriesResponse getRecipeHistories(
-      @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistoryOverview> infos = recipeInfoService.getHistories(userId, page);
-    return RecipeHistoriesResponse.from(infos);
   }
 
   @DeleteMapping("/api/v1/recipes/categories/{recipeCategoryId}")
@@ -139,17 +146,13 @@ public class RecipeInfoController {
     return RecipeProgressResponse.of(progressStatus);
   }
 
-  @GetMapping("/api/v1/recipes/trending")
-  public TrendRecipesResponse getTrendingRecipes(
-      @RequestParam(defaultValue = "0") @Min(0) Integer page, @UserPrincipal UUID userId) {
-    Page<RecipeOverview> recipes = recipeInfoService.getTrendRecipes(userId, page);
-    return TrendRecipesResponse.from(recipes);
-  }
-
-  @GetMapping("/api/v1/recipes/chef")
-  public ChefRecipesResponse getChefRecipes(
-      @RequestParam(defaultValue = "0") @Min(0) Integer page, @UserPrincipal UUID userId) {
-    Page<RecipeOverview> recipes = recipeInfoService.getChefRecipes(userId, page);
-    return ChefRecipesResponse.from(recipes);
+  @GetMapping("/api/v1/recipes/cuisine/{type}")
+  public CuisineRecipesResponse getBrowseRecipes(
+      @PathVariable String type,
+      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @UserPrincipal UUID userId) {
+    RecipeInfoCuisineType cuisineType = RecipeInfoCuisineType.fromString(type);
+    Page<RecipeOverview> recipes = recipeInfoService.getCuisineRecipes(cuisineType, userId, page);
+    return CuisineRecipesResponse.from(recipes);
   }
 }

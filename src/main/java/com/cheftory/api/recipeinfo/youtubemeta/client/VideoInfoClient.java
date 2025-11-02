@@ -1,10 +1,10 @@
 package com.cheftory.api.recipeinfo.youtubemeta.client;
 
-import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
-import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
+import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
@@ -57,11 +57,12 @@ public class VideoInfoClient {
       throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
     }
 
-    boolean isShorts = Optional.ofNullable(channelId)
-        .filter(id -> id.startsWith("UC"))
-        .map(id -> "UUSH" + id.substring(2))
-        .map(playlistId -> checkIfVideoInShortsPlaylist(videoId, playlistId))
-        .orElse(false);
+    boolean isShorts =
+        Optional.ofNullable(channelId)
+            .filter(id -> id.startsWith("UC"))
+            .map(id -> "UUSH" + id.substring(2))
+            .map(playlistId -> checkIfVideoInShortsPlaylist(videoId, playlistId))
+            .orElse(false);
 
     // Shorts 플레이리스트에 없어도 60초 이하면 Shorts로 판별 (폴백)
     // (일부 채널은 UUSH를 지원하지 않음)
@@ -101,8 +102,11 @@ public class VideoInfoClient {
 
       return playlistResponse.hasItems();
     } catch (WebClientException e) {
-      log.warn("쇼츠 재생목록 검사 중 예기치 않은 오류가 발생했습니다: videoId={}, playlistId={}",
-          videoId, shortsPlaylistId, e);
+      log.warn(
+          "쇼츠 재생목록 검사 중 예기치 않은 오류가 발생했습니다: videoId={}, playlistId={}",
+          videoId,
+          shortsPlaylistId,
+          e);
       return false;
     }
   }
