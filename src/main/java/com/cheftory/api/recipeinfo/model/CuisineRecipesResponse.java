@@ -31,7 +31,6 @@ public record CuisineRecipesResponse(
       @JsonProperty("servings") Integer servings,
       @JsonProperty("cooking_time") Integer cookingTime,
       @JsonProperty("video_id") String videoId,
-      @JsonProperty("video_title") String title,
       @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
       @JsonProperty("video_seconds") Integer videoSeconds) {
     private static CuisineRecipe from(RecipeOverview recipe) {
@@ -44,7 +43,6 @@ public record CuisineRecipesResponse(
           recipe.getServings(),
           recipe.getCookTime(),
           recipe.getVideoId(),
-          recipe.getVideoTitle(),
           recipe.getThumbnailUrl(),
           recipe.getVideoSeconds());
     }
