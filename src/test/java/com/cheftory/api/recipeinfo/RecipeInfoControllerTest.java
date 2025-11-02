@@ -28,6 +28,7 @@ import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
 import com.cheftory.api.recipeinfo.category.RecipeCategory;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipeinfo.history.RecipeHistory;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
 import com.cheftory.api.recipeinfo.model.FullRecipe;
@@ -35,7 +36,6 @@ import com.cheftory.api.recipeinfo.model.RecipeCategoryCount;
 import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
 import com.cheftory.api.recipeinfo.model.RecipeCreationTarget;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
-import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipeinfo.model.RecipeInfoCuisineType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoRecommendType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
@@ -701,7 +701,8 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                               fieldWithPath("recommend_recipes[].tags[].name").description("태그 이름"),
                               fieldWithPath("recommend_recipes[].is_viewed")
                                   .description("사용자가 해당 레시피를 본 적이 있는지 여부"),
-                              fieldWithPath("recommend_recipes[].description").description("레시피 설명"),
+                              fieldWithPath("recommend_recipes[].description")
+                                  .description("레시피 설명"),
                               fieldWithPath("recommend_recipes[].servings").description("인분"),
                               fieldWithPath("recommend_recipes[].cooking_time")
                                   .description("조리 시간(분)"),
@@ -2064,8 +2065,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                           fieldWithPath("searched_recipes[].cooking_time").description("조리 시간(분)"),
                           fieldWithPath("searched_recipes[].video_id").description("레시피 비디오 ID"),
                           fieldWithPath("searched_recipes[].count").description("레시피 조회 수"),
-                          fieldWithPath("searched_recipes[].video_url")
-                              .description("레시피 비디오 URL"),
+                          fieldWithPath("searched_recipes[].video_url").description("레시피 비디오 URL"),
                           fieldWithPath("searched_recipes[].video_type")
                               .description("비디오 타입 (NORMAL 또는 SHORTS)"),
                           fieldWithPath("searched_recipes[].video_thumbnail_url")
@@ -3152,7 +3152,6 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         doReturn(6).when(recipeOverview2).getServings();
         doReturn(90).when(recipeOverview2).getCookTime();
 
-
         var recipes = List.of(recipeOverview1, recipeOverview2);
         var page = new PageImpl<>(recipes, Pageable.ofSize(20), 2);
 
@@ -3288,21 +3287,17 @@ public class RecipeInfoControllerTest extends RestDocsTest {
                         responseFields(
                             fieldWithPath("cuisine_recipes").description("요리 카테고리별 레시피 목록"),
                             fieldWithPath("cuisine_recipes[].recipe_id").description("레시피 ID"),
-                            fieldWithPath("cuisine_recipes[].recipe_title")
-                                .description("레시피 제목"),
+                            fieldWithPath("cuisine_recipes[].recipe_title").description("레시피 제목"),
                             fieldWithPath("cuisine_recipes[].tags").description("태그 목록"),
                             fieldWithPath("cuisine_recipes[].tags[].name").description("태그 이름"),
                             fieldWithPath("cuisine_recipes[].is_viewed")
                                 .description("사용자가 해당 레시피를 본 적이 있는지 여부"),
                             fieldWithPath("cuisine_recipes[].description").description("레시피 설명"),
                             fieldWithPath("cuisine_recipes[].servings").description("인분"),
-                            fieldWithPath("cuisine_recipes[].cooking_time")
-                                .description("조리 시간(분)"),
-                            fieldWithPath("cuisine_recipes[].video_id")
-                                .description("레시피 비디오 ID"),
+                            fieldWithPath("cuisine_recipes[].cooking_time").description("조리 시간(분)"),
+                            fieldWithPath("cuisine_recipes[].video_id").description("레시피 비디오 ID"),
                             fieldWithPath("cuisine_recipes[].count").description("레시피 조회 수"),
-                            fieldWithPath("cuisine_recipes[].video_url")
-                                .description("레시피 비디오 URL"),
+                            fieldWithPath("cuisine_recipes[].video_url").description("레시피 비디오 URL"),
                             fieldWithPath("cuisine_recipes[].video_type")
                                 .description("비디오 타입 (NORMAL 또는 SHORTS)"),
                             fieldWithPath("cuisine_recipes[].video_thumbnail_url")
@@ -3319,8 +3314,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
         var responseBody = response.extract().jsonPath();
         assertThat(responseBody.getString("cuisine_recipes[0].recipe_id"))
             .isEqualTo(recipeId1.toString());
-        assertThat(responseBody.getString("cuisine_recipes[0].recipe_title"))
-            .isEqualTo("한식 레시피 1");
+        assertThat(responseBody.getString("cuisine_recipes[0].recipe_title")).isEqualTo("한식 레시피 1");
         assertThat(responseBody.getList("cuisine_recipes[0].tags")).hasSize(1);
         assertThat(responseBody.getString("cuisine_recipes[0].tags[0].name")).isEqualTo("한식");
         assertThat(responseBody.getBoolean("cuisine_recipes[0].is_viewed")).isEqualTo(false);

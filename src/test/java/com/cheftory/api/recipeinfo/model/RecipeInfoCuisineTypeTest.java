@@ -46,15 +46,22 @@ class RecipeInfoCuisineTypeTest {
     @Test
     @DisplayName("모든 유효한 타입을 변환할 수 있다")
     void shouldConvertAllValidTypes() {
-      assertThat(RecipeInfoCuisineType.fromString("KOREAN")).isEqualTo(RecipeInfoCuisineType.KOREAN);
+      assertThat(RecipeInfoCuisineType.fromString("KOREAN"))
+          .isEqualTo(RecipeInfoCuisineType.KOREAN);
       assertThat(RecipeInfoCuisineType.fromString("SNACK")).isEqualTo(RecipeInfoCuisineType.SNACK);
-      assertThat(RecipeInfoCuisineType.fromString("CHINESE")).isEqualTo(RecipeInfoCuisineType.CHINESE);
-      assertThat(RecipeInfoCuisineType.fromString("JAPANESE")).isEqualTo(RecipeInfoCuisineType.JAPANESE);
-      assertThat(RecipeInfoCuisineType.fromString("WESTERN")).isEqualTo(RecipeInfoCuisineType.WESTERN);
-      assertThat(RecipeInfoCuisineType.fromString("DESSERT")).isEqualTo(RecipeInfoCuisineType.DESSERT);
-      assertThat(RecipeInfoCuisineType.fromString("HEALTHY")).isEqualTo(RecipeInfoCuisineType.HEALTHY);
+      assertThat(RecipeInfoCuisineType.fromString("CHINESE"))
+          .isEqualTo(RecipeInfoCuisineType.CHINESE);
+      assertThat(RecipeInfoCuisineType.fromString("JAPANESE"))
+          .isEqualTo(RecipeInfoCuisineType.JAPANESE);
+      assertThat(RecipeInfoCuisineType.fromString("WESTERN"))
+          .isEqualTo(RecipeInfoCuisineType.WESTERN);
+      assertThat(RecipeInfoCuisineType.fromString("DESSERT"))
+          .isEqualTo(RecipeInfoCuisineType.DESSERT);
+      assertThat(RecipeInfoCuisineType.fromString("HEALTHY"))
+          .isEqualTo(RecipeInfoCuisineType.HEALTHY);
       assertThat(RecipeInfoCuisineType.fromString("BABY")).isEqualTo(RecipeInfoCuisineType.BABY);
-      assertThat(RecipeInfoCuisineType.fromString("SIMPLE")).isEqualTo(RecipeInfoCuisineType.SIMPLE);
+      assertThat(RecipeInfoCuisineType.fromString("SIMPLE"))
+          .isEqualTo(RecipeInfoCuisineType.SIMPLE);
     }
 
     @Test
