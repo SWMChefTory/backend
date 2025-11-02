@@ -9,6 +9,10 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,7 +36,8 @@ public class RecipeRankService {
     recipeRankRepository.saveLatest(rankingKeyGenerator.getLatestKey(type), newKey);
   }
 
-  public List<UUID> getRecipeIds(RankingType type, Integer page) {
+  public Page<UUID> getRecipeIds(RankingType type, Integer page) {
+    Pageable pageable = PageRequest.of(page, 10);
     String latestPointerKey = rankingKeyGenerator.getLatestKey(type);
 
     String actualRankingKey =
@@ -40,23 +45,20 @@ public class RecipeRankService {
             .findLatest(latestPointerKey)
             .orElseThrow(() -> new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_NOT_FOUND));
 
-    Long offset = page.longValue() * PAGE_SIZE;
-    Long limitEnd = offset + PAGE_SIZE - 1;
+    Long offset = pageable.getOffset();
+    Long limitEnd = offset + pageable.getPageSize() - 1;
 
     Set<String> ids = recipeRankRepository.findRecipeIds(actualRankingKey, offset, limitEnd);
 
-    if (ids == null || ids.isEmpty()) {
-      return List.of();
-    }
+    List<UUID> recipeIds =
+        (ids == null || ids.isEmpty()) ? List.of() : ids.stream().map(UUID::fromString).toList();
 
-    return ids.stream().map(UUID::fromString).toList();
-  }
-
-  public Long getTotalCount(RankingType type) {
     String latestKey =
         recipeRankRepository
             .findLatest(rankingKeyGenerator.getLatestKey(type))
             .orElseThrow(() -> new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_NOT_FOUND));
-    return recipeRankRepository.count(latestKey);
+    Long totalElements = recipeRankRepository.count(latestKey);
+
+    return new PageImpl<>(recipeIds, pageable, totalElements);
   }
 }

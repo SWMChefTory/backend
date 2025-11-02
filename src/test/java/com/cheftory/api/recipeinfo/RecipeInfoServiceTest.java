@@ -28,6 +28,8 @@ import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipeinfo.model.FullRecipe;
 import com.cheftory.api.recipeinfo.model.RecipeCreationTarget;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.model.RecipeInfoCuisineType;
+import com.cheftory.api.recipeinfo.model.RecipeInfoRecommendType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
@@ -453,221 +455,144 @@ public class RecipeInfoServiceTest {
   }
 
   @Nested
-  @DisplayName("인기 레시피 조회")
-  class FindPopulars {
+  @DisplayName("추천 레시피 조회")
+  class GetRecommendRecipes {
 
-    @Test
-    @DisplayName("성공한 레시피들만 인기 목록에 포함된다")
-    void shouldReturnOnlySuccessfulRecipesInPopularList() {
-      Integer page = 0;
-      UUID recipeId1 = UUID.randomUUID();
-      UUID recipeId2 = UUID.randomUUID();
-      UUID userId = UUID.randomUUID();
+    @Nested
+    @DisplayName("인기 레시피 타입")
+    class PopularRecipeType {
 
-      Recipe recipe1 = createMockRecipe(recipeId1, RecipeStatus.SUCCESS);
-      Recipe recipe2 = createMockRecipe(recipeId2, RecipeStatus.SUCCESS);
-      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe1, recipe2));
+      @Test
+      @DisplayName("성공한 레시피들만 인기 목록에 포함된다")
+      void shouldReturnOnlySuccessfulRecipesInPopularList() {
+        Integer page = 0;
+        UUID recipeId1 = UUID.randomUUID();
+        UUID recipeId2 = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
-      setupPopularMocks(List.of(recipeId1, recipeId2));
-      doReturn(recipePage).when(recipeService).getPopulars(page);
+        Recipe recipe1 = createMockRecipe(recipeId1, RecipeStatus.SUCCESS);
+        Recipe recipe2 = createMockRecipe(recipeId2, RecipeStatus.SUCCESS);
+        Page<Recipe> recipePage = new PageImpl<>(List.of(recipe1, recipe2));
 
-      Page<RecipeOverview> result =
-          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+        setupPopularMocks(List.of(recipeId1, recipeId2));
+        doReturn(recipePage).when(recipeService).getPopulars(page, RecipeInfoVideoQuery.ALL);
 
-      assertThat(result.getContent()).hasSize(2);
-      assertThat(result.getContent()).allMatch(overview -> overview.getRecipeId() != null);
-      verify(recipeService).getPopulars(page);
+        Page<RecipeOverview> result =
+            recipeInfoService.getRecommendRecipes(
+                RecipeInfoRecommendType.POPULAR, userId, page, RecipeInfoVideoQuery.ALL);
+
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent()).allMatch(overview -> overview.getRecipeId() != null);
+        verify(recipeService).getPopulars(page, RecipeInfoVideoQuery.ALL);
+      }
+
+      @Test
+      @DisplayName("Query가 NORMAL이면 getPopulars with NORMAL을 호출한다")
+      void shouldCallGetPopularsWithNormalWhenQueryIsNormal() {
+        Integer page = 0;
+        UUID recipeId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+        Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+        setupPopularMocks(List.of(recipeId));
+        doReturn(recipePage).when(recipeService).getPopulars(page, RecipeInfoVideoQuery.NORMAL);
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+        recipeInfoService.getRecommendRecipes(
+            RecipeInfoRecommendType.POPULAR, userId, page, RecipeInfoVideoQuery.NORMAL);
+
+        verify(recipeService).getPopulars(page, RecipeInfoVideoQuery.NORMAL);
+      }
+
+      @Test
+      @DisplayName("Query가 SHORTS이면 getPopulars with SHORTS를 호출한다")
+      void shouldCallGetPopularsWithShortsWhenQueryIsShorts() {
+        Integer page = 0;
+        UUID recipeId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+        Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+        setupPopularMocks(List.of(recipeId));
+        doReturn(recipePage).when(recipeService).getPopulars(page, RecipeInfoVideoQuery.SHORTS);
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+        recipeInfoService.getRecommendRecipes(
+            RecipeInfoRecommendType.POPULAR, userId, page, RecipeInfoVideoQuery.SHORTS);
+
+        verify(recipeService).getPopulars(page, RecipeInfoVideoQuery.SHORTS);
+      }
     }
 
-    @Test
-    @DisplayName("성공한 레시피가 없으면 빈 목록을 반환한다")
-    void shouldReturnEmptyListWhenNoSuccessfulRecipes() {
-      Integer page = 0;
-      Page<Recipe> emptyRecipePage = new PageImpl<>(List.of());
-      UUID userId = UUID.randomUUID();
+    @Nested
+    @DisplayName("트렌드 레시피 타입")
+    class TrendingRecipeType {
 
-      doReturn(emptyRecipePage).when(recipeService).getPopulars(page);
+      @Test
+      @DisplayName("트렌드 레시피를 조회한다")
+      void shouldReturnTrendingRecipes() {
+        Integer page = 0;
+        UUID recipeId1 = UUID.randomUUID();
+        UUID recipeId2 = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
-      Page<RecipeOverview> result =
-          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+        List<UUID> recipeIds = List.of(recipeId1, recipeId2);
+        Page<UUID> recipeIdsPage = new PageImpl<>(recipeIds);
+        List<Recipe> recipes =
+            List.of(
+                createMockRecipe(recipeId1, RecipeStatus.SUCCESS),
+                createMockRecipe(recipeId2, RecipeStatus.SUCCESS));
 
-      assertThat(result.getContent()).isEmpty();
-      assertThat(result.getTotalElements()).isEqualTo(0);
-      verify(recipeService).getPopulars(page);
+        doReturn(recipeIdsPage).when(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
+        doReturn(recipes).when(recipeService).getValidRecipes(recipeIds);
+        setupPopularMocks(recipeIds);
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+        Page<RecipeOverview> result =
+            recipeInfoService.getRecommendRecipes(
+                RecipeInfoRecommendType.TRENDING, userId, page, RecipeInfoVideoQuery.ALL);
+
+        assertThat(result.getContent()).hasSize(2);
+        verify(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
+        verify(recipeService).getValidRecipes(recipeIds);
+      }
     }
 
-    @Test
-    @DisplayName("유튜브 메타데이터가 누락된 레시피는 제외된다")
-    void shouldExcludeRecipesWithMissingYoutubeMeta() {
-      Integer page = 0;
-      UUID recipeId1 = UUID.randomUUID();
-      UUID recipeId2 = UUID.randomUUID();
-      UUID userId = UUID.randomUUID();
+    @Nested
+    @DisplayName("셰프 레시피 타입")
+    class ChefRecipeType {
 
-      Recipe recipe1 = createMockRecipe(recipeId1, RecipeStatus.SUCCESS);
-      Recipe recipe2 = createMockRecipe(recipeId2, RecipeStatus.SUCCESS);
-      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe1, recipe2));
+      @Test
+      @DisplayName("셰프 레시피를 조회한다")
+      void shouldReturnChefRecipes() {
+        Integer page = 0;
+        UUID recipeId1 = UUID.randomUUID();
+        UUID recipeId2 = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
-      List<RecipeYoutubeMeta> youtubeMetas =
-          List.of(createMockRecipeYoutubeMeta(UUID.randomUUID(), "정상 영상", recipeId1));
+        List<UUID> recipeIds = List.of(recipeId1, recipeId2);
+        Page<UUID> recipeIdsPage = new PageImpl<>(recipeIds);
+        List<Recipe> recipes =
+            List.of(
+                createMockRecipe(recipeId1, RecipeStatus.SUCCESS),
+                createMockRecipe(recipeId2, RecipeStatus.SUCCESS));
 
-      doReturn(recipePage).when(recipeService).getPopulars(page);
-      doReturn(youtubeMetas)
-          .when(recipeYoutubeMetaService)
-          .getByRecipes(List.of(recipeId1, recipeId2));
-      doReturn(List.of()).when(recipeDetailMetaService).getIn(List.of(recipeId1, recipeId2));
-      doReturn(List.of()).when(recipeTagService).getIn(List.of(recipeId1, recipeId2));
-      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+        doReturn(recipeIdsPage).when(recipeRankService).getRecipeIds(RankingType.CHEF, page);
+        doReturn(recipes).when(recipeService).getValidRecipes(recipeIds);
+        setupPopularMocks(recipeIds);
+        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
-      Page<RecipeOverview> result =
-          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
+        Page<RecipeOverview> result =
+            recipeInfoService.getRecommendRecipes(
+                RecipeInfoRecommendType.CHEF, userId, page, RecipeInfoVideoQuery.ALL);
 
-      assertThat(result.getContent()).hasSize(1);
-      assertThat(result.getContent().get(0).getRecipeId()).isEqualTo(recipeId1);
-    }
-
-    @Test
-    @DisplayName("사용자가 이미 본 레시피는 isViewed가 true로 표시된다")
-    void shouldMarkViewedRecipesCorrectly() {
-      Integer page = 0;
-      UUID recipeId1 = UUID.randomUUID();
-      UUID recipeId2 = UUID.randomUUID();
-      UUID userId = UUID.randomUUID();
-
-      Recipe recipe1 = createMockRecipe(recipeId1, RecipeStatus.SUCCESS);
-      Recipe recipe2 = createMockRecipe(recipeId2, RecipeStatus.SUCCESS);
-      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe1, recipe2));
-
-      List<RecipeYoutubeMeta> youtubeMetas =
-          List.of(
-              createMockRecipeYoutubeMeta(UUID.randomUUID(), "영상1", recipeId1),
-              createMockRecipeYoutubeMeta(UUID.randomUUID(), "영상2", recipeId2));
-
-      List<RecipeDetailMeta> detailMetas =
-          List.of(
-              createMockRecipeDetailMeta(recipeId1, "설명1"),
-              createMockRecipeDetailMeta(recipeId2, "설명2"));
-
-      List<RecipeTag> tags =
-          List.of(createMockRecipeTag(recipeId1, "태그1"), createMockRecipeTag(recipeId2, "태그2"));
-
-      // recipeId1만 본 상태
-      RecipeHistory viewStatus1 = createMockRecipeHistory(recipeId1, userId);
-      List<RecipeHistory> viewStatuses = List.of(viewStatus1);
-
-      doReturn(recipePage).when(recipeService).getPopulars(page);
-      doReturn(youtubeMetas).when(recipeYoutubeMetaService).getByRecipes(anyList());
-      doReturn(detailMetas).when(recipeDetailMetaService).getIn(anyList());
-      doReturn(tags).when(recipeTagService).getIn(anyList());
-      doReturn(viewStatuses).when(recipeHistoryService).getByRecipes(anyList(), eq(userId));
-
-      Page<RecipeOverview> result =
-          recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
-
-      assertThat(result.getContent()).hasSize(2);
-
-      RecipeOverview overview1 =
-          result.getContent().stream()
-              .filter(o -> o.getRecipeId().equals(recipeId1))
-              .findFirst()
-              .orElse(null);
-      RecipeOverview overview2 =
-          result.getContent().stream()
-              .filter(o -> o.getRecipeId().equals(recipeId2))
-              .findFirst()
-              .orElse(null);
-
-      assertThat(overview1).isNotNull();
-      assertThat(overview1.getIsViewed()).isTrue();
-      assertThat(overview2).isNotNull();
-      assertThat(overview2.getIsViewed()).isFalse();
-      verify(recipeHistoryService).getByRecipes(anyList(), eq(userId));
-    }
-
-    @Test
-    @DisplayName("모든 서비스가 올바르게 호출되어야 한다")
-    void shouldCallAllServicesCorrectly() {
-      Integer page = 0;
-      UUID recipeId = UUID.randomUUID();
-      UUID userId = UUID.randomUUID();
-
-      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
-      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
-
-      setupPopularMocks(List.of(recipeId));
-      doReturn(recipePage).when(recipeService).getPopulars(page);
-      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
-
-      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
-
-      verify(recipeService).getPopulars(page);
-      verify(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
-      verify(recipeDetailMetaService).getIn(List.of(recipeId));
-      verify(recipeTagService).getIn(List.of(recipeId));
-      verify(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
-    }
-
-    @Test
-    @DisplayName("Query가 ALL이면 getPopulars를 호출한다")
-    void shouldCallGetPopularsWhenQueryIsAll() {
-      Integer page = 0;
-      UUID recipeId = UUID.randomUUID();
-      UUID userId = UUID.randomUUID();
-
-      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
-      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
-
-      setupPopularMocks(List.of(recipeId));
-      doReturn(recipePage).when(recipeService).getPopulars(page);
-      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
-
-      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.ALL);
-
-      verify(recipeService).getPopulars(page);
-      verify(recipeService, never()).getPopularNormals(any());
-      verify(recipeService, never()).getPopularShorts(any());
-    }
-
-    @Test
-    @DisplayName("Query가 NORMAL이면 getPopularNormals를 호출한다")
-    void shouldCallGetPopularNormalsWhenQueryIsNormal() {
-      Integer page = 0;
-      UUID recipeId = UUID.randomUUID();
-      UUID userId = UUID.randomUUID();
-
-      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
-      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
-
-      setupPopularMocks(List.of(recipeId));
-      doReturn(recipePage).when(recipeService).getPopularNormals(page);
-      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
-
-      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.NORMAL);
-
-      verify(recipeService).getPopularNormals(page);
-      verify(recipeService, never()).getPopulars(any());
-      verify(recipeService, never()).getPopularShorts(any());
-    }
-
-    @Test
-    @DisplayName("Query가 SHORTS이면 getPopularShorts를 호출한다")
-    void shouldCallGetPopularShortsWhenQueryIsShorts() {
-      Integer page = 0;
-      UUID recipeId = UUID.randomUUID();
-      UUID userId = UUID.randomUUID();
-
-      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
-      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
-
-      setupPopularMocks(List.of(recipeId));
-      doReturn(recipePage).when(recipeService).getPopularShorts(page);
-      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
-
-      recipeInfoService.getPopulars(page, userId, RecipeInfoVideoQuery.SHORTS);
-
-      verify(recipeService).getPopularShorts(page);
-      verify(recipeService, never()).getPopulars(any());
-      verify(recipeService, never()).getPopularNormals(any());
+        assertThat(result.getContent()).hasSize(2);
+        verify(recipeRankService).getRecipeIds(RankingType.CHEF, page);
+        verify(recipeService).getValidRecipes(recipeIds);
+      }
     }
   }
 
@@ -1878,112 +1803,144 @@ public class RecipeInfoServiceTest {
   }
 
   @Nested
-  @DisplayName("트렌드 레시피 조회")
-  class GetTrendRecipes {
+  @DisplayName("음식 종류별 레시피 조회")
+  class GetCuisineRecipes {
 
-    @Nested
-    @DisplayName("Given - 유효한 사용자 ID와 페이지가 주어졌을 때")
-    class GivenValidUserIdAndPage {
+    @Test
+    @DisplayName("한식 레시피를 조회한다")
+    void shouldReturnKoreanRecipes() {
+      Integer page = 0;
+      UUID recipeId1 = UUID.randomUUID();
+      UUID recipeId2 = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
 
-      private UUID userId;
-      private Integer page;
-      private List<UUID> recipeIds;
-      private List<Recipe> recipes;
-      private Long totalCount;
+      Recipe recipe1 = createMockRecipe(recipeId1, RecipeStatus.SUCCESS);
+      Recipe recipe2 = createMockRecipe(recipeId2, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe1, recipe2));
 
-      @BeforeEach
-      void setUp() {
-        userId = UUID.randomUUID();
-        page = 0;
-        UUID recipeId1 = UUID.randomUUID();
-        UUID recipeId2 = UUID.randomUUID();
+      setupPopularMocks(List.of(recipeId1, recipeId2));
+      doReturn(recipePage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.KOREAN.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
-        recipeIds = List.of(recipeId1, recipeId2);
-        recipes =
-            List.of(
-                createMockRecipe(recipeId1, RecipeStatus.SUCCESS),
-                createMockRecipe(recipeId2, RecipeStatus.SUCCESS));
-        totalCount = 50L;
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.KOREAN, userId, page);
 
-        doReturn(recipeIds).when(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
-        doReturn(totalCount).when(recipeRankService).getTotalCount(RankingType.TRENDING);
-        doReturn(recipes).when(recipeService).getValidRecipes(recipeIds);
-        setupPopularMocks(recipeIds);
-        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
-      }
-
-      @Nested
-      @DisplayName("When - 트렌드 레시피를 조회한다면")
-      class WhenGettingTrendRecipes {
-
-        @Test
-        @DisplayName("Then - 트렌드 레시피 목록을 반환해야 한다")
-        void thenShouldReturnTrendRecipes() {
-          Page<RecipeOverview> result = recipeInfoService.getTrendRecipes(userId, page);
-
-          assertThat(result.getContent()).hasSize(2);
-          assertThat(result.getTotalElements()).isEqualTo(totalCount);
-          assertThat(result.getNumber()).isEqualTo(page);
-          verify(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
-          verify(recipeRankService).getTotalCount(RankingType.TRENDING);
-          verify(recipeService).getValidRecipes(recipeIds);
-        }
-      }
+      assertThat(result.getContent()).hasSize(2);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.KOREAN.getKoreanName(), page);
     }
-  }
 
-  @Nested
-  @DisplayName("셰프 레시피 조회")
-  class GetChefRecipes {
+    @Test
+    @DisplayName("중식 레시피를 조회한다")
+    void shouldReturnChineseRecipes() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
 
-    @Nested
-    @DisplayName("Given - 유효한 사용자 ID와 페이지가 주어졌을 때")
-    class GivenValidUserIdAndPage {
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
 
-      private UUID userId;
-      private Integer page;
-      private List<UUID> recipeIds;
-      private List<Recipe> recipes;
-      private Long totalCount;
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.CHINESE.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
-      @BeforeEach
-      void setUp() {
-        userId = UUID.randomUUID();
-        page = 0;
-        UUID recipeId1 = UUID.randomUUID();
-        UUID recipeId2 = UUID.randomUUID();
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.CHINESE, userId, page);
 
-        recipeIds = List.of(recipeId1, recipeId2);
-        recipes =
-            List.of(
-                createMockRecipe(recipeId1, RecipeStatus.SUCCESS),
-                createMockRecipe(recipeId2, RecipeStatus.SUCCESS));
-        totalCount = 30L;
+      assertThat(result.getContent()).hasSize(1);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.CHINESE.getKoreanName(), page);
+    }
 
-        doReturn(recipeIds).when(recipeRankService).getRecipeIds(RankingType.CHEF, page);
-        doReturn(totalCount).when(recipeRankService).getTotalCount(RankingType.CHEF);
-        doReturn(recipes).when(recipeService).getValidRecipes(recipeIds);
-        setupPopularMocks(recipeIds);
-        doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
-      }
+    @Test
+    @DisplayName("일식 레시피를 조회한다")
+    void shouldReturnJapaneseRecipes() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
 
-      @Nested
-      @DisplayName("When - 셰프 레시피를 조회한다면")
-      class WhenGettingChefRecipes {
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
 
-        @Test
-        @DisplayName("Then - 셰프 레시피 목록을 반환해야 한다")
-        void thenShouldReturnChefRecipes() {
-          Page<RecipeOverview> result = recipeInfoService.getChefRecipes(userId, page);
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.JAPANESE.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
 
-          assertThat(result.getContent()).hasSize(2);
-          assertThat(result.getTotalElements()).isEqualTo(totalCount);
-          assertThat(result.getNumber()).isEqualTo(page);
-          verify(recipeRankService).getRecipeIds(RankingType.CHEF, page);
-          verify(recipeRankService).getTotalCount(RankingType.CHEF);
-          verify(recipeService).getValidRecipes(recipeIds);
-        }
-      }
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.JAPANESE, userId, page);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.JAPANESE.getKoreanName(), page);
+    }
+
+    @Test
+    @DisplayName("양식 레시피를 조회한다")
+    void shouldReturnWesternRecipes() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.WESTERN.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.WESTERN, userId, page);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.WESTERN.getKoreanName(), page);
+    }
+
+    @Test
+    @DisplayName("분식 레시피를 조회한다")
+    void shouldReturnSnackRecipes() {
+      Integer page = 0;
+      UUID recipeId = UUID.randomUUID();
+      UUID userId = UUID.randomUUID();
+
+      Recipe recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+      Page<Recipe> recipePage = new PageImpl<>(List.of(recipe));
+
+      setupPopularMocks(List.of(recipeId));
+      doReturn(recipePage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.SNACK.getKoreanName(), page);
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(anyList(), any(UUID.class));
+
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.SNACK, userId, page);
+
+      assertThat(result.getContent()).hasSize(1);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.SNACK.getKoreanName(), page);
+    }
+
+    @Test
+    @DisplayName("레시피가 없을 때 빈 페이지를 반환한다")
+    void shouldReturnEmptyPageWhenNoRecipes() {
+      Integer page = 0;
+      UUID userId = UUID.randomUUID();
+
+      Page<Recipe> emptyPage = new PageImpl<>(List.of());
+
+      doReturn(emptyPage)
+          .when(recipeService)
+          .getCuisines(RecipeInfoCuisineType.KOREAN.getKoreanName(), page);
+
+      Page<RecipeOverview> result =
+          recipeInfoService.getCuisineRecipes(RecipeInfoCuisineType.KOREAN, userId, page);
+
+      assertThat(result.getContent()).isEmpty();
+      assertThat(result.getTotalElements()).isEqualTo(0);
+      verify(recipeService).getCuisines(RecipeInfoCuisineType.KOREAN.getKoreanName(), page);
     }
   }
 }

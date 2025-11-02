@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeSort;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
@@ -400,8 +401,8 @@ class RecipeServiceTest {
   }
 
   @Nested
-  @DisplayName("findsSuccess(page)")
-  class FindsSuccess {
+  @DisplayName("getPopulars(page, query)")
+  class GetPopulars {
 
     private Integer page;
 
@@ -411,8 +412,8 @@ class RecipeServiceTest {
     }
 
     @Nested
-    @DisplayName("Given - 성공 상태의 레시피들이 존재할 때")
-    class GivenSuccessRecipesExist {
+    @DisplayName("Given - Query가 ALL일 때")
+    class GivenQueryIsAll {
 
       private Page<Recipe> expectedPage;
       private Pageable pageable;
@@ -428,17 +429,83 @@ class RecipeServiceTest {
       }
 
       @Nested
-      @DisplayName("When - 성공 레시피 페이지 조회 요청을 하면")
-      class WhenFindingSuccessRecipes {
+      @DisplayName("When - 인기 레시피 페이지 조회 요청을 하면")
+      class WhenFindingPopularRecipes {
 
         @Test
-        @DisplayName("Then - 성공 레시피 페이지가 반환된다")
-        void thenReturnSuccessRecipePage() {
-          Page<Recipe> result = service.getPopulars(page);
+        @DisplayName("Then - 모든 레시피 페이지가 반환된다")
+        void thenReturnAllRecipePage() {
+          Page<Recipe> result = service.getPopulars(page, RecipeInfoVideoQuery.ALL);
 
           assertThat(result).isEqualTo(expectedPage);
           verify(recipeRepository)
               .findByRecipeStatus(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - Query가 NORMAL일 때")
+    class GivenQueryIsNormal {
+
+      private Page<Recipe> expectedPage;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        List<Recipe> recipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        expectedPage = new PageImpl<>(recipes);
+        pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+
+        when(recipeRepository.findRecipes(RecipeStatus.SUCCESS, pageable, "NORMAL"))
+            .thenReturn(expectedPage);
+      }
+
+      @Nested
+      @DisplayName("When - 인기 레시피 페이지 조회 요청을 하면")
+      class WhenFindingPopularRecipes {
+
+        @Test
+        @DisplayName("Then - NORMAL 레시피 페이지가 반환된다")
+        void thenReturnNormalRecipePage() {
+          Page<Recipe> result = service.getPopulars(page, RecipeInfoVideoQuery.NORMAL);
+
+          assertThat(result).isEqualTo(expectedPage);
+          verify(recipeRepository)
+              .findRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class), eq("NORMAL"));
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - Query가 SHORTS일 때")
+    class GivenQueryIsShorts {
+
+      private Page<Recipe> expectedPage;
+      private Pageable pageable;
+
+      @BeforeEach
+      void setUp() {
+        List<Recipe> recipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        expectedPage = new PageImpl<>(recipes);
+        pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
+
+        when(recipeRepository.findRecipes(RecipeStatus.SUCCESS, pageable, "SHORTS"))
+            .thenReturn(expectedPage);
+      }
+
+      @Nested
+      @DisplayName("When - 인기 레시피 페이지 조회 요청을 하면")
+      class WhenFindingPopularRecipes {
+
+        @Test
+        @DisplayName("Then - SHORTS 레시피 페이지가 반환된다")
+        void thenReturnShortsRecipePage() {
+          Page<Recipe> result = service.getPopulars(page, RecipeInfoVideoQuery.SHORTS);
+
+          assertThat(result).isEqualTo(expectedPage);
+          verify(recipeRepository)
+              .findRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class), eq("SHORTS"));
         }
       }
     }
@@ -680,19 +747,21 @@ class RecipeServiceTest {
   }
 
   @Nested
-  @DisplayName("getPopularNormals(page)")
-  class GetPopularNormals {
+  @DisplayName("getCuisines(type, page)")
+  class GetCuisines {
 
     private Integer page;
+    private String cuisineType;
 
     @BeforeEach
     void init() {
       page = 0;
+      cuisineType = "KOREAN";
     }
 
     @Nested
-    @DisplayName("Given - 성공한 Normal 타입 레시피들이 존재할 때")
-    class GivenNormalRecipesExist {
+    @DisplayName("Given - 성공한 특정 음식 종류 레시피들이 존재할 때")
+    class GivenCuisineRecipesExist {
 
       private Page<Recipe> expectedPage;
       private Pageable pageable;
@@ -703,65 +772,57 @@ class RecipeServiceTest {
         expectedPage = new PageImpl<>(recipes);
         pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
 
-        when(recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable))
+        when(recipeRepository.findCuisineRecipes(cuisineType, RecipeStatus.SUCCESS, pageable))
             .thenReturn(expectedPage);
       }
 
       @Nested
-      @DisplayName("When - Normal 레시피 페이지 조회 요청을 하면")
-      class WhenFindingNormalRecipes {
+      @DisplayName("When - 특정 음식 종류 레시피 페이지 조회 요청을 하면")
+      class WhenFindingCuisineRecipes {
 
         @Test
-        @DisplayName("Then - Normal 레시피 페이지가 반환된다")
-        void thenReturnNormalRecipePage() {
-          Page<Recipe> result = service.getPopularNormals(page);
+        @DisplayName("Then - 해당 음식 종류 레시피 페이지가 반환된다")
+        void thenReturnCuisineRecipePage() {
+          Page<Recipe> result = service.getCuisines(cuisineType, page);
 
           assertThat(result).isEqualTo(expectedPage);
-          verify(recipeRepository).findNormalRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+          verify(recipeRepository)
+              .findCuisineRecipes(eq(cuisineType), eq(RecipeStatus.SUCCESS), any(Pageable.class));
         }
       }
     }
-  }
-
-  @Nested
-  @DisplayName("getPopularShorts(page)")
-  class GetPopularShorts {
-
-    private Integer page;
-
-    @BeforeEach
-    void init() {
-      page = 0;
-    }
 
     @Nested
-    @DisplayName("Given - 성공한 Shorts 타입 레시피들이 존재할 때")
-    class GivenShortsRecipesExist {
+    @DisplayName("Given - 중식 레시피가 존재할 때")
+    class GivenChineseRecipesExist {
 
       private Page<Recipe> expectedPage;
       private Pageable pageable;
 
       @BeforeEach
       void setUp() {
-        List<Recipe> recipes = List.of(mock(Recipe.class), mock(Recipe.class));
+        cuisineType = "CHINESE";
+        List<Recipe> recipes = List.of(mock(Recipe.class));
         expectedPage = new PageImpl<>(recipes);
         pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
 
-        when(recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable))
+        when(recipeRepository.findCuisineRecipes(cuisineType, RecipeStatus.SUCCESS, pageable))
             .thenReturn(expectedPage);
       }
 
       @Nested
-      @DisplayName("When - Shorts 레시피 페이지 조회 요청을 하면")
-      class WhenFindingShortsRecipes {
+      @DisplayName("When - 중식 레시피 페이지 조회 요청을 하면")
+      class WhenFindingChineseRecipes {
 
         @Test
-        @DisplayName("Then - Shorts 레시피 페이지가 반환된다")
-        void thenReturnShortsRecipePage() {
-          Page<Recipe> result = service.getPopularShorts(page);
+        @DisplayName("Then - 중식 레시피 페이지가 반환된다")
+        void thenReturnChineseRecipePage() {
+          Page<Recipe> result = service.getCuisines(cuisineType, page);
 
           assertThat(result).isEqualTo(expectedPage);
-          verify(recipeRepository).findShortsRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+          assertThat(result.getContent()).hasSize(1);
+          verify(recipeRepository)
+              .findCuisineRecipes(eq(cuisineType), eq(RecipeStatus.SUCCESS), any(Pageable.class));
         }
       }
     }

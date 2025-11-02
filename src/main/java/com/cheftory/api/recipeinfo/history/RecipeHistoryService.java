@@ -94,12 +94,6 @@ public class RecipeHistoryService {
         userId, null, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
-  public Page<RecipeHistory> getAll(UUID userId, Integer page) {
-    Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
-    return recipeHistoryRepository.findAllByUserIdAndStatus(
-        userId, RecipeHistoryStatus.ACTIVE, pageable);
-  }
-
   public Page<RecipeHistory> getRecents(UUID userId, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findByUserIdAndStatus(

@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
-import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.io.IOException;
 import java.net.URI;
@@ -133,8 +132,7 @@ public class VideoInfoClientTest {
               .isEqualTo(URI.create("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"));
           assertThat(result.getVideoSeconds()).isEqualTo(630);
           assertThat(result.getVideoId()).isEqualTo(videoId);
-          assertThat(result.getVideoType())
-              .isEqualTo(YoutubeMetaType.NORMAL);
+          assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
 
           RecordedRequest recordedRequest = mockWebServer.takeRequest();
           assertThat(recordedRequest.getMethod()).isEqualTo("GET");
@@ -346,12 +344,10 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(playlistResponseBody));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.SHORTS);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
 
       // API 호출 검증
       RecordedRequest videoRequest = mockWebServer.takeRequest();
@@ -409,12 +405,10 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(emptyPlaylistResponseBody));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.NORMAL);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
     }
 
     @Test
@@ -449,12 +443,10 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(videoResponseBody));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.NORMAL);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
     }
 
     @Test
@@ -491,12 +483,10 @@ public class VideoInfoClientTest {
 
       mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.NORMAL);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
 
       // 플레이리스트 조회도 시도했는지 확인
       mockWebServer.takeRequest(); // video request
@@ -535,12 +525,10 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(videoResponseBody));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.NORMAL);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
     }
 
     @Test
@@ -588,18 +576,15 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(emptyPlaylistResponseBody));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.SHORTS);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
     }
 
     @Test
     @DisplayName("플레이리스트 조회 실패했지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-    void returnsShortsTypeWhenPlaylistCheckFailsButUnderSixtySeconds()
-        throws InterruptedException {
+    void returnsShortsTypeWhenPlaylistCheckFailsButUnderSixtySeconds() throws InterruptedException {
       String videoResponseBody =
           """
           {
@@ -631,12 +616,10 @@ public class VideoInfoClientTest {
 
       mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.SHORTS);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
 
       // 플레이리스트 조회도 시도했는지 확인
       mockWebServer.takeRequest(); // video request
@@ -689,12 +672,10 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(emptyPlaylistResponseBody));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.SHORTS);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
     }
 
     @Test
@@ -728,12 +709,10 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(videoResponseBody));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.SHORTS);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
     }
 
     @Test
@@ -768,12 +747,10 @@ public class VideoInfoClientTest {
               .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .setBody(videoResponseBody));
 
-      YoutubeVideoInfo result =
-          videoInfoClient.fetchVideoInfo(youtubeUri);
+      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
       assertThat(result).isNotNull();
-      assertThat(result.getVideoType())
-          .isEqualTo(YoutubeMetaType.SHORTS);
+      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
     }
   }
 }

@@ -929,8 +929,8 @@ public class RecipeRepositoryTest extends DbContextTest {
   }
 
   @Nested
-  @DisplayName("NORMAL 타입 레시피 조회")
-  class FindNormalRecipes {
+  @DisplayName("비디오 타입별 레시피 조회")
+  class FindRecipes {
 
     @Nested
     @DisplayName("Given - NORMAL 타입 레시피들이 존재할 때")
@@ -972,7 +972,9 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - NORMAL 타입 레시피만 반환된다")
         void thenReturnsOnlyNormalRecipes() {
-          Page<Recipe> result = recipeRepository.findNormalRecipes(RecipeStatus.SUCCESS, pageable);
+          Page<Recipe> result =
+              recipeRepository.findRecipes(
+                  RecipeStatus.SUCCESS, pageable, YoutubeMetaType.NORMAL.name());
 
           assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(2);
           assertThat(result.getContent())
@@ -981,11 +983,6 @@ public class RecipeRepositoryTest extends DbContextTest {
         }
       }
     }
-  }
-
-  @Nested
-  @DisplayName("SHORTS 타입 레시피 조회")
-  class FindShortsRecipes {
 
     @Nested
     @DisplayName("Given - SHORTS 타입 레시피들이 존재할 때")
@@ -1025,7 +1022,9 @@ public class RecipeRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - SHORTS 타입 레시피만 반환된다")
         void thenReturnsOnlyShortsRecipes() {
-          Page<Recipe> result = recipeRepository.findShortsRecipes(RecipeStatus.SUCCESS, pageable);
+          Page<Recipe> result =
+              recipeRepository.findRecipes(
+                  RecipeStatus.SUCCESS, pageable, YoutubeMetaType.SHORTS.name());
 
           assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(2);
           assertThat(result.getContent())

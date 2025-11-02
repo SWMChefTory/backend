@@ -22,6 +22,8 @@ import com.cheftory.api.recipeinfo.model.RecipeCategoryCount;
 import com.cheftory.api.recipeinfo.model.RecipeCategoryCounts;
 import com.cheftory.api.recipeinfo.model.RecipeCreationTarget;
 import com.cheftory.api.recipeinfo.model.RecipeHistoryOverview;
+import com.cheftory.api.recipeinfo.model.RecipeInfoCuisineType;
+import com.cheftory.api.recipeinfo.model.RecipeInfoRecommendType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
@@ -167,28 +169,6 @@ public class RecipeInfoService {
     }
   }
 
-  /**
-   * 추천 레시피 목록을 조회합니다. 성공한 레시피만 가져옵니다. 유튜브 메타데이터가 없는 레시피는 제외합니다. (정상적인 상황은 아님)
-   *
-   * @param page 페이지 번호 (0부터 시작)
-   * @return 레시피 개요 페이지
-   */
-  public Page<RecipeOverview> getPopulars(Integer page, UUID userId, RecipeInfoVideoQuery query) {
-    Page<Recipe> recipes =
-        switch (query) {
-          case ALL -> recipeService.getPopulars(page);
-          case NORMAL -> recipeService.getPopularNormals(page);
-          case SHORTS -> recipeService.getPopularShorts(page);
-        };
-
-    return makeOverviews(recipes, userId);
-  }
-
-  public Page<RecipeHistoryOverview> getRecents(UUID userId, Integer page) {
-    Page<RecipeHistory> histories = recipeHistoryService.getRecents(userId, page);
-    return makeHistoryOverviews(histories);
-  }
-
   public Page<RecipeHistoryOverview> getCategorized(
       UUID userId, UUID recipeCategoryId, Integer page) {
     Page<RecipeHistory> histories =
@@ -201,8 +181,8 @@ public class RecipeInfoService {
     return makeHistoryOverviews(histories);
   }
 
-  public Page<RecipeHistoryOverview> getHistories(UUID userId, Integer page) {
-    Page<RecipeHistory> histories = recipeHistoryService.getAll(userId, page);
+  public Page<RecipeHistoryOverview> getRecents(UUID userId, Integer page) {
+    Page<RecipeHistory> histories = recipeHistoryService.getRecents(userId, page);
     return makeHistoryOverviews(histories);
   }
 
@@ -381,25 +361,29 @@ public class RecipeInfoService {
     }
   }
 
-  public Page<RecipeOverview> getTrendRecipes(UUID userId, Integer page) {
-    List<UUID> recipeIds = recipeRankService.getRecipeIds(RankingType.TRENDING, page);
-    List<Recipe> recipes = recipeService.getValidRecipes(recipeIds);
-    Long totalElements = recipeRankService.getTotalCount(RankingType.TRENDING);
-
-    Pageable pageable = PageRequest.of(page, 10);
-    Page<Recipe> recipePage = new PageImpl<>(recipes, pageable, totalElements);
-
-    return makeOverviews(recipePage, userId);
+  public Page<RecipeOverview> getCuisineRecipes(
+      RecipeInfoCuisineType type, UUID userId, Integer page) {
+    Page<Recipe> recipes = recipeService.getCuisines(type.getKoreanName(), page);
+    return makeOverviews(recipes, userId);
   }
 
-  public Page<RecipeOverview> getChefRecipes(UUID userId, Integer page) {
-    List<UUID> recipeIds = recipeRankService.getRecipeIds(RankingType.CHEF, page);
-    List<Recipe> recipes = recipeService.getValidRecipes(recipeIds);
-    Long totalElements = recipeRankService.getTotalCount(RankingType.CHEF);
+  public Page<RecipeOverview> getRecommendRecipes(
+      RecipeInfoRecommendType type, UUID userId, Integer page, RecipeInfoVideoQuery query) {
+    Page<Recipe> recipes =
+        switch (type) {
+          case POPULAR -> recipeService.getPopulars(page, query);
+          case CHEF -> getRankingRecipes(RankingType.CHEF, page);
+          case TRENDING -> getRankingRecipes(RankingType.TRENDING, page);
+        };
+
+    return makeOverviews(recipes, userId);
+  }
+
+  private Page<Recipe> getRankingRecipes(RankingType rankingType, Integer page) {
+    Page<UUID> recipeIds = recipeRankService.getRecipeIds(rankingType, page);
+    List<Recipe> recipes = recipeService.getValidRecipes(recipeIds.stream().toList());
 
     Pageable pageable = PageRequest.of(page, 10);
-    Page<Recipe> recipePage = new PageImpl<>(recipes, pageable, totalElements);
-
-    return makeOverviews(recipePage, userId);
+    return new PageImpl<>(recipes, pageable, recipeIds.getTotalElements());
   }
 }
