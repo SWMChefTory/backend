@@ -3,7 +3,9 @@ package com.cheftory.api.affiliate;
 import com.cheftory.api.affiliate.coupang.CoupangClient;
 import com.cheftory.api.affiliate.coupang.dto.CoupangSearchResponse;
 import com.cheftory.api.affiliate.dto.AffiliateSearchResponse;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,25 +22,24 @@ public class AffiliateService {
   }
 
   private AffiliateSearchResponse toSearchResponse(CoupangSearchResponse res) {
-    var data = res != null ? res.data() : null;
-
     List<AffiliateSearchResponse.Product> items =
-        (data != null && data.productData() != null)
-            ? data.productData().stream()
-                .map(
-                    p ->
-                        new AffiliateSearchResponse.Product(
-                            p.keyword(),
-                            p.rank(),
-                            Boolean.TRUE.equals(p.isRocket()),
-                            Boolean.TRUE.equals(p.isFreeShipping()),
-                            p.productId(),
-                            p.productImage(),
-                            p.productName(),
-                            p.productPrice(),
-                            p.productUrl()))
-                .toList()
-            : List.of();
+        Optional.ofNullable(res)
+            .map(CoupangSearchResponse::data)
+            .map(CoupangSearchResponse.Data::productData)
+            .orElse(Collections.emptyList())
+            .stream()
+            .map(p -> new AffiliateSearchResponse.Product(
+                p.keyword(),
+                p.rank(),
+                Boolean.TRUE.equals(p.isRocket()),
+                Boolean.TRUE.equals(p.isFreeShipping()),
+                p.productId(),
+                p.productImage(),
+                p.productName(),
+                p.productPrice(),
+                p.productUrl()))
+            .toList();
+
 
     return new AffiliateSearchResponse(items);
   }
