@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
+import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.io.IOException;
 import java.net.URI;
@@ -102,6 +103,9 @@ public class VideoInfoClientTest {
                     },
                     "contentDetails": {
                       "duration": "PT10M30S"
+                    },
+                    "status": {
+                      "embeddable": true
                     }
                   }
                 ]
@@ -170,7 +174,8 @@ public class VideoInfoClientTest {
         @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_FOUND)을 던진다")
         void thenThrowsYoutubeMetaException() {
           assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
-              .isInstanceOf(YoutubeMetaException.class);
+              .isInstanceOf(YoutubeMetaException.class)
+              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
         }
       }
 
@@ -193,7 +198,10 @@ public class VideoInfoClientTest {
                         }
                       }
                     },
-                    "contentDetails": {}
+                    "contentDetails": {},
+                    "status": {
+                      "embeddable": true
+                    }
                   }
                 ]
               }
@@ -212,7 +220,56 @@ public class VideoInfoClientTest {
         @DisplayName("Then - YoutubeMetaException(DURATION_NOT_FOUND)을 던진다")
         void thenThrowsYoutubeMetaException() {
           assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
-              .isInstanceOf(YoutubeMetaException.class);
+              .isInstanceOf(YoutubeMetaException.class)
+              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
+        }
+      }
+
+      @Nested
+      @DisplayName("When - YouTube API가 embeddable false로 응답하면")
+      class WhenYoutubeApiReturnsNotEmbeddable {
+
+        @BeforeEach
+        void setUp() {
+          String responseBody =
+              """
+              {
+                "items": [
+                  {
+                    "snippet": {
+                      "title": "임베드 불가 영상",
+                      "thumbnails": {
+                        "maxres": {
+                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+                        }
+                      }
+                    },
+                    "contentDetails": {
+                      "duration": "PT10M30S"
+                    },
+                    "status": {
+                      "embeddable": false
+                    }
+                  }
+                ]
+              }
+              """;
+
+          mockWebServer.enqueue(
+              new MockResponse()
+                  .setResponseCode(200)
+                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .setBody(responseBody));
+
+          doReturn(videoId).when(youtubeUri).getVideoId();
+        }
+
+        @Test
+        @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_EMBEDDABLE)을 던진다")
+        void thenThrowsYoutubeMetaException() {
+          assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
+              .isInstanceOf(YoutubeMetaException.class)
+              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
         }
       }
     }
@@ -258,7 +315,13 @@ public class VideoInfoClientTest {
       String responseBody =
           """
           {
-            "items": [ { "id": "abcd1234" } ]
+            "items": [ 
+              {
+                "status": {
+                  "embeddable": true
+                }
+              }
+            ]
           }
           """;
 
@@ -311,6 +374,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT30S"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -379,6 +445,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT10M30S"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -430,6 +499,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT10M"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -468,6 +540,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT5M"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -512,6 +587,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT8M15S"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -550,6 +628,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT50S"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -601,6 +682,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT45S"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -646,6 +730,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT1M"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -696,6 +783,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT30S"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]
@@ -734,6 +824,9 @@ public class VideoInfoClientTest {
                 },
                 "contentDetails": {
                   "duration": "PT55S"
+                },
+                "status": {
+                  "embeddable": true
                 }
               }
             ]

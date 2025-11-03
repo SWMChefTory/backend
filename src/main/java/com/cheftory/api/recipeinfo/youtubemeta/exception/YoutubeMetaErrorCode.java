@@ -16,7 +16,10 @@ public enum YoutubeMetaErrorCode implements ErrorMessage {
   YOUTUBE_META_NOT_BLOCKED_VIDEO("YOUTUBE_META_012", "차단되지 않은 유튜브 메타 정보입니다."),
   YOUTUBE_META_VIDEO_NOT_FOUND("YOUTUBE_META_013", "동영상을 찾을 수 없습니다."),
   YOUTUBE_META_VIDEO_DURATION_NOT_FOUND("YOUTUBE_META_014", "동영상 길이 정보를 찾을 수 없습니다."),
-  YOUTUBE_META_VIDEO_DURATION_INVALID("YOUTUBE_META_015", "동영상 길이 정보가 유효하지 않습니다.");
+  YOUTUBE_META_VIDEO_DURATION_INVALID("YOUTUBE_META_015", "동영상 길이 정보가 유효하지 않습니다."),
+  YOUTUBE_META_VIDEO_NOT_EMBEDDABLE("YOUTUBE_META_016", "임베드할 수 없는 동영상입니다."),
+  YOUTUBE_META_API_ERROR("YOUTUBE_META_017", "유튜브 메타 정보 API 호출 중 오류가 발생했습니다."),
+  ;
 
   private final String errorCode;
   private final String message;

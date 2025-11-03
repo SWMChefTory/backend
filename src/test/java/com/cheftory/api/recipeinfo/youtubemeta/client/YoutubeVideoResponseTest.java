@@ -14,7 +14,8 @@ class YoutubeVideoResponseTest {
   void getTitleReturnsFirstItemTitle() {
     YoutubeVideoResponse.Snippet snippet =
         new YoutubeVideoResponse.Snippet("김치찌개 만들기", "UCabcd", null);
-    YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null);
+    YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
+    YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null, status);
     YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
 
     String title = response.getTitle();
@@ -27,7 +28,8 @@ class YoutubeVideoResponseTest {
   void getChannelIdReturnsFirstItemChannelId() {
     YoutubeVideoResponse.Snippet snippet =
         new YoutubeVideoResponse.Snippet("테스트 영상", "UCtest123", null);
-    YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null);
+    YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
+    YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null, status);
     YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
 
     String channelId = response.getChannelId();
@@ -45,7 +47,8 @@ class YoutubeVideoResponseTest {
         new YoutubeVideoResponse.Thumbnails(null, null, null, maxres);
     YoutubeVideoResponse.Snippet snippet =
         new YoutubeVideoResponse.Snippet("영상", "UCabc", thumbnails);
-    YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null);
+    YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
+    YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null, status);
     YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
 
     String thumbnailUri = response.getThumbnailUri();
@@ -59,7 +62,8 @@ class YoutubeVideoResponseTest {
     YoutubeVideoResponse.ContentDetails contentDetails =
         new YoutubeVideoResponse.ContentDetails("PT10M30S");
     YoutubeVideoResponse.Snippet snippet = new YoutubeVideoResponse.Snippet("영상", "UCabc", null);
-    YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, contentDetails);
+    YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
+    YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, contentDetails, status);
     YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
 
     Long seconds = response.getSecondsDuration();
