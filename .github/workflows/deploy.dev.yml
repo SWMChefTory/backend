@@ -103,6 +103,8 @@ jobs:
             REDIS_HOST=${{ secrets.REDIS_HOST }}
             REDIS_PORT=${{ secrets.REDIS_PORT }}
             REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            COUPANG_PARTNERS_ACCESS_KEY=${{ secrets.COUPANG_PARTNERS_ACCESS_KEY }}
+            COUPANG_PARTNERS_SECRET_KEY=${{ secrets.COUPANG_PARTNERS_SECRET_KEY }}
             EOF
             
 
