@@ -6,7 +6,6 @@ import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.net.URI;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,53 +30,68 @@ public class VideoInfoClient {
   public YoutubeVideoInfo fetchVideoInfo(YoutubeUri youtubeUri) {
     String videoId = youtubeUri.getVideoId();
 
-    YoutubeVideoResponse youtubeVideoResponse =
-        webClient
-            .get()
-            .uri(
-                uriBuilder ->
-                    uriBuilder
-                        .path("/videos")
-                        .queryParam("id", videoId)
-                        .queryParam("key", youtubeKey)
-                        .queryParam("part", "snippet,contentDetails")
-                        .build())
-            .retrieve()
-            .bodyToMono(YoutubeVideoResponse.class)
-            .block();
+    try {
+      YoutubeVideoResponse youtubeVideoResponse =
+          webClient
+              .get()
+              .uri(
+                  uriBuilder ->
+                      uriBuilder
+                          .path("/videos")
+                          .queryParam("id", videoId)
+                          .queryParam("key", youtubeKey)
+                          .queryParam("part", "snippet,contentDetails,status")
+                          .build())
+              .retrieve()
+              .bodyToMono(YoutubeVideoResponse.class)
+              .block();
 
-    if (youtubeVideoResponse == null || youtubeVideoResponse.items().isEmpty()) {
-      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
+      if (youtubeVideoResponse == null || youtubeVideoResponse.items().isEmpty()) {
+        throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
+      }
+
+      Boolean embeddable = youtubeVideoResponse.getEmbeddable();
+
+      if (embeddable != null && !embeddable) {
+        throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
+      }
+
+      String channelId = youtubeVideoResponse.getChannelId();
+      Long duration = youtubeVideoResponse.getSecondsDuration();
+
+      if (duration == null) {
+        throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
+      }
+
+      boolean isShorts =
+          Optional.ofNullable(channelId)
+              .filter(id -> id.startsWith("UC"))
+              .map(id -> "UUSH" + id.substring(2))
+              .map(playlistId -> checkIfVideoInShortsPlaylist(videoId, playlistId))
+              .orElse(false);
+
+      if (!isShorts && duration <= 60) {
+        isShorts = true;
+      }
+
+      YoutubeMetaType metaType = isShorts ? YoutubeMetaType.SHORTS : YoutubeMetaType.NORMAL;
+
+      return YoutubeVideoInfo.from(
+          youtubeUri,
+          youtubeVideoResponse.getTitle(),
+          URI.create(youtubeVideoResponse.getThumbnailUri()),
+          duration.intValue(),
+          metaType);
+
+    } catch (YoutubeMetaException e) {
+      throw e;
+    } catch (WebClientException e) {
+      log.error("YouTube API 호출 실패 - videoId: {}, error: {}", videoId, e.getMessage());
+      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_API_ERROR);
+    } catch (Exception e) {
+      log.error("비디오 정보 조회 중 예상치 못한 오류 - videoId: {}", videoId, e);
+      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_API_ERROR);
     }
-
-    String channelId = youtubeVideoResponse.getChannelId();
-    Long duration = youtubeVideoResponse.getSecondsDuration();
-
-    if (duration == null) {
-      throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
-    }
-
-    boolean isShorts =
-        Optional.ofNullable(channelId)
-            .filter(id -> id.startsWith("UC"))
-            .map(id -> "UUSH" + id.substring(2))
-            .map(playlistId -> checkIfVideoInShortsPlaylist(videoId, playlistId))
-            .orElse(false);
-
-    // Shorts 플레이리스트에 없어도 60초 이하면 Shorts로 판별 (폴백)
-    // (일부 채널은 UUSH를 지원하지 않음)
-    if (!isShorts && duration <= 60) {
-      isShorts = true;
-    }
-
-    YoutubeMetaType metaType = isShorts ? YoutubeMetaType.SHORTS : YoutubeMetaType.NORMAL;
-
-    return YoutubeVideoInfo.from(
-        youtubeUri,
-        youtubeVideoResponse.getTitle(),
-        URI.create(youtubeVideoResponse.getThumbnailUri()),
-        duration.intValue(),
-        metaType);
   }
 
   private boolean checkIfVideoInShortsPlaylist(String videoId, String shortsPlaylistId) {
@@ -98,12 +112,18 @@ public class VideoInfoClient {
               .bodyToMono(YoutubePlaylistResponse.class)
               .block();
 
-      Objects.requireNonNull(playlistResponse, "플레이리스트 응답이 null 입니다.");
+      return playlistResponse != null && playlistResponse.hasItems();
 
-      return playlistResponse.hasItems();
     } catch (WebClientException e) {
       log.warn(
-          "쇼츠 재생목록 검사 중 예기치 않은 오류가 발생했습니다: videoId={}, playlistId={}",
+          "쇼츠 재생목록 검사 중 API 호출 실패: videoId={}, playlistId={}, error={}",
+          videoId,
+          shortsPlaylistId,
+          e.getMessage());
+      return false;
+    } catch (Exception e) {
+      log.error(
+          "쇼츠 재생목록 검사 중 예상치 못한 오류: videoId={}, playlistId={}",
           videoId,
           shortsPlaylistId,
           e);
@@ -114,22 +134,35 @@ public class VideoInfoClient {
   public Boolean isBlockedVideo(YoutubeUri youtubeUri) {
     String videoId = youtubeUri.getVideoId();
 
-    YoutubeVideoResponse youtubeVideoResponse =
-        webClient
-            .get()
-            .uri(
-                uriBuilder ->
-                    uriBuilder
-                        .path("/videos")
-                        .queryParam("id", videoId)
-                        .queryParam("key", youtubeKey)
-                        .queryParam("part", "id")
-                        .build())
-            .retrieve()
-            .bodyToMono(YoutubeVideoResponse.class)
-            .block();
+    try {
+      YoutubeVideoResponse youtubeVideoResponse =
+          webClient
+              .get()
+              .uri(
+                  uriBuilder ->
+                      uriBuilder
+                          .path("/videos")
+                          .queryParam("id", videoId)
+                          .queryParam("key", youtubeKey)
+                          .queryParam("part", "status")
+                          .build())
+              .retrieve()
+              .bodyToMono(YoutubeVideoResponse.class)
+              .block();
 
-    Objects.requireNonNull(youtubeVideoResponse, "비디오 응답이 null 입니다.");
-    return youtubeVideoResponse.items().isEmpty();
+      if (youtubeVideoResponse == null || youtubeVideoResponse.items().isEmpty()) {
+        return true;
+      }
+
+      Boolean embeddable = youtubeVideoResponse.getEmbeddable();
+      return embeddable == null || !embeddable;
+
+    } catch (WebClientException e) {
+      log.warn("YouTube API 호출 실패 - videoId: {}, error: {}", videoId, e.getMessage());
+      return false;
+    } catch (Exception e) {
+      log.error("예상치 못한 오류 - videoId: {}", videoId, e);
+      return false;
+    }
   }
 }
