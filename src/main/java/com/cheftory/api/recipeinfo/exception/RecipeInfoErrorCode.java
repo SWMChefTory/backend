@@ -15,7 +15,6 @@ public enum RecipeInfoErrorCode implements ErrorMessage {
   INVALID_CUISINE_TYPE("RECIPE_011", "유효하지 않은 요리 카테고리입니다."),
   INVALID_RECOMMEND_TYPE("RECIPE_012", "유효하지 않은 추천 타입입니다.");
 
-
   private final String errorCode;
   private final String message;
 

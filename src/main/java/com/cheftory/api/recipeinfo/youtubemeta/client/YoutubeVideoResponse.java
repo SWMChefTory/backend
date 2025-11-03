@@ -25,7 +25,15 @@ public record YoutubeVideoResponse(List<Item> items) {
     return items.getFirst().snippet().channelId();
   }
 
-  public record Item(Snippet snippet, ContentDetails contentDetails) {}
+  public Boolean getEmbeddable() {
+    return items.stream()
+        .findFirst()
+        .map(Item::status)
+        .map(Status::embeddable)
+        .orElse(null);
+  }
+
+  public record Item(Snippet snippet, ContentDetails contentDetails, Status status){}
 
   public record Snippet(String title, String channelId, Thumbnails thumbnails) {}
 
@@ -37,6 +45,7 @@ public record YoutubeVideoResponse(List<Item> items) {
 
   public record ThumbnailInfo(String url, int width, int height) {}
 
-  public record ContentDetails(String duration // ISO 8601 format (e.g., "PT3M33S")
-      ) {}
+  public record ContentDetails(String duration) {}
+
+  public record Status(Boolean embeddable) {}
 }

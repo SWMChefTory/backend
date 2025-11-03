@@ -76,3 +76,7 @@ jwt:
 
 apple:
   client-id: ${APPLE_CLIENT_ID}
+
+coupang-partners:
+  access-key: ${COUPANG_PARTNERS_ACCESS_KEY}
+  secret-key: ${COUPANG_PARTNERS_SECRET_KEY}

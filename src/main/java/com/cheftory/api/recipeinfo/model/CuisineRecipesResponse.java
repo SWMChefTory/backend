@@ -12,7 +12,8 @@ public record CuisineRecipesResponse(
     @JsonProperty("has_next") boolean hasNext) {
 
   public static CuisineRecipesResponse from(Page<RecipeOverview> recipes) {
-    List<RecipeOverviewResponse> responses = recipes.stream().map(RecipeOverviewResponse::from).toList();
+    List<RecipeOverviewResponse> responses =
+        recipes.stream().map(RecipeOverviewResponse::from).toList();
     return new CuisineRecipesResponse(
         responses,
         recipes.getNumber(),
