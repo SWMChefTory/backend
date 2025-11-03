@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
@@ -74,8 +75,13 @@ public class CoupangClient {
           .bodyToMono(CoupangSearchResponse.class)
           .block();
 
+    } catch (CoupangException e) {
+      throw e;
+    } catch (WebClientException e) {
+      log.error("쿠팡 파트너스 API 요청 중 WebClient 오류 발생", e);
+      throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
     } catch (Exception e) {
-      log.error("쿠팡 파트너스 API 요청 중 오류 발생", e);
+      log.error("쿠팡 파트너스 API 요청 중 알 수 없는 오류 발생", e);
       throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
     }
   }
