@@ -1,6 +1,7 @@
 package com.cheftory.api.affiliate;
 
 import com.cheftory.api.affiliate.dto.AffiliateSearchResponse;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +16,7 @@ public class AffiliateController {
   private final AffiliateService affiliateService;
 
   @GetMapping("/coupang/search")
-  public AffiliateSearchResponse searchProducts(@RequestParam String keyword) {
+  public AffiliateSearchResponse searchProducts(@NotNull @RequestParam String keyword) {
     return affiliateService.searchCoupangProducts(keyword);
   }
 }
