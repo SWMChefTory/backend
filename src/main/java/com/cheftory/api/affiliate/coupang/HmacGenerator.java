@@ -3,12 +3,10 @@ package com.cheftory.api.affiliate.coupang;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.Locale;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
@@ -18,10 +16,14 @@ public final class HmacGenerator {
   private static final String ALGORITHM = "HmacSHA256";
   private static final Charset STANDARD_CHARSET = StandardCharsets.UTF_8;
 
+  private static final DateTimeFormatter DATE_FORMAT_GMT =
+      DateTimeFormatter.ofPattern("yyMMdd'T'HHmmss'Z'")
+          .withZone(ZoneOffset.UTC);
+
   /**
    * Generate HMAC signature
    *
-   * @param method
+   * @param method HTTP method (e.g. GET, POST)
    * @param uri http request uri
    * @param secretKey secret key that Coupang partner granted for calling open api
    * @param accessKey access key that Coupang partner granted for calling open api
@@ -30,37 +32,28 @@ public final class HmacGenerator {
   public static String generate(String method, String uri, String secretKey, String accessKey) {
     String[] parts = uri.split("\\?");
     if (parts.length > 2) {
-      throw new RuntimeException("incorrect uri format");
-    } else {
-      String path = parts[0];
-      String query = "";
-      if (parts.length == 2) {
-        query = parts[1];
-      }
+      throw new IllegalArgumentException("incorrect uri format");
+    }
 
-      DateTimeFormatter dateFormatGmt =
-          DateTimeFormatter.ofPattern("yyMMdd'T'HHmmss'Z'")
-              .withZone(ZoneOffset.UTC);
-      String datetime = dateFormatGmt.format(Instant.now());
+    String path = parts[0];
+    String query = (parts.length == 2) ? parts[1] : "";
 
-      String message = datetime + method + path + query;
+    String datetime = DATE_FORMAT_GMT.format(Instant.now());
 
-      String signature;
-      try {
-        SecretKeySpec signingKey =
-            new SecretKeySpec(secretKey.getBytes(STANDARD_CHARSET), ALGORITHM);
-        Mac mac = Mac.getInstance(ALGORITHM);
-        mac.init(signingKey);
-        byte[] rawHmac = mac.doFinal(message.getBytes(STANDARD_CHARSET));
-        signature = Hex.encodeHexString(rawHmac);
-      } catch (GeneralSecurityException e) {
-        throw new IllegalArgumentException(
-            "Unexpected error while creating hash: " + e.getMessage(), e);
-      }
+    String message = datetime + method.toUpperCase(Locale.ROOT) + path + query;
+
+    try {
+      SecretKeySpec signingKey = new SecretKeySpec(secretKey.getBytes(STANDARD_CHARSET), ALGORITHM);
+      Mac mac = Mac.getInstance(ALGORITHM);
+      mac.init(signingKey);
+      byte[] rawHmac = mac.doFinal(message.getBytes(STANDARD_CHARSET));
+      String signature = Hex.encodeHexString(rawHmac);
 
       return String.format(
           "CEA algorithm=%s, access-key=%s, signed-date=%s, signature=%s",
-          "HmacSHA256", accessKey, datetime, signature);
+          ALGORITHM, accessKey, datetime, signature);
+    } catch (GeneralSecurityException e) {
+      throw new IllegalArgumentException("Unexpected error while creating hash: " + e.getMessage(), e);
     }
   }
 }
