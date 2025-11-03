@@ -1,8 +1,12 @@
 package com.cheftory.api.affiliate.coupang;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 import javax.crypto.Mac;
@@ -12,7 +16,7 @@ import org.apache.commons.codec.binary.Hex;
 public final class HmacGenerator {
 
   private static final String ALGORITHM = "HmacSHA256";
-  private static final Charset STANDARD_CHARSET = Charset.forName("UTF-8");
+  private static final Charset STANDARD_CHARSET = StandardCharsets.UTF_8;
 
   /**
    * Generate HMAC signature
@@ -34,9 +38,11 @@ public final class HmacGenerator {
         query = parts[1];
       }
 
-      SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyMMdd'T'HHmmss'Z'");
-      dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-      String datetime = dateFormatGmt.format(new Date());
+      DateTimeFormatter dateFormatGmt =
+          DateTimeFormatter.ofPattern("yyMMdd'T'HHmmss'Z'")
+              .withZone(ZoneOffset.UTC);
+      String datetime = dateFormatGmt.format(Instant.now());
+
       String message = datetime + method + path + query;
 
       String signature;
