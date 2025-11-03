@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
+import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.io.IOException;
 import java.net.URI;
@@ -173,7 +174,8 @@ public class VideoInfoClientTest {
         @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_FOUND)을 던진다")
         void thenThrowsYoutubeMetaException() {
           assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
-              .isInstanceOf(YoutubeMetaException.class);
+              .isInstanceOf(YoutubeMetaException.class)
+              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
         }
       }
 
@@ -218,7 +220,8 @@ public class VideoInfoClientTest {
         @DisplayName("Then - YoutubeMetaException(DURATION_NOT_FOUND)을 던진다")
         void thenThrowsYoutubeMetaException() {
           assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
-              .isInstanceOf(YoutubeMetaException.class);
+              .isInstanceOf(YoutubeMetaException.class)
+              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
         }
       }
 
@@ -265,7 +268,8 @@ public class VideoInfoClientTest {
         @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_EMBEDDABLE)을 던진다")
         void thenThrowsYoutubeMetaException() {
           assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
-              .isInstanceOf(YoutubeMetaException.class);
+              .isInstanceOf(YoutubeMetaException.class)
+              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
         }
       }
     }

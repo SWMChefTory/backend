@@ -116,10 +116,10 @@ public class VideoInfoClient {
 
     } catch (WebClientException e) {
       log.warn(
-          "쇼츠 재생목록 검사 중 API 호출 실패: videoId={}, playlistId={}, error={}",
+          "쇼츠 재생목록 검사 중 API 호출 실패: videoId={}, playlistId={}",
           videoId,
           shortsPlaylistId,
-          e.getMessage());
+          e);
       return false;
     } catch (Exception e) {
       log.error(
@@ -158,7 +158,7 @@ public class VideoInfoClient {
       return embeddable == null || !embeddable;
 
     } catch (WebClientException e) {
-      log.warn("YouTube API 호출 실패 - videoId: {}, error: {}", videoId, e.getMessage());
+      log.warn("YouTube API 호출 실패 - videoId: {}", videoId, e);
       return false;
     } catch (Exception e) {
       log.error("예상치 못한 오류 - videoId: {}", videoId, e);
