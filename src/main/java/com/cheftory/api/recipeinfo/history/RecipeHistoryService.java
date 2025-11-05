@@ -26,12 +26,9 @@ public class RecipeHistoryService {
     }
   }
 
-  @Transactional
-  public RecipeHistory get(UUID userId, UUID recipeId) {
-    return recipeHistoryRepository
-        .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
-        .orElseThrow(
-            () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
+  public Boolean exist(UUID userId, UUID recipeId) {
+    return recipeHistoryRepository.existsByRecipeIdAndUserIdAndStatus(
+        recipeId, userId, RecipeHistoryStatus.ACTIVE);
   }
 
   @Transactional

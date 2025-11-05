@@ -22,8 +22,6 @@ import com.cheftory.api.recipeinfo.history.RecipeHistory;
 import com.cheftory.api.recipeinfo.history.RecipeHistoryCategorizedCount;
 import com.cheftory.api.recipeinfo.history.RecipeHistoryService;
 import com.cheftory.api.recipeinfo.history.RecipeHistoryUnCategorizedCount;
-import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryErrorCode;
-import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryException;
 import com.cheftory.api.recipeinfo.identify.RecipeIdentifyService;
 import com.cheftory.api.recipeinfo.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipeinfo.ingredient.RecipeIngredientService;
@@ -470,7 +468,6 @@ public class RecipeInfoServiceTest {
       private RecipeYoutubeMeta youtubeMeta;
       private RecipeDetailMeta detailMeta;
       private List<RecipeTag> tags;
-      private RecipeHistory history;
 
       @BeforeEach
       void setUp() {
@@ -480,7 +477,6 @@ public class RecipeInfoServiceTest {
         youtubeMeta = createMockRecipeYoutubeMeta(UUID.randomUUID(), "Test Recipe", recipeId);
         detailMeta = createMockRecipeDetailMeta(recipeId, "Test Description");
         tags = List.of(createMockRecipeTag(recipeId, "한식"));
-        history = createMockRecipeHistory(recipeId, userId);
       }
 
       @Nested
@@ -494,7 +490,7 @@ public class RecipeInfoServiceTest {
           doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
           doReturn(detailMeta).when(recipeDetailMetaService).get(recipeId);
           doReturn(tags).when(recipeTagService).gets(recipeId);
-          doReturn(history).when(recipeHistoryService).get(userId, recipeId);
+          doReturn(true).when(recipeHistoryService).exist(userId, recipeId);
 
           RecipeOverview result = recipeInfoService.getRecipeOverview(recipeId, userId);
 
@@ -510,7 +506,7 @@ public class RecipeInfoServiceTest {
           verify(recipeYoutubeMetaService).get(recipeId);
           verify(recipeDetailMetaService).get(recipeId);
           verify(recipeTagService).gets(recipeId);
-          verify(recipeHistoryService).get(userId, recipeId);
+          verify(recipeHistoryService).exist(userId, recipeId);
         }
       }
     }
@@ -547,19 +543,21 @@ public class RecipeInfoServiceTest {
           doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
           doReturn(detailMeta).when(recipeDetailMetaService).get(recipeId);
           doReturn(tags).when(recipeTagService).gets(recipeId);
-          doThrow(new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND))
-              .when(recipeHistoryService)
-              .get(userId, recipeId);
+          doReturn(false).when(recipeHistoryService).exist(userId, recipeId);
 
-          assertThatThrownBy(() -> recipeInfoService.getRecipeOverview(recipeId, userId))
-              .isInstanceOf(RecipeHistoryException.class)
-              .hasFieldOrPropertyWithValue("errorMessage", RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND);
+          RecipeOverview result = recipeInfoService.getRecipeOverview(recipeId, userId);
+
+          assertThat(result).isNotNull();
+          assertThat(result.getRecipeId()).isEqualTo(recipeId);
+          assertThat(result.getVideoTitle()).isEqualTo("Test Recipe");
+          assertThat(result.getDescription()).isEqualTo("Test Description");
+          assertThat(result.getIsViewed()).isFalse();
 
           verify(recipeService).getSuccess(recipeId);
           verify(recipeYoutubeMetaService).get(recipeId);
           verify(recipeDetailMetaService).get(recipeId);
           verify(recipeTagService).gets(recipeId);
-          verify(recipeHistoryService).get(userId, recipeId);
+          verify(recipeHistoryService).exist(userId, recipeId);
         }
       }
     }
@@ -594,18 +592,21 @@ public class RecipeInfoServiceTest {
           doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
           doReturn(null).when(recipeDetailMetaService).get(recipeId);
           doReturn(tags).when(recipeTagService).gets(recipeId);
-          doThrow(new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND))
-              .when(recipeHistoryService)
-              .get(userId, recipeId);
+          doReturn(false).when(recipeHistoryService).exist(userId, recipeId);
 
-          assertThatThrownBy(() -> recipeInfoService.getRecipeOverview(recipeId, userId))
-              .isInstanceOf(RecipeHistoryException.class)
-              .hasFieldOrPropertyWithValue("errorMessage", RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND);
+          RecipeOverview result = recipeInfoService.getRecipeOverview(recipeId, userId);
+
+          assertThat(result).isNotNull();
+          assertThat(result.getRecipeId()).isEqualTo(recipeId);
+          assertThat(result.getDescription()).isNull();
+          assertThat(result.getServings()).isNull();
+          assertThat(result.getCookTime()).isNull();
 
           verify(recipeService).getSuccess(recipeId);
           verify(recipeYoutubeMetaService).get(recipeId);
           verify(recipeDetailMetaService).get(recipeId);
           verify(recipeTagService).gets(recipeId);
+          verify(recipeHistoryService).exist(userId, recipeId);
         }
       }
     }
@@ -1942,7 +1943,7 @@ public class RecipeInfoServiceTest {
     doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
 
     RecipeHistory viewStatus = createMockRecipeHistory(recipeId, userId);
-    doReturn(viewStatus).when(recipeHistoryService).get(userId, recipeId);
+    doReturn(viewStatus).when(recipeHistoryService).getWithView(userId, recipeId);
   }
 
   private void setupPopularMocks(List<UUID> recipeIds) {

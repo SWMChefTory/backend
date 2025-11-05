@@ -166,21 +166,6 @@ public class RecipeHistoryServiceTest {
         }
 
         @Test
-        @DisplayName("Then - get 메서드는 viewedAt을 업데이트하지 않고 반환해야 한다")
-        public void thenShouldReturnRecipeHistoryWithoutUpdatingViewedAt() {
-          RecipeHistory status = service.get(userId, recipeId);
-
-          assertThat(status).isNotNull();
-          assertThat(status.getRecipeId()).isEqualTo(recipeId);
-          assertThat(status.getUserId()).isEqualTo(userId);
-          assertThat(status.getViewedAt()).isEqualTo(initialTime);
-
-          verify(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
-          verify(repository, never()).save(any(RecipeHistory.class));
-        }
-
-        @Test
         @DisplayName("Then - getWithView 메서드는 viewedAt을 업데이트하고 반환해야 한다")
         public void thenShouldReturnCorrectRecipeHistory() {
           RecipeHistory status = service.getWithView(userId, recipeId);
@@ -197,46 +182,6 @@ public class RecipeHistoryServiceTest {
       }
     }
 
-    @Nested
-    @DisplayName("Given - 존재하지 않는 레시피 ID와 사용자 ID가 주어졌을 때")
-    class GivenNonExistentRecipeAndUserId {
-
-      private UUID recipeId;
-      private UUID userId;
-
-      @BeforeEach
-      void setUp() {
-        recipeId = UUID.randomUUID();
-        userId = UUID.randomUUID();
-      }
-
-      @Nested
-      @DisplayName("When - 레시피 조회 상태를 조회한다면")
-      class WhenFindingNonExistentRecipeHistory {
-
-        @BeforeEach
-        void beforeEach() {
-          doReturn(Optional.empty())
-              .when(repository)
-              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
-        }
-
-        @Test
-        @DisplayName("Then - ViewStatusException이 발생해야 한다")
-        public void thenShouldThrowViewStatusException() {
-          RecipeHistoryException exception =
-              assertThrows(
-                  RecipeHistoryException.class,
-                  () -> {
-                    service.get(userId, recipeId);
-                  });
-
-          assertThat(exception.getErrorMessage())
-              .isEqualTo(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND);
-          verify(repository, never()).save(any());
-        }
-      }
-    }
   }
 
   @Nested

@@ -174,8 +174,7 @@ public class RecipeInfoService {
     RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
     RecipeDetailMeta detailMeta = recipeDetailMetaService.get(recipeId);
     List<RecipeTag> tags = recipeTagService.gets(recipeId);
-    RecipeHistory history = recipeHistoryService.get(userId, recipeId);
-    Boolean isViewed = history != null;
+    Boolean isViewed = recipeHistoryService.exist(userId, recipeId);
 
     return RecipeOverview.of(
         recipe,
