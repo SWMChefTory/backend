@@ -19,7 +19,7 @@ public record RecipeOverviewResponse(
     @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
     @JsonProperty("video_seconds") Integer videoSeconds) {
 
-  public static RecipeOverviewResponse from(RecipeOverview recipe) {
+  public static RecipeOverviewResponse of(RecipeOverview recipe) {
     return new RecipeOverviewResponse(
         recipe.getRecipeId().toString(),
         recipe.getVideoTitle(),

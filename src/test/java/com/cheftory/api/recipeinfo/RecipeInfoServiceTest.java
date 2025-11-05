@@ -402,7 +402,7 @@ public class RecipeInfoServiceTest {
       setupFullRecipeInfoMocks(recipeId, userId, recipe);
       doReturn(recipe).when(recipeService).getSuccess(recipeId);
 
-      FullRecipe result = recipeInfoService.getFullRecipe(recipeId, userId);
+      FullRecipe result = recipeInfoService.viewFullRecipe(recipeId, userId);
 
       assertThat(result).isNotNull();
       verify(recipeService).getSuccess(recipeId);
@@ -418,7 +418,7 @@ public class RecipeInfoServiceTest {
           .when(recipeService)
           .getSuccess(recipeId);
 
-      assertThatThrownBy(() -> recipeInfoService.getFullRecipe(recipeId, userId))
+      assertThatThrownBy(() -> recipeInfoService.viewFullRecipe(recipeId, userId))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
     }
@@ -433,7 +433,7 @@ public class RecipeInfoServiceTest {
           .when(recipeService)
           .getSuccess(recipeId);
 
-      assertThatThrownBy(() -> recipeInfoService.getFullRecipe(recipeId, userId))
+      assertThatThrownBy(() -> recipeInfoService.viewFullRecipe(recipeId, userId))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_FAILED);
     }
@@ -448,9 +448,201 @@ public class RecipeInfoServiceTest {
           .when(recipeService)
           .getSuccess(recipeId);
 
-      assertThatThrownBy(() -> recipeInfoService.getFullRecipe(recipeId, userId))
+      assertThatThrownBy(() -> recipeInfoService.viewFullRecipe(recipeId, userId))
           .isInstanceOf(RecipeInfoException.class)
           .hasFieldOrPropertyWithValue("errorMessage", RecipeInfoErrorCode.RECIPE_CREATE_FAIL);
+    }
+  }
+
+  @Nested
+  @DisplayName("레시피 개요 조회")
+  class GetRecipeOverview {
+
+    @Nested
+    @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
+    class GivenValidRecipeIdAndUserId {
+
+      private UUID recipeId;
+      private UUID userId;
+      private Recipe recipe;
+      private RecipeYoutubeMeta youtubeMeta;
+      private RecipeDetailMeta detailMeta;
+      private List<RecipeTag> tags;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+        recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+        youtubeMeta = createMockRecipeYoutubeMeta(UUID.randomUUID(), "Test Recipe", recipeId);
+        detailMeta = createMockRecipeDetailMeta(recipeId, "Test Description");
+        tags = List.of(createMockRecipeTag(recipeId, "한식"));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 개요를 조회한다면")
+      class WhenGettingRecipeOverview {
+
+        @Test
+        @DisplayName("Then - 레시피 개요를 반환하고 isViewed가 true여야 한다")
+        void thenShouldReturnRecipeOverviewWithIsViewedTrue() {
+          doReturn(recipe).when(recipeService).getSuccess(recipeId);
+          doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
+          doReturn(detailMeta).when(recipeDetailMetaService).get(recipeId);
+          doReturn(tags).when(recipeTagService).gets(recipeId);
+          doReturn(true).when(recipeHistoryService).exist(userId, recipeId);
+
+          RecipeOverview result = recipeInfoService.getRecipeOverview(recipeId, userId);
+
+          assertThat(result).isNotNull();
+          assertThat(result.getRecipeId()).isEqualTo(recipeId);
+          assertThat(result.getVideoTitle()).isEqualTo("Test Recipe");
+          assertThat(result.getDescription()).isEqualTo("Test Description");
+          assertThat(result.getIsViewed()).isTrue();
+          assertThat(result.getTags()).hasSize(1);
+          assertThat(result.getTags().get(0)).isEqualTo("한식");
+
+          verify(recipeService).getSuccess(recipeId);
+          verify(recipeYoutubeMetaService).get(recipeId);
+          verify(recipeDetailMetaService).get(recipeId);
+          verify(recipeTagService).gets(recipeId);
+          verify(recipeHistoryService).exist(userId, recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 사용자가 레시피를 본 적이 없을 때")
+    class GivenUserNotViewedRecipe {
+
+      private UUID recipeId;
+      private UUID userId;
+      private Recipe recipe;
+      private RecipeYoutubeMeta youtubeMeta;
+      private RecipeDetailMeta detailMeta;
+      private List<RecipeTag> tags;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+        recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+        youtubeMeta = createMockRecipeYoutubeMeta(UUID.randomUUID(), "Test Recipe", recipeId);
+        detailMeta = createMockRecipeDetailMeta(recipeId, "Test Description");
+        tags = List.of(createMockRecipeTag(recipeId, "한식"));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 개요를 조회한다면")
+      class WhenGettingRecipeOverview {
+
+        @Test
+        @DisplayName("Then - 레시피 개요를 반환하고 isViewed가 false여야 한다")
+        void thenShouldReturnRecipeOverviewWithIsViewedFalse() {
+          doReturn(recipe).when(recipeService).getSuccess(recipeId);
+          doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
+          doReturn(detailMeta).when(recipeDetailMetaService).get(recipeId);
+          doReturn(tags).when(recipeTagService).gets(recipeId);
+          doReturn(false).when(recipeHistoryService).exist(userId, recipeId);
+
+          RecipeOverview result = recipeInfoService.getRecipeOverview(recipeId, userId);
+
+          assertThat(result).isNotNull();
+          assertThat(result.getRecipeId()).isEqualTo(recipeId);
+          assertThat(result.getVideoTitle()).isEqualTo("Test Recipe");
+          assertThat(result.getDescription()).isEqualTo("Test Description");
+          assertThat(result.getIsViewed()).isFalse();
+
+          verify(recipeService).getSuccess(recipeId);
+          verify(recipeYoutubeMetaService).get(recipeId);
+          verify(recipeDetailMetaService).get(recipeId);
+          verify(recipeTagService).gets(recipeId);
+          verify(recipeHistoryService).exist(userId, recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - DetailMeta가 null일 때")
+    class GivenDetailMetaIsNull {
+
+      private UUID recipeId;
+      private UUID userId;
+      private Recipe recipe;
+      private RecipeYoutubeMeta youtubeMeta;
+      private List<RecipeTag> tags;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+        recipe = createMockRecipe(recipeId, RecipeStatus.SUCCESS);
+        youtubeMeta = createMockRecipeYoutubeMeta(UUID.randomUUID(), "Test Recipe", recipeId);
+        tags = List.of(createMockRecipeTag(recipeId, "한식"));
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 개요를 조회한다면")
+      class WhenGettingRecipeOverview {
+
+        @Test
+        @DisplayName("Then - description, servings, cookTime이 null이어야 한다")
+        void thenShouldReturnRecipeOverviewWithNullDetailMetaFields() {
+          doReturn(recipe).when(recipeService).getSuccess(recipeId);
+          doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
+          doReturn(null).when(recipeDetailMetaService).get(recipeId);
+          doReturn(tags).when(recipeTagService).gets(recipeId);
+          doReturn(false).when(recipeHistoryService).exist(userId, recipeId);
+
+          RecipeOverview result = recipeInfoService.getRecipeOverview(recipeId, userId);
+
+          assertThat(result).isNotNull();
+          assertThat(result.getRecipeId()).isEqualTo(recipeId);
+          assertThat(result.getDescription()).isNull();
+          assertThat(result.getServings()).isNull();
+          assertThat(result.getCookTime()).isNull();
+
+          verify(recipeService).getSuccess(recipeId);
+          verify(recipeYoutubeMetaService).get(recipeId);
+          verify(recipeDetailMetaService).get(recipeId);
+          verify(recipeTagService).gets(recipeId);
+          verify(recipeHistoryService).exist(userId, recipeId);
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
+    class GivenNonExistentRecipeId {
+
+      private UUID recipeId;
+      private UUID userId;
+
+      @BeforeEach
+      void setUp() {
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+      }
+
+      @Nested
+      @DisplayName("When - 레시피 개요를 조회한다면")
+      class WhenGettingRecipeOverview {
+
+        @Test
+        @DisplayName("Then - 예외를 던진다")
+        void thenShouldThrowException() {
+          doThrow(new RecipeInfoException(RecipeErrorCode.RECIPE_NOT_FOUND))
+              .when(recipeService)
+              .getSuccess(recipeId);
+
+          assertThatThrownBy(() -> recipeInfoService.getRecipeOverview(recipeId, userId))
+              .isInstanceOf(RecipeInfoException.class)
+              .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_FOUND);
+
+          verify(recipeService).getSuccess(recipeId);
+          verify(recipeYoutubeMetaService, never()).get(recipeId);
+        }
+      }
     }
   }
 
@@ -1751,7 +1943,7 @@ public class RecipeInfoServiceTest {
     doReturn(youtubeMeta).when(recipeYoutubeMetaService).get(recipeId);
 
     RecipeHistory viewStatus = createMockRecipeHistory(recipeId, userId);
-    doReturn(viewStatus).when(recipeHistoryService).get(userId, recipeId);
+    doReturn(viewStatus).when(recipeHistoryService).getWithView(userId, recipeId);
   }
 
   private void setupPopularMocks(List<UUID> recipeIds) {

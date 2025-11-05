@@ -26,13 +26,17 @@ public class RecipeHistoryService {
     }
   }
 
+  public Boolean exist(UUID userId, UUID recipeId) {
+    return recipeHistoryRepository.existsByRecipeIdAndUserIdAndStatus(
+        recipeId, userId, RecipeHistoryStatus.ACTIVE);
+  }
+
   @Transactional
-  public RecipeHistory get(UUID userId, UUID recipeId) {
-    RecipeHistory recipeHistory =
-        recipeHistoryRepository
-            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
-            .orElseThrow(
-                () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
+  public RecipeHistory getWithView(UUID userId, UUID recipeId) {
+    RecipeHistory recipeHistory = recipeHistoryRepository
+        .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
+        .orElseThrow(
+            () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
     recipeHistory.updateViewedAt(clock);
     return recipeHistoryRepository.save(recipeHistory);
   }

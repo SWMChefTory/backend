@@ -16,6 +16,7 @@ import com.cheftory.api.recipeinfo.model.RecipeInfoCuisineType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoRecommendType;
 import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
 import com.cheftory.api.recipeinfo.model.RecipeOverview;
+import com.cheftory.api.recipeinfo.model.RecipeOverviewResponse;
 import com.cheftory.api.recipeinfo.model.RecipeProgressResponse;
 import com.cheftory.api.recipeinfo.model.RecipeProgressStatus;
 import com.cheftory.api.recipeinfo.model.RecommendRecipesResponse;
@@ -50,8 +51,15 @@ public class RecipeInfoController {
   @GetMapping("/api/v1/recipes/{recipeId}")
   public FullRecipeResponse getFullRecipeResponse(
       @PathVariable("recipeId") UUID recipeId, @UserPrincipal UUID userId) {
-    FullRecipe info = recipeInfoService.getFullRecipe(recipeId, userId);
+    FullRecipe info = recipeInfoService.viewFullRecipe(recipeId, userId);
     return FullRecipeResponse.of(info);
+  }
+
+  @GetMapping("/api/v1/recipes/overview/{recipeId}")
+  public RecipeOverviewResponse getOverviewRecipeResponse(
+      @PathVariable("recipeId") UUID recipeId, @UserPrincipal UUID userId) {
+    RecipeOverview overview = recipeInfoService.getRecipeOverview(recipeId, userId);
+    return RecipeOverviewResponse.of(overview);
   }
 
   @GetMapping("/api/v1/recipes/recent")
