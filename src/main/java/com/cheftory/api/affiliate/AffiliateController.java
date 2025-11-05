@@ -17,8 +17,8 @@ public class AffiliateController {
 
   private final AffiliateService affiliateService;
 
-  @GetMapping("/coupang/search")
+  @GetMapping("/search/coupang")
   public AffiliateSearchResponse searchProducts(@NotBlank @RequestParam String keyword) {
-    return affiliateService.searchCoupangProducts(keyword);
+    return AffiliateSearchResponse.from(affiliateService.searchCoupangProducts(keyword));
   }
 }

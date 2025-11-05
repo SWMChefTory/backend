@@ -115,18 +115,10 @@ public class VideoInfoClient {
       return playlistResponse != null && playlistResponse.hasItems();
 
     } catch (WebClientException e) {
-      log.warn(
-          "쇼츠 재생목록 검사 중 API 호출 실패: videoId={}, playlistId={}",
-          videoId,
-          shortsPlaylistId,
-          e);
+      log.warn("쇼츠 재생목록 검사 중 API 호출 실패: videoId={}, playlistId={}", videoId, shortsPlaylistId, e);
       return false;
     } catch (Exception e) {
-      log.error(
-          "쇼츠 재생목록 검사 중 예상치 못한 오류: videoId={}, playlistId={}",
-          videoId,
-          shortsPlaylistId,
-          e);
+      log.error("쇼츠 재생목록 검사 중 예상치 못한 오류: videoId={}, playlistId={}", videoId, shortsPlaylistId, e);
       return false;
     }
   }

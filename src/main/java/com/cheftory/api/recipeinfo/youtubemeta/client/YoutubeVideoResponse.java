@@ -26,14 +26,10 @@ public record YoutubeVideoResponse(List<Item> items) {
   }
 
   public Boolean getEmbeddable() {
-    return items.stream()
-        .findFirst()
-        .map(Item::status)
-        .map(Status::embeddable)
-        .orElse(null);
+    return items.stream().findFirst().map(Item::status).map(Status::embeddable).orElse(null);
   }
 
-  public record Item(Snippet snippet, ContentDetails contentDetails, Status status){}
+  public record Item(Snippet snippet, ContentDetails contentDetails, Status status) {}
 
   public record Snippet(String title, String channelId, Thumbnails thumbnails) {}
 
