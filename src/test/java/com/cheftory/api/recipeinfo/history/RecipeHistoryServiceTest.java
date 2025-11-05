@@ -166,14 +166,29 @@ public class RecipeHistoryServiceTest {
         }
 
         @Test
-        @DisplayName("Then - 올바른 레시피 조회 상태가 반환되어야 한다")
-        public void thenShouldReturnCorrectRecipeHistory() {
+        @DisplayName("Then - get 메서드는 viewedAt을 업데이트하지 않고 반환해야 한다")
+        public void thenShouldReturnRecipeHistoryWithoutUpdatingViewedAt() {
           RecipeHistory status = service.get(userId, recipeId);
 
           assertThat(status).isNotNull();
           assertThat(status.getRecipeId()).isEqualTo(recipeId);
           assertThat(status.getUserId()).isEqualTo(userId);
-          assertThat(status.getViewedAt()).isEqualTo(updateTime); // 실제로 업데이트된 시간
+          assertThat(status.getViewedAt()).isEqualTo(initialTime);
+
+          verify(repository)
+              .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);
+          verify(repository, never()).save(any(RecipeHistory.class));
+        }
+
+        @Test
+        @DisplayName("Then - getWithView 메서드는 viewedAt을 업데이트하고 반환해야 한다")
+        public void thenShouldReturnCorrectRecipeHistory() {
+          RecipeHistory status = service.getWithView(userId, recipeId);
+
+          assertThat(status).isNotNull();
+          assertThat(status.getRecipeId()).isEqualTo(recipeId);
+          assertThat(status.getUserId()).isEqualTo(userId);
+          assertThat(status.getViewedAt()).isEqualTo(updateTime);
 
           verify(repository)
               .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE);

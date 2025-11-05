@@ -28,11 +28,18 @@ public class RecipeHistoryService {
 
   @Transactional
   public RecipeHistory get(UUID userId, UUID recipeId) {
-    RecipeHistory recipeHistory =
-        recipeHistoryRepository
-            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
-            .orElseThrow(
-                () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
+    return recipeHistoryRepository
+        .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
+        .orElseThrow(
+            () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
+  }
+
+  @Transactional
+  public RecipeHistory getWithView(UUID userId, UUID recipeId) {
+    RecipeHistory recipeHistory = recipeHistoryRepository
+        .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)
+        .orElseThrow(
+            () -> new RecipeHistoryException(RecipeHistoryErrorCode.RECIPE_HISTORY_NOT_FOUND));
     recipeHistory.updateViewedAt(clock);
     return recipeHistoryRepository.save(recipeHistory);
   }
