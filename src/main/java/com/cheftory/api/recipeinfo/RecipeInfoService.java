@@ -176,13 +176,7 @@ public class RecipeInfoService {
     List<RecipeTag> tags = recipeTagService.gets(recipeId);
     Boolean isViewed = recipeHistoryService.exist(userId, recipeId);
 
-    return RecipeOverview.of(
-        recipe,
-        youtubeMeta,
-        detailMeta,
-        tags,
-        isViewed
-    );
+    return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
   }
 
   public Page<RecipeHistoryOverview> getCategorized(
