@@ -17,7 +17,7 @@ public class RecipeIngredientController {
 
   private final RecipeIngredientService recipeIngredientService;
 
-  @GetMapping("/ingredients/{recipeId}")
+  @GetMapping("/{recipeId}/ingredients")
   public RecipeIngredientsResponse getIngredients(@PathVariable UUID recipeId) {
     List<RecipeIngredient> recipeIngredients = recipeIngredientService.gets(recipeId);
     return RecipeIngredientsResponse.from(recipeIngredients);

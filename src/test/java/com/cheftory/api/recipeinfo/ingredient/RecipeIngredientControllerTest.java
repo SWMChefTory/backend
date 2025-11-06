@@ -89,7 +89,7 @@ public class RecipeIngredientControllerTest extends RestDocsTest {
           var response =
               given()
                   .contentType(ContentType.JSON)
-                  .get("/papi/v1/recipes/ingredients/{recipeId}", recipeId)
+                  .get("/papi/v1/recipes/{recipeId}/ingredients", recipeId)
                   .then()
                   .status(HttpStatus.OK)
                   .body("ingredients", hasSize(recipeIngredients.size()))
@@ -156,7 +156,7 @@ public class RecipeIngredientControllerTest extends RestDocsTest {
           var response =
               given()
                   .contentType(ContentType.JSON)
-                  .get("/papi/v1/recipes/ingredients/{recipeId}", recipeId)
+                  .get("/papi/v1/recipes/{recipeId}/ingredients", recipeId)
                   .then()
                   .status(HttpStatus.OK)
                   .body("ingredients", hasSize(1));
@@ -199,7 +199,7 @@ public class RecipeIngredientControllerTest extends RestDocsTest {
         void thenShouldReturnEmptyIngredients() {
           given()
               .contentType(ContentType.JSON)
-              .get("/papi/v1/recipes/ingredients/{recipeId}", recipeId)
+              .get("/papi/v1/recipes/{recipeId}/ingredients", recipeId)
               .then()
               .status(HttpStatus.OK)
               .body("ingredients", hasSize(0));
@@ -259,7 +259,7 @@ public class RecipeIngredientControllerTest extends RestDocsTest {
           var response =
               given()
                   .contentType(ContentType.JSON)
-                  .get("/papi/v1/recipes/ingredients/{recipeId}", recipeId)
+                  .get("/papi/v1/recipes/{recipeId}/ingredients", recipeId)
                   .then()
                   .status(HttpStatus.OK)
                   .body("ingredients", hasSize(4));
