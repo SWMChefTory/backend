@@ -181,7 +181,6 @@ public class RecipeHistoryServiceTest {
         }
       }
     }
-
   }
 
   @Nested

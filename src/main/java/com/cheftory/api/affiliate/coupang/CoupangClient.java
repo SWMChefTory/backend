@@ -27,24 +27,22 @@ public class CoupangClient {
   public CoupangSearchResponse searchProducts(String keyword) {
     try {
       // 1) path + query 생성 후 UTF-8 인코딩 → URI 획득
-      URI uri = UriComponentsBuilder
-          .fromPath("/v2/providers/affiliate_open_api/apis/openapi/products/search")
-          .queryParam("keyword", keyword)
-          .build()
-          .encode(StandardCharsets.UTF_8)
-          .toUri();
+      URI uri =
+          UriComponentsBuilder.fromPath(
+                  "/v2/providers/affiliate_open_api/apis/openapi/products/search")
+              .queryParam("keyword", keyword)
+              .build()
+              .encode(StandardCharsets.UTF_8)
+              .toUri();
 
       // 2) 서명용 문자열: path + '?' + rawQuery
       String pathAndQueryForSign =
           uri.getRawPath() + (uri.getRawQuery() != null ? "?" + uri.getRawQuery() : "");
 
       // 3) HMAC 서명 생성
-      String authorization = HmacGenerator.generate(
-          "GET",
-          pathAndQueryForSign,
-          properties.getSecretKey(),
-          properties.getAccessKey()
-      );
+      String authorization =
+          HmacGenerator.generate(
+              "GET", pathAndQueryForSign, properties.getSecretKey(), properties.getAccessKey());
 
       log.debug("REQ URL: {}", uri.toASCIIString());
       log.debug("SIGN path+query={}", pathAndQueryForSign);
@@ -62,15 +60,18 @@ public class CoupangClient {
           .retrieve()
           .onStatus(
               s -> s.is4xxClientError() || s.is5xxServerError(),
-              resp -> resp.bodyToMono(String.class).flatMap(body -> {
-                log.error(
-                    "Coupang API error: status={}, headers={}, body={}",
-                    resp.statusCode(),
-                    resp.headers().asHttpHeaders(),
-                    body);
-                return Mono.error(new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL));
-              })
-          )
+              resp ->
+                  resp.bodyToMono(String.class)
+                      .flatMap(
+                          body -> {
+                            log.error(
+                                "Coupang API error: status={}, headers={}, body={}",
+                                resp.statusCode(),
+                                resp.headers().asHttpHeaders(),
+                                body);
+                            return Mono.error(
+                                new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL));
+                          }))
           .bodyToMono(CoupangSearchResponse.class)
           .block();
 

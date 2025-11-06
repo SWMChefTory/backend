@@ -175,7 +175,8 @@ public class VideoInfoClientTest {
         void thenThrowsYoutubeMetaException() {
           assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
               .isInstanceOf(YoutubeMetaException.class)
-              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
         }
       }
 
@@ -221,7 +222,8 @@ public class VideoInfoClientTest {
         void thenThrowsYoutubeMetaException() {
           assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
               .isInstanceOf(YoutubeMetaException.class)
-              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
         }
       }
 
@@ -269,7 +271,8 @@ public class VideoInfoClientTest {
         void thenThrowsYoutubeMetaException() {
           assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
               .isInstanceOf(YoutubeMetaException.class)
-              .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
+              .hasFieldOrPropertyWithValue(
+                  "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
         }
       }
     }
@@ -315,7 +318,7 @@ public class VideoInfoClientTest {
       String responseBody =
           """
           {
-            "items": [ 
+            "items": [
               {
                 "status": {
                   "embeddable": true
