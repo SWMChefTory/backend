@@ -37,7 +37,6 @@ public class RecipeIngredient {
   @Column(nullable = false)
   private LocalDateTime createdAt;
 
-  @Enumerated(EnumType.STRING)
   public static RecipeIngredient create(
       String name, String unit, Integer amount, UUID recipeId, Clock clock) {
     return RecipeIngredient.builder()
