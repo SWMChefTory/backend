@@ -26,8 +26,13 @@ public class RecipeHistoryService {
     }
   }
 
+  public Boolean exist(UUID userId, UUID recipeId) {
+    return recipeHistoryRepository.existsByRecipeIdAndUserIdAndStatus(
+        recipeId, userId, RecipeHistoryStatus.ACTIVE);
+  }
+
   @Transactional
-  public RecipeHistory get(UUID userId, UUID recipeId) {
+  public RecipeHistory getWithView(UUID userId, UUID recipeId) {
     RecipeHistory recipeHistory =
         recipeHistoryRepository
             .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeHistoryStatus.ACTIVE)

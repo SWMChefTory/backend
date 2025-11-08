@@ -135,7 +135,7 @@ public class RecipeInfoService {
   /**
    * 레시피 상세 정보를 조회합니다. * 레시피가 존재하지 않으면 예외를 던집니다. * 레시피가 실패 상태이면 예외를 던집니다. 레시피가 성공 상태이면 조회수를 증가시킵니다.
    */
-  public FullRecipe getFullRecipe(UUID recipeId, UUID userId) {
+  public FullRecipe viewFullRecipe(UUID recipeId, UUID userId) {
     try {
       Recipe recipe = recipeService.getSuccess(recipeId);
       List<RecipeStep> steps = recipeStepService.gets(recipeId);
@@ -145,7 +145,7 @@ public class RecipeInfoService {
       List<RecipeTag> tags = recipeTagService.gets(recipeId);
       List<RecipeBriefing> briefings = recipeBriefingService.gets(recipeId);
       RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
-      RecipeHistory history = recipeHistoryService.get(userId, recipeId);
+      RecipeHistory history = recipeHistoryService.getWithView(userId, recipeId);
 
       return FullRecipe.of(
           steps,
@@ -167,6 +167,16 @@ public class RecipeInfoService {
       }
       throw e;
     }
+  }
+
+  public RecipeOverview getRecipeOverview(UUID recipeId, UUID userId) {
+    Recipe recipe = recipeService.getSuccess(recipeId);
+    RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
+    RecipeDetailMeta detailMeta = recipeDetailMetaService.get(recipeId);
+    List<RecipeTag> tags = recipeTagService.gets(recipeId);
+    Boolean isViewed = recipeHistoryService.exist(userId, recipeId);
+
+    return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
   }
 
   public Page<RecipeHistoryOverview> getCategorized(

@@ -3,10 +3,12 @@ package com.cheftory.api.affiliate.coupang;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.cheftory.api.affiliate.coupang.dto.CoupangSearchResponse;
 import com.cheftory.api.affiliate.coupang.exception.CoupangErrorCode;
 import com.cheftory.api.affiliate.coupang.exception.CoupangException;
+import com.cheftory.api.affiliate.model.CoupangProduct;
+import com.cheftory.api.affiliate.model.CoupangProducts;
 import java.io.IOException;
+import java.util.List;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -48,8 +50,8 @@ class CoupangClientTest {
   class SearchProducts {
 
     @Test
-    @DisplayName("성공 응답을 정상 파싱한다")
-    void shouldReturnSearchResponseSuccessfully() throws Exception {
+    @DisplayName("성공 응답을 정상 파싱하고 CoupangProducts로 변환한다")
+    void shouldReturnProductListSuccessfully() throws Exception {
       // given
       String json =
           """
@@ -82,17 +84,24 @@ class CoupangClientTest {
               .setBody(json));
 
       // when
-      CoupangSearchResponse res = coupangClient.searchProducts("Water");
+      CoupangProducts result = coupangClient.searchProducts("Water");
+      List<CoupangProduct> products = result.getCoupangProducts();
 
-      // then: 응답 본문 파싱 검증
-      assertThat(res).isNotNull();
-      assertThat(res.rCode()).isEqualTo("0");
-      assertThat(res.data()).isNotNull();
-      assertThat(res.data().productData()).hasSize(1);
-      var p = res.data().productData().getFirst();
-      assertThat(p.productName()).isEqualTo("탐사 소프트 3겹 롤화장지");
-      assertThat(p.productPrice()).isEqualTo(15600);
-      assertThat(p.isFreeShipping()).isTrue();
+      // then: CoupangProduct 리스트 검증
+      assertThat(products).isNotNull();
+      assertThat(products).hasSize(1);
+
+      CoupangProduct product = products.get(0);
+      assertThat(product.getKeyword()).isEqualTo("Water");
+      assertThat(product.getRank()).isEqualTo(12);
+      assertThat(product.getIsRocket()).isFalse();
+      assertThat(product.getIsFreeShipping()).isTrue();
+      assertThat(product.getProductId()).isEqualTo(27664441L);
+      assertThat(product.getProductImage())
+          .isEqualTo("https://ads-partners.coupang.com/image1/abc.png");
+      assertThat(product.getProductName()).isEqualTo("탐사 소프트 3겹 롤화장지");
+      assertThat(product.getProductPrice()).isEqualTo(15600);
+      assertThat(product.getProductUrl()).isEqualTo("https://link.coupang.com/re/AFFSDP?...");
 
       // then: 요청 형식 검증
       RecordedRequest req = mockWebServer.takeRequest();
@@ -103,32 +112,92 @@ class CoupangClientTest {
       assertThat(req.getHeader(HttpHeaders.ACCEPT)).contains(MediaType.APPLICATION_JSON_VALUE);
     }
 
-    //    @Test
-    //    @DisplayName("한글 키워드가 올바르게 인코딩되어 전송된다")
-    //    void shouldEncodeKoreanKeywordProperly() throws Exception {
-    //      // given
-    //      String okJson =
-    //          """
-    //          {"rCode":"0","rMessage":"","data":{"landingUrl":"https://...","productData":[]}}
-    //          """;
-    //      mockWebServer.enqueue(
-    //          new MockResponse()
-    //              .setResponseCode(200)
-    //              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-    //              .setBody(okJson));
-    //
-    //      // when
-    //      coupangClient.searchProducts("물티슈");
-    //
-    //      // then
-    //      RecordedRequest req = mockWebServer.takeRequest();
-    //      assertThat(req.getMethod()).isEqualTo("GET");
-    //      // %EB%AC%BC%ED%8B%B0%EC%8A%88 = "물티슈" UTF-8 인코딩
-    //      assertThat(req.getPath())
-    //          .isEqualTo(
-    //
-    // "/v2/providers/affiliate_open_api/apis/openapi/products/search?keyword=%EB%AC%BC%ED%8B%B0%EC%8A%88");
-    //    }
+    @Test
+    @DisplayName("여러 상품이 포함된 응답을 올바르게 변환한다")
+    void shouldReturnMultipleProducts() throws Exception {
+      // given
+      String json =
+          """
+          {
+            "rCode": "0",
+            "rMessage": "",
+            "data": {
+              "landingUrl": "https://link.coupang.com/re/AFFSRP?...",
+              "productData": [
+                {
+                  "keyword": "노트북",
+                  "rank": 1,
+                  "isRocket": true,
+                  "isFreeShipping": true,
+                  "productId": 1001,
+                  "productImage": "https://image1.jpg",
+                  "productName": "노트북1",
+                  "productPrice": 1000000,
+                  "productUrl": "https://url1"
+                },
+                {
+                  "keyword": "노트북",
+                  "rank": 2,
+                  "isRocket": false,
+                  "isFreeShipping": true,
+                  "productId": 1002,
+                  "productImage": "https://image2.jpg",
+                  "productName": "노트북2",
+                  "productPrice": 1500000,
+                  "productUrl": "https://url2"
+                }
+              ]
+            }
+          }
+          """;
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(json));
+
+      // when
+      CoupangProducts result = coupangClient.searchProducts("노트북");
+      List<CoupangProduct> products = result.getCoupangProducts();
+
+      // then
+      assertThat(products).hasSize(2);
+      assertThat(products.get(0).getProductName()).isEqualTo("노트북1");
+      assertThat(products.get(0).getIsRocket()).isTrue();
+      assertThat(products.get(1).getProductName()).isEqualTo("노트북2");
+      assertThat(products.get(1).getIsRocket()).isFalse();
+    }
+
+    @Test
+    @DisplayName("빈 상품 목록을 반환하면 빈 리스트를 반환한다")
+    void shouldReturnEmptyListWhenNoProducts() throws Exception {
+      // given
+      String json =
+          """
+          {
+            "rCode": "0",
+            "rMessage": "",
+            "data": {
+              "landingUrl": "https://link.coupang.com/re/AFFSRP?...",
+              "productData": []
+            }
+          }
+          """;
+
+      mockWebServer.enqueue(
+          new MockResponse()
+              .setResponseCode(200)
+              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .setBody(json));
+
+      // when
+      CoupangProducts result = coupangClient.searchProducts("없는상품");
+      List<CoupangProduct> products = result.getCoupangProducts();
+
+      // then
+      assertThat(products).isEmpty();
+    }
 
     @Test
     @DisplayName("서버가 500을 반환하면 CoupangException을 던진다")

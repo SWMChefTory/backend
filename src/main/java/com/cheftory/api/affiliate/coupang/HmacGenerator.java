@@ -17,8 +17,7 @@ public final class HmacGenerator {
   private static final Charset STANDARD_CHARSET = StandardCharsets.UTF_8;
 
   private static final DateTimeFormatter DATE_FORMAT_GMT =
-      DateTimeFormatter.ofPattern("yyMMdd'T'HHmmss'Z'")
-          .withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("yyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC);
 
   /**
    * Generate HMAC signature
@@ -53,7 +52,8 @@ public final class HmacGenerator {
           "CEA algorithm=%s, access-key=%s, signed-date=%s, signature=%s",
           ALGORITHM, accessKey, datetime, signature);
     } catch (GeneralSecurityException e) {
-      throw new IllegalArgumentException("Unexpected error while creating hash: " + e.getMessage(), e);
+      throw new IllegalArgumentException(
+          "Unexpected error while creating hash: " + e.getMessage(), e);
     }
   }
 }

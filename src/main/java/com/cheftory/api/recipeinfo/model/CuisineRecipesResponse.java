@@ -13,7 +13,7 @@ public record CuisineRecipesResponse(
 
   public static CuisineRecipesResponse from(Page<RecipeOverview> recipes) {
     List<RecipeOverviewResponse> responses =
-        recipes.stream().map(RecipeOverviewResponse::from).toList();
+        recipes.stream().map(RecipeOverviewResponse::of).toList();
     return new CuisineRecipesResponse(
         responses,
         recipes.getNumber(),

@@ -1,5 +1,5 @@
 # jdk21 Image Start
-FROM openjdk:21
+FROM amazoncorretto:21-alpine
 
 # jar 파일 복제
 COPY build/libs/api-0.0.1-SNAPSHOT.jar app.jar
