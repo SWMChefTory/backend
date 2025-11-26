@@ -58,10 +58,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server:latest
 
-      #  Docker Hub 이미지 푸시
-      - name: docker Hub push
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/cheftory-proxy-server
-
   # ec2에 배포
   deploy:
     environment: production
