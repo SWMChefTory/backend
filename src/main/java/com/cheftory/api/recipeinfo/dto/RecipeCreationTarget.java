@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.model;
+package com.cheftory.api.recipeinfo.dto;
 
 import java.net.URI;
 import java.util.UUID;

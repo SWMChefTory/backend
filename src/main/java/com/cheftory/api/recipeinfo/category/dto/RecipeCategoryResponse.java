@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.category;
+package com.cheftory.api.recipeinfo.category.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;

@@ -1,5 +1,9 @@
 package com.cheftory.api.recipeinfo.history;
 
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistory;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryCategorizedCountProjection;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryStatus;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryUnCategorizedCountProjection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

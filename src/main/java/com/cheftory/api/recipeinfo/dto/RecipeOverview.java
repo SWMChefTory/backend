@@ -1,11 +1,11 @@
-package com.cheftory.api.recipeinfo.model;
+package com.cheftory.api.recipeinfo.dto;
 
-import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
-import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
-import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
+import com.cheftory.api.recipeinfo.tag.entity.RecipeTag;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaType;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;

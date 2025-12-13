@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.category;
+package com.cheftory.api.recipeinfo.category.entity;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.category.exception.RecipeCategoryErrorCode;

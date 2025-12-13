@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.tag.entity.RecipeTag;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;

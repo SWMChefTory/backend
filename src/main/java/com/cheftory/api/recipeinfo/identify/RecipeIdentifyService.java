@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.identify;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.identify.entity.RecipeIdentify;
 import com.cheftory.api.recipeinfo.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipeinfo.identify.exception.RecipeIdentifyException;
 import jakarta.transaction.Transactional;

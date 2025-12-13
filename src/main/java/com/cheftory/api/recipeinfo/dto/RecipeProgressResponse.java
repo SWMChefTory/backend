@@ -1,7 +1,7 @@
-package com.cheftory.api.recipeinfo.model;
+package com.cheftory.api.recipeinfo.dto;
 
-import com.cheftory.api.recipeinfo.progress.RecipeProgressDetail;
-import com.cheftory.api.recipeinfo.progress.RecipeProgressStep;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgressDetail;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

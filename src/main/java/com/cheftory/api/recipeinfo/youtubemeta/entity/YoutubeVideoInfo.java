@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.youtubemeta;
+package com.cheftory.api.recipeinfo.youtubemeta.entity;
 
 import jakarta.persistence.Embeddable;
 import java.net.URI;

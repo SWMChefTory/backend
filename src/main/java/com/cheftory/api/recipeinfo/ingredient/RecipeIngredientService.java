@@ -1,7 +1,8 @@
 package com.cheftory.api.recipeinfo.ingredient;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeinfo.detail.RecipeDetail.Ingredient;
+import com.cheftory.api.recipeinfo.detail.entity.RecipeDetail.Ingredient;
+import com.cheftory.api.recipeinfo.ingredient.entity.RecipeIngredient;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

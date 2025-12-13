@@ -1,5 +1,6 @@
-package com.cheftory.api.recipeinfo.ingredient;
+package com.cheftory.api.recipeinfo.ingredient.dto;
 
+import com.cheftory.api.recipeinfo.ingredient.entity.RecipeIngredient;
 import java.util.List;
 
 public record RecipeIngredientsResponse(List<Ingredient> ingredients) {

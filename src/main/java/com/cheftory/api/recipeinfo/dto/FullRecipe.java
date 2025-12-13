@@ -1,14 +1,14 @@
-package com.cheftory.api.recipeinfo.model;
+package com.cheftory.api.recipeinfo.dto;
 
-import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
-import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
-import com.cheftory.api.recipeinfo.history.RecipeHistory;
-import com.cheftory.api.recipeinfo.ingredient.RecipeIngredient;
-import com.cheftory.api.recipeinfo.progress.RecipeProgress;
+import com.cheftory.api.recipeinfo.briefing.entity.RecipeBriefing;
+import com.cheftory.api.recipeinfo.detailMeta.entity.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistory;
+import com.cheftory.api.recipeinfo.ingredient.entity.RecipeIngredient;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgress;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.step.entity.RecipeStep;
-import com.cheftory.api.recipeinfo.tag.RecipeTag;
-import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
+import com.cheftory.api.recipeinfo.tag.entity.RecipeTag;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import lombok.*;

@@ -1,7 +1,7 @@
 package com.cheftory.api.recipeinfo.briefing.client.dto;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeinfo.briefing.RecipeBriefing;
+import com.cheftory.api.recipeinfo.briefing.entity.RecipeBriefing;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;

@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.progress;
 
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgress;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Sort;

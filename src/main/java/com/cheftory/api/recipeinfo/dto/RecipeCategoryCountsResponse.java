@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.model;
+package com.cheftory.api.recipeinfo.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

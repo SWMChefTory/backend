@@ -1,8 +1,8 @@
 package com.cheftory.api.recipeinfo.recipe;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeinfo.model.RecipeInfoVideoQuery;
-import com.cheftory.api.recipeinfo.model.RecipeSort;
+import com.cheftory.api.recipeinfo.dto.RecipeInfoVideoQuery;
+import com.cheftory.api.recipeinfo.dto.RecipeSort;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
 import com.cheftory.api.recipeinfo.recipe.exception.RecipeErrorCode;

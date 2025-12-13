@@ -3,6 +3,7 @@ package com.cheftory.api.recipeinfo.youtubemeta;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.net.URI;

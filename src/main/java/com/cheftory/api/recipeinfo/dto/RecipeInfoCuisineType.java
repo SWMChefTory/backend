@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.model;
+package com.cheftory.api.recipeinfo.dto;
 
 import com.cheftory.api.recipeinfo.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipeinfo.exception.RecipeInfoException;

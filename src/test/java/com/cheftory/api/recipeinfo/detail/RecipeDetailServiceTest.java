@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.cheftory.api.recipeinfo.caption.entity.RecipeCaption;
 import com.cheftory.api.recipeinfo.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipeinfo.detail.client.dto.ClientRecipeDetailResponse;
+import com.cheftory.api.recipeinfo.detail.entity.RecipeDetail;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

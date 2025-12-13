@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaRepository;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaErrorCode;

@@ -7,6 +7,10 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaStatus;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaType;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeVideoInfo;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.UUID;

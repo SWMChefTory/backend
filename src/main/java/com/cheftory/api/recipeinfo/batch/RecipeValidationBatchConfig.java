@@ -1,9 +1,9 @@
 package com.cheftory.api.recipeinfo.batch;
 
-import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMeta;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaRepository;
-import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaStatus;
-import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaStatus;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipeinfo.youtubemeta.client.VideoInfoClient;
 import java.nio.ByteBuffer;
 import java.util.Collections;

@@ -1,6 +1,6 @@
 package com.cheftory.api.recipeinfo.search.autocomplete;
 
-import com.cheftory.api.recipeinfo.search.RecipeSearchPageRequest;
+import com.cheftory.api.recipeinfo.search.utils.RecipeSearchPageRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

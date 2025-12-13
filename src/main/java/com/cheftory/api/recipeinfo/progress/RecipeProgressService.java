@@ -1,6 +1,10 @@
 package com.cheftory.api.recipeinfo.progress;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgress;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgressDetail;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgressStep;
+import com.cheftory.api.recipeinfo.progress.utils.RecipeProgressSort;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

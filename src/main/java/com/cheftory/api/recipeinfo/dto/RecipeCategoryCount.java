@@ -1,6 +1,6 @@
-package com.cheftory.api.recipeinfo.model;
+package com.cheftory.api.recipeinfo.dto;
 
-import com.cheftory.api.recipeinfo.category.RecipeCategory;
+import com.cheftory.api.recipeinfo.category.entity.RecipeCategory;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -2,6 +2,7 @@ package com.cheftory.api.recipeinfo.detail;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.cheftory.api.recipeinfo.detail.entity.RecipeDetail;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

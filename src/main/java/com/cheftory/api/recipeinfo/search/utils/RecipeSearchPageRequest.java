@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.search;
+package com.cheftory.api.recipeinfo.search.utils;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

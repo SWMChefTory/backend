@@ -1,6 +1,6 @@
-package com.cheftory.api.recipeinfo.model;
+package com.cheftory.api.recipeinfo.dto;
 
-import com.cheftory.api.recipeinfo.progress.RecipeProgress;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgress;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import java.util.List;
 import lombok.AccessLevel;

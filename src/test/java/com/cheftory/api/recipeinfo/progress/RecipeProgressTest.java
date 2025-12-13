@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgress;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgressDetail;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgressStep;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.*;

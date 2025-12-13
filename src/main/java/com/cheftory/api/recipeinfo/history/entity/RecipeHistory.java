@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.history;
+package com.cheftory.api.recipeinfo.history.entity;
 
 import com.cheftory.api._common.Clock;
 import jakarta.persistence.Column;

@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.youtubemeta;
+package com.cheftory.api.recipeinfo.youtubemeta.entity;
 
 import com.cheftory.api._common.Clock;
 import jakarta.persistence.Column;

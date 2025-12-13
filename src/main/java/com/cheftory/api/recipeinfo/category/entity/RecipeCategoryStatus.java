@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.category;
+package com.cheftory.api.recipeinfo.category.entity;
 
 public enum RecipeCategoryStatus {
   ACTIVE,

@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.detail;
+package com.cheftory.api.recipeinfo.detail.entity;
 
 import java.util.List;
 

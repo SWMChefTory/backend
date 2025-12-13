@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.recipeinfo.search.entity.RecipeSearch;
 import com.cheftory.api.recipeinfo.search.exception.RecipeSearchErrorCode;
 import com.cheftory.api.recipeinfo.search.exception.RecipeSearchException;
 import java.io.IOException;

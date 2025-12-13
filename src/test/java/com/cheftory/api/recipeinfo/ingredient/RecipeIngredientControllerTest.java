@@ -16,6 +16,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.recipeinfo.ingredient.entity.RecipeIngredient;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Collections;

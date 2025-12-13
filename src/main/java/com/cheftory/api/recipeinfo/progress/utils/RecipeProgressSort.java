@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.progress;
+package com.cheftory.api.recipeinfo.progress.utils;
 
 import org.springframework.data.domain.Sort;
 

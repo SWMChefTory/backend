@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.detail.client.dto.ClientRecipeDetailResponse.Ingredient;
+import com.cheftory.api.recipeinfo.ingredient.entity.RecipeIngredient;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

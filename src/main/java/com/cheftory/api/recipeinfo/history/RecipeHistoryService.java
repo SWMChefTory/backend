@@ -1,8 +1,15 @@
 package com.cheftory.api.recipeinfo.history;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistory;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryCategorizedCount;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryCategorizedCountProjection;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryStatus;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryUnCategorizedCount;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryUnCategorizedCountProjection;
 import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryErrorCode;
 import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryException;
+import com.cheftory.api.recipeinfo.history.utils.RecipeHistorySort;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -88,19 +95,19 @@ public class RecipeHistoryService {
   }
 
   public Page<RecipeHistory> getCategorized(UUID userId, UUID categoryId, Integer page) {
-    Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
+    Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
         userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
   public Page<RecipeHistory> getUnCategorized(UUID userId, Integer page) {
-    Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
+    Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
         userId, null, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
   public Page<RecipeHistory> getRecents(UUID userId, Integer page) {
-    Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
+    Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findByUserIdAndStatus(
         userId, RecipeHistoryStatus.ACTIVE, pageable);
   }

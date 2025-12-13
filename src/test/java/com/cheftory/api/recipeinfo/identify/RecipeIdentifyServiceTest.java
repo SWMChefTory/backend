@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.identify.entity.RecipeIdentify;
 import com.cheftory.api.recipeinfo.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipeinfo.identify.exception.RecipeIdentifyException;
 import java.net.URI;

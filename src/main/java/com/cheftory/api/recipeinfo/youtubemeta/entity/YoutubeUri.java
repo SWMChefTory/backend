@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.youtubemeta;
+package com.cheftory.api.recipeinfo.youtubemeta.entity;
 
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;

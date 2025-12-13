@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.search;
 
+import com.cheftory.api.recipeinfo.search.entity.RecipeSearch;
 import com.cheftory.api.recipeinfo.search.exception.RecipeSearchErrorCode;
 import com.cheftory.api.recipeinfo.search.exception.RecipeSearchException;
 import java.util.List;

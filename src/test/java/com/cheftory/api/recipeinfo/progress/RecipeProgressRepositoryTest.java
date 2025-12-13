@@ -5,6 +5,10 @@ import static org.mockito.Mockito.doReturn;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgress;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgressDetail;
+import com.cheftory.api.recipeinfo.progress.entity.RecipeProgressStep;
+import com.cheftory.api.recipeinfo.progress.utils.RecipeProgressSort;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

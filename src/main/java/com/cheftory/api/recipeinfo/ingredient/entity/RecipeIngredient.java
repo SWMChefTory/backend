@@ -1,10 +1,8 @@
-package com.cheftory.api.recipeinfo.ingredient;
+package com.cheftory.api.recipeinfo.ingredient.entity;
 
 import com.cheftory.api._common.Clock;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.UUID;

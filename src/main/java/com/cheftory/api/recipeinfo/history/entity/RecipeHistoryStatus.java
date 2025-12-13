@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.history;
+package com.cheftory.api.recipeinfo.history.entity;
 
 public enum RecipeHistoryStatus {
   ACTIVE,
