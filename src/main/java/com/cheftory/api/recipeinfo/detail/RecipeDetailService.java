@@ -2,6 +2,7 @@ package com.cheftory.api.recipeinfo.detail;
 
 import com.cheftory.api.recipeinfo.caption.entity.RecipeCaption;
 import com.cheftory.api.recipeinfo.detail.client.RecipeDetailClient;
+import com.cheftory.api.recipeinfo.detail.entity.RecipeDetail;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

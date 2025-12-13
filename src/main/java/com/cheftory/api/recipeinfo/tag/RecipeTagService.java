@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.tag;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.tag.entity.RecipeTag;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

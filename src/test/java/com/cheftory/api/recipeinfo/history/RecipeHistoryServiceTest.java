@@ -12,8 +12,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistory;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryCategorizedCount;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryCategorizedCountProjection;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryStatus;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryUnCategorizedCount;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryUnCategorizedCountProjection;
 import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryErrorCode;
 import com.cheftory.api.recipeinfo.history.exception.RecipeHistoryException;
+import com.cheftory.api.recipeinfo.history.utils.RecipeHistorySort;
 import com.cheftory.api.recipeinfo.util.RecipePageRequest;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -374,7 +381,7 @@ public class RecipeHistoryServiceTest {
       UUID userId = UUID.randomUUID();
       UUID categoryId = UUID.randomUUID();
       int page = 0;
-      Pageable pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
+      Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
 
       Page<RecipeHistory> expectedStatuses =
           new PageImpl<>(List.of(RecipeHistory.create(clock, userId, UUID.randomUUID())));
@@ -405,7 +412,7 @@ public class RecipeHistoryServiceTest {
     void shouldFindUncategorizedRecipeHistoryes() {
       UUID userId = UUID.randomUUID();
       int page = 0;
-      Pageable pageable = PageRequest.of(page, 10, HistorySort.VIEWED_AT_DESC);
+      Pageable pageable = PageRequest.of(page, 10, RecipeHistorySort.VIEWED_AT_DESC);
 
       List<RecipeHistory> expectedStatuses =
           List.of(RecipeHistory.create(clock, userId, UUID.randomUUID()));
@@ -442,7 +449,7 @@ public class RecipeHistoryServiceTest {
       void setUp() {
         userId = UUID.randomUUID();
         page = 0;
-        pageable = RecipePageRequest.create(page, HistorySort.VIEWED_AT_DESC);
+        pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
       }
 
       @Nested

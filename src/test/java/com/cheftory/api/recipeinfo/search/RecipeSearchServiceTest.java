@@ -6,7 +6,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.recipeinfo.search.entity.RecipeSearch;
 import com.cheftory.api.recipeinfo.search.history.RecipeSearchHistoryService;
+import com.cheftory.api.recipeinfo.search.utils.RecipeSearchPageRequest;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;

@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType;
-import com.cheftory.api.recipeinfo.youtubemeta.YoutubeUri;
-import com.cheftory.api.recipeinfo.youtubemeta.YoutubeVideoInfo;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaType;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeUri;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.io.IOException;

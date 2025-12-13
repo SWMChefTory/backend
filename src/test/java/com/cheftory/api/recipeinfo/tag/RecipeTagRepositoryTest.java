@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doReturn;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.tag.entity.RecipeTag;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

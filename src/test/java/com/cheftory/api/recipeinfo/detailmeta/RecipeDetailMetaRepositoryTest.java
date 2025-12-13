@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMeta;
+import com.cheftory.api.recipeinfo.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
