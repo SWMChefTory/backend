@@ -2,9 +2,9 @@ name: Java CI with Gradle
 
 # 동작 조건 설정 : dev 브랜치에 머지되면 동작한다.
 # dev에 배포
-on:
-  push:
-    branches: [ "dev" ]
+# on:
+#   push:
+#     branches: [ "dev" ]
 
 permissions:
   contents: read
