@@ -1,4 +1,4 @@
-package com.cheftory.api.recipeinfo.search;
+package com.cheftory.api.recipeinfo.search.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
