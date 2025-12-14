@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.youtubemeta.entity;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.region.MarketScope;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,7 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class RecipeYoutubeMeta {
+public class RecipeYoutubeMeta extends MarketScope {
   @Id private UUID id;
 
   @Column(nullable = false)
