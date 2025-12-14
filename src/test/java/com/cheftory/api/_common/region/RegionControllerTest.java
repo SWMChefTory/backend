@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.jwt.TokenProvider;
 import com.cheftory.api.exception.GlobalErrorCode;
 import java.util.UUID;
@@ -16,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -31,8 +29,8 @@ public class RegionControllerTest {
     String validJwt = tokenProvider.createAccessToken(userId);
 
     mockMvc
-        .perform(get("/api/security/failed")
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + validJwt))
+        .perform(
+            get("/api/security/failed").header(HttpHeaders.AUTHORIZATION, "Bearer " + validJwt))
         .andExpect(status().is4xxClientError())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.message").value(GlobalErrorCode.UNKNOWN_REGION.getMessage()))

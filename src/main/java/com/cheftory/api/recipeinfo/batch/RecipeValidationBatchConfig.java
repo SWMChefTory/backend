@@ -53,8 +53,7 @@ public class RecipeValidationBatchConfig {
   @Bean
   @StepScope
   public StepExecutionListener marketContextListener(
-      @Value("#{jobParameters['market']}") String marketParam
-  ) {
+      @Value("#{jobParameters['market']}") String marketParam) {
     return new StepExecutionListener() {
       private MarketContext.Scope scope;
 
@@ -62,10 +61,11 @@ public class RecipeValidationBatchConfig {
       public void beforeStep(StepExecution stepExecution) {
         Market market = Market.valueOf(marketParam);
 
-        String countryCode = switch (market) {
-          case KOREA -> "KR";
-          case GLOBAL -> "US";
-        };
+        String countryCode =
+            switch (market) {
+              case KOREA -> "KR";
+              case GLOBAL -> "US";
+            };
 
         scope = MarketContext.with(new MarketContext.Info(market, countryCode));
       }
@@ -84,8 +84,7 @@ public class RecipeValidationBatchConfig {
       PlatformTransactionManager transactionManager,
       StepExecutionListener marketContextListener,
       RepositoryItemReader<RecipeYoutubeMeta> youtubeMetaReader,
-      CompositeItemWriter<RecipeYoutubeMeta> compositeWriter
-  ) {
+      CompositeItemWriter<RecipeYoutubeMeta> compositeWriter) {
     return new StepBuilder("youtubeValidationStep", jobRepository)
         .<RecipeYoutubeMeta, RecipeYoutubeMeta>chunk(50, transactionManager)
         .listener(marketContextListener)
@@ -109,60 +108,63 @@ public class RecipeValidationBatchConfig {
   @Bean
   @StepScope
   public JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter(
-      @Value("#{jobParameters['market']}") String marketParam
-  ) {
+      @Value("#{jobParameters['market']}") String marketParam) {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .sql("""
+        .sql(
+            """
           UPDATE recipe_youtube_meta
           SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
           WHERE id = ? AND market = ?
           """)
         .dataSource(dataSource)
         .assertUpdates(false)
-        .itemPreparedStatementSetter((item, ps) -> {
-          ps.setBytes(1, uuidToBytes(item.getId()));
-          ps.setString(2, marketParam);
-        })
+        .itemPreparedStatementSetter(
+            (item, ps) -> {
+              ps.setBytes(1, uuidToBytes(item.getId()));
+              ps.setString(2, marketParam);
+            })
         .build();
   }
 
   @Bean
   @StepScope
   public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter(
-      @Value("#{jobParameters['market']}") String marketParam
-  ) {
+      @Value("#{jobParameters['market']}") String marketParam) {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .sql("""
+        .sql(
+            """
           UPDATE recipe
           SET recipe_status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
           WHERE id = ? AND market = ?
           """)
         .dataSource(dataSource)
         .assertUpdates(false)
-        .itemPreparedStatementSetter((item, ps) -> {
-          ps.setBytes(1, uuidToBytes(item.getRecipeId()));
-          ps.setString(2, marketParam);
-        })
+        .itemPreparedStatementSetter(
+            (item, ps) -> {
+              ps.setBytes(1, uuidToBytes(item.getRecipeId()));
+              ps.setString(2, marketParam);
+            })
         .build();
   }
 
   @Bean
   @StepScope
   public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter(
-      @Value("#{jobParameters['market']}") String marketParam
-  ) {
+      @Value("#{jobParameters['market']}") String marketParam) {
     return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-        .sql("""
+        .sql(
+            """
           UPDATE recipe_history
           SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
           WHERE recipe_id = ? AND market = ?
           """)
         .dataSource(dataSource)
         .assertUpdates(false)
-        .itemPreparedStatementSetter((item, ps) -> {
-          ps.setBytes(1, uuidToBytes(item.getRecipeId()));
-          ps.setString(2, marketParam);
-        })
+        .itemPreparedStatementSetter(
+            (item, ps) -> {
+              ps.setBytes(1, uuidToBytes(item.getRecipeId()));
+              ps.setString(2, marketParam);
+            })
         .build();
   }
 
@@ -178,14 +180,10 @@ public class RecipeValidationBatchConfig {
   public CompositeItemWriter<RecipeYoutubeMeta> compositeWriter(
       JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter,
       JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter,
-      JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter
-  ) {
+      JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter) {
     var writer = new CompositeItemWriter<RecipeYoutubeMeta>();
-    writer.setDelegates(java.util.List.of(
-        youtubeMetaJdbcWriter,
-        recipeStatusJdbcWriter,
-        recipeHistoryJdbcWriter
-    ));
+    writer.setDelegates(
+        java.util.List.of(youtubeMetaJdbcWriter, recipeStatusJdbcWriter, recipeHistoryJdbcWriter));
     return writer;
   }
 

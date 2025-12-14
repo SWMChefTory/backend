@@ -1,8 +1,5 @@
 package com.cheftory.api.recipeinfo.batch;
 
-import static com.cheftory.api._common.region.Market.GLOBAL;
-import static com.cheftory.api._common.region.Market.KOREA;
-
 import com.cheftory.api._common.region.Market;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +36,10 @@ public class RecipeValidationScheduler {
               .toJobParameters();
 
       JobExecution jobExecution = jobLauncher.run(youtubeValidationJob, jobParameters);
-      log.info("YouTube validation job started. market={}, executionId={}", market, jobExecution.getId());
+      log.info(
+          "YouTube validation job started. market={}, executionId={}",
+          market,
+          jobExecution.getId());
     } catch (Exception e) {
       log.error("Failed to start YouTube validation job. market={}", market, e);
     }

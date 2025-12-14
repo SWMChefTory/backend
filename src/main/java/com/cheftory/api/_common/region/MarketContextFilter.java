@@ -3,23 +3,24 @@ package com.cheftory.api._common.region;
 import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.exception.GlobalErrorCode;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class MarketContextFilter extends OncePerRequestFilter {
 
   private final HandlerExceptionResolver handlerExceptionResolver;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) {
+  protected void doFilterInternal(
+      HttpServletRequest req, HttpServletResponse res, FilterChain chain) {
 
     try {
       String headerValue = req.getHeader(MarketHeaders.COUNTRY_CODE);
@@ -30,6 +31,9 @@ public class MarketContextFilter extends OncePerRequestFilter {
       }
 
       Market market = Market.fromCountryCode(countryCode);
+
+      log.info("method={}, uri={}, X-Country-Code={}",
+          req.getMethod(), req.getRequestURI(), req.getHeader("X-Country-Code"));
 
       try (var ignored = MarketContext.with(new MarketContext.Info(market, countryCode))) {
         chain.doFilter(req, res);

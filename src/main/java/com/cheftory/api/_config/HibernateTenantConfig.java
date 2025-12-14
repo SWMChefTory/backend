@@ -12,8 +12,7 @@ public class HibernateTenantConfig {
 
   @Bean
   public HibernatePropertiesCustomizer tenantIdResolverCustomizer(
-      MarketTenantIdentifierResolver resolver
-  ) {
+      MarketTenantIdentifierResolver resolver) {
     return (Map<String, Object> props) ->
         props.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, resolver);
   }

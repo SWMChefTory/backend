@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.cheftory.api.account.auth.exception.AuthErrorCode;
 import com.cheftory.api.account.auth.jwt.TokenProvider;
-import com.cheftory.api.exception.GlobalErrorCode;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

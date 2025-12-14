@@ -27,9 +27,7 @@ public class AsyncConfig {
 
   @Bean("recipeInfoCreateExecutor")
   public AsyncTaskExecutor recipeInfoCreateExecutor(
-      ExecutorService asyncVirtualThreadExecutorService,
-      TaskDecorator marketContextTaskDecorator
-  ) {
+      ExecutorService asyncVirtualThreadExecutorService, TaskDecorator marketContextTaskDecorator) {
     return new AsyncTaskExecutor() {
       @Override
       public void execute(Runnable task) {

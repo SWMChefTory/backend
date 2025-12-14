@@ -96,7 +96,6 @@ class RecipeValidationBatchConfigTest {
     }
   }
 
-
   @Test
   @DisplayName("유효한 YouTube 비디오는 ACTIVE 상태 유지")
   void shouldKeepValidYoutubeVideosActive() throws Exception {
@@ -178,7 +177,6 @@ class RecipeValidationBatchConfigTest {
       assertYoutubeMetaStatus(blockedMetaId, YoutubeMetaStatus.BLOCKED);
     }
   }
-
 
   @Test
   @DisplayName("job parameter market에 따라 해당 마켓 데이터만 처리")

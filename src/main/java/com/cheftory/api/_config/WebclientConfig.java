@@ -34,9 +34,10 @@ public class WebclientConfig {
       var info = MarketContext.currentOrNull();
       if (info == null) return next.exchange(request);
 
-      ClientRequest filtered = ClientRequest.from(request)
-          .header(MarketHeaders.COUNTRY_CODE, info.countryCode())
-          .build();
+      ClientRequest filtered =
+          ClientRequest.from(request)
+              .header(MarketHeaders.COUNTRY_CODE, info.countryCode())
+              .build();
 
       return next.exchange(filtered);
     };
