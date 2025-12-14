@@ -25,10 +25,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @DataJpaTest
 @ImportAutoConfiguration(AopAutoConfiguration.class)
 @Import({
-    TestRegionService.class,
-    MarketTenantIdentifierResolver.class,
-    HibernateTenantConfig.class,
-    AsyncConfig.class
+  TestRegionService.class,
+  MarketTenantIdentifierResolver.class,
+  HibernateTenantConfig.class,
+  AsyncConfig.class
 })
 class MarketIntegrationTest {
 
@@ -52,16 +52,20 @@ class MarketIntegrationTest {
   @Test
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   void async_create_should_be_isolated_by_market() throws Exception {
-    withMarket(Market.KOREA, "KR", () -> regionService.createAsync("korea").get(3, TimeUnit.SECONDS));
-    withMarket(Market.GLOBAL, "US", () -> regionService.createAsync("global").get(3, TimeUnit.SECONDS));
+    withMarket(
+        Market.KOREA, "KR", () -> regionService.createAsync("korea").get(3, TimeUnit.SECONDS));
+    withMarket(
+        Market.GLOBAL, "US", () -> regionService.createAsync("global").get(3, TimeUnit.SECONDS));
 
-    withMarket(Market.KOREA, "KR", () ->
-        assertThat(regionService.findAllNames()).allMatch(n -> n.startsWith("korea"))
-    );
+    withMarket(
+        Market.KOREA,
+        "KR",
+        () -> assertThat(regionService.findAllNames()).allMatch(n -> n.startsWith("korea")));
 
-    withMarket(Market.GLOBAL, "US", () ->
-        assertThat(regionService.findAllNames()).allMatch(n -> n.startsWith("global"))
-    );
+    withMarket(
+        Market.GLOBAL,
+        "US",
+        () -> assertThat(regionService.findAllNames()).allMatch(n -> n.startsWith("global")));
   }
 
   @Test
@@ -85,27 +89,45 @@ class MarketIntegrationTest {
     TransactionTemplate tx = new TransactionTemplate(txManager);
     tx.setPropagationBehavior(Propagation.REQUIRES_NEW.value());
 
-    withMarket(Market.KOREA, "KR", () ->
-        tx.execute(status -> { regionService.save("korea"); return null; })
-    );
+    withMarket(
+        Market.KOREA,
+        "KR",
+        () ->
+            tx.execute(
+                status -> {
+                  regionService.save("korea");
+                  return null;
+                }));
 
-    withMarket(Market.GLOBAL, "US", () ->
-        tx.execute(status -> { regionService.save("global"); return null; })
-    );
+    withMarket(
+        Market.GLOBAL,
+        "US",
+        () ->
+            tx.execute(
+                status -> {
+                  regionService.save("global");
+                  return null;
+                }));
 
-    withMarket(Market.KOREA, "KR", () ->
-        tx.execute(status -> {
-          assertThat(regionService.findAllNames()).containsExactly("korea");
-          return null;
-        })
-    );
+    withMarket(
+        Market.KOREA,
+        "KR",
+        () ->
+            tx.execute(
+                status -> {
+                  assertThat(regionService.findAllNames()).containsExactly("korea");
+                  return null;
+                }));
 
-    withMarket(Market.GLOBAL, "US", () ->
-        tx.execute(status -> {
-          assertThat(regionService.findAllNames()).containsExactly("global");
-          return null;
-        })
-    );
+    withMarket(
+        Market.GLOBAL,
+        "US",
+        () ->
+            tx.execute(
+                status -> {
+                  assertThat(regionService.findAllNames()).containsExactly("global");
+                  return null;
+                }));
   }
 
   private static void withMarket(Market market, String countryCode, ThrowingRunnable r) {

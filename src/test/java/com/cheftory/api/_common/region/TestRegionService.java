@@ -1,7 +1,5 @@
 package com.cheftory.api._common.region;
 
-import com.cheftory.api.exception.CheftoryException;
-import com.cheftory.api.exception.GlobalErrorCode;
 import groovy.util.logging.Slf4j;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
