@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.tag.entity;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.region.MarketScope;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class RecipeTag {
+public class RecipeTag extends MarketScope {
   @Id private UUID id;
 
   @Column(nullable = false)

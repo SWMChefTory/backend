@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.step.entity;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.region.MarketScope;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +15,7 @@ import org.hibernate.type.SqlTypes;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class RecipeStep {
+public class RecipeStep extends MarketScope {
 
   @Getter
   @AllArgsConstructor

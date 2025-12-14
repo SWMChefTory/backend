@@ -40,8 +40,7 @@ public class RecipeIngredientControllerTest extends RestDocsTest {
     recipeIngredientService = mock(RecipeIngredientService.class);
     controller = new RecipeIngredientController(recipeIngredientService);
     exceptionHandler = new GlobalExceptionHandler();
-    mockMvc =
-        mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
+    mockMvc = mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
   }
 
   @Nested
@@ -190,9 +189,7 @@ public class RecipeIngredientControllerTest extends RestDocsTest {
 
         @BeforeEach
         void setUp() {
-          doReturn(Collections.emptyList())
-              .when(recipeIngredientService)
-              .gets(any(UUID.class));
+          doReturn(Collections.emptyList()).when(recipeIngredientService).gets(any(UUID.class));
         }
 
         @Test

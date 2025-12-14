@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.progress.entity;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.region.MarketScope;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class RecipeProgress {
+public class RecipeProgress extends MarketScope {
   @Id private UUID id;
 
   @Column(nullable = false)

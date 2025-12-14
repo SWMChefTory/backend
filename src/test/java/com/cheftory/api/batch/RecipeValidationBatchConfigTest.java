@@ -1,23 +1,25 @@
 package com.cheftory.api.batch;
 
+import static com.cheftory.api._common.region.Market.KOREA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.cheftory.api.recipeinfo.history.entity.RecipeHistory;
+import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.recipeinfo.history.RecipeHistoryRepository;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistory;
 import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryStatus;
 import com.cheftory.api.recipeinfo.recipe.RecipeRepository;
 import com.cheftory.api.recipeinfo.recipe.entity.Recipe;
 import com.cheftory.api.recipeinfo.recipe.entity.RecipeStatus;
-import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.RecipeYoutubeMetaRepository;
+import com.cheftory.api.recipeinfo.youtubemeta.client.VideoInfoClient;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaStatus;
 import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeVideoInfo;
-import com.cheftory.api.recipeinfo.youtubemeta.client.VideoInfoClient;
 import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,83 +58,91 @@ class RecipeValidationBatchConfigTest {
   @Test
   @DisplayName("유효하지 않은 YouTube 비디오를 BLOCKED 상태로 변경")
   void shouldBlockInvalidYoutubeVideos() throws Exception {
-    UUID userId = UUID.randomUUID();
-    UUID invalidRecipeId = createRecipe();
-    UUID invalidYoutubeMetaId =
-        createYoutubeMeta(
-            invalidRecipeId,
-            "invalid_video_id1",
-            "https://www.youtube.com/watch?v=invalid_video_id1");
-    UUID invalidHistoryId = createRecipeHistory(userId, invalidRecipeId);
+    try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
+      UUID userId = UUID.randomUUID();
+      UUID invalidRecipeId = createRecipe();
+      UUID invalidYoutubeMetaId =
+          createYoutubeMeta(
+              invalidRecipeId,
+              "invalid_video_id1",
+              "https://www.youtube.com/watch?v=invalid_video_id1");
+      UUID invalidHistoryId = createRecipeHistory(userId, invalidRecipeId);
 
-    when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
+      when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
 
-    JobExecution jobExecution = runBatchJob();
+      JobExecution jobExecution = runBatchJob();
 
-    assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
-    assertYoutubeMetaStatus(invalidYoutubeMetaId, YoutubeMetaStatus.BLOCKED);
-    assertRecipeStatus(invalidRecipeId, RecipeStatus.BLOCKED);
-    assertHistoryStatus(invalidHistoryId, RecipeHistoryStatus.BLOCKED);
+      assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
+      assertYoutubeMetaStatus(invalidYoutubeMetaId, YoutubeMetaStatus.BLOCKED);
+      assertRecipeStatus(invalidRecipeId, RecipeStatus.BLOCKED);
+      assertHistoryStatus(invalidHistoryId, RecipeHistoryStatus.BLOCKED);
+    }
   }
 
   @Test
   @DisplayName("유효한 YouTube 비디오는 ACTIVE 상태 유지")
   void shouldKeepValidYoutubeVideosActive() throws Exception {
-    UUID userId = UUID.randomUUID();
-    UUID validRecipeId = createRecipe();
-    UUID validYoutubeMetaId =
-        createYoutubeMeta(
-            validRecipeId, "valid_video_id2", "https://www.youtube.com/watch?v=valid_video_id2");
-    UUID validHistoryId = createRecipeHistory(userId, validRecipeId);
+    try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
+      UUID userId = UUID.randomUUID();
+      UUID validRecipeId = createRecipe();
+      UUID validYoutubeMetaId =
+          createYoutubeMeta(
+              validRecipeId, "valid_video_id2", "https://www.youtube.com/watch?v=valid_video_id2");
+      UUID validHistoryId = createRecipeHistory(userId, validRecipeId);
 
-    when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
+      when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
 
-    JobExecution jobExecution = runBatchJob();
+      JobExecution jobExecution = runBatchJob();
 
-    assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
-    assertYoutubeMetaStatus(validYoutubeMetaId, YoutubeMetaStatus.ACTIVE);
-    assertRecipeStatus(validRecipeId, RecipeStatus.IN_PROGRESS);
-    assertHistoryStatus(validHistoryId, RecipeHistoryStatus.ACTIVE);
+      assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
+      assertYoutubeMetaStatus(validYoutubeMetaId, YoutubeMetaStatus.ACTIVE);
+      assertRecipeStatus(validRecipeId, RecipeStatus.IN_PROGRESS);
+      assertHistoryStatus(validHistoryId, RecipeHistoryStatus.ACTIVE);
+    }
   }
 
   @Test
   @DisplayName("YouTube API 호출 실패 시 비디오를 BLOCKED 처리")
   void shouldBlockVideosWhenApiCallFails() throws Exception {
-    UUID userId = UUID.randomUUID();
-    UUID recipeId = createRecipe();
-    UUID youtubeMetaId =
-        createYoutubeMeta(
-            recipeId, "test_video_id4", "https://www.youtube.com/watch?v=test_video_id4");
-    createRecipeHistory(userId, recipeId);
+    try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
+      UUID userId = UUID.randomUUID();
+      UUID recipeId = createRecipe();
+      UUID youtubeMetaId =
+          createYoutubeMeta(
+              recipeId, "test_video_id4", "https://www.youtube.com/watch?v=test_video_id4");
+      createRecipeHistory(userId, recipeId);
 
-    when(videoInfoClient.isBlockedVideo(any())).thenThrow(new RuntimeException("API Error"));
+      when(videoInfoClient.isBlockedVideo(any())).thenThrow(new RuntimeException("API Error"));
 
-    JobExecution jobExecution = runBatchJob();
+      JobExecution jobExecution = runBatchJob();
 
-    assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
-    assertYoutubeMetaStatus(youtubeMetaId, YoutubeMetaStatus.BLOCKED);
+      assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
+      assertYoutubeMetaStatus(youtubeMetaId, YoutubeMetaStatus.BLOCKED);
+    }
   }
 
   @Test
   @DisplayName("ACTIVE 상태의 비디오만 검증 대상")
   void shouldProcessOnlyActiveVideos() throws Exception {
-    UUID activeRecipeId = createRecipe();
-    UUID activeMetaId =
-        createYoutubeMeta(
-            activeRecipeId, "active_video", "https://www.youtube.com/watch?v=active_video");
+    try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
+      UUID activeRecipeId = createRecipe();
+      UUID activeMetaId =
+          createYoutubeMeta(
+              activeRecipeId, "active_video", "https://www.youtube.com/watch?v=active_video");
 
-    UUID blockedRecipeId = createRecipe();
-    UUID blockedMetaId =
-        createBlockedYoutubeMeta(
-            blockedRecipeId, "blocked_video", "https://www.youtube.com/watch?v=blocked_video");
+      UUID blockedRecipeId = createRecipe();
+      UUID blockedMetaId =
+          createBlockedYoutubeMeta(
+              blockedRecipeId, "blocked_video", "https://www.youtube.com/watch?v=blocked_video");
 
-    when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
+      when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
 
-    JobExecution jobExecution = runBatchJob();
+      JobExecution jobExecution = runBatchJob();
 
-    assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
-    assertYoutubeMetaStatus(activeMetaId, YoutubeMetaStatus.ACTIVE);
-    assertYoutubeMetaStatus(blockedMetaId, YoutubeMetaStatus.BLOCKED);
+      assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
+      assertYoutubeMetaStatus(activeMetaId, YoutubeMetaStatus.ACTIVE);
+      assertYoutubeMetaStatus(blockedMetaId, YoutubeMetaStatus.BLOCKED);
+    }
   }
 
   private JobExecution runBatchJob() throws Exception {

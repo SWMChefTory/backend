@@ -32,10 +32,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
   @MockitoBean private Clock clock;
 
   @BeforeEach
-  void setUp() {
-    // Mock을 초기화하지 말고 그대로 사용
-    // clock = new Clock(); // 이 줄 제거!
-  }
+  void setUp() {}
 
   @Nested
   @DisplayName("레시피 조회 상태 저장")
