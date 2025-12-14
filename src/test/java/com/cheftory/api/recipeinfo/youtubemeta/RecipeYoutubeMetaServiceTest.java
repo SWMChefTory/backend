@@ -163,11 +163,7 @@ public class RecipeYoutubeMetaServiceTest {
       void setUp() {
         youtubeVideoInfo =
             YoutubeVideoInfo.from(
-                youtubeUri,
-                title,
-                youtubeThumbnailUrl,
-                videoSeconds,
-                YoutubeMetaType.NORMAL);
+                youtubeUri, title, youtubeThumbnailUrl, videoSeconds, YoutubeMetaType.NORMAL);
         recipeId = UUID.randomUUID();
       }
 

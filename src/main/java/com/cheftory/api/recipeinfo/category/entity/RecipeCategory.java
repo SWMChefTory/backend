@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.category.entity;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.region.MarketScope;
 import com.cheftory.api.recipeinfo.category.exception.RecipeCategoryErrorCode;
 import com.cheftory.api.recipeinfo.category.exception.RecipeCategoryException;
 import jakarta.persistence.Column;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class RecipeCategory {
+public class RecipeCategory extends MarketScope {
   @Id private UUID id;
 
   @Column(nullable = false)

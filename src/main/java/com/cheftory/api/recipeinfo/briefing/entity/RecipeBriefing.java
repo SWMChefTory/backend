@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.briefing.entity;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.region.MarketScope;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
-public class RecipeBriefing {
+public class RecipeBriefing extends MarketScope {
   @Id private UUID id;
 
   @Column(nullable = false)
