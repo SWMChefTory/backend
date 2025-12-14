@@ -10,6 +10,10 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.youtubemeta.client.VideoInfoClient;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaType;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeUri;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.net.URI;
@@ -159,11 +163,7 @@ public class RecipeYoutubeMetaServiceTest {
       void setUp() {
         youtubeVideoInfo =
             YoutubeVideoInfo.from(
-                youtubeUri,
-                title,
-                youtubeThumbnailUrl,
-                videoSeconds,
-                com.cheftory.api.recipeinfo.youtubemeta.YoutubeMetaType.NORMAL);
+                youtubeUri, title, youtubeThumbnailUrl, videoSeconds, YoutubeMetaType.NORMAL);
         recipeId = UUID.randomUUID();
       }
 

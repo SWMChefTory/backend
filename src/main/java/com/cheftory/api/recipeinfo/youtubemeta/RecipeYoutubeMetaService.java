@@ -2,6 +2,9 @@ package com.cheftory.api.recipeinfo.youtubemeta;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.youtubemeta.client.VideoInfoClient;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeUri;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipeinfo.youtubemeta.exception.YoutubeMetaException;
 import java.net.URI;

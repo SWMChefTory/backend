@@ -1,5 +1,7 @@
 package com.cheftory.api.recipeinfo.youtubemeta;
 
+import com.cheftory.api.recipeinfo.youtubemeta.entity.RecipeYoutubeMeta;
+import com.cheftory.api.recipeinfo.youtubemeta.entity.YoutubeMetaStatus;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;

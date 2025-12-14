@@ -1,6 +1,8 @@
 package com.cheftory.api.recipeinfo.search;
 
+import com.cheftory.api.recipeinfo.search.entity.RecipeSearch;
 import com.cheftory.api.recipeinfo.search.history.RecipeSearchHistoryService;
+import com.cheftory.api.recipeinfo.search.utils.RecipeSearchPageRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

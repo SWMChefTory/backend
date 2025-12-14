@@ -1,5 +1,7 @@
 package com.cheftory.api._config;
 
+import com.cheftory.api._common.region.MarketContext;
+import com.cheftory.api._common.region.MarketHeaders;
 import io.micrometer.observation.ObservationRegistry;
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
@@ -8,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import reactor.netty.http.client.HttpClient;
@@ -25,9 +29,22 @@ public class WebclientConfig {
   }
 
   @Bean
-  @Qualifier("recipeCreateClient")
-  public WebClient webClientForRecipeServer() {
+  public ExchangeFilterFunction marketHeaderPropagator() {
+    return (request, next) -> {
+      var info = MarketContext.currentOrNull();
+      if (info == null) return next.exchange(request);
 
+      ClientRequest filtered = ClientRequest.from(request)
+          .header(MarketHeaders.COUNTRY_CODE, info.countryCode())
+          .build();
+
+      return next.exchange(filtered);
+    };
+  }
+
+  @Bean
+  @Qualifier("recipeCreateClient")
+  public WebClient webClientForRecipeServer(ExchangeFilterFunction marketHeaderPropagator) {
     HttpClient httpClient =
         HttpClient.create()
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
@@ -37,13 +54,13 @@ public class WebclientConfig {
         .baseUrl(recipeServerUrl)
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .observationRegistry(observationRegistry)
+        .filter(marketHeaderPropagator) // ✅ 여기만 적용
         .build();
   }
 
   @Bean
   @Qualifier("youtubeClient")
   public WebClient webClientForGoogle() {
-
     HttpClient httpClient =
         HttpClient.create()
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)

@@ -1,6 +1,7 @@
 package com.cheftory.api.recipeinfo.detailMeta;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaErrorCode;
 import com.cheftory.api.recipeinfo.detailMeta.exception.RecipeDetailMetaException;
 import java.util.List;

@@ -1,6 +1,8 @@
 package com.cheftory.api.recipeinfo.category;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.category.entity.RecipeCategory;
+import com.cheftory.api.recipeinfo.category.entity.RecipeCategoryStatus;
 import com.cheftory.api.recipeinfo.category.exception.RecipeCategoryErrorCode;
 import com.cheftory.api.recipeinfo.category.exception.RecipeCategoryException;
 import jakarta.transaction.Transactional;

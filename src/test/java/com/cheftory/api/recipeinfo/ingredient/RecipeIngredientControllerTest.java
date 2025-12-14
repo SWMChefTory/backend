@@ -16,6 +16,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.recipeinfo.ingredient.entity.RecipeIngredient;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Collections;
@@ -39,8 +40,7 @@ public class RecipeIngredientControllerTest extends RestDocsTest {
     recipeIngredientService = mock(RecipeIngredientService.class);
     controller = new RecipeIngredientController(recipeIngredientService);
     exceptionHandler = new GlobalExceptionHandler();
-    mockMvc =
-        mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
+    mockMvc = mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
   }
 
   @Nested
@@ -189,9 +189,7 @@ public class RecipeIngredientControllerTest extends RestDocsTest {
 
         @BeforeEach
         void setUp() {
-          doReturn(Collections.emptyList())
-              .when(recipeIngredientService)
-              .gets(any(UUID.class));
+          doReturn(Collections.emptyList()).when(recipeIngredientService).gets(any(UUID.class));
         }
 
         @Test

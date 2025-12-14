@@ -39,7 +39,7 @@ class RecipeValidationSchedulerTest {
 
     scheduler.runYouTubeValidation();
 
-    verify(jobLauncher, times(1)).run(eq(youtubeValidationJob), any(JobParameters.class));
+    verify(jobLauncher, times(2)).run(eq(youtubeValidationJob), any(JobParameters.class));
   }
 
   @Test
@@ -50,7 +50,7 @@ class RecipeValidationSchedulerTest {
 
     scheduler.runYouTubeValidation();
 
-    verify(jobLauncher, times(1)).run(eq(youtubeValidationJob), any(JobParameters.class));
+    verify(jobLauncher, times(2)).run(eq(youtubeValidationJob), any(JobParameters.class));
   }
 
   @Test
@@ -63,6 +63,6 @@ class RecipeValidationSchedulerTest {
     scheduler.runYouTubeValidation();
     scheduler.runYouTubeValidation();
 
-    verify(jobLauncher, times(2)).run(eq(youtubeValidationJob), any(JobParameters.class));
+    verify(jobLauncher, times(4)).run(eq(youtubeValidationJob), any(JobParameters.class));
   }
 }

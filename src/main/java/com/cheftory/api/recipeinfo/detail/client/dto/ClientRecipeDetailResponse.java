@@ -1,6 +1,6 @@
 package com.cheftory.api.recipeinfo.detail.client.dto;
 
-import com.cheftory.api.recipeinfo.detail.RecipeDetail;
+import com.cheftory.api.recipeinfo.detail.entity.RecipeDetail;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 

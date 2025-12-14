@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.category.entity.RecipeCategory;
+import com.cheftory.api.recipeinfo.category.entity.RecipeCategoryStatus;
 import com.cheftory.api.recipeinfo.category.exception.RecipeCategoryErrorCode;
 import com.cheftory.api.recipeinfo.category.exception.RecipeCategoryException;
 import java.util.UUID;

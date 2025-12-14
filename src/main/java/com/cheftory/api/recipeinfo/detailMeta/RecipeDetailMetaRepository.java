@@ -1,5 +1,6 @@
 package com.cheftory.api.recipeinfo.detailMeta;
 
+import com.cheftory.api.recipeinfo.detailMeta.entity.RecipeDetailMeta;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

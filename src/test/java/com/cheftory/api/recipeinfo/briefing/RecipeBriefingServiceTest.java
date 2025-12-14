@@ -13,6 +13,7 @@ import com.cheftory.api.recipeinfo.briefing.client.BriefingClient;
 import com.cheftory.api.recipeinfo.briefing.client.dto.BriefingClientResponse;
 import com.cheftory.api.recipeinfo.briefing.client.exception.BriefingClientErrorCode;
 import com.cheftory.api.recipeinfo.briefing.client.exception.BriefingClientException;
+import com.cheftory.api.recipeinfo.briefing.entity.RecipeBriefing;
 import com.cheftory.api.recipeinfo.briefing.exception.RecipeBriefingErrorCode;
 import com.cheftory.api.recipeinfo.briefing.exception.RecipeBriefingException;
 import java.util.List;

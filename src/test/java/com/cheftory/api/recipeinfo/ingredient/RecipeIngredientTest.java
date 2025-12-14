@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.ingredient.entity.RecipeIngredient;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

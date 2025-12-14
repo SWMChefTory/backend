@@ -5,6 +5,11 @@ import static org.mockito.Mockito.when;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistory;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryCategorizedCountProjection;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryStatus;
+import com.cheftory.api.recipeinfo.history.entity.RecipeHistoryUnCategorizedCountProjection;
+import com.cheftory.api.recipeinfo.history.utils.RecipeHistorySort;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +32,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
   @MockitoBean private Clock clock;
 
   @BeforeEach
-  void setUp() {
-    // Mock을 초기화하지 말고 그대로 사용
-    // clock = new Clock(); // 이 줄 제거!
-  }
+  void setUp() {}
 
   @Nested
   @DisplayName("레시피 조회 상태 저장")
@@ -431,7 +433,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         @Test
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들을 반환해야 한다")
         void thenShouldReturnRecentRecipeHistoryesByUserId() {
-          Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+          Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
           Page<RecipeHistory> page =
               repository.findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
           List<RecipeHistory> statuses = page.getContent();
@@ -481,7 +483,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들을 반환해야 한다")
         void thenShouldReturnRecentRecipeHistoryesByUserId() {
           // Given
-          Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+          Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
 
           // When
           Page<RecipeHistory> statusPage =
@@ -511,7 +513,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         @DisplayName("Then - 페이지네이션이 올바르게 적용되어야 한다")
         void thenShouldApplyPaginationCorrectly() {
           // Given - 첫 번째 페이지 (페이지 크기 10)
-          Pageable firstPageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+          Pageable firstPageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
 
           // When
           Page<RecipeHistory> firstPage =
@@ -532,7 +534,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
               .isEqualTo(recipeIds.get(10)); // 10번째로 최근
 
           // Given - 두 번째 페이지
-          Pageable secondPageable = PageRequest.of(1, 10, HistorySort.VIEWED_AT_DESC);
+          Pageable secondPageable = PageRequest.of(1, 10, RecipeHistorySort.VIEWED_AT_DESC);
 
           // When
           Page<RecipeHistory> secondPage =
@@ -558,7 +560,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         void thenShouldReturnCorrectPageInfoForEmptyResult() {
           // Given
           UUID nonExistentUserId = UUID.randomUUID();
-          Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+          Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
 
           // When
           Page<RecipeHistory> emptyPage =
@@ -578,7 +580,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         @DisplayName("Then - 페이지 크기를 5로 설정했을 때 올바르게 동작해야 한다")
         void thenShouldWorkCorrectlyWithPageSizeFive() {
           // Given
-          Pageable pageable = PageRequest.of(0, 5, HistorySort.VIEWED_AT_DESC);
+          Pageable pageable = PageRequest.of(0, 5, RecipeHistorySort.VIEWED_AT_DESC);
 
           // When
           Page<RecipeHistory> page =
@@ -643,7 +645,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 카테고리 유무와 상관없이 모든 히스토리를 반환해야 한다")
           void thenShouldReturnAllHistories() {
-            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
             Page<RecipeHistory> result =
                 repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
 
@@ -690,7 +692,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 카테고리가 있는 모든 히스토리를 반환해야 한다")
           void thenShouldReturnAllCategorizedHistories() {
-            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
             Page<RecipeHistory> result =
                 repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
 
@@ -726,7 +728,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 카테고리가 없는 모든 히스토리를 반환해야 한다")
           void thenShouldReturnAllUncategorizedHistories() {
-            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
             Page<RecipeHistory> result =
                 repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
 
@@ -768,7 +770,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 삭제되지 않은 히스토리만 반환해야 한다")
           void thenShouldReturnOnlyActiveHistories() {
-            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
             Page<RecipeHistory> result =
                 repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
 
@@ -797,7 +799,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 빈 페이지를 반환해야 한다")
           void thenShouldReturnEmptyPage() {
-            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
             Page<RecipeHistory> result =
                 repository.findAllByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
 
@@ -845,7 +847,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
           @Test
           @DisplayName("Then - 해당 사용자의 히스토리만 반환해야 한다")
           void thenShouldReturnOnlySpecificUserHistories() {
-            Pageable pageable = PageRequest.of(0, 10, HistorySort.VIEWED_AT_DESC);
+            Pageable pageable = PageRequest.of(0, 10, RecipeHistorySort.VIEWED_AT_DESC);
 
             Page<RecipeHistory> user1Result =
                 repository.findAllByUserIdAndStatus(userId1, RecipeHistoryStatus.ACTIVE, pageable);

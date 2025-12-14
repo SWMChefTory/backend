@@ -6,7 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipeinfo.detail.RecipeDetail.Ingredient;
+import com.cheftory.api.recipeinfo.detail.entity.RecipeDetail.Ingredient;
+import com.cheftory.api.recipeinfo.ingredient.entity.RecipeIngredient;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.StreamSupport;

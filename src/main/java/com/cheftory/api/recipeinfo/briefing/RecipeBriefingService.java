@@ -3,6 +3,7 @@ package com.cheftory.api.recipeinfo.briefing;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipeinfo.briefing.client.BriefingClient;
 import com.cheftory.api.recipeinfo.briefing.client.dto.BriefingClientResponse;
+import com.cheftory.api.recipeinfo.briefing.entity.RecipeBriefing;
 import com.cheftory.api.recipeinfo.briefing.exception.RecipeBriefingErrorCode;
 import com.cheftory.api.recipeinfo.briefing.exception.RecipeBriefingException;
 import java.util.List;

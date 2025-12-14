@@ -2,6 +2,7 @@ package com.cheftory.api.recipeinfo.history;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.recipeinfo.history.dto.RecipeHistoryRequest;
 import com.cheftory.api.recipeinfo.recipe.validator.ExistsRecipeId;
 import jakarta.validation.Valid;
 import java.util.UUID;

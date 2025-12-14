@@ -1,6 +1,8 @@
 package com.cheftory.api.recipeinfo.category;
 
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.recipeinfo.category.dto.RecipeCategoryRequest;
+import com.cheftory.api.recipeinfo.category.dto.RecipeCategoryResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
