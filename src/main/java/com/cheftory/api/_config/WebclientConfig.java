@@ -49,13 +49,13 @@ public class WebclientConfig {
     HttpClient httpClient =
         HttpClient.create()
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-            .responseTimeout(Duration.ofSeconds(60));
+            .responseTimeout(Duration.ofMinutes(3));
 
     return WebClient.builder()
         .baseUrl(recipeServerUrl)
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .observationRegistry(observationRegistry)
-        .filter(marketHeaderPropagator) // ✅ 여기만 적용
+        .filter(marketHeaderPropagator)
         .build();
   }
 
