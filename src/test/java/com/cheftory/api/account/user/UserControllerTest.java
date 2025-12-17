@@ -111,7 +111,8 @@ public class UserControllerTest extends RestDocsTest {
                           fieldWithPath("date_of_birth").description("생년월일"),
                           fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
                           fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"))));
+                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                          fieldWithPath("provider_sub").description("공급자 고유번호"))));
 
       response
           .body("nickname", equalTo("nickname"))
@@ -204,7 +205,8 @@ public class UserControllerTest extends RestDocsTest {
                           fieldWithPath("date_of_birth").description("생년월일"),
                           fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
                           fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"))));
+                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                          fieldWithPath("provider_sub").description("공급자 고유번호"))));
 
       response
           .body("nickname", equalTo(newNickname))
@@ -265,7 +267,8 @@ public class UserControllerTest extends RestDocsTest {
                           fieldWithPath("date_of_birth").description("생년월일"),
                           fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
                           fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"))));
+                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                          fieldWithPath("provider_sub").description("공급자 고유번호"))));
 
       response
           .body("nickname", equalTo(oldNickname))
@@ -326,7 +329,8 @@ public class UserControllerTest extends RestDocsTest {
                           fieldWithPath("date_of_birth").description("생년월일"),
                           fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
                           fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"))));
+                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                          fieldWithPath("provider_sub").description("공급자 고유번호"))));
 
       response
           .body("nickname", equalTo(oldNickname))
@@ -387,7 +391,8 @@ public class UserControllerTest extends RestDocsTest {
                           fieldWithPath("date_of_birth").description("생년월일"),
                           fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
                           fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"))));
+                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                          fieldWithPath("provider_sub").description("공급자 고유번호"))));
 
       response
           .body("nickname", equalTo(oldNickname))
@@ -448,7 +453,8 @@ public class UserControllerTest extends RestDocsTest {
                           fieldWithPath("date_of_birth").description("생년월일"),
                           fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
                           fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"))));
+                          fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                          fieldWithPath("provider_sub").description("공급자 고유번호"))));
 
       response
           .body("nickname", equalTo(oldNickname))

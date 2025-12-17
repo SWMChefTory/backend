@@ -28,7 +28,8 @@ public class UserController {
         user.getDateOfBirth(),
         user.getTermsOfUseAgreedAt(),
         user.getPrivacyAgreedAt(),
-        user.getMarketingAgreedAt());
+        user.getMarketingAgreedAt(),
+        user.getProviderSub());
   }
 
   @PatchMapping("/me")
@@ -42,6 +43,7 @@ public class UserController {
         user.getDateOfBirth(),
         user.getTermsOfUseAgreedAt(),
         user.getPrivacyAgreedAt(),
-        user.getMarketingAgreedAt());
+        user.getMarketingAgreedAt(),
+        user.getProviderSub());
   }
 }
