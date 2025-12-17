@@ -32,8 +32,11 @@ public class MarketContextFilter extends OncePerRequestFilter {
 
       Market market = Market.fromCountryCode(countryCode);
 
-      log.info("method={}, uri={}, X-Country-Code={}",
-          req.getMethod(), req.getRequestURI(), req.getHeader("X-Country-Code"));
+      log.info(
+          "method={}, uri={}, X-Country-Code={}",
+          req.getMethod(),
+          req.getRequestURI(),
+          req.getHeader("X-Country-Code"));
 
       try (var ignored = MarketContext.with(new MarketContext.Info(market, countryCode))) {
         chain.doFilter(req, res);
