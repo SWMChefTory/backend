@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api.recipeinfo.briefing.RecipeBriefingService;
 import com.cheftory.api.recipeinfo.category.RecipeCategoryService;
 import com.cheftory.api.recipeinfo.category.entity.RecipeCategory;
+import com.cheftory.api.recipeinfo.challenge.RecipeChallengeService;
 import com.cheftory.api.recipeinfo.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipeinfo.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipeinfo.dto.FullRecipe;
@@ -87,6 +88,7 @@ public class RecipeInfoServiceTest {
   private RecipeInfoService recipeInfoService;
   private RecipeSearchService recipeSearchService;
   private RecipeRankService recipeRankService;
+  private RecipeChallengeService recipeChallengeService;
 
   @BeforeEach
   void setUp() {
@@ -104,6 +106,7 @@ public class RecipeInfoServiceTest {
     asyncRecipeInfoCreationService = mock(AsyncRecipeInfoCreationService.class);
     recipeSearchService = mock(RecipeSearchService.class);
     recipeRankService = mock(RecipeRankService.class);
+    recipeChallengeService = mock(RecipeChallengeService.class);
 
     recipeInfoService =
         new RecipeInfoService(
@@ -120,7 +123,8 @@ public class RecipeInfoServiceTest {
             recipeBriefingService,
             recipeService,
             recipeSearchService,
-            recipeRankService);
+            recipeRankService,
+            recipeChallengeService);
   }
 
   @Nested

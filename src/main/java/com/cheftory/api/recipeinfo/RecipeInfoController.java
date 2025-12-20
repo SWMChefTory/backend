@@ -1,8 +1,11 @@
 package com.cheftory.api.recipeinfo;
 
+import com.cheftory.api._common.PocOnly;
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.recipeinfo.challenge.RecipeCompleteChallenge;
 import com.cheftory.api.recipeinfo.dto.CategorizedRecipesResponse;
+import com.cheftory.api.recipeinfo.dto.ChallengeRecipesResponse;
 import com.cheftory.api.recipeinfo.dto.CuisineRecipesResponse;
 import com.cheftory.api.recipeinfo.dto.FullRecipe;
 import com.cheftory.api.recipeinfo.dto.FullRecipeResponse;
@@ -23,9 +26,11 @@ import com.cheftory.api.recipeinfo.dto.RecommendRecipesResponse;
 import com.cheftory.api.recipeinfo.dto.SearchedRecipesResponse;
 import com.cheftory.api.recipeinfo.dto.UnCategorizedRecipesResponse;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.util.Pair;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("")
+@RequestMapping
 public class RecipeInfoController {
   private final RecipeInfoService recipeInfoService;
 
@@ -162,5 +167,16 @@ public class RecipeInfoController {
     RecipeInfoCuisineType cuisineType = RecipeInfoCuisineType.fromString(type);
     Page<RecipeOverview> recipes = recipeInfoService.getCuisineRecipes(cuisineType, userId, page);
     return CuisineRecipesResponse.from(recipes);
+  }
+
+  @PocOnly(until = "2025-12-31")
+  @GetMapping("/api/v1/recipes/challenge/{challengeId}")
+  public ChallengeRecipesResponse getChallengeRecipes(
+      @PathVariable UUID challengeId,
+      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @UserPrincipal UUID userId) {
+    Pair<List<RecipeCompleteChallenge>, Page<RecipeOverview>> result =
+        recipeInfoService.getChallengeRecipes(challengeId, userId, page);
+    return ChallengeRecipesResponse.from(result.getFirst(), result.getSecond());
   }
 }
