@@ -13,7 +13,6 @@ public record ChallengeResponse(
         challenge.getId().toString(),
         challenge.getStartAt(),
         challenge.getEndAt(),
-        challenge.getType().name()
-    );
+        challenge.getType().name());
   }
 }
