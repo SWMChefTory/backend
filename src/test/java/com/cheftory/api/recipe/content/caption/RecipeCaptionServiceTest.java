@@ -9,7 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.content.caption.RecipeCaptionService;
 import com.cheftory.api.recipe.content.caption.client.CaptionClient;
 import com.cheftory.api.recipe.content.caption.client.dto.ClientCaptionResponse;
 import com.cheftory.api.recipe.content.caption.client.exception.CaptionClientErrorCode;

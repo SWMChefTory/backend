@@ -1,4 +1,4 @@
-package com.cheftory.api.credit;
+package com.cheftory.api.credit.entity;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.Market;

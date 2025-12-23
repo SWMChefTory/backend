@@ -1,5 +1,7 @@
 package com.cheftory.api.credit;
 
+import com.cheftory.api.credit.entity.Credit;
+import com.cheftory.api.credit.entity.CreditUserBalance;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;

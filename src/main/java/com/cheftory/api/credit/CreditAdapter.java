@@ -1,5 +1,6 @@
 package com.cheftory.api.credit;
 
+import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ public class CreditAdapter implements RecipeCreditPort {
 
   @Override
   public void spendRecipeCreate(UUID userId, UUID recipeId, long creditCost) {
-    creditService.grant(Credit.recipeCreate(userId, recipeId, creditCost));
+    creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
   }
 
   @Override

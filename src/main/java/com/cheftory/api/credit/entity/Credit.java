@@ -1,15 +1,8 @@
-package com.cheftory.api.credit;
+package com.cheftory.api.credit.entity;
 
 import java.util.UUID;
 
 public record Credit(UUID userId, long amount, CreditReason reason, String idempotencyKey) {
-  public Credit {
-    if (userId == null) throw new IllegalArgumentException("userId is required");
-    if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
-    if (reason == null) throw new IllegalArgumentException("reason is required");
-    if (idempotencyKey == null || idempotencyKey.isBlank())
-      throw new IllegalArgumentException("idempotencyKey is required");
-  }
 
   public static Credit signupBonus(UUID userId) {
     return new Credit(userId, 100L, CreditReason.SIGNUP_BONUS, "signup-bonus:" + userId);

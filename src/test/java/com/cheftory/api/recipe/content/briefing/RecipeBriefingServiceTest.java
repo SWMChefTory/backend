@@ -9,8 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.content.briefing.RecipeBriefingRepository;
-import com.cheftory.api.recipe.content.briefing.RecipeBriefingService;
 import com.cheftory.api.recipe.content.briefing.client.BriefingClient;
 import com.cheftory.api.recipe.content.briefing.client.dto.BriefingClientResponse;
 import com.cheftory.api.recipe.content.briefing.client.exception.BriefingClientErrorCode;

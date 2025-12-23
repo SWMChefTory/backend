@@ -3,7 +3,6 @@ package com.cheftory.api.recipe.content.briefing.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.cheftory.api.recipe.content.briefing.client.BriefingClient;
 import com.cheftory.api.recipe.content.briefing.client.dto.BriefingClientResponse;
 import com.cheftory.api.recipe.content.briefing.client.exception.BriefingClientErrorCode;
 import com.cheftory.api.recipe.content.briefing.client.exception.BriefingClientException;

@@ -471,7 +471,8 @@ class AsyncRecipeCreationServiceTest {
 
         verify(creditPort).refundRecipeCreate(userId1, recipeId, creditCost);
         verify(creditPort).refundRecipeCreate(userId2, recipeId, creditCost);
-        verifyNoMoreInteractions(creditPort);      }
+        verifyNoMoreInteractions(creditPort);
+      }
     }
   }
 }
