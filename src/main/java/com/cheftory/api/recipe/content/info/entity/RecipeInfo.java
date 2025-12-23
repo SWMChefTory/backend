@@ -15,7 +15,7 @@ import lombok.*;
 public class RecipeInfo extends MarketScope {
 
   private static final int INITIAL_VIEW_COUNT = 0;
-  private static final long DEFAULT_CREDIT_COST = 0L;
+  private static final long DEFAULT_CREDIT_COST = 1L;
 
   @Id private UUID id;
 
