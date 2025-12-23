@@ -178,28 +178,42 @@ public class RecipeValidationBatchConfig {
       RecipeCreditPort recipeCreditPort,
       JdbcTemplate jdbcTemplate,
       @Value("#{jobParameters['market']}") String marketParam) {
+
     return items -> {
       for (RecipeYoutubeMeta item : items) {
         if (item == null || item.getStatus() != YoutubeMetaStatus.BLOCKED) continue;
 
         UUID recipeId = item.getRecipeId();
 
-        var row =
-            jdbcTemplate.queryForObject(
+        List<UUID> userIds =
+            jdbcTemplate.query(
                 """
-                SELECT user_id, credit_cost
-                FROM recipe
-                WHERE id = ? AND market = ?
+                SELECT user_id
+                FROM recipe_history
+                WHERE recipe_id = ? AND market = ?
+                ORDER BY created_at DESC
+                LIMIT 1
                 """,
-                (rs, rowNum) ->
-                    new Object[] {bytesToUuid(rs.getBytes("user_id")), rs.getLong("credit_cost")},
+                (rs, rowNum) -> bytesToUuid(rs.getBytes("user_id")),
                 uuidToBytes(recipeId),
                 marketParam);
 
-        if (row == null) continue;
+        if (userIds.isEmpty() || userIds.get(0) == null) continue;
+        UUID userId = userIds.get(0);
 
-        UUID userId = (UUID) row[0];
-        long creditCost = (long) row[1];
+        List<Long> creditCosts =
+            jdbcTemplate.query(
+                """
+                SELECT credit_cost
+                FROM recipe
+                WHERE id = ? AND market = ?
+                """,
+                (rs, rowNum) -> rs.getLong("credit_cost"),
+                uuidToBytes(recipeId),
+                marketParam);
+
+        if (creditCosts.isEmpty()) continue;
+        long creditCost = creditCosts.get(0);
 
         recipeCreditPort.refundRecipeCreate(userId, recipeId, creditCost);
       }

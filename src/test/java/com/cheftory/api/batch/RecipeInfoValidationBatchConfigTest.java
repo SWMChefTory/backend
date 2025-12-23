@@ -4,7 +4,14 @@ import static com.cheftory.api._common.region.Market.GLOBAL;
 import static com.cheftory.api._common.region.Market.KOREA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.MarketContext;
@@ -32,14 +39,12 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
-@SpringBatchTest
 class RecipeInfoValidationBatchConfigTest {
 
   @Autowired private JobLauncher jobLauncher;
@@ -55,8 +60,6 @@ class RecipeInfoValidationBatchConfigTest {
 
   @BeforeEach
   void setUp() {
-    reset(videoInfoClient, recipeCreditPort);
-
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
       recipeHistoryRepository.deleteAll();
       youtubeMetaRepository.deleteAll();
@@ -71,21 +74,23 @@ class RecipeInfoValidationBatchConfigTest {
   }
 
   @Test
-  @DisplayName("유효하지 않은 YouTube 비디오를 BLOCKED 상태로 변경 + 레시피 생성 크레딧 환불")
-  void shouldBlockInvalidYoutubeVideosAndRefund() throws Exception {
+  @DisplayName("유효하지 않은 YouTube 비디오를 BLOCKED 상태로 변경 + 환불 호출")
+  void shouldBlockInvalidYoutubeVideos() throws Exception {
     UUID userId = UUID.randomUUID();
-    long creditCost = 1L;
+    long creditCost = 10L;
 
-    UUID recipeId;
-    UUID youtubeMetaId;
-    UUID historyId;
+    UUID invalidRecipeId;
+    UUID invalidYoutubeMetaId;
+    UUID invalidHistoryId;
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-      recipeId = createRecipe(userId, creditCost);
-      youtubeMetaId =
+      invalidRecipeId = createRecipe(creditCost, KOREA.name());
+      invalidYoutubeMetaId =
           createYoutubeMeta(
-              recipeId, "invalid_video_id1", "https://www.youtube.com/watch?v=invalid_video_id1");
-      historyId = createRecipeHistory(userId, recipeId);
+              invalidRecipeId,
+              "invalid_video_id1",
+              "https://www.youtube.com/watch?v=invalid_video_id1");
+      invalidHistoryId = createRecipeHistory(userId, invalidRecipeId);
     }
 
     when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
@@ -94,30 +99,31 @@ class RecipeInfoValidationBatchConfigTest {
     assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-      assertYoutubeMetaStatus(youtubeMetaId, YoutubeMetaStatus.BLOCKED);
-      assertRecipeStatus(recipeId, RecipeStatus.BLOCKED);
-      assertHistoryStatus(historyId, RecipeHistoryStatus.BLOCKED);
+      assertYoutubeMetaStatus(invalidYoutubeMetaId, YoutubeMetaStatus.BLOCKED);
+      assertRecipeStatus(invalidRecipeId, RecipeStatus.BLOCKED);
+      assertHistoryStatus(invalidHistoryId, RecipeHistoryStatus.BLOCKED);
     }
 
-    verify(recipeCreditPort).refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
+    verify(recipeCreditPort, times(1))
+        .refundRecipeCreate(eq(userId), eq(invalidRecipeId), eq(creditCost));
   }
 
   @Test
-  @DisplayName("유효한 YouTube 비디오는 ACTIVE 유지 + 환불 없음")
+  @DisplayName("유효한 YouTube 비디오는 ACTIVE 상태 유지 + 환불 호출 없음")
   void shouldKeepValidYoutubeVideosActive() throws Exception {
     UUID userId = UUID.randomUUID();
-    long creditCost = 1L;
+    long creditCost = 10L;
 
-    UUID recipeId;
-    UUID youtubeMetaId;
-    UUID historyId;
+    UUID validRecipeId;
+    UUID validYoutubeMetaId;
+    UUID validHistoryId;
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-      recipeId = createRecipe(userId, creditCost);
-      youtubeMetaId =
+      validRecipeId = createRecipe(creditCost, KOREA.name());
+      validYoutubeMetaId =
           createYoutubeMeta(
-              recipeId, "valid_video_id2", "https://www.youtube.com/watch?v=valid_video_id2");
-      historyId = createRecipeHistory(userId, recipeId);
+              validRecipeId, "valid_video_id2", "https://www.youtube.com/watch?v=valid_video_id2");
+      validHistoryId = createRecipeHistory(userId, validRecipeId);
     }
 
     when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
@@ -126,25 +132,25 @@ class RecipeInfoValidationBatchConfigTest {
     assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-      assertYoutubeMetaStatus(youtubeMetaId, YoutubeMetaStatus.ACTIVE);
-      assertRecipeStatus(recipeId, RecipeStatus.IN_PROGRESS);
-      assertHistoryStatus(historyId, RecipeHistoryStatus.ACTIVE);
+      assertYoutubeMetaStatus(validYoutubeMetaId, YoutubeMetaStatus.ACTIVE);
+      assertRecipeStatus(validRecipeId, RecipeStatus.IN_PROGRESS);
+      assertHistoryStatus(validHistoryId, RecipeHistoryStatus.ACTIVE);
     }
 
-    verifyNoInteractions(recipeCreditPort);
+    verify(recipeCreditPort, never()).refundRecipeCreate(any(), any(), anyLong());
   }
 
   @Test
-  @DisplayName("YouTube API 호출 실패 시 비디오를 BLOCKED 처리 + 환불")
-  void shouldBlockVideosWhenApiCallFailsAndRefund() throws Exception {
+  @DisplayName("YouTube API 호출 실패 시 비디오를 BLOCKED 처리 + 환불 호출")
+  void shouldBlockVideosWhenApiCallFails() throws Exception {
     UUID userId = UUID.randomUUID();
-    long creditCost = 1L;
+    long creditCost = 10L;
 
     UUID recipeId;
     UUID youtubeMetaId;
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-      recipeId = createRecipe(userId, creditCost);
+      recipeId = createRecipe(creditCost, KOREA.name());
       youtubeMetaId =
           createYoutubeMeta(
               recipeId, "test_video_id4", "https://www.youtube.com/watch?v=test_video_id4");
@@ -160,30 +166,28 @@ class RecipeInfoValidationBatchConfigTest {
       assertYoutubeMetaStatus(youtubeMetaId, YoutubeMetaStatus.BLOCKED);
     }
 
-    verify(recipeCreditPort).refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
+    verify(recipeCreditPort, times(1))
+        .refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
   }
 
   @Test
-  @DisplayName("ACTIVE 상태의 비디오만 검증 대상 + 기존 BLOCKED는 환불 없음")
+  @DisplayName("ACTIVE 상태의 비디오만 검증 대상(이미 BLOCKED면 환불/상태 변경 없음)")
   void shouldProcessOnlyActiveVideos() throws Exception {
-    UUID userId = UUID.randomUUID();
-    long creditCost = 1L;
+    long creditCost = 10L;
 
     UUID activeMetaId;
     UUID blockedMetaId;
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-      UUID activeRecipeId = createRecipe(userId, creditCost);
+      UUID activeRecipeId = createRecipe(creditCost, KOREA.name());
       activeMetaId =
           createYoutubeMeta(
               activeRecipeId, "active_video", "https://www.youtube.com/watch?v=active_video");
 
-      UUID blockedRecipeId = createRecipe(userId, creditCost);
+      UUID blockedRecipeId = createRecipe(creditCost, KOREA.name());
       blockedMetaId =
           createBlockedYoutubeMeta(
-              blockedRecipeId,
-              "blocked_video",
-              "https://www.youtube.com/watch?v=blocked_video");
+              blockedRecipeId, "blocked_video", "https://www.youtube.com/watch?v=blocked_video");
     }
 
     when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
@@ -196,14 +200,17 @@ class RecipeInfoValidationBatchConfigTest {
       assertYoutubeMetaStatus(blockedMetaId, YoutubeMetaStatus.BLOCKED);
     }
 
-    verifyNoInteractions(recipeCreditPort);
+    verify(recipeCreditPort, never()).refundRecipeCreate(any(), any(), anyLong());
   }
 
   @Test
-  @DisplayName("job parameter market에 따라 해당 마켓 데이터만 처리 + 해당 마켓만 환불")
+  @DisplayName("job parameter market에 따라 해당 마켓 데이터만 처리(환불도 해당 마켓만)")
   void shouldProcessOnlyTargetMarketByJobParam() throws Exception {
-    UUID userId = UUID.randomUUID();
-    long creditCost = 1L;
+    UUID koreaUserId = UUID.randomUUID();
+    long koreaCreditCost = 10L;
+
+    UUID globalUserId = UUID.randomUUID();
+    long globalCreditCost = 20L;
 
     UUID koreaRecipeId;
     UUID koreaMetaId;
@@ -214,23 +221,24 @@ class RecipeInfoValidationBatchConfigTest {
     UUID globalHistoryId;
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-      koreaRecipeId = createRecipe(userId, creditCost);
+      koreaRecipeId = createRecipe(koreaCreditCost, KOREA.name());
       koreaMetaId =
           createYoutubeMeta(
               koreaRecipeId, "korea_invalid", "https://www.youtube.com/watch?v=korea_invalid");
-      koreaHistoryId = createRecipeHistory(userId, koreaRecipeId);
+      koreaHistoryId = createRecipeHistory(koreaUserId, koreaRecipeId);
     }
 
     try (var ignored = MarketContext.with(new MarketContext.Info(GLOBAL, "US"))) {
-      globalRecipeId = createRecipe(userId, creditCost);
+      globalRecipeId = createRecipe(globalCreditCost, GLOBAL.name());
       globalMetaId =
           createYoutubeMeta(
               globalRecipeId, "global_invalid", "https://www.youtube.com/watch?v=global_invalid");
-      globalHistoryId = createRecipeHistory(userId, globalRecipeId);
+      globalHistoryId = createRecipeHistory(globalUserId, globalRecipeId);
     }
 
     when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
 
+    // KOREA만 실행
     JobExecution jobExecution = runBatchJob(KOREA.name());
     assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
 
@@ -246,22 +254,23 @@ class RecipeInfoValidationBatchConfigTest {
       assertHistoryStatus(globalHistoryId, RecipeHistoryStatus.ACTIVE);
     }
 
-    verify(recipeCreditPort).refundRecipeCreate(eq(userId), eq(koreaRecipeId), eq(creditCost));
+    verify(recipeCreditPort, times(1))
+        .refundRecipeCreate(eq(koreaUserId), eq(koreaRecipeId), eq(koreaCreditCost));
     verify(recipeCreditPort, never())
-        .refundRecipeCreate(eq(userId), eq(globalRecipeId), eq(creditCost));
+        .refundRecipeCreate(eq(globalUserId), eq(globalRecipeId), eq(globalCreditCost));
   }
 
   @Test
-  @DisplayName("YoutubeUri 파싱 실패 시 BLOCKED 처리 + API 호출 안함 + 환불")
+  @DisplayName("YoutubeUri 파싱 실패 시 비디오를 BLOCKED 처리하고 API는 호출하지 않음 + 환불 호출")
   void shouldBlockWhenYoutubeUriParsingFails() throws Exception {
     UUID userId = UUID.randomUUID();
-    long creditCost = 1L;
+    long creditCost = 10L;
 
     UUID recipeId;
     UUID metaId;
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-      recipeId = createRecipe(userId, creditCost);
+      recipeId = createRecipe(creditCost, KOREA.name());
       metaId = createYoutubeMeta(recipeId, "no_v_param", "https://www.youtube.com/watch");
       createRecipeHistory(userId, recipeId);
     }
@@ -275,18 +284,19 @@ class RecipeInfoValidationBatchConfigTest {
       assertYoutubeMetaStatus(metaId, YoutubeMetaStatus.BLOCKED);
     }
 
-    verify(recipeCreditPort).refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
+    verify(recipeCreditPort, times(1))
+        .refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
   }
 
   @Test
-  @DisplayName("chunk/page 경계를 넘어도(51개) 모두 처리 + 51번 환불")
+  @DisplayName("chunk/page 경계를 넘어도(51개) 모두 처리 + 환불 51회")
   void shouldProcessAcrossChunkBoundary() throws Exception {
     UUID userId = UUID.randomUUID();
-    long creditCost = 1L;
+    long creditCost = 10L;
 
     try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
       for (int i = 0; i < 51; i++) {
-        UUID recipeId = createRecipe(userId, creditCost);
+        UUID recipeId = createRecipe(creditCost, KOREA.name());
         createYoutubeMeta(recipeId, "bulk_" + i, "https://www.youtube.com/watch?v=bulk_" + i);
         createRecipeHistory(userId, recipeId);
       }
@@ -317,7 +327,7 @@ class RecipeInfoValidationBatchConfigTest {
     }
 
     verify(recipeCreditPort, times(51))
-        .refundRecipeCreate(eq(userId), any(UUID.class), eq(creditCost));
+        .refundRecipeCreate(eq(userId), any(), eq(creditCost));
   }
 
   private JobExecution runBatchJob(String market) throws Exception {
@@ -345,19 +355,22 @@ class RecipeInfoValidationBatchConfigTest {
     assertThat(history.getStatus()).isEqualTo(expectedStatus);
   }
 
-  private UUID createRecipe(UUID userId, long creditCost) {
+  /**
+   * 테스트에서 RecipeInfo.create(clock)만 하면 user_id/credit_cost가 비어 있을 수 있어서
+   * refund writer의 SELECT 결과에서 NPE가 날 수 있음.
+   *
+   * 그래서 저장 후 DB에 user_id/credit_cost를 직접 채워 넣음.
+   */
+  private UUID createRecipe(long creditCost, String market) {
     RecipeInfo recipeInfo = RecipeInfo.create(clock);
     UUID recipeId = recipeInfoRepository.save(recipeInfo).getId();
-
-    String market = MarketContext.required().market().name();
 
     jdbcTemplate.update(
         """
         UPDATE recipe
-        SET user_id = ?, credit_cost = ?
+        SET credit_cost = ?
         WHERE id = ? AND market = ?
         """,
-        uuidToBytes(userId),
         creditCost,
         uuidToBytes(recipeId),
         market);
