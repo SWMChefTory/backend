@@ -17,8 +17,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
-import com.cheftory.api.auth.AuthController;
-import com.cheftory.api.auth.AuthService;
 import com.cheftory.api.auth.dto.TokenReissueRequest;
 import com.cheftory.api.auth.exception.AuthErrorCode;
 import com.cheftory.api.auth.exception.AuthException;

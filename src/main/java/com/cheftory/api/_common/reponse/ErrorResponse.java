@@ -18,6 +18,7 @@ public class ErrorResponse {
   }
 
   public static ErrorResponse from(CheftoryException exception) {
-    return new ErrorResponse(exception.getErrorMessage().getMessage(), exception.getErrorMessage().getErrorCode());
+    return new ErrorResponse(
+        exception.getErrorMessage().getMessage(), exception.getErrorMessage().getErrorCode());
   }
 }

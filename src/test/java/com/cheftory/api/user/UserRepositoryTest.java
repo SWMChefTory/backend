@@ -22,13 +22,7 @@ class UserRepositoryTest extends DbContextTest {
     Clock clock = new Clock();
     User user =
         User.create(
-            "테스터",
-            Gender.MALE,
-            LocalDate.of(1990, 1, 1),
-            Provider.GOOGLE,
-            "sub-1234",
-            true,
-            clock);
+            "테스터", Gender.MALE, LocalDate.of(1990, 1, 1), Provider.GOOGLE, "sub-1234", true, clock);
 
     userRepository.save(user);
 

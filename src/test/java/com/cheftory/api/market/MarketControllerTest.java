@@ -70,12 +70,10 @@ class MarketControllerTest extends RestDocsTest {
       @Test
       @DisplayName("Then - UNKNOWN_REGION 에러를 반환한다")
       void thenReturnsUnknownRegionError() {
-        var response =
-            given().contentType(ContentType.JSON).when().get("/api/v1/market").then();
+        var response = given().contentType(ContentType.JSON).when().get("/api/v1/market").then();
 
         assertErrorResponse(response, GlobalErrorCode.UNKNOWN_REGION);
       }
     }
   }
 }
-

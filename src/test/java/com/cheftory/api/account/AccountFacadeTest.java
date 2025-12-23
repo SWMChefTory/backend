@@ -3,6 +3,7 @@ package com.cheftory.api.account;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import com.cheftory.api._common.Clock;
 import com.cheftory.api.account.model.Account;
 import com.cheftory.api.auth.AuthService;
 import com.cheftory.api.auth.model.AuthTokens;
@@ -10,7 +11,6 @@ import com.cheftory.api.user.UserService;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
-import com.cheftory.api._common.Clock;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +44,6 @@ class AccountFacadeTest {
     user = User.create(nickname, gender, dob, provider, providerSub, true, clock);
     userId = user.getId();
   }
-
 
   @Test
   void loginWithOAuth_shouldReturnAccount() {

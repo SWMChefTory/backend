@@ -12,16 +12,14 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
+import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.security.UserArgumentResolver;
-import com.cheftory.api.user.UserController;
-import com.cheftory.api.user.UserService;
+import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
 import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.user.exception.UserException;
-import com.cheftory.api._common.Clock;
-import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.time.LocalDate;
@@ -79,7 +77,14 @@ public class UserControllerTest extends RestDocsTest {
     void shouldReturnUserInfo() {
 
       User user =
-          User.create("nickname", Gender.MALE, validDateOfBirth, Provider.APPLE, "apple-sub-123", true, clock);
+          User.create(
+              "nickname",
+              Gender.MALE,
+              validDateOfBirth,
+              Provider.APPLE,
+              "apple-sub-123",
+              true,
+              clock);
 
       doReturn(user).when(userService).get(fixedUserId);
 
@@ -149,7 +154,8 @@ public class UserControllerTest extends RestDocsTest {
       // given
 
       User user =
-          User.create(newNickname, oldGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
+          User.create(
+              newNickname, oldGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
       doReturn(user).when(userService).update(fixedUserId, newNickname, oldGender, oldBirth);
 
@@ -198,7 +204,8 @@ public class UserControllerTest extends RestDocsTest {
     void shouldUpdateGenderOnly() {
       // given
       User user =
-          User.create(oldNickname, newGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
+          User.create(
+              oldNickname, newGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
       doReturn(user).when(userService).update(fixedUserId, oldNickname, newGender, oldBirth);
 
@@ -296,7 +303,8 @@ public class UserControllerTest extends RestDocsTest {
     void shouldUpdateBirthOnly() {
       // given
       User user =
-          User.create(oldNickname, oldGender, newBirth, Provider.APPLE, "apple-sub-123", false, clock);
+          User.create(
+              oldNickname, oldGender, newBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
       doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, newBirth);
 

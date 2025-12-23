@@ -46,7 +46,8 @@ class AuthServiceTest {
     loginRepository = mock(LoginRepository.class);
     clock = mock(Clock.class);
 
-    authService = new AuthService(googleVerifier, appleVerifier, jwtProvider, loginRepository, clock);
+    authService =
+        new AuthService(googleVerifier, appleVerifier, jwtProvider, loginRepository, clock);
   }
 
   @Test
@@ -82,7 +83,8 @@ class AuthServiceTest {
   @Test
   void extractProviderSubFromIdToken_withNullProvider_shouldThrowInvalidIdToken() {
     AuthException ex =
-        assertThrows(AuthException.class, () -> authService.extractProviderSubFromIdToken(idToken, null));
+        assertThrows(
+            AuthException.class, () -> authService.extractProviderSubFromIdToken(idToken, null));
 
     assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
   }

@@ -89,10 +89,8 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn("재료 준비").when(step1).getSubtitle();
           doReturn(0.0).when(step1).getStart();
 
-          RecipeStep.Detail step1Detail1 =
-              RecipeStep.Detail.of("김치 200g을 준비합니다", 0.0);
-          RecipeStep.Detail step1Detail2 =
-              RecipeStep.Detail.of("돼지고기 150g을 준비합니다", 5.0);
+          RecipeStep.Detail step1Detail1 = RecipeStep.Detail.of("김치 200g을 준비합니다", 0.0);
+          RecipeStep.Detail step1Detail2 = RecipeStep.Detail.of("돼지고기 150g을 준비합니다", 5.0);
           doReturn(List.of(step1Detail1, step1Detail2)).when(step1).getDetails();
 
           // Step 2 모킹
@@ -101,10 +99,8 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn("조리하기").when(step2).getSubtitle();
           doReturn(30.0).when(step2).getStart();
 
-          RecipeStep.Detail step2Detail1 =
-              RecipeStep.Detail.of("팬에 기름을 두르고 가열합니다", 30.0);
-          RecipeStep.Detail step2Detail2 =
-              RecipeStep.Detail.of("김치와 돼지고기를 넣고 볶습니다", 45.0);
+          RecipeStep.Detail step2Detail1 = RecipeStep.Detail.of("팬에 기름을 두르고 가열합니다", 30.0);
+          RecipeStep.Detail step2Detail2 = RecipeStep.Detail.of("김치와 돼지고기를 넣고 볶습니다", 45.0);
           doReturn(List.of(step2Detail1, step2Detail2)).when(step2).getDetails();
 
           recipeSteps = List.of(step1, step2);
@@ -208,8 +204,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn("간단한 조리").when(singleStep).getSubtitle();
           doReturn(0.0).when(singleStep).getStart();
 
-          RecipeStep.Detail detail =
-              RecipeStep.Detail.of("계란을 풀어서 프라이팬에 넣고 익혀주세요", 0.0);
+          RecipeStep.Detail detail = RecipeStep.Detail.of("계란을 풀어서 프라이팬에 넣고 익혀주세요", 0.0);
           doReturn(List.of(detail)).when(singleStep).getDetails();
 
           recipeSteps = List.of(singleStep);

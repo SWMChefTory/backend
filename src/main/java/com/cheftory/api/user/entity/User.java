@@ -17,8 +17,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "`user`")
 public class User {
 
-  @Id
-  private UUID id;
+  @Id private UUID id;
 
   @Column(nullable = false, length = 20)
   private String nickname;
@@ -62,8 +61,7 @@ public class User {
       Provider provider,
       String providerSub,
       boolean isMarketingAgreed,
-      Clock clock
-  ) {
+      Clock clock) {
     return new User(
         UUID.randomUUID(),
         nickname,
@@ -76,8 +74,7 @@ public class User {
         clock.now(),
         isMarketingAgreed ? clock.now() : null,
         provider,
-        providerSub
-    );
+        providerSub);
   }
 
   public void change(String nickname, Gender gender, LocalDate dateOfBirth, Clock clock) {

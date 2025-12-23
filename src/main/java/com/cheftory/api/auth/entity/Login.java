@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.*;
 
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -14,8 +13,7 @@ import lombok.*;
 @Table
 public class Login {
 
-  @Id
-  private UUID id;
+  @Id private UUID id;
 
   @Column(name = "refresh_token", nullable = false, length = 512)
   private String refreshToken;
@@ -29,19 +27,13 @@ public class Login {
   @Column(name = "user_id", nullable = false)
   private UUID userId;
 
-  public static Login create(UUID userId, String refreshToken, LocalDateTime refreshTokenExpiredAt, Clock clock) {
-    return new Login(
-        UUID.randomUUID(),
-        refreshToken,
-        refreshTokenExpiredAt,
-        clock.now(),
-        userId
-    );
+  public static Login create(
+      UUID userId, String refreshToken, LocalDateTime refreshTokenExpiredAt, Clock clock) {
+    return new Login(UUID.randomUUID(), refreshToken, refreshTokenExpiredAt, clock.now(), userId);
   }
 
   public void updateRefreshToken(String newToken, LocalDateTime expiredAt) {
     this.refreshToken = newToken;
     this.refreshTokenExpiredAt = expiredAt;
   }
-
 }

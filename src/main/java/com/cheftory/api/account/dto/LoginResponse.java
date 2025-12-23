@@ -21,21 +21,18 @@ public record LoginResponse(
       @JsonProperty("privacy_agreed_at") LocalDateTime privacyAgreedAt,
       @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt) {
 
-    private static UserResponse from(
-        User user){
+    private static UserResponse from(User user) {
       return new UserResponse(
           user.getNickname(),
           user.getGender(),
           user.getDateOfBirth(),
           user.getTermsOfUseAgreedAt(),
           user.getPrivacyAgreedAt(),
-          user.getMarketingAgreedAt()
-      );
+          user.getMarketingAgreedAt());
     }
   }
 
-
-    public static LoginResponse from(Account account) {
+  public static LoginResponse from(Account account) {
     return new LoginResponse(
         BearerAuthorizationUtils.addPrefix(account.getAccessToken()),
         BearerAuthorizationUtils.addPrefix(account.getRefreshToken()),

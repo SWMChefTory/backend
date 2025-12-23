@@ -3,6 +3,8 @@ package com.cheftory.api.account;
 import com.cheftory.api.account.model.Account;
 import com.cheftory.api.auth.AuthService;
 import com.cheftory.api.auth.model.AuthTokens;
+import com.cheftory.api.credit.Credit;
+import com.cheftory.api.credit.CreditService;
 import com.cheftory.api.user.UserService;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
@@ -20,6 +22,7 @@ public class AccountFacade {
 
   private final AuthService authService;
   private final UserService userService;
+  private final CreditService creditService;
 
   public Account login(String idToken, Provider provider) {
     String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
@@ -29,10 +32,7 @@ public class AccountFacade {
     AuthTokens authTokens = authService.createAuthToken(id);
     authService.saveLoginSession(id, authTokens.refreshToken());
 
-    return Account.of(
-        authTokens.accessToken(),
-        authTokens.refreshToken(),
-        user);
+    return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
   }
 
   public Account signup(
@@ -59,10 +59,7 @@ public class AccountFacade {
     AuthTokens authTokens = authService.createAuthToken(user.getId());
     authService.saveLoginSession(user.getId(), authTokens.refreshToken());
 
-    return Account.of(
-        authTokens.accessToken(),
-        authTokens.refreshToken(),
-        user);
+    return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
   }
 
   public void logout(String refreshToken) {

@@ -14,18 +14,18 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
+import com.cheftory.api.account.dto.LoginRequest;
+import com.cheftory.api.account.dto.LogoutRequest;
 import com.cheftory.api.account.model.Account;
 import com.cheftory.api.auth.exception.AuthErrorCode;
 import com.cheftory.api.auth.exception.AuthException;
-import com.cheftory.api.account.dto.LoginRequest;
-import com.cheftory.api.account.dto.LogoutRequest;
+import com.cheftory.api.exception.GlobalErrorCode;
+import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
 import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.user.exception.UserException;
-import com.cheftory.api.exception.GlobalErrorCode;
-import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.time.LocalDate;

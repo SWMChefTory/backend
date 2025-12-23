@@ -93,7 +93,8 @@ class UserServiceTest {
       @DisplayName("닉네임 수정")
       void updateNicknameOnly() {
         // given
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
+        User user =
+            User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -112,7 +113,8 @@ class UserServiceTest {
       @DisplayName("성별 수정")
       void updateGenderOnly() {
         // given
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
+        User user =
+            User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -131,7 +133,8 @@ class UserServiceTest {
       @Test
       @DisplayName("성별 수정 (NULL)")
       void clearGenderToNull() {
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
+        User user =
+            User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -148,7 +151,8 @@ class UserServiceTest {
       @DisplayName("생년월일 수정")
       void updateBirthOnly() {
         // given
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
+        User user =
+            User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -166,7 +170,8 @@ class UserServiceTest {
       @Test
       @DisplayName("생년월일 수정 (NULL)")
       void clearBirthToNull() {
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
+        User user =
+            User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)

@@ -173,22 +173,12 @@ public class RecipeStepRepositoryTest extends DbContextTest {
         doReturn(fixedLater).when(clock).now();
         step1 =
             RecipeStep.create(
-                1,
-                "Step 1",
-                List.of(RecipeStep.Detail.of("첫 번째 단계", 0.0)),
-                0.0,
-                recipeId,
-                clock);
+                1, "Step 1", List.of(RecipeStep.Detail.of("첫 번째 단계", 0.0)), 0.0, recipeId, clock);
 
         doReturn(fixedNow).when(clock).now();
         step2 =
             RecipeStep.create(
-                2,
-                "Step 2",
-                List.of(RecipeStep.Detail.of("두 번째 단계", 30.0)),
-                30.0,
-                recipeId,
-                clock);
+                2, "Step 2", List.of(RecipeStep.Detail.of("두 번째 단계", 30.0)), 30.0, recipeId, clock);
 
         recipeStepRepository.save(step2);
         recipeStepRepository.save(step1);

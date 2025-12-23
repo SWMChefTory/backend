@@ -33,8 +33,7 @@ public class RecipeStep extends MarketScope {
     }
   }
 
-  @Id
-  private UUID id;
+  @Id private UUID id;
 
   private Integer stepOrder;
 
@@ -59,13 +58,6 @@ public class RecipeStep extends MarketScope {
       Clock clock) {
 
     return new RecipeStep(
-        UUID.randomUUID(),
-        stepOrder,
-        subtitle,
-        details,
-        start,
-        recipeId,
-        clock.now()
-    );
+        UUID.randomUUID(), stepOrder, subtitle, details, start, recipeId, clock.now());
   }
 }
