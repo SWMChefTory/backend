@@ -60,8 +60,7 @@ public class RecipeStepRepositoryTest extends DbContextTest {
 
         @BeforeEach
         void setUp() {
-          recipeStepDetail =
-              RecipeStep.Detail.builder().text(descriptionText).start(descriptionStart).build();
+          recipeStepDetail = RecipeStep.Detail.of(descriptionText, descriptionStart);
 
           recipeStep =
               RecipeStep.create(1, subtitle, List.of(recipeStepDetail), start, recipeId, clock);
@@ -125,9 +124,9 @@ public class RecipeStepRepositoryTest extends DbContextTest {
         void setUp() {
           List<RecipeStep.Detail> details =
               List.of(
-                  RecipeStep.Detail.builder().text("첫 번째 동작").start(0.0).build(),
-                  RecipeStep.Detail.builder().text("두 번째 동작").start(30.5).build(),
-                  RecipeStep.Detail.builder().text("세 번째 동작").start(60.0).build());
+                  RecipeStep.Detail.of("첫 번째 동작", 0.0),
+                  RecipeStep.Detail.of("두 번째 동작", 30.5),
+                  RecipeStep.Detail.of("세 번째 동작", 60.0));
 
           recipeStep = RecipeStep.create(1, "복합 단계", details, 0.0, recipeId, clock);
 
@@ -176,7 +175,7 @@ public class RecipeStepRepositoryTest extends DbContextTest {
             RecipeStep.create(
                 1,
                 "Step 1",
-                List.of(RecipeStep.Detail.builder().text("첫 번째 단계").start(0.0).build()),
+                List.of(RecipeStep.Detail.of("첫 번째 단계", 0.0)),
                 0.0,
                 recipeId,
                 clock);
@@ -186,7 +185,7 @@ public class RecipeStepRepositoryTest extends DbContextTest {
             RecipeStep.create(
                 2,
                 "Step 2",
-                List.of(RecipeStep.Detail.builder().text("두 번째 단계").start(30.0).build()),
+                List.of(RecipeStep.Detail.of("두 번째 단계", 30.0)),
                 30.0,
                 recipeId,
                 clock);

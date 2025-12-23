@@ -6,22 +6,16 @@ import java.util.UUID;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
-@Table(name = "login")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table
 public class Login {
 
   @Id
-  @GeneratedValue
-  @UuidGenerator
-  @Column(columnDefinition = "BINARY(16)")
   private UUID id;
-
-  @Column(name = "login_ip")
-  private String loginIp;
 
   @Column(name = "refresh_token", nullable = false, length = 512)
   private String refreshToken;
@@ -32,27 +26,22 @@ public class Login {
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
-  @Column(name = "device_type")
-  private String deviceType;
-
-  @Column(name = "country")
-  private String country;
-
   @Column(name = "user_id", nullable = false)
   private UUID userId;
 
-  public static Login create(
-      UUID userId, String refreshToken, LocalDateTime refreshTokenExpiredAt) {
-    return Login.builder()
-        .refreshToken(refreshToken)
-        .refreshTokenExpiredAt(refreshTokenExpiredAt)
-        .createdAt(LocalDateTime.now())
-        .userId(userId)
-        .build();
+  public static Login create(UUID userId, String refreshToken, LocalDateTime refreshTokenExpiredAt) {
+    return new Login(
+        UUID.randomUUID(),
+        refreshToken,
+        refreshTokenExpiredAt,
+        LocalDateTime.now(),
+        userId
+    );
   }
 
   public void updateRefreshToken(String newToken, LocalDateTime expiredAt) {
     this.refreshToken = newToken;
     this.refreshTokenExpiredAt = expiredAt;
   }
+
 }

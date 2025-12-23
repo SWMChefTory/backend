@@ -90,9 +90,9 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn(0.0).when(step1).getStart();
 
           RecipeStep.Detail step1Detail1 =
-              RecipeStep.Detail.builder().text("김치 200g을 준비합니다").start(0.0).build();
+              RecipeStep.Detail.of("김치 200g을 준비합니다", 0.0);
           RecipeStep.Detail step1Detail2 =
-              RecipeStep.Detail.builder().text("돼지고기 150g을 준비합니다").start(5.0).build();
+              RecipeStep.Detail.of("돼지고기 150g을 준비합니다", 5.0);
           doReturn(List.of(step1Detail1, step1Detail2)).when(step1).getDetails();
 
           // Step 2 모킹
@@ -102,9 +102,9 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn(30.0).when(step2).getStart();
 
           RecipeStep.Detail step2Detail1 =
-              RecipeStep.Detail.builder().text("팬에 기름을 두르고 가열합니다").start(30.0).build();
+              RecipeStep.Detail.of("팬에 기름을 두르고 가열합니다", 30.0);
           RecipeStep.Detail step2Detail2 =
-              RecipeStep.Detail.builder().text("김치와 돼지고기를 넣고 볶습니다").start(45.0).build();
+              RecipeStep.Detail.of("김치와 돼지고기를 넣고 볶습니다", 45.0);
           doReturn(List.of(step2Detail1, step2Detail2)).when(step2).getDetails();
 
           recipeSteps = List.of(step1, step2);
@@ -209,7 +209,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn(0.0).when(singleStep).getStart();
 
           RecipeStep.Detail detail =
-              RecipeStep.Detail.builder().text("계란을 풀어서 프라이팬에 넣고 익혀주세요").start(0.0).build();
+              RecipeStep.Detail.of("계란을 풀어서 프라이팬에 넣고 익혀주세요", 0.0);
           doReturn(List.of(detail)).when(singleStep).getDetails();
 
           recipeSteps = List.of(singleStep);
@@ -350,9 +350,9 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn(0.0).when(step1).getStart();
           doReturn(
                   List.of(
-                      RecipeStep.Detail.builder().text("야채를 씻습니다").start(0.0).build(),
-                      RecipeStep.Detail.builder().text("고기를 손질합니다").start(10.0).build(),
-                      RecipeStep.Detail.builder().text("양념을 준비합니다").start(20.0).build()))
+                      RecipeStep.Detail.of("야채를 씻습니다", 0.0),
+                      RecipeStep.Detail.of("고기를 손질합니다", 10.0),
+                      RecipeStep.Detail.of("양념을 준비합니다", 20.0)))
               .when(step1)
               .getDetails();
 
@@ -363,8 +363,8 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn(60.0).when(step2).getStart();
           doReturn(
                   List.of(
-                      RecipeStep.Detail.builder().text("팬을 예열합니다").start(60.0).build(),
-                      RecipeStep.Detail.builder().text("고기를 볶습니다").start(75.0).build()))
+                      RecipeStep.Detail.of("팬을 예열합니다", 60.0),
+                      RecipeStep.Detail.of("고기를 볶습니다", 75.0)))
               .when(step2)
               .getDetails();
 
@@ -375,9 +375,9 @@ public class RecipeStepControllerTest extends RestDocsTest {
           doReturn(120.0).when(step3).getStart();
           doReturn(
                   List.of(
-                      RecipeStep.Detail.builder().text("야채를 추가합니다").start(120.0).build(),
-                      RecipeStep.Detail.builder().text("양념을 넣고 볶습니다").start(135.0).build(),
-                      RecipeStep.Detail.builder().text("완성된 요리를 그릇에 담습니다").start(150.0).build()))
+                      RecipeStep.Detail.of("야채를 추가합니다", 120.0),
+                      RecipeStep.Detail.of("양념을 넣고 볶습니다", 135.0),
+                      RecipeStep.Detail.of("완성된 요리를 그릇에 담습니다", 150.0)))
               .when(step3)
               .getDetails();
 

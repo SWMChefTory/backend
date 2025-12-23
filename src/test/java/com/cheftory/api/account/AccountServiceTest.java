@@ -10,6 +10,7 @@ import com.cheftory.api.account.user.UserService;
 import com.cheftory.api.account.user.entity.Gender;
 import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.account.user.entity.User;
+import com.cheftory.api._common.Clock;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +40,8 @@ class AccountServiceTest {
 
   @BeforeEach
   void setUp() {
-    user = User.create(nickname, gender, dob, provider, providerSub, true);
+    Clock clock = new Clock();
+    user = User.create(nickname, gender, dob, provider, providerSub, true, clock);
     userId = user.getId();
   }
 

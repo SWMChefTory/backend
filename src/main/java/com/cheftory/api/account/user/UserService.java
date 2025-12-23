@@ -1,5 +1,6 @@
 package com.cheftory.api.account.user;
 
+import com.cheftory.api._common.Clock;
 import com.cheftory.api.account.user.entity.Gender;
 import com.cheftory.api.account.user.entity.Provider;
 import com.cheftory.api.account.user.entity.User;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final Clock clock;
 
   public User getByProviderAndProviderSub(Provider provider, String providerSub) {
     return userRepository
@@ -50,7 +52,7 @@ public class UserService {
     }
 
     User user =
-        User.create(nickname, gender, dateOfBirth, provider, providerSub, isMarketingAgreed);
+        User.create(nickname, gender, dateOfBirth, provider, providerSub, isMarketingAgreed, clock);
     return userRepository.save(user);
   }
 

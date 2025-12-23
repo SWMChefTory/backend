@@ -19,6 +19,7 @@ import com.cheftory.api.account.user.entity.User;
 import com.cheftory.api.account.user.entity.UserStatus;
 import com.cheftory.api.account.user.exception.UserErrorCode;
 import com.cheftory.api.account.user.exception.UserException;
+import com.cheftory.api._common.Clock;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
@@ -41,6 +42,7 @@ public class UserControllerTest extends RestDocsTest {
   private UserController controller;
   private UserService userService;
   private GlobalExceptionHandler globalExceptionHandler;
+  private Clock clock;
 
   private UUID fixedUserId;
   private LocalDate validDateOfBirth;
@@ -51,6 +53,8 @@ public class UserControllerTest extends RestDocsTest {
     fixedUserId = UUID.randomUUID();
     validDateOfBirth = LocalDate.of(2000, 1, 1);
     userService = mock(UserService.class);
+    clock = mock(Clock.class);
+    doReturn(LocalDateTime.now()).when(clock).now();
     controller = new UserController(userService);
     globalExceptionHandler = new GlobalExceptionHandler();
     userArgumentResolver = new UserArgumentResolver();
@@ -74,20 +78,7 @@ public class UserControllerTest extends RestDocsTest {
     void shouldReturnUserInfo() {
 
       User user =
-          User.builder()
-              .id(fixedUserId)
-              .nickname("nickname")
-              .gender(Gender.MALE)
-              .dateOfBirth(validDateOfBirth)
-              .userStatus(UserStatus.ACTIVE)
-              .createdAt(LocalDateTime.now())
-              .updatedAt(LocalDateTime.now())
-              .termsOfUseAgreedAt(LocalDateTime.now())
-              .privacyAgreedAt(LocalDateTime.now())
-              .marketingAgreedAt(null)
-              .provider(Provider.APPLE)
-              .providerSub("apple-sub-123")
-              .build();
+          User.create("nickname", Gender.MALE, validDateOfBirth, Provider.APPLE, "apple-sub-123", true, clock);
 
       doReturn(user).when(userService).get(fixedUserId);
 
@@ -157,20 +148,7 @@ public class UserControllerTest extends RestDocsTest {
       // given
 
       User user =
-          User.builder()
-              .id(fixedUserId)
-              .nickname(newNickname)
-              .gender(oldGender)
-              .dateOfBirth(oldBirth)
-              .userStatus(UserStatus.ACTIVE)
-              .createdAt(LocalDateTime.now())
-              .updatedAt(LocalDateTime.now())
-              .termsOfUseAgreedAt(LocalDateTime.now())
-              .privacyAgreedAt(LocalDateTime.now())
-              .marketingAgreedAt(null)
-              .provider(Provider.APPLE)
-              .providerSub("apple-sub-123")
-              .build();
+          User.create(newNickname, oldGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
       doReturn(user).when(userService).update(fixedUserId, newNickname, oldGender, oldBirth);
 
@@ -219,20 +197,7 @@ public class UserControllerTest extends RestDocsTest {
     void shouldUpdateGenderOnly() {
       // given
       User user =
-          User.builder()
-              .id(fixedUserId)
-              .nickname(oldNickname)
-              .gender(newGender)
-              .dateOfBirth(oldBirth)
-              .userStatus(UserStatus.ACTIVE)
-              .createdAt(LocalDateTime.now())
-              .updatedAt(LocalDateTime.now())
-              .termsOfUseAgreedAt(LocalDateTime.now())
-              .privacyAgreedAt(LocalDateTime.now())
-              .marketingAgreedAt(null)
-              .provider(Provider.APPLE)
-              .providerSub("apple-sub-123")
-              .build();
+          User.create(oldNickname, newGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
       doReturn(user).when(userService).update(fixedUserId, oldNickname, newGender, oldBirth);
 
@@ -281,20 +246,7 @@ public class UserControllerTest extends RestDocsTest {
     void shouldUpdateGenderToNULL() {
       // given
       User user =
-          User.builder()
-              .id(fixedUserId)
-              .nickname(oldNickname)
-              .gender(null)
-              .dateOfBirth(oldBirth)
-              .userStatus(UserStatus.ACTIVE)
-              .createdAt(LocalDateTime.now())
-              .updatedAt(LocalDateTime.now())
-              .termsOfUseAgreedAt(LocalDateTime.now())
-              .privacyAgreedAt(LocalDateTime.now())
-              .marketingAgreedAt(null)
-              .provider(Provider.APPLE)
-              .providerSub("apple-sub-123")
-              .build();
+          User.create(oldNickname, null, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
       doReturn(user).when(userService).update(fixedUserId, oldNickname, null, oldBirth);
 
@@ -343,20 +295,7 @@ public class UserControllerTest extends RestDocsTest {
     void shouldUpdateBirthOnly() {
       // given
       User user =
-          User.builder()
-              .id(fixedUserId)
-              .nickname(oldNickname)
-              .gender(oldGender)
-              .dateOfBirth(newBirth)
-              .userStatus(UserStatus.ACTIVE)
-              .createdAt(LocalDateTime.now())
-              .updatedAt(LocalDateTime.now())
-              .termsOfUseAgreedAt(LocalDateTime.now())
-              .privacyAgreedAt(LocalDateTime.now())
-              .marketingAgreedAt(null)
-              .provider(Provider.APPLE)
-              .providerSub("apple-sub-123")
-              .build();
+          User.create(oldNickname, oldGender, newBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
       doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, newBirth);
 
@@ -405,20 +344,7 @@ public class UserControllerTest extends RestDocsTest {
     void shouldUpdateBirthToNULL() {
       // given
       User user =
-          User.builder()
-              .id(fixedUserId)
-              .nickname(oldNickname)
-              .gender(oldGender)
-              .dateOfBirth(null)
-              .userStatus(UserStatus.ACTIVE)
-              .createdAt(LocalDateTime.now())
-              .updatedAt(LocalDateTime.now())
-              .termsOfUseAgreedAt(LocalDateTime.now())
-              .privacyAgreedAt(LocalDateTime.now())
-              .marketingAgreedAt(null)
-              .provider(Provider.APPLE)
-              .providerSub("apple-sub-123")
-              .build();
+          User.create(oldNickname, oldGender, null, Provider.APPLE, "apple-sub-123", false, clock);
 
       doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, null);
 

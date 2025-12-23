@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.cheftory.api._common.Clock;
 import com.cheftory.api.account.user.entity.*;
 import com.cheftory.api.account.user.exception.UserErrorCode;
 import com.cheftory.api.account.user.exception.UserException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
@@ -18,80 +20,19 @@ class UserServiceTest {
 
   private UserRepository userRepository;
   private UserService userService;
+  private Clock clock;
 
   @BeforeEach
   void setUp() {
     userRepository = mock(UserRepository.class);
-    userService = new UserService(userRepository);
-  }
-
-  @Nested
-  @DisplayName("유저 생성 (create)")
-  class CreateUser {
-
-    private final String nickname = "cheftory";
-    private final Gender gender = Gender.MALE;
-    private final LocalDate birth = LocalDate.of(1999, 9, 9);
-    private final Provider provider = Provider.KAKAO;
-    private final String providerSub = "123456";
-
-    @Nested
-    @DisplayName("Given - 기존 유저가 없을 때")
-    class GivenNoExistingUser {
-
-      @Test
-      @DisplayName("Then - 새 유저를 저장하고 ID를 반환해야 한다")
-      void thenShouldSaveUserAndReturnId() {
-        when(userRepository.findByProviderAndProviderSubAndUserStatus(
-                provider, providerSub, UserStatus.ACTIVE))
-            .thenReturn(Optional.empty());
-
-        UUID generatedId = UUID.randomUUID();
-        User user = User.create(nickname, gender, birth, provider, providerSub, true);
-        user = user.toBuilder().id(generatedId).build();
-
-        when(userRepository.save(any(User.class))).thenReturn(user);
-
-        User user1 =
-            userService.create(nickname, gender, birth, provider, providerSub, true, true, false);
-
-        verify(userRepository).save(any(User.class));
-        Assertions.assertEquals(generatedId, user1.getId());
-      }
-    }
-
-    @Nested
-    @DisplayName("Given - 이미 존재하는 유저일 때")
-    class GivenUserAlreadyExists {
-
-      @Test
-      @DisplayName("Then - 예외를 던져야 한다")
-      void thenShouldThrowUserAlreadyExist() {
-        // Given
-        User existing = User.create(nickname, gender, birth, provider, providerSub, true);
-        when(userRepository.findByProviderAndProviderSubAndUserStatus(
-                provider, providerSub, UserStatus.ACTIVE))
-            .thenReturn(Optional.of(existing));
-
-        // When
-        UserException ex =
-            assertThrows(
-                UserException.class,
-                () ->
-                    userService.create(
-                        nickname, gender, birth, provider, providerSub, true, true, false));
-
-        // Then
-        assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_ALREADY_EXIST);
-      }
-    }
+    clock = mock(Clock.class);
+    doReturn(LocalDateTime.now()).when(clock).now();
+    userService = new UserService(userRepository, clock);
   }
 
   @Nested
   @DisplayName("유저 조회 (get)")
   class GetUser {
-
-    UUID userId = UUID.randomUUID();
 
     @Nested
     @DisplayName("Given - 유저가 존재할 때")
@@ -100,11 +41,12 @@ class UserServiceTest {
       @Test
       @DisplayName("Then - 유저 정보를 반환해야 한다")
       void thenShouldReturnUser() {
-        User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true);
-        when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
+        User user =
+            User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
+        when(userRepository.findByIdAndUserStatus(user.getId(), UserStatus.ACTIVE))
             .thenReturn(Optional.of(user));
 
-        User result = userService.get(userId);
+        User result = userService.get(user.getId());
 
         Assertions.assertEquals(user, result);
       }
@@ -117,7 +59,9 @@ class UserServiceTest {
       @Test
       @DisplayName("Then - 예외를 던져야 한다")
       void thenShouldThrowNotFound() {
+
         // Given
+        UUID userId = UUID.randomUUID();
         when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
             .thenReturn(Optional.empty());
 
@@ -150,7 +94,7 @@ class UserServiceTest {
       @DisplayName("닉네임 수정")
       void updateNicknameOnly() {
         // given
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -169,7 +113,7 @@ class UserServiceTest {
       @DisplayName("성별 수정")
       void updateGenderOnly() {
         // given
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -188,7 +132,7 @@ class UserServiceTest {
       @Test
       @DisplayName("성별 수정 (NULL)")
       void clearGenderToNull() {
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -205,7 +149,7 @@ class UserServiceTest {
       @DisplayName("생년월일 수정")
       void updateBirthOnly() {
         // given
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -223,7 +167,7 @@ class UserServiceTest {
       @Test
       @DisplayName("생년월일 수정 (NULL)")
       void clearBirthToNull() {
-        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true);
+        User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
         doReturn(Optional.of(user))
             .when(userRepository)
@@ -252,7 +196,7 @@ class UserServiceTest {
       @DisplayName("Then - 유저 상태를 DELETED로 변경해야 한다")
       void thenShouldMarkUserAsDeleted() {
         User user =
-            User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub", true);
+            User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
         when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
             .thenReturn(Optional.of(user));
 

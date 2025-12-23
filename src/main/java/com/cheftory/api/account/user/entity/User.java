@@ -1,20 +1,24 @@
 package com.cheftory.api.account.user.entity;
 
+import com.cheftory.api._common.Clock;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "`user`")
-@Builder(toBuilder = true)
 public class User {
 
-  @Id private UUID id;
+  @Id
+  private UUID id;
 
   @Column(nullable = false, length = 20)
   private String nickname;
@@ -57,27 +61,30 @@ public class User {
       LocalDate dateOfBirth,
       Provider provider,
       String providerSub,
-      boolean isMarketingAgreed) {
-    return User.builder()
-        .id(UUID.randomUUID())
-        .nickname(nickname)
-        .gender(gender)
-        .dateOfBirth(dateOfBirth)
-        .userStatus(UserStatus.ACTIVE)
-        .createdAt(LocalDateTime.now())
-        .updatedAt(LocalDateTime.now())
-        .termsOfUseAgreedAt(LocalDateTime.now())
-        .privacyAgreedAt(LocalDateTime.now())
-        .marketingAgreedAt(isMarketingAgreed ? LocalDateTime.now() : null)
-        .provider(provider)
-        .providerSub(providerSub)
-        .build();
+      boolean isMarketingAgreed,
+      Clock clock
+  ) {
+    return new User(
+        UUID.randomUUID(),
+        nickname,
+        gender,
+        dateOfBirth,
+        UserStatus.ACTIVE,
+        clock.now(),
+        clock.now(),
+        clock.now(),
+        clock.now(),
+        isMarketingAgreed ? clock.now() : null,
+        provider,
+        providerSub
+    );
   }
 
   public void change(String nickname, Gender gender, LocalDate dateOfBirth) {
     this.nickname = nickname;
     this.gender = gender;
     this.dateOfBirth = dateOfBirth;
+    this.updatedAt = LocalDateTime.now();
   }
 
   public void changeStatus(UserStatus userStatus) {

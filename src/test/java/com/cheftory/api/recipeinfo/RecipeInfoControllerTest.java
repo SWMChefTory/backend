@@ -397,7 +397,7 @@ public class RecipeInfoControllerTest extends RestDocsTest {
           doReturn(30).when(detailMeta).getCookTime();
 
           RecipeStep recipeStep = mock(RecipeStep.class);
-          var stepDetail = RecipeStep.Detail.builder().text("Step 1 detail").start(0.0).build();
+          var stepDetail = RecipeStep.Detail.of("Step 1 detail", 0.0);
 
           stepId = UUID.randomUUID();
           doReturn(stepId).when(recipeStep).getId();

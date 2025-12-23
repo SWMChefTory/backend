@@ -76,11 +76,7 @@ public class RecipeStepServiceTest {
               RecipeStep.create(
                   1,
                   subtitle,
-                  List.of(
-                      RecipeStep.Detail.builder()
-                          .text(descriptionText)
-                          .start(descriptionStart)
-                          .build()),
+                  List.of(RecipeStep.Detail.of(descriptionText, descriptionStart)),
                   start,
                   recipeId,
                   clock);

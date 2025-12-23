@@ -111,7 +111,7 @@ public class RecipeStepTest {
         @BeforeEach
         void setUp() {
           recipeStepDetail =
-              RecipeStep.Detail.builder().text(detailText1).start(detailStart1).build();
+              RecipeStep.Detail.of(detailText1, detailStart1);
         }
 
         @Nested

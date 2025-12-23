@@ -16,7 +16,7 @@ public record ClientRecipeStepsResponse(@JsonProperty("steps") @NotNull List<Ste
     private record Description(
         @JsonProperty("text") @NotNull String text, @JsonProperty("start") @NotNull Double start) {
       private RecipeStep.Detail toRecipeStepDetail() {
-        return RecipeStep.Detail.builder().text(text).start(start).build();
+        return RecipeStep.Detail.of(text, start);
       }
     }
   }

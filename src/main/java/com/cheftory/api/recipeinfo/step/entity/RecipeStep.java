@@ -2,31 +2,39 @@ package com.cheftory.api.recipeinfo.step.entity;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.MarketScope;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeStep extends MarketScope {
 
   @Getter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  @Builder
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @NoArgsConstructor(access = AccessLevel.PROTECTED)
   public static class Detail {
     private String text;
     private Double start;
+
+    public static Detail of(String text, Double start) {
+      return new Detail(text, start);
+    }
   }
 
-  @Id private UUID id;
+  @Id
+  private UUID id;
 
   private Integer stepOrder;
 
@@ -49,14 +57,15 @@ public class RecipeStep extends MarketScope {
       Double start,
       UUID recipeId,
       Clock clock) {
-    return RecipeStep.builder()
-        .id(UUID.randomUUID())
-        .stepOrder(stepOrder)
-        .subtitle(subtitle)
-        .details(details)
-        .start(start)
-        .recipeId(recipeId)
-        .createdAt(clock.now())
-        .build();
+
+    return new RecipeStep(
+        UUID.randomUUID(),
+        stepOrder,
+        subtitle,
+        details,
+        start,
+        recipeId,
+        clock.now()
+    );
   }
 }
