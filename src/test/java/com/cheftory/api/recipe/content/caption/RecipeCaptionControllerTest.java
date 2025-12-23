@@ -17,8 +17,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 
 import com.cheftory.api.exception.GlobalExceptionHandler;
-import com.cheftory.api.recipe.content.caption.RecipeCaptionController;
-import com.cheftory.api.recipe.content.caption.RecipeCaptionService;
 import com.cheftory.api.recipe.content.caption.entity.LangCodeType;
 import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.caption.exception.RecipeCaptionErrorCode;

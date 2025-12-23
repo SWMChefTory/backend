@@ -1,4 +1,4 @@
-package com.cheftory.api.credit;
+package com.cheftory.api.credit.entity;
 
 public enum CreditReason {
   SIGNUP_BONUS,

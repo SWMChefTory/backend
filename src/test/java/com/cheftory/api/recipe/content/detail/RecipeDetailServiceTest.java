@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
-import com.cheftory.api.recipe.content.detail.RecipeDetailService;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
 import com.cheftory.api.recipe.content.detail.entity.RecipeDetail;

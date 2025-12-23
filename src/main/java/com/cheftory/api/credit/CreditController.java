@@ -1,0 +1,23 @@
+package com.cheftory.api.credit;
+
+import com.cheftory.api.credit.dto.CreditBalanceResponse;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/credit")
+public class CreditController {
+
+  private final CreditService creditService;
+
+  @GetMapping("/balance")
+  public CreditBalanceResponse getBalance(@RequestParam("user_id") UUID userId) {
+    long balance = creditService.getBalance(userId);
+    return CreditBalanceResponse.from(balance);
+  }
+}

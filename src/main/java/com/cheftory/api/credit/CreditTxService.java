@@ -2,6 +2,9 @@ package com.cheftory.api.credit;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.MarketContext;
+import com.cheftory.api.credit.entity.Credit;
+import com.cheftory.api.credit.entity.CreditTransaction;
+import com.cheftory.api.credit.entity.CreditUserBalance;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;

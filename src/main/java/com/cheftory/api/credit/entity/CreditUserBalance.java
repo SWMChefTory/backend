@@ -1,5 +1,7 @@
-package com.cheftory.api.credit;
+package com.cheftory.api.credit.entity;
 
+import com.cheftory.api.credit.exception.CreditErrorCode;
+import com.cheftory.api.credit.exception.CreditException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -30,12 +32,15 @@ public class CreditUserBalance {
   private long version;
 
   public static CreditUserBalance create(UUID userId) {
+    if (userId == null) throw new CreditException(CreditErrorCode.CREDIT_INVALID_USER);
     return new CreditUserBalance(userId, 0L, 0L);
   }
 
   public void apply(long delta) {
     long next = this.balance + delta;
-    if (next < 0) throw new IllegalStateException("credit balance cannot be negative");
+    if (next < 0) {
+      throw new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT);
+    }
     this.balance = next;
   }
 }

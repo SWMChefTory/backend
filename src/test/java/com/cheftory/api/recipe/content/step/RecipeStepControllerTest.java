@@ -17,8 +17,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
-import com.cheftory.api.recipe.content.step.RecipeStepController;
-import com.cheftory.api.recipe.content.step.RecipeStepService;
 import com.cheftory.api.recipe.content.step.entity.RecipeStep;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;

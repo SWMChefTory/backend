@@ -2,7 +2,6 @@ package com.cheftory.api.recipe.content.youtubemeta.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.cheftory.api.recipe.content.youtubemeta.client.YoutubePlaylistResponse;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

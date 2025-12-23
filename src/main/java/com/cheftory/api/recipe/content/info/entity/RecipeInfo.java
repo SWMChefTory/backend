@@ -13,6 +13,10 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "recipe")
 public class RecipeInfo extends MarketScope {
+
+  private static final int INITIAL_VIEW_COUNT = 0;
+  private static final long DEFAULT_CREDIT_COST = 0L;
+
   @Id private UUID id;
 
   @Enumerated(EnumType.STRING)
@@ -37,7 +41,13 @@ public class RecipeInfo extends MarketScope {
   public static RecipeInfo create(Clock clock) {
     LocalDateTime now = clock.now();
     return new RecipeInfo(
-        UUID.randomUUID(), ProcessStep.READY, 0, now, now, RecipeStatus.IN_PROGRESS, 1L);
+        UUID.randomUUID(),
+        ProcessStep.READY,
+        INITIAL_VIEW_COUNT,
+        now,
+        now,
+        RecipeStatus.IN_PROGRESS,
+        DEFAULT_CREDIT_COST);
   }
 
   public void success(Clock clock) {
