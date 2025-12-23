@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.cheftory.api.account.auth.exception.AuthErrorCode;
-import com.cheftory.api.account.auth.jwt.TokenProvider;
+import com.cheftory.api.auth.exception.AuthErrorCode;
+import com.cheftory.api.auth.jwt.TokenProvider;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

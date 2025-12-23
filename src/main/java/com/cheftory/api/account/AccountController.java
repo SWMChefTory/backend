@@ -1,9 +1,9 @@
 package com.cheftory.api.account;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
-import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
+import com.cheftory.api.account.model.Account;
+import com.cheftory.api.auth.util.BearerAuthorizationUtils;
 import com.cheftory.api.account.dto.*;
-import com.cheftory.api.account.model.LoginResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,18 +16,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/account")
 public class AccountController {
 
-  private final AccountService accountService;
+  private final AccountFacade accountFacade;
 
   @PostMapping("/login/oauth")
   public LoginResponse loginWithOAuth(@RequestBody LoginRequest request) {
-    LoginResult result = accountService.loginWithOAuth(request.idToken(), request.provider());
-    return LoginResponse.from(result);
+    Account account = accountFacade.login(request.idToken(), request.provider());
+    return LoginResponse.from(account);
   }
 
   @PostMapping("/signup/oauth")
   public LoginResponse signupWithOAuth(@RequestBody SignupRequest request) {
-    LoginResult result =
-        accountService.signupWithOAuth(
+    Account account =
+        accountFacade.signup(
             request.idToken(),
             request.provider(),
             request.nickname(),
@@ -36,18 +36,18 @@ public class AccountController {
             request.isTermsOfUseAgreed(),
             request.isPrivacyAgreed(),
             request.isMarketingAgreed());
-    return LoginResponse.from(result);
+    return LoginResponse.from(account);
   }
 
   @PostMapping("/logout")
   public SuccessOnlyResponse logout(@RequestBody LogoutRequest request) {
-    accountService.logout(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+    accountFacade.logout(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
     return SuccessOnlyResponse.create();
   }
 
   @DeleteMapping
   public SuccessOnlyResponse delete(@RequestBody LogoutRequest request) {
-    accountService.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+    accountFacade.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
     return SuccessOnlyResponse.create();
   }
 }

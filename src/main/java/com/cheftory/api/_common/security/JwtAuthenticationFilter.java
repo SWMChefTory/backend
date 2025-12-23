@@ -1,7 +1,7 @@
 package com.cheftory.api._common.security;
 
-import com.cheftory.api.account.auth.jwt.TokenProvider;
-import com.cheftory.api.account.auth.util.BearerAuthorizationUtils;
+import com.cheftory.api.auth.jwt.TokenProvider;
+import com.cheftory.api.auth.util.BearerAuthorizationUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
