@@ -18,7 +18,6 @@ class UserRepositoryTest extends DbContextTest {
   @Test
   @DisplayName("User 저장 및 조회 테스트")
   void saveAndFindByProviderAndProviderSubAndUserStatus() {
-    // given
     Clock clock = new Clock();
     User user =
         User.create(
@@ -26,12 +25,10 @@ class UserRepositoryTest extends DbContextTest {
 
     userRepository.save(user);
 
-    // when
     Optional<User> result =
         userRepository.findByProviderAndProviderSubAndUserStatus(
             Provider.GOOGLE, "sub-1234", UserStatus.ACTIVE);
 
-    // then
     assertThat(result).isPresent();
     assertThat(result.get().getNickname()).isEqualTo("테스터");
   }
@@ -39,7 +36,6 @@ class UserRepositoryTest extends DbContextTest {
   @Test
   @DisplayName("UserStatus가 다르면 조회되지 않아야 함")
   void shouldNotFindUserWithDifferentStatus() {
-    // given
     Clock clock = new Clock();
     User user =
         User.create(
@@ -50,15 +46,13 @@ class UserRepositoryTest extends DbContextTest {
             "sub-9999",
             false,
             clock);
-    user.changeStatus(UserStatus.DELETED);
+    user.changeStatus(UserStatus.DELETED, clock);
     userRepository.save(user);
 
-    // when
     Optional<User> result =
         userRepository.findByProviderAndProviderSubAndUserStatus(
             Provider.GOOGLE, "sub-9999", UserStatus.ACTIVE);
 
-    // then
     assertThat(result).isEmpty();
   }
 }

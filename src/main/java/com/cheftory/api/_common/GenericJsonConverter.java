@@ -24,7 +24,6 @@ public class GenericJsonConverter<T> implements AttributeConverter<T, String> {
     try {
       return objectMapper.writeValueAsString(attribute);
     } catch (Exception e) {
-      // 문구 바꾸기
       throw new IllegalArgumentException("Failed to serialize list of strings", e);
     }
   }
@@ -37,7 +36,6 @@ public class GenericJsonConverter<T> implements AttributeConverter<T, String> {
     try {
       return objectMapper.readValue(dbData, typeReference);
     } catch (Exception e) {
-      // 문구 바꾸기
       throw new IllegalArgumentException("Failed to deserialize JSON to list of strings", e);
     }
   }

@@ -83,7 +83,7 @@ public class UserService {
             .findByIdAndUserStatus(id, UserStatus.ACTIVE)
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-    user.changeStatus(UserStatus.DELETED);
+    user.changeStatus(UserStatus.DELETED, clock);
     userRepository.save(user);
   }
 

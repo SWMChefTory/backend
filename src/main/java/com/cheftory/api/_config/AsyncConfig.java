@@ -25,8 +25,8 @@ public class AsyncConfig {
     return MarketContext::wrap;
   }
 
-  @Bean("recipeInfoCreateExecutor")
-  public AsyncTaskExecutor recipeInfoCreateExecutor(
+  @Bean("recipeCreateExecutor")
+  public AsyncTaskExecutor recipeCreateExecutor(
       ExecutorService asyncVirtualThreadExecutorService, TaskDecorator marketContextTaskDecorator) {
     return new AsyncTaskExecutor() {
       @Override

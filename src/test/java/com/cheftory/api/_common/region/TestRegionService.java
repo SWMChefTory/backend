@@ -20,7 +20,7 @@ public class TestRegionService {
 
   public TestRegionService(
       TestRegionEntityRepository repo,
-      @Qualifier("recipeInfoCreateExecutor") AsyncTaskExecutor taskExecutor) {
+      @Qualifier("recipeCreateExecutor") AsyncTaskExecutor taskExecutor) {
     this.repo = repo;
     this.taskExecutor = taskExecutor;
   }
@@ -29,7 +29,7 @@ public class TestRegionService {
     repo.save(TestRegionEntity.of(name));
   }
 
-  @Async("recipeInfoCreateExecutor")
+  @Async("recipeCreateExecutor")
   public CompletableFuture<Void> createAsync(String prefix) {
 
     repo.saveAndFlush(TestRegionEntity.of(prefix + "-start"));

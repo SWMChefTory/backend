@@ -59,15 +59,12 @@ class UserServiceTest {
       @DisplayName("Then - 예외를 던져야 한다")
       void thenShouldThrowNotFound() {
 
-        // Given
         UUID userId = UUID.randomUUID();
         when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
             .thenReturn(Optional.empty());
 
-        // When
         UserException ex = assertThrows(UserException.class, () -> userService.get(userId));
 
-        // Then
         assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
       }
     }
@@ -92,7 +89,6 @@ class UserServiceTest {
       @Test
       @DisplayName("닉네임 수정")
       void updateNicknameOnly() {
-        // given
         User user =
             User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
@@ -100,10 +96,8 @@ class UserServiceTest {
             .when(userRepository)
             .findByIdAndUserStatus(id, UserStatus.ACTIVE);
 
-        // when: 닉네임만 전달 (다른 필드는 미제공)
         userService.update(id, newNickname, oldGender, oldBirth);
 
-        // then
         Assertions.assertEquals(newNickname, user.getNickname());
         Assertions.assertEquals(oldGender, user.getGender());
         Assertions.assertEquals(oldBirth, user.getDateOfBirth());
@@ -112,7 +106,6 @@ class UserServiceTest {
       @Test
       @DisplayName("성별 수정")
       void updateGenderOnly() {
-        // given
         User user =
             User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
@@ -120,16 +113,13 @@ class UserServiceTest {
             .when(userRepository)
             .findByIdAndUserStatus(id, UserStatus.ACTIVE);
 
-        // when: 성별만 전달
         userService.update(id, oldNickname, newGender, oldBirth);
 
-        // then
         Assertions.assertEquals(oldNickname, user.getNickname());
         Assertions.assertEquals(newGender, user.getGender());
         Assertions.assertEquals(oldBirth, user.getDateOfBirth());
       }
 
-      // 성별을 null 로 비우는 케이스도 검증하고 싶다면 추가
       @Test
       @DisplayName("성별 수정 (NULL)")
       void clearGenderToNull() {
@@ -150,7 +140,6 @@ class UserServiceTest {
       @Test
       @DisplayName("생년월일 수정")
       void updateBirthOnly() {
-        // given
         User user =
             User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
         UUID id = user.getId();
@@ -158,10 +147,8 @@ class UserServiceTest {
             .when(userRepository)
             .findByIdAndUserStatus(id, UserStatus.ACTIVE);
 
-        // when: 생년월일만 전달
         userService.update(id, oldNickname, oldGender, newBirth);
 
-        // then
         Assertions.assertEquals(oldNickname, user.getNickname());
         Assertions.assertEquals(oldGender, user.getGender());
         Assertions.assertEquals(newBirth, user.getDateOfBirth());
@@ -179,7 +166,6 @@ class UserServiceTest {
 
         userService.update(id, oldNickname, oldGender, null);
 
-        Assertions.assertEquals(oldNickname, user.getNickname());
         Assertions.assertEquals(oldNickname, user.getNickname());
         Assertions.assertNull(user.getDateOfBirth());
       }
@@ -218,14 +204,11 @@ class UserServiceTest {
       @Test
       @DisplayName("Then - 예외를 던져야 한다")
       void thenShouldThrowNotFound() {
-        // Given
         when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
             .thenReturn(Optional.empty());
 
-        // When
         UserException ex = assertThrows(UserException.class, () -> userService.deleteUser(userId));
 
-        // Then
         assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
       }
     }

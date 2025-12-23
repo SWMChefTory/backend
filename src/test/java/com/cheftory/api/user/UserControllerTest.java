@@ -151,7 +151,6 @@ public class UserControllerTest extends RestDocsTest {
     @Test
     @DisplayName("성공 - 닉네임 수정")
     void shouldUpdateNicknameOnly() {
-      // given
 
       User user =
           User.create(
@@ -164,7 +163,6 @@ public class UserControllerTest extends RestDocsTest {
       request.put("gender", oldGender);
       request.put("date_of_birth", oldBirth);
 
-      // when & then
       var response =
           given()
               .contentType(ContentType.JSON)
@@ -202,7 +200,6 @@ public class UserControllerTest extends RestDocsTest {
     @Test
     @DisplayName("성공 - 성별 수정")
     void shouldUpdateGenderOnly() {
-      // given
       User user =
           User.create(
               oldNickname, newGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
@@ -214,7 +211,6 @@ public class UserControllerTest extends RestDocsTest {
       request.put("gender", newGender);
       request.put("date_of_birth", oldBirth);
 
-      // when & then
       var response =
           given()
               .contentType(ContentType.JSON)
@@ -252,7 +248,6 @@ public class UserControllerTest extends RestDocsTest {
     @Test
     @DisplayName("성공 - 성별 수정(NULL)")
     void shouldUpdateGenderToNULL() {
-      // given
       User user =
           User.create(oldNickname, null, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
@@ -263,7 +258,6 @@ public class UserControllerTest extends RestDocsTest {
       request.put("gender", null);
       request.put("date_of_birth", oldBirth);
 
-      // when & then
       var response =
           given()
               .contentType(ContentType.JSON)
@@ -301,7 +295,6 @@ public class UserControllerTest extends RestDocsTest {
     @Test
     @DisplayName("성공 - 생년월일 수정")
     void shouldUpdateBirthOnly() {
-      // given
       User user =
           User.create(
               oldNickname, oldGender, newBirth, Provider.APPLE, "apple-sub-123", false, clock);
@@ -313,7 +306,6 @@ public class UserControllerTest extends RestDocsTest {
       request.put("gender", oldGender);
       request.put("date_of_birth", newBirth);
 
-      // when & then
       var response =
           given()
               .contentType(ContentType.JSON)
@@ -351,7 +343,6 @@ public class UserControllerTest extends RestDocsTest {
     @Test
     @DisplayName("성공 - 생년월일 수정(NULL)")
     void shouldUpdateBirthToNULL() {
-      // given
       User user =
           User.create(oldNickname, oldGender, null, Provider.APPLE, "apple-sub-123", false, clock);
 
@@ -362,7 +353,6 @@ public class UserControllerTest extends RestDocsTest {
       request.put("gender", oldGender);
       request.put("date_of_birth", null);
 
-      // when & then
       var response =
           given()
               .contentType(ContentType.JSON)

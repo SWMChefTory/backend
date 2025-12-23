@@ -59,6 +59,9 @@ public class AccountFacade {
     AuthTokens authTokens = authService.createAuthToken(user.getId());
     authService.saveLoginSession(user.getId(), authTokens.refreshToken());
 
+    Credit credit = Credit.signupBonus(user.getId());
+    creditService.grant(credit);
+
     return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
   }
 

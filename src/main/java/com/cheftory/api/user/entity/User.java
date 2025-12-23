@@ -84,8 +84,8 @@ public class User {
     this.updatedAt = clock.now();
   }
 
-  public void changeStatus(UserStatus userStatus) {
+  public void changeStatus(UserStatus userStatus, Clock clock) {
     this.userStatus = userStatus;
-    this.updatedAt = LocalDateTime.now();
+    this.updatedAt = clock.now();
   }
 }
