@@ -7,8 +7,10 @@ import com.cheftory.api.recipe.content.youtubemeta.client.VideoInfoClient;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaStatus;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
+import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
@@ -32,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -168,6 +172,47 @@ public class RecipeValidationBatchConfig {
         .build();
   }
 
+  @Bean
+  @StepScope
+  public ItemWriter<RecipeYoutubeMeta> recipeCreateRefundWriter(
+      RecipeCreditPort recipeCreditPort,
+      JdbcTemplate jdbcTemplate,
+      @Value("#{jobParameters['market']}") String marketParam) {
+    return items -> {
+      for (RecipeYoutubeMeta item : items) {
+        if (item == null || item.getStatus() != YoutubeMetaStatus.BLOCKED) continue;
+
+        UUID recipeId = item.getRecipeId();
+
+        var row =
+            jdbcTemplate.queryForObject(
+                """
+                SELECT user_id, credit_cost
+                FROM recipe
+                WHERE id = ? AND market = ?
+                """,
+                (rs, rowNum) ->
+                    new Object[] {bytesToUuid(rs.getBytes("user_id")), rs.getLong("credit_cost")},
+                uuidToBytes(recipeId),
+                marketParam);
+
+        if (row == null) continue;
+
+        UUID userId = (UUID) row[0];
+        long creditCost = (long) row[1];
+
+        recipeCreditPort.refundRecipeCreate(userId, recipeId, creditCost);
+      }
+    };
+  }
+
+  private UUID bytesToUuid(byte[] bytes) {
+    ByteBuffer bb = ByteBuffer.wrap(bytes);
+    long high = bb.getLong();
+    long low = bb.getLong();
+    return new UUID(high, low);
+  }
+
   private byte[] uuidToBytes(UUID uuid) {
     ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
     bb.putLong(uuid.getMostSignificantBits());
@@ -180,10 +225,15 @@ public class RecipeValidationBatchConfig {
   public CompositeItemWriter<RecipeYoutubeMeta> compositeWriter(
       JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter,
       JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter,
-      JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter) {
+      JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter,
+      ItemWriter<RecipeYoutubeMeta> recipeCreateRefundWriter) {
     var writer = new CompositeItemWriter<RecipeYoutubeMeta>();
     writer.setDelegates(
-        java.util.List.of(youtubeMetaJdbcWriter, recipeStatusJdbcWriter, recipeHistoryJdbcWriter));
+        List.of(
+            youtubeMetaJdbcWriter,
+            recipeStatusJdbcWriter,
+            recipeHistoryJdbcWriter,
+            recipeCreateRefundWriter));
     return writer;
   }
 
