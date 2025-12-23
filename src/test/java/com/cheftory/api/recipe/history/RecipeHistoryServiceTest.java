@@ -74,6 +74,7 @@ public class RecipeHistoryServiceTest {
         verify(repository)
             .save(argThat(h -> h.getRecipeId().equals(recipeId) && h.getUserId().equals(userId)));
 
+        verify(repository, never()).findByUserIdAndRecipeId(any(), any());
         verify(repository, never()).existsByUserIdAndRecipeId(any(), any());
         verify(repository, never()).existsByRecipeIdAndUserIdAndStatus(any(), any(), any());
       }
@@ -93,37 +94,79 @@ public class RecipeHistoryServiceTest {
       }
 
       @Test
-      @DisplayName("Then - save에서 무결성 예외 발생 + 중복이면 false를 반환해야 한다")
-      void thenShouldReturnFalseWhenDuplicate() {
+      @DisplayName("Then - save에서 무결성 예외 발생 + 기존이 ACTIVE면 false를 반환해야 한다")
+      void thenShouldReturnFalseWhenDuplicateAndActive() {
         doThrow(new DataIntegrityViolationException("duplicate"))
             .when(repository)
             .save(any(RecipeHistory.class));
 
-        doReturn(true).when(repository).existsByUserIdAndRecipeId(userId, recipeId);
+        RecipeHistory existing = mock(RecipeHistory.class);
+        doReturn(RecipeHistoryStatus.ACTIVE).when(existing).getStatus();
+        doReturn(Optional.of(existing)).when(repository).findByUserIdAndRecipeId(userId, recipeId);
 
         boolean result = service.create(userId, recipeId);
 
         assertThat(result).isFalse();
 
         verify(repository).save(any(RecipeHistory.class));
-        verify(repository).existsByUserIdAndRecipeId(userId, recipeId);
-
-        verify(repository, never()).existsByRecipeIdAndUserIdAndStatus(any(), any(), any());
+        verify(repository).findByUserIdAndRecipeId(userId, recipeId);
+        verify(repository, times(1)).save(any(RecipeHistory.class));
       }
 
       @Test
-      @DisplayName("Then - save에서 무결성 예외 발생 + 중복이 아니면 예외를 다시 던져야 한다")
-      void thenShouldRethrowWhenNotDuplicate() {
+      @DisplayName("Then - save에서 무결성 예외 발생 + 기존이 BLOCKED면 false를 반환해야 한다")
+      void thenShouldReturnFalseWhenDuplicateAndBlocked() {
+        doThrow(new DataIntegrityViolationException("duplicate"))
+            .when(repository)
+            .save(any(RecipeHistory.class));
+
+        RecipeHistory existing = mock(RecipeHistory.class);
+        doReturn(RecipeHistoryStatus.BLOCKED).when(existing).getStatus();
+        doReturn(Optional.of(existing)).when(repository).findByUserIdAndRecipeId(userId, recipeId);
+
+        boolean result = service.create(userId, recipeId);
+
+        assertThat(result).isFalse();
+
+        verify(repository).save(any(RecipeHistory.class));
+        verify(repository).findByUserIdAndRecipeId(userId, recipeId);
+        verify(repository, times(1)).save(any(RecipeHistory.class));
+      }
+
+      @Test
+      @DisplayName("Then - save에서 무결성 예외 발생 + 기존이 DELETED면 ACTIVE로 복구 후 true를 반환해야 한다")
+      void thenShouldReactivateWhenDuplicateAndDeleted() {
+        RecipeHistory deleted = mock(RecipeHistory.class);
+        doReturn(RecipeHistoryStatus.DELETED).when(deleted).getStatus();
+        doReturn(Optional.of(deleted)).when(repository).findByUserIdAndRecipeId(userId, recipeId);
+
+        doThrow(new DataIntegrityViolationException("duplicate"))
+            .doReturn(deleted)
+            .when(repository)
+            .save(any(RecipeHistory.class));
+
+        boolean result = service.create(userId, recipeId);
+
+        assertThat(result).isTrue();
+
+        verify(repository).findByUserIdAndRecipeId(userId, recipeId);
+        verify(deleted).active(clock);
+        verify(repository, times(2)).save(any(RecipeHistory.class));
+      }
+
+      @Test
+      @DisplayName("Then - save에서 무결성 예외 발생 + find 결과 없으면 예외를 다시 던져야 한다")
+      void thenShouldRethrowWhenNotFoundExistingRow() {
         doThrow(new DataIntegrityViolationException("constraint"))
             .when(repository)
             .save(any(RecipeHistory.class));
 
-        doReturn(false).when(repository).existsByUserIdAndRecipeId(userId, recipeId);
+        doReturn(Optional.empty()).when(repository).findByUserIdAndRecipeId(userId, recipeId);
 
         assertThrows(DataIntegrityViolationException.class, () -> service.create(userId, recipeId));
 
         verify(repository).save(any(RecipeHistory.class));
-        verify(repository).existsByUserIdAndRecipeId(userId, recipeId);
+        verify(repository).findByUserIdAndRecipeId(userId, recipeId);
       }
     }
   }

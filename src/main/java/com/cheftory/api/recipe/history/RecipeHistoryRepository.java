@@ -58,4 +58,6 @@ public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UU
   List<RecipeHistory> findAllByRecipeId(UUID recipeId);
 
   List<RecipeHistory> findAllByRecipeIdAndStatus(UUID recipeId, RecipeHistoryStatus status);
+
+  Optional<RecipeHistory> findByUserIdAndRecipeId(UUID userId, UUID recipeId);
 }

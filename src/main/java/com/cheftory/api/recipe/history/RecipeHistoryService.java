@@ -32,9 +32,20 @@ public class RecipeHistoryService {
       recipeHistoryRepository.save(RecipeHistory.create(clock, userId, recipeId));
       return true;
     } catch (DataIntegrityViolationException e) {
-      if (recipeHistoryRepository.existsByUserIdAndRecipeId(userId, recipeId)) {
+      var existingOpt = recipeHistoryRepository.findByUserIdAndRecipeId(userId, recipeId);
+
+      if (existingOpt.isPresent()) {
+        RecipeHistory existing = existingOpt.get();
+
+        if (existing.getStatus() == RecipeHistoryStatus.DELETED) {
+          existing.active(clock);
+          recipeHistoryRepository.save(existing);
+          return true;
+        }
+
         return false;
       }
+
       throw e;
     }
   }

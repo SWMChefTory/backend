@@ -81,4 +81,9 @@ public class RecipeHistory extends MarketScope {
     this.status = RecipeHistoryStatus.DELETED;
     this.updatedAt = clock.now();
   }
+
+  public void active(Clock clock) {
+    this.status = RecipeHistoryStatus.ACTIVE;
+    this.updatedAt = clock.now();
+  }
 }
