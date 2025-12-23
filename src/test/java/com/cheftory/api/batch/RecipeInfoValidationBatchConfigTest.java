@@ -181,7 +181,9 @@ class RecipeInfoValidationBatchConfigTest {
       UUID blockedRecipeId = createRecipe(userId, creditCost);
       blockedMetaId =
           createBlockedYoutubeMeta(
-              blockedRecipeId, "blocked_video", "https://www.youtube.com/watch?v=blocked_video");
+              blockedRecipeId,
+              "blocked_video",
+              "https://www.youtube.com/watch?v=blocked_video");
     }
 
     when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
