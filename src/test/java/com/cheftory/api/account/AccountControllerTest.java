@@ -14,18 +14,18 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
-import com.cheftory.api.account.auth.exception.AuthErrorCode;
-import com.cheftory.api.account.auth.exception.AuthException;
 import com.cheftory.api.account.dto.LoginRequest;
 import com.cheftory.api.account.dto.LogoutRequest;
-import com.cheftory.api.account.model.LoginResult;
-import com.cheftory.api.account.model.UserInfo;
-import com.cheftory.api.account.user.entity.Gender;
-import com.cheftory.api.account.user.entity.Provider;
-import com.cheftory.api.account.user.exception.UserErrorCode;
-import com.cheftory.api.account.user.exception.UserException;
+import com.cheftory.api.account.model.Account;
+import com.cheftory.api.auth.exception.AuthErrorCode;
+import com.cheftory.api.auth.exception.AuthException;
 import com.cheftory.api.exception.GlobalErrorCode;
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.user.entity.Gender;
+import com.cheftory.api.user.entity.Provider;
+import com.cheftory.api.user.entity.User;
+import com.cheftory.api.user.exception.UserErrorCode;
+import com.cheftory.api.user.exception.UserException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.time.LocalDate;
@@ -42,7 +42,7 @@ import org.springframework.http.HttpStatus;
 public class AccountControllerTest extends RestDocsTest {
 
   private AccountController controller;
-  private AccountService accountService;
+  private AccountFacade accountFacade;
   private GlobalExceptionHandler globalExceptionHandler;
 
   private final LocalDate validDateOfBirth = LocalDate.of(2000, 1, 1);
@@ -52,8 +52,8 @@ public class AccountControllerTest extends RestDocsTest {
 
   @BeforeEach
   void setUp() {
-    accountService = mock(AccountService.class);
-    controller = new AccountController(accountService);
+    accountFacade = mock(AccountFacade.class);
+    controller = new AccountController(accountFacade);
     globalExceptionHandler = new GlobalExceptionHandler();
     mockMvc = mockMvcBuilder(controller).withAdvice(globalExceptionHandler).build();
   }
@@ -73,19 +73,17 @@ public class AccountControllerTest extends RestDocsTest {
       void setUp() {
         validIdToken = "valid-id-token";
         provider = Provider.APPLE;
-        LoginResult loginResult =
-            new LoginResult(
-                "access-token",
-                "refresh-token",
-                new UserInfo(
-                    "nickname",
-                    Gender.MALE,
-                    validDateOfBirth,
-                    validTermsOfUseAgreedAt,
-                    validPrivacyAgreedAt,
-                    validMarketingAgreedAt));
 
-        doReturn(loginResult).when(accountService).loginWithOAuth(validIdToken, provider);
+        User user = mock(User.class);
+        doReturn("nickname").when(user).getNickname();
+        doReturn(Gender.MALE).when(user).getGender();
+        doReturn(validDateOfBirth).when(user).getDateOfBirth();
+        doReturn(validTermsOfUseAgreedAt).when(user).getTermsOfUseAgreedAt();
+        doReturn(validPrivacyAgreedAt).when(user).getPrivacyAgreedAt();
+        doReturn(validMarketingAgreedAt).when(user).getMarketingAgreedAt();
+
+        Account account = Account.of("access-token", "refresh-token", user);
+        doReturn(account).when(accountFacade).login(validIdToken, provider);
       }
 
       @Test
@@ -127,7 +125,7 @@ public class AccountControllerTest extends RestDocsTest {
             .body("user_info.gender", equalTo(Gender.MALE.name()))
             .body("user_info.date_of_birth", equalTo(validDateOfBirth.toString()));
 
-        verify(accountService).loginWithOAuth(validIdToken, provider);
+        verify(accountFacade).login(validIdToken, provider);
       }
     }
 
@@ -144,8 +142,8 @@ public class AccountControllerTest extends RestDocsTest {
         provider = Provider.GOOGLE;
 
         doThrow(new AuthException(AuthErrorCode.INVALID_ID_TOKEN))
-            .when(accountService)
-            .loginWithOAuth(invalidIdToken, provider);
+            .when(accountFacade)
+            .login(invalidIdToken, provider);
       }
 
       @Test
@@ -182,8 +180,8 @@ public class AccountControllerTest extends RestDocsTest {
         provider = Provider.GOOGLE;
 
         doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
-            .when(accountService)
-            .loginWithOAuth(idToken, provider);
+            .when(accountFacade)
+            .login(idToken, provider);
       }
 
       @Test
@@ -228,22 +226,19 @@ public class AccountControllerTest extends RestDocsTest {
         nickname = "cheftory";
         gender = Gender.FEMALE;
 
-        LoginResult loginResult =
-            new LoginResult(
-                "access-token",
-                "refresh-token",
-                new UserInfo(
-                    nickname,
-                    gender,
-                    validDateOfBirth,
-                    validTermsOfUseAgreedAt,
-                    validPrivacyAgreedAt,
-                    validMarketingAgreedAt));
+        User user = mock(User.class);
+        doReturn(nickname).when(user).getNickname();
+        doReturn(gender).when(user).getGender();
+        doReturn(validDateOfBirth).when(user).getDateOfBirth();
+        doReturn(validTermsOfUseAgreedAt).when(user).getTermsOfUseAgreedAt();
+        doReturn(validPrivacyAgreedAt).when(user).getPrivacyAgreedAt();
+        doReturn(validMarketingAgreedAt).when(user).getMarketingAgreedAt();
 
-        doReturn(loginResult)
-            .when(accountService)
-            .signupWithOAuth(
-                validToken, provider, nickname, gender, validDateOfBirth, true, true, true);
+        Account account = Account.of("access-token", "refresh-token", user);
+
+        doReturn(account)
+            .when(accountFacade)
+            .signup(validToken, provider, nickname, gender, validDateOfBirth, true, true, true);
       }
 
       @Test
@@ -368,7 +363,7 @@ public class AccountControllerTest extends RestDocsTest {
                       responseFields(fieldWithPath("message").description("성공 메시지"))));
 
       assertSuccessResponse(response);
-      verify(accountService).logout("refresh-token");
+      verify(accountFacade).logout("refresh-token");
     }
   }
 
@@ -407,7 +402,7 @@ public class AccountControllerTest extends RestDocsTest {
                       responseFields(fieldWithPath("message").description("성공 메시지"))));
 
       assertSuccessResponse(response);
-      verify(accountService).delete("refresh-token");
+      verify(accountFacade).delete("refresh-token");
     }
   }
 }

@@ -18,10 +18,10 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 
-import com.cheftory.api.account.user.UserService;
-import com.cheftory.api.account.user.exception.UserErrorCode;
 import com.cheftory.api.exception.GlobalErrorCode;
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.user.UserService;
+import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.utils.RestDocsTest;
 import com.cheftory.api.voicecommand.enums.IntentModel;
 import com.cheftory.api.voicecommand.enums.STTModel;

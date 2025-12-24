@@ -6,22 +6,22 @@
 === 1.1 성공 – 레시피 카테고리 생성
 
 ==== 요청
-include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/http-request.adoc[]
+include::{snippets}/recipe-recipeCategory-controller-test/create-recipe-recipeCategory/given-valid-parameters-for-create/when-creating-recipe-recipeCategory/then-should-create-recipe-recipeCategory/http-request.adoc[]
 
 ==== 요청 헤더
-include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/request-headers.adoc[]
+include::{snippets}/recipe-recipeCategory-controller-test/create-recipe-recipeCategory/given-valid-parameters-for-create/when-creating-recipe-recipeCategory/then-should-create-recipe-recipeCategory/request-headers.adoc[]
 
 ==== 요청 본문
-include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/request-body.adoc[]
+include::{snippets}/recipe-recipeCategory-controller-test/create-recipe-recipeCategory/given-valid-parameters-for-create/when-creating-recipe-recipeCategory/then-should-create-recipe-recipeCategory/request-body.adoc[]
 
 ==== 요청 필드
-include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/request-fields.adoc[]
+include::{snippets}/recipe-recipeCategory-controller-test/create-recipe-recipeCategory/given-valid-parameters-for-create/when-creating-recipe-recipeCategory/then-should-create-recipe-recipeCategory/request-fields.adoc[]
 
 ==== 응답
-include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/http-response.adoc[]
+include::{snippets}/recipe-recipeCategory-controller-test/create-recipe-recipeCategory/given-valid-parameters-for-create/when-creating-recipe-recipeCategory/then-should-create-recipe-recipeCategory/http-response.adoc[]
 
 ==== 응답 본문
-include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/response-body.adoc[]
+include::{snippets}/recipe-recipeCategory-controller-test/create-recipe-recipeCategory/given-valid-parameters-for-create/when-creating-recipe-recipeCategory/then-should-create-recipe-recipeCategory/response-body.adoc[]
 
 ==== 응답 필드
-include::{snippets}/recipe-category-controller-test/create-recipe-category/given-valid-parameters-for-create/when-creating-recipe-category/then-should-create-recipe-category/response-fields.adoc[]
+include::{snippets}/recipe-recipeCategory-controller-test/create-recipe-recipeCategory/given-valid-parameters-for-create/when-creating-recipe-recipeCategory/then-should-create-recipe-recipeCategory/response-fields.adoc[]

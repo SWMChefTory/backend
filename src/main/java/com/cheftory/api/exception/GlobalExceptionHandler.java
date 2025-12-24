@@ -3,8 +3,8 @@ package com.cheftory.api.exception;
 import static com.cheftory.api.exception.ErrorMessage.resolveErrorCode;
 
 import com.cheftory.api._common.reponse.ErrorResponse;
-import com.cheftory.api.account.auth.exception.AuthErrorCode;
-import com.cheftory.api.account.auth.exception.AuthException;
+import com.cheftory.api.auth.exception.AuthErrorCode;
+import com.cheftory.api.auth.exception.AuthException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;

@@ -125,11 +125,9 @@ public abstract class RestDocsTest {
         builder.setControllerAdvice(advice);
       }
 
-      // 여러 validator 서비스들이 등록된 경우에만 validator 설정
       if (!validatorServices.isEmpty()) {
         GenericApplicationContext ctx = new GenericApplicationContext();
 
-        // 모든 서비스들을 ApplicationContext에 등록
         validatorServices.forEach(
             (serviceClass, serviceInstance) -> {
               @SuppressWarnings("unchecked")

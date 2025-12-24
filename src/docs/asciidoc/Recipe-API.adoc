@@ -91,22 +91,22 @@ include::{snippets}/recipe-info-controller-test/get-recommend-recipes/given-reco
 === 5.1 성공 – 카테고리별 레시피 목록 조회
 
 ==== 요청
-include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-category-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/http-request.adoc[]
+include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-recipeCategory-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/http-request.adoc[]
 
 ==== 요청 헤더
-include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-category-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/request-headers.adoc[]
+include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-recipeCategory-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/request-headers.adoc[]
 
 ==== 경로 매개변수
-include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-category-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/path-parameters.adoc[]
+include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-recipeCategory-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/path-parameters.adoc[]
 
 ==== 응답
-include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-category-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/http-response.adoc[]
+include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-recipeCategory-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/http-response.adoc[]
 
 ==== 응답 본문
-include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-category-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/response-body.adoc[]
+include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-recipeCategory-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/response-body.adoc[]
 
 ==== 응답 필드
-include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-category-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/response-fields.adoc[]
+include::{snippets}/recipe-info-controller-test/get-categorized-recipes/given-valid-recipeCategory-id-and-user-id/when-requesting-categorized-recipes/then-should-return-categorized-recipes/response-fields.adoc[]
 
 == 미분류 레시피 목록 조회 (GET /api/v1/recipes/uncategorized)
 
@@ -154,41 +154,41 @@ include::{snippets}/recipe-info-controller-test/get-recipe-histories/given-valid
 === 8.1 성공 – 레시피 카테고리 삭제
 
 ==== 요청
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/given-valid-category-id/when-deleting-recipe-category/then-should-delete-category-successfully/http-request.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/given-valid-recipeCategory-id/when-deleting-recipe-recipeCategory/then-should-delete-recipeCategory-successfully/http-request.adoc[]
 
 ==== 요청 헤더
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/given-valid-category-id/when-deleting-recipe-category/then-should-delete-category-successfully/request-headers.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/given-valid-recipeCategory-id/when-deleting-recipe-recipeCategory/then-should-delete-recipeCategory-successfully/request-headers.adoc[]
 
 ==== 경로 매개변수
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/given-valid-category-id/when-deleting-recipe-category/then-should-delete-category-successfully/path-parameters.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/given-valid-recipeCategory-id/when-deleting-recipe-recipeCategory/then-should-delete-recipeCategory-successfully/path-parameters.adoc[]
 
 ==== 응답
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/given-valid-category-id/when-deleting-recipe-category/then-should-delete-category-successfully/http-response.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/given-valid-recipeCategory-id/when-deleting-recipe-recipeCategory/then-should-delete-recipeCategory-successfully/http-response.adoc[]
 
 ==== 응답 본문
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/given-valid-category-id/when-deleting-recipe-category/then-should-delete-category-successfully/response-body.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/given-valid-recipeCategory-id/when-deleting-recipe-recipeCategory/then-should-delete-recipeCategory-successfully/response-body.adoc[]
 
 ==== 응답 필드
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/given-valid-category-id/when-deleting-recipe-category/then-should-delete-category-successfully/response-fields.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/given-valid-recipeCategory-id/when-deleting-recipe-recipeCategory/then-should-delete-recipeCategory-successfully/response-fields.adoc[]
 
 == 레시피 카테고리 목록 조회 (GET /api/v1/recipes/categories)
 
 === 9.1 성공 – 레시피 카테고리 목록 조회
 
 ==== 요청
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-category-counts/http-request.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-recipeCategory-counts/http-request.adoc[]
 
 ==== 요청 헤더
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-category-counts/request-headers.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-recipeCategory-counts/request-headers.adoc[]
 
 ==== 응답
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-category-counts/http-response.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-recipeCategory-counts/http-response.adoc[]
 
 ==== 응답 본문
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-category-counts/response-body.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-recipeCategory-counts/response-body.adoc[]
 
 ==== 응답 필드
-include::{snippets}/recipe-info-controller-test/delete-recipe-category/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-category-counts/response-fields.adoc[]
+include::{snippets}/recipe-info-controller-test/delete-recipe-recipeCategory/get-recipe-categories/given-valid-user-id/when-requesting-recipe-categories/then-should-return-recipe-recipeCategory-counts/response-fields.adoc[]
 
 == 레시피 검색 (GET /api/v1/recipes/search)
 

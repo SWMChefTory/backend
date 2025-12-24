@@ -1,0 +1,21 @@
+package com.cheftory.api.search;
+
+import com.cheftory.api.search.history.SearchHistoryService;
+import com.cheftory.api.search.query.SearchQueryService;
+import com.cheftory.api.search.query.entity.SearchQuery;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class SearchFacade {
+  private final SearchQueryService searchQueryService;
+  private final SearchHistoryService searchHistoryService;
+
+  public Page<SearchQuery> search(UUID userId, String keyword, Integer page) {
+    if (!keyword.isBlank()) searchHistoryService.create(userId, keyword);
+    return searchQueryService.searchByKeyword(keyword, page);
+  }
+}

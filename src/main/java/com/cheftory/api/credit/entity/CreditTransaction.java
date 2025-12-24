@@ -1,0 +1,70 @@
+package com.cheftory.api.credit.entity;
+
+import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.region.Market;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Entity
+@Table(
+    uniqueConstraints = {
+      @UniqueConstraint(name = "uq_credit_tx_idempotency_key", columnNames = "idempotency_key")
+    })
+public class CreditTransaction {
+
+  @Id
+  @Column(nullable = false)
+  private UUID id;
+
+  @Column(nullable = false)
+  private UUID userId;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private CreditTransactionType type;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private CreditReason reason;
+
+  @Column(nullable = false)
+  private long amount;
+
+  @Column(nullable = false)
+  private String idempotencyKey;
+
+  @Column(nullable = false)
+  private LocalDateTime createdAt;
+
+  public static CreditTransaction grant(
+      Credit credit, Clock clock) {
+    return new CreditTransaction(
+        UUID.randomUUID(),
+        credit.userId(),
+        CreditTransactionType.GRANT,
+        credit.reason(),
+        credit.amount(),
+        credit.idempotencyKey(),
+        clock.now());
+  }
+
+  public static CreditTransaction spend(
+      Credit credit, Clock clock) {
+    return new CreditTransaction(
+        UUID.randomUUID(),
+        credit.userId(),
+        CreditTransactionType.SPEND,
+        credit.reason(),
+        -credit.amount(),
+        credit.idempotencyKey(),
+        clock.now());
+  }
+}

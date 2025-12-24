@@ -1,6 +1,6 @@
 package com.cheftory.api.exception;
 
-import com.cheftory.api.account.user.exception.UserErrorCode;
+import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.voicecommand.exception.VoiceCommandErrorCode;
 import java.util.List;
 
