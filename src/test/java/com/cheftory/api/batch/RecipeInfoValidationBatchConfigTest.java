@@ -166,13 +166,13 @@ class RecipeInfoValidationBatchConfigTest {
       assertYoutubeMetaStatus(youtubeMetaId, YoutubeMetaStatus.BLOCKED);
     }
 
-    verify(recipeCreditPort, times(1))
-        .refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
+    verify(recipeCreditPort, times(1)).refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
   }
 
   @Test
   @DisplayName("ACTIVE 상태의 비디오만 검증 대상(이미 BLOCKED면 환불/상태 변경 없음)")
   void shouldProcessOnlyActiveVideos() throws Exception {
+    UUID userId = UUID.randomUUID();
     long creditCost = 10L;
 
     UUID activeMetaId;
@@ -284,8 +284,7 @@ class RecipeInfoValidationBatchConfigTest {
       assertYoutubeMetaStatus(metaId, YoutubeMetaStatus.BLOCKED);
     }
 
-    verify(recipeCreditPort, times(1))
-        .refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
+    verify(recipeCreditPort, times(1)).refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
   }
 
   @Test
@@ -326,8 +325,7 @@ class RecipeInfoValidationBatchConfigTest {
       assertThat(blockedHistory).isEqualTo(51);
     }
 
-    verify(recipeCreditPort, times(51))
-        .refundRecipeCreate(eq(userId), any(), eq(creditCost));
+    verify(recipeCreditPort, times(51)).refundRecipeCreate(eq(userId), any(), eq(creditCost));
   }
 
   private JobExecution runBatchJob(String market) throws Exception {
@@ -356,10 +354,10 @@ class RecipeInfoValidationBatchConfigTest {
   }
 
   /**
-   * 테스트에서 RecipeInfo.create(clock)만 하면 user_id/credit_cost가 비어 있을 수 있어서
-   * refund writer의 SELECT 결과에서 NPE가 날 수 있음.
+   * 테스트에서 RecipeInfo.create(clock)만 하면 user_id/credit_cost가 비어 있을 수 있어서 refund writer의 SELECT 결과에서
+   * NPE가 날 수 있음.
    *
-   * 그래서 저장 후 DB에 user_id/credit_cost를 직접 채워 넣음.
+   * <p>그래서 저장 후 DB에 user_id/credit_cost를 직접 채워 넣음.
    */
   private UUID createRecipe(long creditCost, String market) {
     RecipeInfo recipeInfo = RecipeInfo.create(clock);

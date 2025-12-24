@@ -35,7 +35,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -46,6 +47,8 @@ public class RecipeValidationBatchConfig {
   private final DataSource dataSource;
   private final VideoInfoClient videoInfoClient;
   private final RecipeYoutubeMetaRepository youtubeMetaRepository;
+
+  record RefundInfo(UUID userId, UUID recipeId, long creditCost) {}
 
   @Bean
   public Job youtubeValidationJob(JobRepository jobRepository, Step youtubeValidationStep) {
@@ -176,46 +179,60 @@ public class RecipeValidationBatchConfig {
   @StepScope
   public ItemWriter<RecipeYoutubeMeta> recipeCreateRefundWriter(
       RecipeCreditPort recipeCreditPort,
-      JdbcTemplate jdbcTemplate,
+      NamedParameterJdbcTemplate namedJdbc,
       @Value("#{jobParameters['market']}") String marketParam) {
+    final String sql =
+        """
+      WITH latest_history AS (
+        SELECT
+          recipe_id,
+          user_id,
+          ROW_NUMBER() OVER (PARTITION BY recipe_id ORDER BY created_at DESC) AS rn
+        FROM recipe_history
+        WHERE market = :market
+          AND recipe_id IN (:recipeIds)
+      )
+      SELECT
+        lh.user_id AS user_id,
+        r.id      AS recipe_id,
+        r.credit_cost AS credit_cost
+      FROM recipe r
+      JOIN latest_history lh
+        ON lh.recipe_id = r.id AND lh.rn = 1
+      WHERE r.market = :market
+        AND r.id IN (:recipeIds)
+      """;
 
     return items -> {
-      for (RecipeYoutubeMeta item : items) {
-        if (item == null || item.getStatus() != YoutubeMetaStatus.BLOCKED) continue;
+      var recipeIds =
+          items.getItems().stream()
+              .filter(java.util.Objects::nonNull)
+              .filter(i -> i.getStatus() == YoutubeMetaStatus.BLOCKED)
+              .map(RecipeYoutubeMeta::getRecipeId)
+              .distinct()
+              .toList();
 
-        UUID recipeId = item.getRecipeId();
+      if (recipeIds.isEmpty()) return;
 
-        List<UUID> userIds =
-            jdbcTemplate.query(
-                """
-                SELECT user_id
-                FROM recipe_history
-                WHERE recipe_id = ? AND market = ?
-                ORDER BY created_at DESC
-                LIMIT 1
-                """,
-                (rs, rowNum) -> bytesToUuid(rs.getBytes("user_id")),
-                uuidToBytes(recipeId),
-                marketParam);
+      var recipeIdBytes = recipeIds.stream().map(this::uuidToBytes).toList();
 
-        if (userIds.isEmpty() || userIds.get(0) == null) continue;
-        UUID userId = userIds.get(0);
+      var params =
+          new MapSqlParameterSource()
+              .addValue("market", marketParam)
+              .addValue("recipeIds", recipeIdBytes);
 
-        List<Long> creditCosts =
-            jdbcTemplate.query(
-                """
-                SELECT credit_cost
-                FROM recipe
-                WHERE id = ? AND market = ?
-                """,
-                (rs, rowNum) -> rs.getLong("credit_cost"),
-                uuidToBytes(recipeId),
-                marketParam);
+      List<RefundInfo> refundInfos =
+          namedJdbc.query(
+              sql,
+              params,
+              (rs, rowNum) ->
+                  new RefundInfo(
+                      bytesToUuid(rs.getBytes("user_id")),
+                      bytesToUuid(rs.getBytes("recipe_id")),
+                      rs.getLong("credit_cost")));
 
-        if (creditCosts.isEmpty()) continue;
-        long creditCost = creditCosts.get(0);
-
-        recipeCreditPort.refundRecipeCreate(userId, recipeId, creditCost);
+      for (RefundInfo info : refundInfos) {
+        recipeCreditPort.refundRecipeCreate(info.userId(), info.recipeId(), info.creditCost());
       }
     };
   }
