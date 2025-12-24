@@ -15,13 +15,13 @@ class CreditServiceTest {
 
   private CreditTxService creditTxService;
   private CreditUserBalanceRepository balanceRepository;
-  private CreditService sut;
+  private CreditService creditService;
 
   @BeforeEach
   void setUp() {
     creditTxService = mock(CreditTxService.class);
     balanceRepository = mock(CreditUserBalanceRepository.class);
-    sut = new CreditService(creditTxService, balanceRepository);
+    creditService = new CreditService(creditTxService, balanceRepository);
   }
 
   @Test
@@ -30,7 +30,7 @@ class CreditServiceTest {
     UUID userId = UUID.randomUUID();
     doReturn(Optional.empty()).when(balanceRepository).findById(userId);
 
-    long balance = sut.getBalance(userId);
+    long balance = creditService.getBalance(userId);
 
     org.assertj.core.api.Assertions.assertThat(balance).isEqualTo(0L);
   }
@@ -44,7 +44,7 @@ class CreditServiceTest {
 
     doReturn(Optional.of(entity)).when(balanceRepository).findById(userId);
 
-    long balance = sut.getBalance(userId);
+    long balance = creditService.getBalance(userId);
 
     org.assertj.core.api.Assertions.assertThat(balance).isEqualTo(55L);
   }
@@ -54,7 +54,7 @@ class CreditServiceTest {
   void grant_shouldDelegate() {
     Credit credit = Credit.signupBonus(UUID.randomUUID());
 
-    sut.grant(credit);
+    creditService.grant(credit);
 
     verify(creditTxService).grantTx(credit);
   }
@@ -64,7 +64,7 @@ class CreditServiceTest {
   void spend_shouldDelegate() {
     Credit credit = Credit.signupBonus(UUID.randomUUID());
 
-    sut.spend(credit);
+    creditService.spend(credit);
 
     verify(creditTxService).spendTx(credit);
   }

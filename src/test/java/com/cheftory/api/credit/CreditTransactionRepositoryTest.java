@@ -73,8 +73,6 @@ class CreditTransactionRepositoryTest extends DbContextTest {
               CreditTransactionType.class,
               CreditReason.class,
               long.class,
-              Market.class,
-              String.class,
               String.class,
               LocalDateTime.class);
       ctor.setAccessible(true);
@@ -85,8 +83,6 @@ class CreditTransactionRepositoryTest extends DbContextTest {
           CreditTransactionType.GRANT,
           CreditReason.values()[0],
           amount,
-          Market.values()[0],
-          "KR",
           idempotencyKey,
           LocalDateTime.now());
     } catch (Exception e) {

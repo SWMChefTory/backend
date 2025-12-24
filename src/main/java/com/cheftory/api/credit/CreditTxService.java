@@ -21,13 +21,12 @@ public class CreditTxService {
 
   @Transactional
   public void grantTx(Credit credit) {
-    var info = MarketContext.required();
     CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
     if (alreadyProcessed(
         () ->
             transactionRepository.save(
-                CreditTransaction.grant(credit, info.market(), info.countryCode(), clock)),
+                CreditTransaction.grant(credit, clock)),
         credit.idempotencyKey())) {
       return;
     }
@@ -38,13 +37,12 @@ public class CreditTxService {
 
   @Transactional
   public void spendTx(Credit credit) {
-    var info = MarketContext.required();
     CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
     if (alreadyProcessed(
         () ->
             transactionRepository.save(
-                CreditTransaction.spend(credit, info.market(), info.countryCode(), clock)),
+                CreditTransaction.spend(credit, clock)),
         credit.idempotencyKey())) {
       return;
     }

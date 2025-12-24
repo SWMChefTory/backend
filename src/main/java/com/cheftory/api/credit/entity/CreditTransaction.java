@@ -38,13 +38,6 @@ public class CreditTransaction {
   @Column(nullable = false)
   private long amount;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private Market market;
-
-  @Column(nullable = false)
-  private String countryCode;
-
   @Column(nullable = false)
   private String idempotencyKey;
 
@@ -52,29 +45,25 @@ public class CreditTransaction {
   private LocalDateTime createdAt;
 
   public static CreditTransaction grant(
-      Credit credit, Market market, String countryCode, Clock clock) {
+      Credit credit, Clock clock) {
     return new CreditTransaction(
         UUID.randomUUID(),
         credit.userId(),
         CreditTransactionType.GRANT,
         credit.reason(),
         credit.amount(),
-        market,
-        countryCode,
         credit.idempotencyKey(),
         clock.now());
   }
 
   public static CreditTransaction spend(
-      Credit credit, Market market, String countryCode, Clock clock) {
+      Credit credit, Clock clock) {
     return new CreditTransaction(
         UUID.randomUUID(),
         credit.userId(),
         CreditTransactionType.SPEND,
         credit.reason(),
         -credit.amount(),
-        market,
-        countryCode,
         credit.idempotencyKey(),
         clock.now());
   }

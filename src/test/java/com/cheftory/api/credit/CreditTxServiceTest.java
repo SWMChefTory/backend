@@ -40,15 +40,6 @@ class CreditTxServiceTest {
     doReturn(LocalDateTime.of(2024, 1, 1, 0, 0)).when(clock).now();
   }
 
-  private MockedStatic<MarketContext> mockMarketContext() {
-    MockedStatic<MarketContext> mocked = mockStatic(MarketContext.class);
-    MarketContext.Info info = mock(MarketContext.Info.class);
-    doReturn("KR").when(info).countryCode();
-    doReturn(null).when(info).market();
-    mocked.when(MarketContext::required).thenReturn(info);
-    return mocked;
-  }
-
   @Nested
   @DisplayName("grantTx")
   class GrantTx {
@@ -64,9 +55,7 @@ class CreditTxServiceTest {
       CreditUserBalance created = CreditUserBalance.create(userId);
       doReturn(created).when(balanceRepository).saveAndFlush(any(CreditUserBalance.class));
 
-      try (var ignored = mockMarketContext()) {
-        creditTxService.grantTx(credit);
-      }
+      creditTxService.grantTx(credit);
 
       verify(transactionRepository, times(1)).save(any());
 
@@ -93,9 +82,7 @@ class CreditTxServiceTest {
 
       doReturn(true).when(transactionRepository).existsByIdempotencyKey(credit.idempotencyKey());
 
-      try (var ignored = mockMarketContext()) {
-        creditTxService.grantTx(credit);
-      }
+      creditTxService.grantTx(credit);
 
       verify(balanceRepository, never()).save(any());
       assertThat(balance.getBalance()).isEqualTo(200L);
@@ -116,10 +103,8 @@ class CreditTxServiceTest {
 
       doReturn(false).when(transactionRepository).existsByIdempotencyKey(credit.idempotencyKey());
 
-      try (var ignored = mockMarketContext()) {
-        assertThatThrownBy(() -> creditTxService.grantTx(credit))
-            .isInstanceOf(DataIntegrityViolationException.class);
-      }
+      assertThatThrownBy(() -> creditTxService.grantTx(credit))
+          .isInstanceOf(DataIntegrityViolationException.class);
 
       verify(balanceRepository, never()).save(any());
     }
@@ -137,9 +122,7 @@ class CreditTxServiceTest {
           .when(balanceRepository)
           .saveAndFlush(any(CreditUserBalance.class));
 
-      try (var ignored = mockMarketContext()) {
-        creditTxService.grantTx(credit);
-      }
+      creditTxService.grantTx(credit);
 
       verify(balanceRepository, times(2)).findById(userId);
       verify(balanceRepository, times(1)).saveAndFlush(any(CreditUserBalance.class));
@@ -166,9 +149,7 @@ class CreditTxServiceTest {
 
       doReturn(Optional.of(balance)).when(balanceRepository).findById(userId);
 
-      try (var ignored = mockMarketContext()) {
-        creditTxService.spendTx(credit);
-      }
+      creditTxService.spendTx(credit);
 
       verify(transactionRepository, times(1)).save(any());
 
