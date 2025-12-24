@@ -183,24 +183,16 @@ public class RecipeValidationBatchConfig {
       @Value("#{jobParameters['market']}") String marketParam) {
     final String sql =
         """
-      WITH latest_history AS (
-        SELECT
-          recipe_id,
-          user_id,
-          ROW_NUMBER() OVER (PARTITION BY recipe_id ORDER BY created_at DESC) AS rn
-        FROM recipe_history
-        WHERE market = :market
-          AND recipe_id IN (:recipeIds)
-      )
       SELECT
-        lh.user_id AS user_id,
+        rh.user_id AS user_id,
         r.id      AS recipe_id,
         r.credit_cost AS credit_cost
       FROM recipe r
-      JOIN latest_history lh
-        ON lh.recipe_id = r.id AND lh.rn = 1
+      JOIN recipe_history rh
+        ON rh.recipe_id = r.id
       WHERE r.market = :market
         AND r.id IN (:recipeIds)
+        AND rh.status = 'ACTIVE'
       """;
 
     return items -> {
@@ -263,8 +255,8 @@ public class RecipeValidationBatchConfig {
         List.of(
             youtubeMetaJdbcWriter,
             recipeStatusJdbcWriter,
-            recipeHistoryJdbcWriter,
-            recipeCreateRefundWriter));
+            recipeCreateRefundWriter,
+            recipeHistoryJdbcWriter));
     return writer;
   }
 
