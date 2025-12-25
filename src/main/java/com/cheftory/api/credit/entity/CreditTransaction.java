@@ -1,7 +1,6 @@
 package com.cheftory.api.credit.entity;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api._common.region.Market;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -44,8 +43,7 @@ public class CreditTransaction {
   @Column(nullable = false)
   private LocalDateTime createdAt;
 
-  public static CreditTransaction grant(
-      Credit credit, Clock clock) {
+  public static CreditTransaction grant(Credit credit, Clock clock) {
     return new CreditTransaction(
         UUID.randomUUID(),
         credit.userId(),
@@ -56,8 +54,7 @@ public class CreditTransaction {
         clock.now());
   }
 
-  public static CreditTransaction spend(
-      Credit credit, Clock clock) {
+  public static CreditTransaction spend(Credit credit, Clock clock) {
     return new CreditTransaction(
         UUID.randomUUID(),
         credit.userId(),

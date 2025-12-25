@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.dto;
 
-import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -38,7 +37,8 @@ public record RecentRecipesResponse(
       @JsonProperty("created_at") LocalDateTime createdAt,
       @JsonProperty("video_seconds") Integer videoSeconds,
       @JsonProperty("tags") List<Tag> tags,
-      @JsonProperty("recipe_status") String recipeStatus) {
+      @JsonProperty("recipe_status") String recipeStatus,
+      @JsonProperty("credit_cost") Long creditCost) {
     public static RecentRecipeResponse from(RecipeHistoryOverview info) {
       return new RecentRecipeResponse(
           info.getViewedAt(),
@@ -52,13 +52,14 @@ public record RecentRecipesResponse(
           info.getServings(),
           info.getRecipeCreatedAt(),
           info.getVideoSeconds(),
-          info.getTags() != null ? info.getTags().stream().map(Tag::new).toList() : null,
-          info.getRecipeStatus().name());
+          info.getTags() != null ? info.getTags().stream().map(Tag::from).toList() : null,
+          info.getRecipeStatus().name(),
+          info.getCreditCost());
     }
 
     private record Tag(@JsonProperty("name") String name) {
-      public static Tag from(RecipeTag tag) {
-        return new Tag(tag.getTag());
+      public static Tag from(String tag) {
+        return new Tag(tag);
       }
     }
   }

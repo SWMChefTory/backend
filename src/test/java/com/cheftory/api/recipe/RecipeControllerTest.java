@@ -199,6 +199,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn("레시피 설명").when(recentRecipe).getDescription();
           doReturn(2).when(recentRecipe).getServings();
           doReturn(30).when(recentRecipe).getCookTime();
+          doReturn(4L).when(recentRecipe).getCreditCost();
           doReturn(LocalDateTime.of(2024, 1, 14, 10, 30, 0))
               .when(recentRecipe)
               .getRecipeCreatedAt();
@@ -251,6 +252,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("recent_recipes[].created_at").description("레시피 생성 일시"),
                               fieldWithPath("recent_recipes[].tags").description("태그 목록"),
                               fieldWithPath("recent_recipes[].tags[].name").description("태그 이름"),
+                              fieldWithPath("recent_recipes[].credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -277,6 +280,7 @@ public class RecipeControllerTest extends RestDocsTest {
               .isEqualTo("2024-01-15T10:30:00");
           assertThat(responseBody.getInt("recent_recipes[0].last_play_seconds")).isEqualTo(120);
           assertThat(responseBody.getInt("recent_recipes[0].video_seconds")).isEqualTo(120);
+          assertThat(responseBody.getLong("recent_recipes[0].credit_cost")).isEqualTo(4L);
           assertThat(responseBody.getString("current_page")).isEqualTo("0");
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
@@ -378,6 +382,7 @@ public class RecipeControllerTest extends RestDocsTest {
           viewStatus = mock(RecipeHistory.class);
 
           doReturn(RecipeStatus.SUCCESS).when(recipeInfo).getRecipeStatus();
+          doReturn(5L).when(recipeInfo).getCreditCost();
           doReturn(recipeInfo).when(fullRecipe).getRecipe();
 
           doReturn("sample_video_id").when(youtubeMeta).getVideoId();
@@ -515,7 +520,9 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("recipe_tags").description("레시피 태그 목록"),
                               fieldWithPath("recipe_tags[].name").description("태그 이름"),
                               fieldWithPath("recipe_briefings").description("레시피 브리핑 목록"),
-                              fieldWithPath("recipe_briefings[].content").description("브리핑 내용"))));
+                              fieldWithPath("recipe_briefings[].content").description("브리핑 내용"),
+                              fieldWithPath("recipe_credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"))));
 
           verify(recipeFacade).viewFullRecipe(recipeId, userId);
 
@@ -562,6 +569,7 @@ public class RecipeControllerTest extends RestDocsTest {
               .isEqualTo(RecipeProgressDetail.FINISHED.name());
           assertThat(responseBody.getString("recipe_briefings[0].content"))
               .isEqualTo("이 요리는 맛있습니다");
+          assertThat(responseBody.getLong("recipe_credit_cost")).isEqualTo(5L);
         }
       }
     }
@@ -659,6 +667,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn("맛있는 레시피입니다").when(recipeOverview).getDescription();
           doReturn(2).when(recipeOverview).getServings();
           doReturn(30).when(recipeOverview).getCookTime();
+          doReturn(7L).when(recipeOverview).getCreditCost();
 
           doReturn(recipeOverview)
               .when(recipeFacade)
@@ -697,7 +706,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("video_url").description("레시피 비디오 URL"),
                               fieldWithPath("video_type").description("비디오 타입 (NORMAL 또는 SHORTS)"),
                               fieldWithPath("video_thumbnail_url").description("레시피 비디오 썸네일 URL"),
-                              fieldWithPath("video_seconds").description("레시피 비디오 재생 시간"))));
+                              fieldWithPath("video_seconds").description("레시피 비디오 재생 시간"),
+                              fieldWithPath("credit_cost").description("레시피 조회에 필요한 크레딧 비용"))));
 
           verify(recipeFacade).getRecipeOverview(recipeId, userId);
 
@@ -718,6 +728,7 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("video_thumbnail_url"))
               .isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getInt("video_seconds")).isEqualTo(180);
+          assertThat(responseBody.getLong("credit_cost")).isEqualTo(7L);
         }
       }
     }
@@ -762,6 +773,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn("맛있는 레시피입니다").when(recipeOverview).getDescription();
           doReturn(2).when(recipeOverview).getServings();
           doReturn(30).when(recipeOverview).getCookTime();
+          doReturn(7L).when(recipeOverview).getCreditCost();
 
           doReturn(recipeOverview)
               .when(recipeFacade)
@@ -884,6 +896,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn("맛있는 레시피입니다").when(recipeOverview).getDescription();
           doReturn(2).when(recipeOverview).getServings();
           doReturn(30).when(recipeOverview).getCookTime();
+          doReturn(9L).when(recipeOverview).getCreditCost();
 
           recipes = new PageImpl<>(List.of(recipeOverview), pageable, 1);
           doReturn(recipes)
@@ -942,6 +955,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("recommend_recipes[].video_seconds")
                                   .description("레시피 비디오 재생 시간"),
+                              fieldWithPath("recommend_recipes[].credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -977,6 +992,7 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("recommend_recipes[0].video_thumbnail_url"))
               .isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getInt("recommend_recipes[0].video_seconds")).isEqualTo(180);
+          assertThat(responseBody.getLong("recommend_recipes[0].credit_cost")).isEqualTo(9L);
           assertThat(responseBody.getString("current_page")).isEqualTo("0");
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
@@ -1276,6 +1292,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn("Categorized Recipe Description").when(categorizedRecipe).getDescription();
           doReturn(2).when(categorizedRecipe).getServings();
           doReturn(30).when(categorizedRecipe).getCookTime();
+          doReturn(6L).when(categorizedRecipe).getCreditCost();
           doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0))
               .when(categorizedRecipe)
               .getRecipeCreatedAt();
@@ -1342,6 +1359,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("categorized_recipes[].tags").description("레시피 태그 목록"),
                               fieldWithPath("categorized_recipes[].tags[].name")
                                   .description("태그 이름"),
+                              fieldWithPath("categorized_recipes[].credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -1370,6 +1389,7 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("categorized_recipes[0].created_at"))
               .isEqualTo("2024-01-20T14:30:00");
           assertThat(responseBody.getString("categorized_recipes[0].tags[0].name")).isEqualTo("한식");
+          assertThat(responseBody.getLong("categorized_recipes[0].credit_cost")).isEqualTo(6L);
         }
 
         @Test
@@ -1391,6 +1411,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(null).when(nullDetailMetaRecipe).getDescription();
           doReturn(null).when(nullDetailMetaRecipe).getServings();
           doReturn(null).when(nullDetailMetaRecipe).getCookTime();
+          doReturn(6L).when(nullDetailMetaRecipe).getCreditCost();
           doReturn(null).when(nullDetailMetaRecipe).getRecipeCreatedAt();
           doReturn(tags).when(nullDetailMetaRecipe).getTags();
 
@@ -1453,6 +1474,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("categorized_recipes[].tags").description("레시피 태그 목록"),
                               fieldWithPath("categorized_recipes[].tags[].name")
                                   .description("태그 이름"),
+                              fieldWithPath("categorized_recipes[].credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -1520,6 +1543,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("categorized_recipes[].created_at")
                                   .description("레시피 생성 시간 (nullable)"),
                               fieldWithPath("categorized_recipes[].tags").description("레시피 태그 목록"),
+                              fieldWithPath("categorized_recipes[].credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -1641,6 +1666,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn("Uncategorized Recipe Description").when(unCategorizedRecipe).getDescription();
           doReturn(2).when(unCategorizedRecipe).getServings();
           doReturn(30).when(unCategorizedRecipe).getCookTime();
+          doReturn(8L).when(unCategorizedRecipe).getCreditCost();
           doReturn(LocalDateTime.of(2024, 1, 20, 14, 30, 0))
               .when(unCategorizedRecipe)
               .getRecipeCreatedAt();
@@ -1703,6 +1729,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 태그 목록"),
                               fieldWithPath("unCategorized_recipes[].tags[].name")
                                   .description("태그 이름"),
+                              fieldWithPath("unCategorized_recipes[].credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -1732,6 +1760,7 @@ public class RecipeControllerTest extends RestDocsTest {
               .isEqualTo("2024-01-20T14:30:00");
           assertThat(responseBody.getString("unCategorized_recipes[0].tags[0].name"))
               .isEqualTo("한식");
+          assertThat(responseBody.getLong("unCategorized_recipes[0].credit_cost")).isEqualTo(8L);
         }
 
         @Test
@@ -1752,6 +1781,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(null).when(nullDetailMetaRecipe).getDescription();
           doReturn(null).when(nullDetailMetaRecipe).getServings();
           doReturn(null).when(nullDetailMetaRecipe).getCookTime();
+          doReturn(8L).when(nullDetailMetaRecipe).getCreditCost();
           doReturn(null).when(nullDetailMetaRecipe).getRecipeCreatedAt();
           doReturn(tags).when(nullDetailMetaRecipe).getTags();
 
@@ -1813,6 +1843,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 태그 목록"),
                               fieldWithPath("unCategorized_recipes[].tags[].name")
                                   .description("태그 이름"),
+                              fieldWithPath("unCategorized_recipes[].credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -1879,6 +1911,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 생성 시간 (nullable)"),
                               fieldWithPath("unCategorized_recipes[].tags")
                                   .description("레시피 태그 목록"),
+                              fieldWithPath("unCategorized_recipes[].credit_cost")
+                                  .description("레시피 조회에 필요한 크레딧 비용"),
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
@@ -3036,6 +3070,7 @@ public class RecipeControllerTest extends RestDocsTest {
         doReturn("맛있는 한식 레시피입니다").when(recipeOverview1).getDescription();
         doReturn(2).when(recipeOverview1).getServings();
         doReturn(30).when(recipeOverview1).getCookTime();
+        doReturn(11L).when(recipeOverview1).getCreditCost();
 
         var recipes = List.of(recipeOverview1);
         var page = new PageImpl<>(recipes, Pageable.ofSize(20), 1);
@@ -3081,6 +3116,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                 .description("레시피 비디오 썸네일 URL"),
                             fieldWithPath("cuisine_recipes[].video_seconds")
                                 .description("레시피 비디오 재생 시간"),
+                            fieldWithPath("cuisine_recipes[].credit_cost")
+                                .description("레시피 조회에 필요한 크레딧 비용"),
                             fieldWithPath("current_page").description("현재 페이지 번호"),
                             fieldWithPath("total_pages").description("전체 페이지 수"),
                             fieldWithPath("total_elements").description("전체 요소 수"),
@@ -3107,6 +3144,7 @@ public class RecipeControllerTest extends RestDocsTest {
         assertThat(responseBody.getString("cuisine_recipes[0].video_thumbnail_url"))
             .isEqualTo("https://example.com/korean1.jpg");
         assertThat(responseBody.getInt("cuisine_recipes[0].video_seconds")).isEqualTo(180);
+        assertThat(responseBody.getLong("cuisine_recipes[0].credit_cost")).isEqualTo(11L);
       }
     }
 
