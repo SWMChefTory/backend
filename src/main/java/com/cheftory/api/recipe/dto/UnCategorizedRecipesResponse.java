@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.dto;
 
-import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -37,7 +36,8 @@ public record UnCategorizedRecipesResponse(
       @JsonProperty("cook_time") Integer cookTime,
       @JsonProperty("servings") Integer servings,
       @JsonProperty("created_at") LocalDateTime createdAt,
-      @JsonProperty("tags") List<Tag> tags) {
+      @JsonProperty("tags") List<Tag> tags,
+      @JsonProperty("credit_cost") Long creditCost) {
     public static UnCategorizedRecipe from(RecipeHistoryOverview info) {
       return new UnCategorizedRecipe(
           info.getViewedAt(),
@@ -51,13 +51,14 @@ public record UnCategorizedRecipesResponse(
           info.getCookTime(),
           info.getServings(),
           info.getRecipeCreatedAt(),
-          info.getTags() != null ? info.getTags().stream().map(Tag::new).toList() : null);
+          info.getTags() != null ? info.getTags().stream().map(Tag::from).toList() : null,
+          info.getCreditCost());
     }
   }
 
   private record Tag(@JsonProperty("name") String name) {
-    public static Tag from(RecipeTag tag) {
-      return new Tag(tag.getTag());
+    public static Tag from(String tag) {
+      return new Tag(tag);
     }
   }
 }

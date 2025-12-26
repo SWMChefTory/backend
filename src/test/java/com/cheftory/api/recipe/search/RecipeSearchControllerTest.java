@@ -138,6 +138,7 @@ public class RecipeSearchControllerTest extends RestDocsTest {
           doReturn("얼큰한 김치찌개 레시피").when(recipeOverview).getDescription();
           doReturn(2).when(recipeOverview).getServings();
           doReturn(30).when(recipeOverview).getCookTime();
+          doReturn(7L).when(recipeOverview).getCreditCost();
           doReturn(List.of("한식", "찌개")).when(recipeOverview).getTags();
           doReturn(true).when(recipeOverview).getIsViewed();
 
@@ -203,7 +204,9 @@ public class RecipeSearchControllerTest extends RestDocsTest {
                           fieldWithPath("current_page").description("현재 페이지 번호"),
                           fieldWithPath("total_pages").description("전체 페이지 수"),
                           fieldWithPath("total_elements").description("전체 요소 수"),
-                          fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                          fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                          fieldWithPath("searched_recipes[].credit_cost")
+                              .description("레시피 크레딧 비용"))));
 
           verify(recipeSearchFacade).searchRecipes(page, query, userId);
 
@@ -230,6 +233,7 @@ public class RecipeSearchControllerTest extends RestDocsTest {
               .isEqualTo("https://example.com/kimchi_thumbnail.jpg");
           assertThat(responseBody.getInt("searched_recipes[0].video_seconds")).isEqualTo(300);
           assertThat(responseBody.getBoolean("searched_recipes[0].is_viewed")).isEqualTo(true);
+          assertThat(responseBody.getLong("searched_recipes[0].credit_cost")).isEqualTo(7L);
           assertThat(responseBody.getString("current_page")).isEqualTo("0");
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");

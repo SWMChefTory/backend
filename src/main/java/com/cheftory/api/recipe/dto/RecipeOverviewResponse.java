@@ -17,7 +17,8 @@ public record RecipeOverviewResponse(
     @JsonProperty("video_url") String videoUrl,
     @JsonProperty("video_type") String videoType,
     @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
-    @JsonProperty("video_seconds") Integer videoSeconds) {
+    @JsonProperty("video_seconds") Integer videoSeconds,
+    @JsonProperty("credit_cost") Long creditCost) {
 
   public static RecipeOverviewResponse of(RecipeOverview recipe) {
     return new RecipeOverviewResponse(
@@ -33,7 +34,8 @@ public record RecipeOverviewResponse(
         recipe.getVideoUri().toString(),
         recipe.getVideoType().name(),
         recipe.getThumbnailUrl(),
-        recipe.getVideoSeconds());
+        recipe.getVideoSeconds(),
+        recipe.getCreditCost());
   }
 
   private record Tag(@JsonProperty("name") String name) {}

@@ -45,6 +45,8 @@ public class RecipeHistoryOverview {
 
   private List<String> tags;
 
+  private Long creditCost;
+
   public static RecipeHistoryOverview of(
       RecipeInfo recipe,
       RecipeHistory recipeHistory,
@@ -70,6 +72,7 @@ public class RecipeHistoryOverview {
         detailMeta == null ? null : detailMeta.getDescription(),
         detailMeta == null ? null : detailMeta.getServings(),
         detailMeta == null ? null : detailMeta.getCookTime(),
-        tags == null ? List.of() : tags.stream().map(RecipeTag::getTag).toList());
+        tags == null ? List.of() : tags.stream().map(RecipeTag::getTag).toList(),
+        recipe.getCreditCost());
   }
 }

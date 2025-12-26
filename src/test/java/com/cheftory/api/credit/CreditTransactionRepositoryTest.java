@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cheftory.api.DbContextTest;
-import com.cheftory.api._common.region.Market;
 import com.cheftory.api.credit.entity.CreditReason;
 import com.cheftory.api.credit.entity.CreditTransaction;
 import com.cheftory.api.credit.entity.CreditTransactionType;
