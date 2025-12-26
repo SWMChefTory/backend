@@ -18,6 +18,9 @@ spring:
           batch_size: 50
         order_updates: true
 
+  messages:
+    encoding: UTF-8
+
   data:
     redis:
       host: ${REDIS_HOST}
