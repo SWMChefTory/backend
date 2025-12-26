@@ -299,7 +299,7 @@ public class RecipeFacade {
   }
 
   public Page<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, Integer page) {
-    Page<RecipeInfo> recipesPage = recipeInfoService.getCuisines(type.getKoreanName(), page);
+    Page<RecipeInfo> recipesPage = recipeInfoService.getCuisines(type, page);
 
     List<RecipeOverview> content = makeOverviews(recipesPage.getContent(), userId);
     return new PageImpl<>(content, recipesPage.getPageable(), recipesPage.getTotalElements());

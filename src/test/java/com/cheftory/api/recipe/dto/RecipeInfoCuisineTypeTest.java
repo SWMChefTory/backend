@@ -22,7 +22,6 @@ class RecipeInfoCuisineTypeTest {
       RecipeCuisineType result = RecipeCuisineType.fromString("KOREAN");
 
       assertThat(result).isEqualTo(RecipeCuisineType.KOREAN);
-      assertThat(result.getKoreanName()).isEqualTo("한식");
     }
 
     @Test
@@ -31,7 +30,6 @@ class RecipeInfoCuisineTypeTest {
       RecipeCuisineType result = RecipeCuisineType.fromString("korean");
 
       assertThat(result).isEqualTo(RecipeCuisineType.KOREAN);
-      assertThat(result.getKoreanName()).isEqualTo("한식");
     }
 
     @Test
@@ -40,7 +38,6 @@ class RecipeInfoCuisineTypeTest {
       RecipeCuisineType result = RecipeCuisineType.fromString("KoReAn");
 
       assertThat(result).isEqualTo(RecipeCuisineType.KOREAN);
-      assertThat(result.getKoreanName()).isEqualTo("한식");
     }
 
     @Test
@@ -80,30 +77,28 @@ class RecipeInfoCuisineTypeTest {
     }
 
     @Test
-    @DisplayName("공백이 포함된 문자열은 예외를 던진다")
-    void shouldThrowExceptionForStringWithSpaces() {
-      assertThatThrownBy(() -> RecipeCuisineType.fromString("KOREAN "))
-          .isInstanceOf(RecipeException.class)
-          .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.INVALID_CUISINE_TYPE);
+    @DisplayName("공백이 포함된 문자열은 정상적으로 변환된다")
+    void shouldConvertStringWithSpaces() {
+      assertThat(RecipeCuisineType.fromString("KOREAN ")).isEqualTo(RecipeCuisineType.KOREAN);
     }
   }
 
   @Nested
-  @DisplayName("getKoreanName 메서드")
-  class GetKoreanNameMethod {
+  @DisplayName("messageKey 메서드")
+  class MessageKeyMethod {
 
     @Test
-    @DisplayName("각 타입의 한국어 이름을 반환한다")
-    void shouldReturnKoreanNameForEachType() {
-      assertThat(RecipeCuisineType.KOREAN.getKoreanName()).isEqualTo("한식");
-      assertThat(RecipeCuisineType.SNACK.getKoreanName()).isEqualTo("분식");
-      assertThat(RecipeCuisineType.CHINESE.getKoreanName()).isEqualTo("중식");
-      assertThat(RecipeCuisineType.JAPANESE.getKoreanName()).isEqualTo("일식");
-      assertThat(RecipeCuisineType.WESTERN.getKoreanName()).isEqualTo("양식");
-      assertThat(RecipeCuisineType.DESSERT.getKoreanName()).isEqualTo("디저트");
-      assertThat(RecipeCuisineType.HEALTHY.getKoreanName()).isEqualTo("건강식");
-      assertThat(RecipeCuisineType.BABY.getKoreanName()).isEqualTo("유아식");
-      assertThat(RecipeCuisineType.SIMPLE.getKoreanName()).isEqualTo("간편식");
+    @DisplayName("각 타입의 메시지 키를 반환한다")
+    void shouldReturnMessageKeyForEachType() {
+      assertThat(RecipeCuisineType.KOREAN.messageKey()).isEqualTo("recipe.cuisine.korean");
+      assertThat(RecipeCuisineType.SNACK.messageKey()).isEqualTo("recipe.cuisine.snack");
+      assertThat(RecipeCuisineType.CHINESE.messageKey()).isEqualTo("recipe.cuisine.chinese");
+      assertThat(RecipeCuisineType.JAPANESE.messageKey()).isEqualTo("recipe.cuisine.japanese");
+      assertThat(RecipeCuisineType.WESTERN.messageKey()).isEqualTo("recipe.cuisine.western");
+      assertThat(RecipeCuisineType.DESSERT.messageKey()).isEqualTo("recipe.cuisine.dessert");
+      assertThat(RecipeCuisineType.HEALTHY.messageKey()).isEqualTo("recipe.cuisine.healthy");
+      assertThat(RecipeCuisineType.BABY.messageKey()).isEqualTo("recipe.cuisine.baby");
+      assertThat(RecipeCuisineType.SIMPLE.messageKey()).isEqualTo("recipe.cuisine.simple");
     }
   }
 }
