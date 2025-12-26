@@ -6,10 +6,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.I18nTranslator;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
+import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeSort;
 import com.cheftory.api.recipe.util.RecipePageRequest;
@@ -27,12 +29,14 @@ class RecipeInfoServiceTest {
   private RecipeInfoService service;
   private RecipeInfoRepository recipeInfoRepository;
   private Clock clock;
+  private I18nTranslator i18nTranslator;
 
   @BeforeEach
   void setUp() {
     recipeInfoRepository = mock(RecipeInfoRepository.class);
     clock = mock(Clock.class);
-    service = new RecipeInfoService(recipeInfoRepository, clock);
+    i18nTranslator = mock(I18nTranslator.class);
+    service = new RecipeInfoService(recipeInfoRepository, clock, i18nTranslator);
   }
 
   @Nested
@@ -750,12 +754,14 @@ class RecipeInfoServiceTest {
   class GetCuisines {
 
     private Integer page;
-    private String cuisineType;
+    private RecipeCuisineType cuisineType;
+    private String cuisineName;
 
     @BeforeEach
     void init() {
       page = 0;
-      cuisineType = "KOREAN";
+      cuisineType = RecipeCuisineType.KOREAN;
+      cuisineName = "Korean";
     }
 
     @Nested
@@ -771,7 +777,8 @@ class RecipeInfoServiceTest {
         expectedPage = new PageImpl<>(recipeInfos);
         pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
 
-        when(recipeInfoRepository.findCuisineRecipes(cuisineType, RecipeStatus.SUCCESS, pageable))
+        when(i18nTranslator.translate(cuisineType.messageKey())).thenReturn(cuisineName);
+        when(recipeInfoRepository.findCuisineRecipes(cuisineName, RecipeStatus.SUCCESS, pageable))
             .thenReturn(expectedPage);
       }
 
@@ -786,7 +793,7 @@ class RecipeInfoServiceTest {
 
           assertThat(result).isEqualTo(expectedPage);
           verify(recipeInfoRepository)
-              .findCuisineRecipes(eq(cuisineType), eq(RecipeStatus.SUCCESS), any(Pageable.class));
+              .findCuisineRecipes(eq(cuisineName), eq(RecipeStatus.SUCCESS), any(Pageable.class));
         }
       }
     }
@@ -800,12 +807,14 @@ class RecipeInfoServiceTest {
 
       @BeforeEach
       void setUp() {
-        cuisineType = "CHINESE";
+        cuisineType = RecipeCuisineType.CHINESE;
+        cuisineName = "Chinese";
         List<RecipeInfo> recipeInfos = List.of(mock(RecipeInfo.class));
         expectedPage = new PageImpl<>(recipeInfos);
         pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
 
-        when(recipeInfoRepository.findCuisineRecipes(cuisineType, RecipeStatus.SUCCESS, pageable))
+        when(i18nTranslator.translate(cuisineType.messageKey())).thenReturn(cuisineName);
+        when(recipeInfoRepository.findCuisineRecipes(cuisineName, RecipeStatus.SUCCESS, pageable))
             .thenReturn(expectedPage);
       }
 
@@ -821,7 +830,7 @@ class RecipeInfoServiceTest {
           assertThat(result).isEqualTo(expectedPage);
           assertThat(result.getContent()).hasSize(1);
           verify(recipeInfoRepository)
-              .findCuisineRecipes(eq(cuisineType), eq(RecipeStatus.SUCCESS), any(Pageable.class));
+              .findCuisineRecipes(eq(cuisineName), eq(RecipeStatus.SUCCESS), any(Pageable.class));
         }
       }
     }

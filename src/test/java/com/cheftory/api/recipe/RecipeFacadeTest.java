@@ -413,9 +413,7 @@ class RecipeFacadeTest {
       RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
       Page<RecipeInfo> recipesPage = new PageImpl<>(List.of(recipeInfo));
 
-      doReturn(recipesPage)
-          .when(recipeInfoService)
-          .getCuisines(RecipeCuisineType.KOREAN.getKoreanName(), page);
+      doReturn(recipesPage).when(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, page);
 
       doReturn(List.of(mockYoutubeMeta(recipeId)))
           .when(recipeYoutubeMetaService)
@@ -429,7 +427,7 @@ class RecipeFacadeTest {
       Page<RecipeOverview> result = sut.getCuisineRecipes(RecipeCuisineType.KOREAN, userId, page);
 
       assertThat(result.getContent()).hasSize(1);
-      verify(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN.getKoreanName(), page);
+      verify(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, page);
     }
   }
 

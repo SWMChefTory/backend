@@ -6,25 +6,23 @@ import lombok.Getter;
 
 @Getter
 public enum RecipeCuisineType {
-  KOREAN("한식"),
-  SNACK("분식"),
-  CHINESE("중식"),
-  JAPANESE("일식"),
-  WESTERN("양식"),
-  DESSERT("디저트"),
-  HEALTHY("건강식"),
-  BABY("유아식"),
-  SIMPLE("간편식");
+  KOREAN,
+  SNACK,
+  CHINESE,
+  JAPANESE,
+  WESTERN,
+  DESSERT,
+  HEALTHY,
+  BABY,
+  SIMPLE;
 
-  private final String koreanName;
-
-  RecipeCuisineType(String koreanName) {
-    this.koreanName = koreanName;
+  public String messageKey() {
+    return "recipe.cuisine." + name().toLowerCase();
   }
 
   public static RecipeCuisineType fromString(String type) {
     try {
-      return RecipeCuisineType.valueOf(type.toUpperCase());
+      return valueOf(type.trim().toUpperCase());
     } catch (Exception e) {
       throw new RecipeException(RecipeErrorCode.INVALID_CUISINE_TYPE);
     }

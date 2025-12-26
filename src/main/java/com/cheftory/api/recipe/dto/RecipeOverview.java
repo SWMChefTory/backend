@@ -37,6 +37,7 @@ public class RecipeOverview {
   private List<String> tags;
 
   private Boolean isViewed;
+  private Long creditCost;
 
   public static RecipeOverview of(
       RecipeInfo recipe,
@@ -61,6 +62,7 @@ public class RecipeOverview {
         detailMeta == null ? null : detailMeta.getServings(),
         detailMeta == null ? null : detailMeta.getCookTime(),
         tags.stream().map(RecipeTag::getTag).toList(),
-        isViewed);
+        isViewed,
+        recipe.getCreditCost());
   }
 }

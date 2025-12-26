@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.entity.CreditUserBalance;
 import java.time.LocalDateTime;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.springframework.dao.DataIntegrityViolationException;
 
 @DisplayName("CreditTxService")

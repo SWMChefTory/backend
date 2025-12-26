@@ -1,7 +1,6 @@
 package com.cheftory.api.credit;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.entity.CreditTransaction;
 import com.cheftory.api.credit.entity.CreditUserBalance;
@@ -24,9 +23,7 @@ public class CreditTxService {
     CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
     if (alreadyProcessed(
-        () ->
-            transactionRepository.save(
-                CreditTransaction.grant(credit, clock)),
+        () -> transactionRepository.save(CreditTransaction.grant(credit, clock)),
         credit.idempotencyKey())) {
       return;
     }
@@ -40,9 +37,7 @@ public class CreditTxService {
     CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
     if (alreadyProcessed(
-        () ->
-            transactionRepository.save(
-                CreditTransaction.spend(credit, clock)),
+        () -> transactionRepository.save(CreditTransaction.spend(credit, clock)),
         credit.idempotencyKey())) {
       return;
     }

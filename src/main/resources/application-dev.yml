@@ -22,7 +22,8 @@ spring:
         jdbc:
           batch_size: 50
         order_updates: true
-
+  messages:
+    encoding: UTF-8
   batch:
     job:
       enabled: true
