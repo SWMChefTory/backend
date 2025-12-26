@@ -1,10 +1,12 @@
 package com.cheftory.api.recipe.content.info;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.I18nTranslator;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
+import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeSort;
 import com.cheftory.api.recipe.util.RecipePageRequest;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 public class RecipeInfoService {
   private final RecipeInfoRepository recipeInfoRepository;
   private final Clock clock;
+  private final I18nTranslator i18nTranslator;
 
   public RecipeInfo getSuccess(UUID recipeId) {
 
@@ -126,8 +129,9 @@ public class RecipeInfoService {
         .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
   }
 
-  public Page<RecipeInfo> getCuisines(String type, Integer page) {
+  public Page<RecipeInfo> getCuisines(RecipeCuisineType type, Integer page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-    return recipeInfoRepository.findCuisineRecipes(type, RecipeStatus.SUCCESS, pageable);
+    String cuisine = i18nTranslator.translate(type.messageKey());
+    return recipeInfoRepository.findCuisineRecipes(cuisine, RecipeStatus.SUCCESS, pageable);
   }
 }
