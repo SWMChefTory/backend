@@ -26,5 +26,4 @@ public class I18nTranslator {
       default -> Locale.ENGLISH;
     };
   }
-
 }
