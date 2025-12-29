@@ -43,7 +43,8 @@ spring:
       initialize-schema: always
 
 youtube:
-  api-token: test
+  api-token-default: test1
+  api-token-block-check: test2
 
 opensearch:
   host: test

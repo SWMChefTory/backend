@@ -20,8 +20,12 @@ public class VideoInfoClient {
 
   private final WebClient webClient;
 
-  @Value("${youtube.api-token}")
-  private String youtubeKey;
+
+  @Value("${youtube.api-token-default}")
+  private String youtubeDefaultKey;
+
+  @Value("${youtube.api-token-block-check}")
+  private String youtubeBlockCheckKey;
 
   public VideoInfoClient(@Qualifier("youtubeClient") WebClient webClient) {
     this.webClient = webClient;
@@ -39,7 +43,7 @@ public class VideoInfoClient {
                       uriBuilder
                           .path("/videos")
                           .queryParam("id", videoId)
-                          .queryParam("key", youtubeKey)
+                          .queryParam("key", youtubeDefaultKey)
                           .queryParam("part", "snippet,contentDetails,status")
                           .build())
               .retrieve()
@@ -106,7 +110,7 @@ public class VideoInfoClient {
                           .queryParam("part", "snippet")
                           .queryParam("playlistId", shortsPlaylistId)
                           .queryParam("videoId", videoId)
-                          .queryParam("key", youtubeKey)
+                          .queryParam("key", youtubeDefaultKey)
                           .build())
               .retrieve()
               .bodyToMono(YoutubePlaylistResponse.class)
@@ -135,7 +139,7 @@ public class VideoInfoClient {
                       uriBuilder
                           .path("/videos")
                           .queryParam("id", videoId)
-                          .queryParam("key", youtubeKey)
+                          .queryParam("key", youtubeBlockCheckKey)
                           .queryParam("part", "status")
                           .build())
               .retrieve()

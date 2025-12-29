@@ -30,7 +30,8 @@ public class VideoInfoClientTest {
 
   private MockWebServer mockWebServer;
   private VideoInfoClient videoInfoClient;
-  private static final String YOUTUBE_API_KEY = "test-api-key";
+  private static final String YOUTUBE_API_DEFAULT_KEY = "test-api-default-key";
+  private static final String YOUTUBE_API_BLOCK_CHECK_KEY = "test-api-block-check-key";
 
   @BeforeEach
   void setUp() throws IOException {
@@ -40,7 +41,9 @@ public class VideoInfoClientTest {
     WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 
     videoInfoClient = new VideoInfoClient(webClient);
-    ReflectionTestUtils.setField(videoInfoClient, "youtubeKey", YOUTUBE_API_KEY);
+    ReflectionTestUtils.setField(videoInfoClient, "youtubeDefaultKey", YOUTUBE_API_DEFAULT_KEY);
+    ReflectionTestUtils.setField(
+        videoInfoClient, "youtubeBlockCheckKey", YOUTUBE_API_BLOCK_CHECK_KEY);
   }
 
   @AfterEach
@@ -143,7 +146,7 @@ public class VideoInfoClientTest {
           assertThat(recordedRequest.getPath())
               .contains("/videos")
               .contains("id=" + videoId)
-              .contains("key=" + YOUTUBE_API_KEY)
+              .contains("key=" + YOUTUBE_API_DEFAULT_KEY)
               .contains("part=snippet,contentDetails");
         }
       }
