@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record YoutubeVideoResponse(List<Item> items) {
+
   public String getThumbnailUri() {
     return items.getFirst().snippet().thumbnails().maxres().url();
   }
@@ -25,13 +26,18 @@ public record YoutubeVideoResponse(List<Item> items) {
     return items.getFirst().snippet().channelId();
   }
 
+  public String getChannelTitle() {
+    return items.getFirst().snippet().channelTitle();
+  }
+
   public Boolean getEmbeddable() {
     return items.stream().findFirst().map(Item::status).map(Status::embeddable).orElse(null);
   }
 
   public record Item(Snippet snippet, ContentDetails contentDetails, Status status) {}
 
-  public record Snippet(String title, String channelId, Thumbnails thumbnails) {}
+  public record Snippet(
+      String title, String channelId, String channelTitle, Thumbnails thumbnails) {}
 
   public record Thumbnails(
       @JsonProperty("default") ThumbnailInfo defaultThumbnail,

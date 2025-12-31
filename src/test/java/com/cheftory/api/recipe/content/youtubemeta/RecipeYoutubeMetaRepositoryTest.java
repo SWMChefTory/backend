@@ -68,6 +68,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
           recipeId = UUID.randomUUID();
           doReturn(youtubeThumbnailUrl).when(youtubeVideoInfo).getThumbnailUrl();
           doReturn(title).when(youtubeVideoInfo).getTitle();
+          doReturn("백종원 채널").when(youtubeVideoInfo).getChannelTitle();
           doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
           doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
           doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo).getVideoType();
@@ -117,6 +118,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
       youtubeVideoInfo = mock(YoutubeVideoInfo.class);
       doReturn(youtubeThumbnailUrl).when(youtubeVideoInfo).getThumbnailUrl();
       doReturn(title).when(youtubeVideoInfo).getTitle();
+      doReturn("백종원 채널").when(youtubeVideoInfo).getChannelTitle();
       doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
       doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
       doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo).getVideoType();
@@ -213,6 +215,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
       youtubeVideoInfo1 = mock(YoutubeVideoInfo.class);
       doReturn(youtubeThumbnailUrl1).when(youtubeVideoInfo1).getThumbnailUrl();
       doReturn(title1).when(youtubeVideoInfo1).getTitle();
+      doReturn("요리 채널1").when(youtubeVideoInfo1).getChannelTitle();
       doReturn(videoSeconds1).when(youtubeVideoInfo1).getVideoSeconds();
       doReturn(youtubeUri1.toUri()).when(youtubeVideoInfo1).getVideoUri();
       doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo1).getVideoType();
@@ -220,6 +223,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
       youtubeVideoInfo2 = mock(YoutubeVideoInfo.class);
       doReturn(youtubeThumbnailUrl2).when(youtubeVideoInfo2).getThumbnailUrl();
       doReturn(title2).when(youtubeVideoInfo2).getTitle();
+      doReturn("요리 채널2").when(youtubeVideoInfo2).getChannelTitle();
       doReturn(videoSeconds2).when(youtubeVideoInfo2).getVideoSeconds();
       doReturn(youtubeUri2.toUri()).when(youtubeVideoInfo2).getVideoUri();
       doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo2).getVideoType();

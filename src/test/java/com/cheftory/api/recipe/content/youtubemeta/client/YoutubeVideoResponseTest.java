@@ -13,7 +13,7 @@ class YoutubeVideoResponseTest {
   @DisplayName("getTitle()은 첫 번째 item의 title을 반환한다")
   void getTitleReturnsFirstItemTitle() {
     YoutubeVideoResponse.Snippet snippet =
-        new YoutubeVideoResponse.Snippet("김치찌개 만들기", "UCabcd", null);
+        new YoutubeVideoResponse.Snippet("김치찌개 만들기", "UCabcd", "채널명", null);
     YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
     YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null, status);
     YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
@@ -27,7 +27,7 @@ class YoutubeVideoResponseTest {
   @DisplayName("getChannelId()는 첫 번째 item의 channelId를 반환한다")
   void getChannelIdReturnsFirstItemChannelId() {
     YoutubeVideoResponse.Snippet snippet =
-        new YoutubeVideoResponse.Snippet("테스트 영상", "UCtest123", null);
+        new YoutubeVideoResponse.Snippet("테스트 영상", "UCtest123", "테스트 채널", null);
     YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
     YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null, status);
     YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
@@ -46,7 +46,7 @@ class YoutubeVideoResponseTest {
     YoutubeVideoResponse.Thumbnails thumbnails =
         new YoutubeVideoResponse.Thumbnails(null, null, null, maxres);
     YoutubeVideoResponse.Snippet snippet =
-        new YoutubeVideoResponse.Snippet("영상", "UCabc", thumbnails);
+        new YoutubeVideoResponse.Snippet("영상", "UCabc", "채널", thumbnails);
     YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
     YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null, status);
     YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
@@ -61,7 +61,8 @@ class YoutubeVideoResponseTest {
   void getSecondsDurationConvertsIso8601ToSeconds() {
     YoutubeVideoResponse.ContentDetails contentDetails =
         new YoutubeVideoResponse.ContentDetails("PT10M30S");
-    YoutubeVideoResponse.Snippet snippet = new YoutubeVideoResponse.Snippet("영상", "UCabc", null);
+    YoutubeVideoResponse.Snippet snippet =
+        new YoutubeVideoResponse.Snippet("영상", "UCabc", "채널", null);
     YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
     YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, contentDetails, status);
     YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));

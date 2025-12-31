@@ -268,6 +268,7 @@ class RecipeCreationFacadeTest {
     return YoutubeVideoInfo.from(
         youtubeUri,
         "테스트 요리 영상",
+        "테스트 채널",
         URI.create("https://img.youtube.com/vi/" + videoId + "/maxresdefault.jpg"),
         300,
         YoutubeMetaType.NORMAL);

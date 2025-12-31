@@ -81,6 +81,7 @@ public class VideoInfoClientTest {
                   {
                     "snippet": {
                       "title": "맛있는 김치찌개 만들기",
+                      "channelTitle": "맛있는 집밥 채널",
                       "thumbnails": {
                         "default": {
                           "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg",
@@ -135,6 +136,7 @@ public class VideoInfoClientTest {
           assertThat(result).isNotNull();
           assertThat(result.getVideoUri()).isEqualTo(youtubeUri.getNormalizedUrl());
           assertThat(result.getTitle()).isEqualTo("맛있는 김치찌개 만들기");
+          assertThat(result.getChannelTitle()).isEqualTo("맛있는 집밥 채널");
           assertThat(result.getThumbnailUrl())
               .isEqualTo(URI.create("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"));
           assertThat(result.getVideoSeconds()).isEqualTo(630);
@@ -147,7 +149,7 @@ public class VideoInfoClientTest {
               .contains("/videos")
               .contains("id=" + videoId)
               .contains("key=" + YOUTUBE_API_DEFAULT_KEY)
-              .contains("part=snippet,contentDetails");
+              .contains("part=snippet,contentDetails,status");
         }
       }
 

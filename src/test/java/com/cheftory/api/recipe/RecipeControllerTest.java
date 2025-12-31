@@ -168,9 +168,6 @@ public class RecipeControllerTest extends RestDocsTest {
 
         private Page<RecipeHistoryOverview> recentRecipes;
         private RecipeHistoryOverview recentRecipe;
-        private RecipeInfo recipeInfo;
-        private RecipeYoutubeMeta meta;
-        private RecipeHistory viewStatus;
         private UUID recipeId;
         private Integer page;
         private Pageable pageable;
@@ -179,9 +176,6 @@ public class RecipeControllerTest extends RestDocsTest {
         void setUp() {
           recipeId = UUID.randomUUID();
           recentRecipe = mock(RecipeHistoryOverview.class);
-          recipeInfo = mock(RecipeInfo.class);
-          meta = mock(RecipeYoutubeMeta.class);
-          viewStatus = mock(RecipeHistory.class);
           page = 0;
           pageable = Pageable.ofSize(10);
 
@@ -189,6 +183,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(120).when(recentRecipe).getLastPlaySeconds();
           doReturn(recipeId).when(recentRecipe).getRecipeId();
           doReturn("Sample Recipe Title").when(recentRecipe).getVideoTitle();
+          doReturn("Sample Channel").when(recentRecipe).getChannelTitle();
           doReturn(URI.create("https://example.com/thumbnail.jpg"))
               .when(recentRecipe)
               .getThumbnailUrl();
@@ -242,6 +237,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("recent_recipes[].video_id").description("레시피 비디오 ID"),
                               fieldWithPath("recent_recipes[].recipe_title")
                                   .description("레시피 비디오 제목"),
+                              fieldWithPath("recent_recipes[].channel_title")
+                                  .description("레시피 채널명"),
                               fieldWithPath("recent_recipes[].video_thumbnail_url")
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("recent_recipes[].video_seconds")
@@ -274,6 +271,8 @@ public class RecipeControllerTest extends RestDocsTest {
               .isEqualTo("sample_video_id");
           assertThat(responseBody.getString("recent_recipes[0].recipe_title"))
               .isEqualTo("Sample Recipe Title");
+          assertThat(responseBody.getString("recent_recipes[0].channel_title"))
+              .isEqualTo("Sample Channel");
           assertThat(responseBody.getString("recent_recipes[0].video_thumbnail_url"))
               .isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getString("recent_recipes[0].viewed_at"))
@@ -387,6 +386,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
           doReturn("sample_video_id").when(youtubeMeta).getVideoId();
           doReturn("Sample Recipe Title").when(youtubeMeta).getTitle();
+          doReturn("Sample Channel").when(youtubeMeta).getChannelTitle();
           doReturn(URI.create("https://example.com/thumbnail.jpg"))
               .when(youtubeMeta)
               .getThumbnailUrl();
@@ -468,6 +468,7 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("video_info").description("레시피 비디오 정보"),
                               fieldWithPath("video_info.video_id").description("레시피 비디오 ID"),
                               fieldWithPath("video_info.video_title").description("레시피 비디오 제목"),
+                              fieldWithPath("video_info.channel_title").description("레시피 채널명"),
                               fieldWithPath("video_info.video_thumbnail_url")
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("video_info.video_seconds")
@@ -533,6 +534,8 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("video_info.video_id")).isEqualTo("sample_video_id");
           assertThat(responseBody.getString("video_info.video_title"))
               .isEqualTo("Sample Recipe Title");
+          assertThat(responseBody.getString("video_info.channel_title"))
+              .isEqualTo("Sample Channel");
           assertThat(responseBody.getString("video_info.video_thumbnail_url"))
               .isEqualTo("https://example.com/thumbnail.jpg");
           assertThat(responseBody.getInt("video_info.video_seconds")).isEqualTo(120);
@@ -654,6 +657,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
           doReturn(recipeId).when(recipeOverview).getRecipeId();
           doReturn("Sample Recipe Title").when(recipeOverview).getVideoTitle();
+          doReturn("Sample Channel").when(recipeOverview).getChannelTitle();
           doReturn(URI.create("https://example.com/thumbnail.jpg"))
               .when(recipeOverview)
               .getThumbnailUrl();
@@ -702,6 +706,7 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("servings").description("인분"),
                               fieldWithPath("cooking_time").description("조리 시간(분)"),
                               fieldWithPath("video_id").description("레시피 비디오 ID"),
+                              fieldWithPath("channel_title").description("레시피 채널명"),
                               fieldWithPath("count").description("레시피 조회 수"),
                               fieldWithPath("video_url").description("레시피 비디오 URL"),
                               fieldWithPath("video_type").description("비디오 타입 (NORMAL 또는 SHORTS)"),
@@ -722,6 +727,7 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("servings")).isEqualTo(2);
           assertThat(responseBody.getInt("cooking_time")).isEqualTo(30);
           assertThat(responseBody.getString("video_id")).isEqualTo("sample_video_id");
+          assertThat(responseBody.getString("channel_title")).isEqualTo("Sample Channel");
           assertThat(responseBody.getInt("count")).isEqualTo(100);
           assertThat(responseBody.getString("video_url")).isEqualTo("https://example.com/video");
           assertThat(responseBody.getString("video_type")).isEqualTo("NORMAL");
@@ -760,6 +766,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
           doReturn(recipeId).when(recipeOverview).getRecipeId();
           doReturn("Sample Recipe Title").when(recipeOverview).getVideoTitle();
+          doReturn("Sample Channel").when(recipeOverview).getChannelTitle();
           doReturn(URI.create("https://example.com/thumbnail.jpg"))
               .when(recipeOverview)
               .getThumbnailUrl();
@@ -883,6 +890,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
           doReturn(recipeId).when(recipeOverview).getRecipeId();
           doReturn("Sample Recipe Title").when(recipeOverview).getVideoTitle();
+          doReturn("Sample Channel").when(recipeOverview).getChannelTitle();
           doReturn(URI.create("https://example.com/thumbnail.jpg"))
               .when(recipeOverview)
               .getThumbnailUrl();
@@ -946,6 +954,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("조리 시간(분)"),
                               fieldWithPath("recommend_recipes[].video_id")
                                   .description("레시피 비디오 ID"),
+                              fieldWithPath("recommend_recipes[].channel_title")
+                                  .description("레시피 채널명"),
                               fieldWithPath("recommend_recipes[].count").description("레시피 조회 수"),
                               fieldWithPath("recommend_recipes[].video_url")
                                   .description("레시피 비디오 URL"),
@@ -985,6 +995,8 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("recommend_recipes[0].cooking_time")).isEqualTo(30);
           assertThat(responseBody.getString("recommend_recipes[0].video_id"))
               .isEqualTo("sample_video_id");
+          assertThat(responseBody.getString("recommend_recipes[0].channel_title"))
+              .isEqualTo("Sample Channel");
           assertThat(responseBody.getInt("recommend_recipes[0].count")).isEqualTo(100);
           assertThat(responseBody.getString("recommend_recipes[0].video_url"))
               .isEqualTo("https://example.com/video");
@@ -1186,6 +1198,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         doReturn(recipeId).when(recipeOverview).getRecipeId();
         doReturn("30초 요리 팁").when(recipeOverview).getVideoTitle();
+        doReturn("쇼츠 채널").when(recipeOverview).getChannelTitle();
         doReturn(URI.create("https://example.com/shorts/thumbnail.jpg"))
             .when(recipeOverview)
             .getThumbnailUrl();
@@ -1283,6 +1296,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(90).when(categorizedRecipe).getLastPlaySeconds();
           doReturn(recipeId).when(categorizedRecipe).getRecipeId();
           doReturn("Categorized Recipe Title").when(categorizedRecipe).getVideoTitle();
+          doReturn("Categorized Channel").when(categorizedRecipe).getChannelTitle();
           doReturn(URI.create("https://example.com/categorized_thumbnail.jpg"))
               .when(categorizedRecipe)
               .getThumbnailUrl();
@@ -1345,6 +1359,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("categorized_recipes[].video_id")
                                   .description("레시피 비디오 ID"),
+                              fieldWithPath("categorized_recipes[].channel_title")
+                                  .description("레시피 채널명"),
                               fieldWithPath("categorized_recipes[].video_seconds")
                                   .description("레시피 비디오 재생 시간"),
                               fieldWithPath("categorized_recipes[].category_id")
@@ -1374,6 +1390,8 @@ public class RecipeControllerTest extends RestDocsTest {
               .isEqualTo("Categorized Recipe Title");
           assertThat(responseBody.getString("categorized_recipes[0].video_id"))
               .isEqualTo("categorized_video_id");
+          assertThat(responseBody.getString("categorized_recipes[0].channel_title"))
+              .isEqualTo("Categorized Channel");
           assertThat(responseBody.getString("categorized_recipes[0].video_thumbnail_url"))
               .isEqualTo("https://example.com/categorized_thumbnail.jpg");
           assertThat(responseBody.getInt("categorized_recipes[0].video_seconds")).isEqualTo(180);
@@ -1402,6 +1420,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(90).when(nullDetailMetaRecipe).getLastPlaySeconds();
           doReturn(recipeId).when(nullDetailMetaRecipe).getRecipeId();
           doReturn("Categorized Recipe Title").when(nullDetailMetaRecipe).getVideoTitle();
+          doReturn("Categorized Channel").when(nullDetailMetaRecipe).getChannelTitle();
           doReturn(URI.create("https://example.com/categorized_thumbnail.jpg"))
               .when(nullDetailMetaRecipe)
               .getThumbnailUrl();
@@ -1459,6 +1478,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("categorized_recipes[].video_id")
                                   .description("레시피 비디오 ID"),
+                              fieldWithPath("categorized_recipes[].channel_title")
+                                  .description("레시피 채널명"),
                               fieldWithPath("categorized_recipes[].video_seconds")
                                   .description("레시피 비디오 재생 시간"),
                               fieldWithPath("categorized_recipes[].category_id")
@@ -1530,6 +1551,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("categorized_recipes[].video_id")
                                   .description("레시피 비디오 ID"),
+                              fieldWithPath("categorized_recipes[].channel_title")
+                                  .description("레시피 채널명"),
                               fieldWithPath("categorized_recipes[].video_seconds")
                                   .description("레시피 비디오 재생 시간"),
                               fieldWithPath("categorized_recipes[].category_id")
@@ -1658,6 +1681,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(150).when(unCategorizedRecipe).getLastPlaySeconds();
           doReturn(recipeId).when(unCategorizedRecipe).getRecipeId();
           doReturn("Uncategorized Recipe Title").when(unCategorizedRecipe).getVideoTitle();
+          doReturn("Uncategorized Channel").when(unCategorizedRecipe).getChannelTitle();
           doReturn(URI.create("https://example.com/uncategorized_thumbnail.jpg"))
               .when(unCategorizedRecipe)
               .getThumbnailUrl();
@@ -1715,6 +1739,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("unCategorized_recipes[].video_id")
                                   .description("레시피 비디오 ID"),
+                              fieldWithPath("unCategorized_recipes[].channel_title")
+                                  .description("레시피 채널명"),
                               fieldWithPath("unCategorized_recipes[].video_seconds")
                                   .description("레시피 비디오 재생 시간"),
                               fieldWithPath("unCategorized_recipes[].description")
@@ -1745,6 +1771,8 @@ public class RecipeControllerTest extends RestDocsTest {
               .isEqualTo("Uncategorized Recipe Title");
           assertThat(responseBody.getString("unCategorized_recipes[0].video_id"))
               .isEqualTo("uncategorized_video_id");
+          assertThat(responseBody.getString("unCategorized_recipes[0].channel_title"))
+              .isEqualTo("Uncategorized Channel");
           assertThat(responseBody.getString("unCategorized_recipes[0].video_thumbnail_url"))
               .isEqualTo("https://example.com/uncategorized_thumbnail.jpg");
           assertThat(responseBody.getInt("unCategorized_recipes[0].video_seconds")).isEqualTo(240);
@@ -1773,6 +1801,7 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(150).when(nullDetailMetaRecipe).getLastPlaySeconds();
           doReturn(recipeId).when(nullDetailMetaRecipe).getRecipeId();
           doReturn("Uncategorized Recipe Title").when(nullDetailMetaRecipe).getVideoTitle();
+          doReturn("Uncategorized Channel").when(nullDetailMetaRecipe).getChannelTitle();
           doReturn(URI.create("https://example.com/uncategorized_thumbnail.jpg"))
               .when(nullDetailMetaRecipe)
               .getThumbnailUrl();
@@ -1829,6 +1858,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("unCategorized_recipes[].video_id")
                                   .description("레시피 비디오 ID"),
+                              fieldWithPath("unCategorized_recipes[].channel_title")
+                                  .description("레시피 채널명"),
                               fieldWithPath("unCategorized_recipes[].video_seconds")
                                   .description("레시피 비디오 재생 시간"),
                               fieldWithPath("unCategorized_recipes[].description")
@@ -1899,6 +1930,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   .description("레시피 비디오 썸네일 URL"),
                               fieldWithPath("unCategorized_recipes[].video_id")
                                   .description("레시피 비디오 ID"),
+                              fieldWithPath("unCategorized_recipes[].channel_title")
+                                  .description("레시피 채널명"),
                               fieldWithPath("unCategorized_recipes[].video_seconds")
                                   .description("레시피 비디오 재생 시간"),
                               fieldWithPath("unCategorized_recipes[].description")
@@ -2825,6 +2858,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         doReturn(recipeId1).when(recipeOverview1).getRecipeId();
         doReturn("트렌딩 레시피 1").when(recipeOverview1).getVideoTitle();
+        doReturn("트렌딩 채널 1").when(recipeOverview1).getChannelTitle();
         doReturn(URI.create("https://example.com/thumb1.jpg"))
             .when(recipeOverview1)
             .getThumbnailUrl();
@@ -2841,6 +2875,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         doReturn(recipeId2).when(recipeOverview2).getRecipeId();
         doReturn("트렌딩 레시피 2").when(recipeOverview2).getVideoTitle();
+        doReturn("트렌딩 채널 2").when(recipeOverview2).getChannelTitle();
         doReturn(URI.create("https://example.com/thumb2.jpg"))
             .when(recipeOverview2)
             .getThumbnailUrl();
@@ -2875,6 +2910,7 @@ public class RecipeControllerTest extends RestDocsTest {
             .body(
                 "recommend_recipes[0].video_thumbnail_url",
                 equalTo("https://example.com/thumb1.jpg"))
+            .body("recommend_recipes[0].channel_title", equalTo("트렌딩 채널 1"))
             .body("recommend_recipes[0].video_id", equalTo("video1"))
             .body("recommend_recipes[0].count", equalTo(1000))
             .body("recommend_recipes[0].video_url", equalTo("https://youtube.com/watch?v=1"))
@@ -2886,6 +2922,7 @@ public class RecipeControllerTest extends RestDocsTest {
             .body(
                 "recommend_recipes[1].video_thumbnail_url",
                 equalTo("https://example.com/thumb2.jpg"))
+            .body("recommend_recipes[1].channel_title", equalTo("트렌딩 채널 2"))
             .body("recommend_recipes[1].video_id", equalTo("video2"))
             .body("recommend_recipes[1].count", equalTo(2000))
             .body("recommend_recipes[1].video_url", equalTo("https://youtube.com/watch?v=2"))
@@ -2931,6 +2968,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         doReturn(recipeId1).when(recipeOverview1).getRecipeId();
         doReturn("셰프 레시피 1").when(recipeOverview1).getVideoTitle();
+        doReturn("셰프 채널 1").when(recipeOverview1).getChannelTitle();
         doReturn(URI.create("https://example.com/chef1.jpg"))
             .when(recipeOverview1)
             .getThumbnailUrl();
@@ -2949,6 +2987,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         doReturn(recipeId2).when(recipeOverview2).getRecipeId();
         doReturn("셰프 레시피 2").when(recipeOverview2).getVideoTitle();
+        doReturn("셰프 채널 2").when(recipeOverview2).getChannelTitle();
         doReturn(URI.create("https://example.com/chef2.jpg"))
             .when(recipeOverview2)
             .getThumbnailUrl();
@@ -2984,6 +3023,7 @@ public class RecipeControllerTest extends RestDocsTest {
             .body(
                 "recommend_recipes[0].video_thumbnail_url",
                 equalTo("https://example.com/chef1.jpg"))
+            .body("recommend_recipes[0].channel_title", equalTo("셰프 채널 1"))
             .body("recommend_recipes[0].video_id", equalTo("chef1"))
             .body("recommend_recipes[0].count", equalTo(5000))
             .body("recommend_recipes[0].video_url", equalTo("https://youtube.com/watch?v=chef1"))
@@ -2995,6 +3035,7 @@ public class RecipeControllerTest extends RestDocsTest {
             .body(
                 "recommend_recipes[1].video_thumbnail_url",
                 equalTo("https://example.com/chef2.jpg"))
+            .body("recommend_recipes[1].channel_title", equalTo("셰프 채널 2"))
             .body("recommend_recipes[1].video_id", equalTo("chef2"))
             .body("recommend_recipes[1].count", equalTo(8000))
             .body("recommend_recipes[1].video_url", equalTo("https://youtube.com/watch?v=chef2"))
@@ -3055,6 +3096,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         doReturn(recipeId1).when(recipeOverview1).getRecipeId();
         doReturn("한식 레시피 1").when(recipeOverview1).getVideoTitle();
+        doReturn("한식 채널").when(recipeOverview1).getChannelTitle();
         doReturn(URI.create("https://example.com/korean1.jpg"))
             .when(recipeOverview1)
             .getThumbnailUrl();
@@ -3108,6 +3150,7 @@ public class RecipeControllerTest extends RestDocsTest {
                             fieldWithPath("cuisine_recipes[].servings").description("인분"),
                             fieldWithPath("cuisine_recipes[].cooking_time").description("조리 시간(분)"),
                             fieldWithPath("cuisine_recipes[].video_id").description("레시피 비디오 ID"),
+                            fieldWithPath("cuisine_recipes[].channel_title").description("레시피 채널명"),
                             fieldWithPath("cuisine_recipes[].count").description("레시피 조회 수"),
                             fieldWithPath("cuisine_recipes[].video_url").description("레시피 비디오 URL"),
                             fieldWithPath("cuisine_recipes[].video_type")
@@ -3137,6 +3180,7 @@ public class RecipeControllerTest extends RestDocsTest {
         assertThat(responseBody.getInt("cuisine_recipes[0].servings")).isEqualTo(2);
         assertThat(responseBody.getInt("cuisine_recipes[0].cooking_time")).isEqualTo(30);
         assertThat(responseBody.getString("cuisine_recipes[0].video_id")).isEqualTo("korean1");
+        assertThat(responseBody.getString("cuisine_recipes[0].channel_title")).isEqualTo("한식 채널");
         assertThat(responseBody.getInt("cuisine_recipes[0].count")).isEqualTo(1000);
         assertThat(responseBody.getString("cuisine_recipes[0].video_url"))
             .isEqualTo("https://youtube.com/watch?v=korean1");
