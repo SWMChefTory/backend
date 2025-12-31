@@ -20,7 +20,6 @@ public class VideoInfoClient {
 
   private final WebClient webClient;
 
-
   @Value("${youtube.api-token-default}")
   private String youtubeDefaultKey;
 
