@@ -63,7 +63,8 @@ logging:
     org.springframework.web.servlet.DispatcherServlet: DEBUG
 
 youtube:
-  api-token: ${YOUTUBE_API_KEY}
+  api-token-default: ${YOUTUBE_API_TOKEN_DEFAULT}
+  api-token-block-check: ${YOUTUBE_API_TOKEN_BLOCK_CHECK}
 
 ai-recipe-summary:
   url: http://${AI_RECIPE_SUMMARY_HOST}:${AI_RECIPE_SUMMARY_PORT}
