@@ -25,20 +25,18 @@ public class RecipeHistoryOverview {
   private LocalDateTime recipeCreatedAt;
   private LocalDateTime recipeUpdatedAt;
 
-  // RecipeHistory fields
   private LocalDateTime viewedAt;
   private Integer lastPlaySeconds;
   private UUID recipeCategoryId;
 
-  // RecipeYoutubeMeta fields
   private String videoTitle;
+  private String channelTitle;
   private String videoId;
   private URI videoUri;
   private URI thumbnailUrl;
   private Integer videoSeconds;
   private YoutubeMetaType videoType;
 
-  // RecipeDetailMeta fields
   private String description;
   private Integer servings;
   private Integer cookTime;
@@ -64,6 +62,7 @@ public class RecipeHistoryOverview {
         recipeHistory.getLastPlaySeconds(),
         recipeHistory.getRecipeCategoryId(),
         youtubeMeta.getTitle(),
+        youtubeMeta.getChannelTitle(),
         youtubeMeta.getVideoId(),
         youtubeMeta.getVideoUri(),
         youtubeMeta.getThumbnailUrl(),

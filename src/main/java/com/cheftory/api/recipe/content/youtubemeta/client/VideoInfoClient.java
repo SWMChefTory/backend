@@ -82,6 +82,7 @@ public class VideoInfoClient {
       return YoutubeVideoInfo.from(
           youtubeUri,
           youtubeVideoResponse.getTitle(),
+          youtubeVideoResponse.getChannelTitle(),
           URI.create(youtubeVideoResponse.getThumbnailUri()),
           duration.intValue(),
           metaType);

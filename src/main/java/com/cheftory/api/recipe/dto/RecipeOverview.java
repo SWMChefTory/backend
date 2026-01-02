@@ -24,6 +24,7 @@ public class RecipeOverview {
   private LocalDateTime recipeUpdatedAt;
 
   private String videoTitle;
+  private String channelTitle;
   private String videoId;
   private URI videoUri;
   private URI thumbnailUrl;
@@ -53,6 +54,7 @@ public class RecipeOverview {
         recipe.getCreatedAt(),
         recipe.getUpdatedAt(),
         youtubeMeta.getTitle(),
+        youtubeMeta.getChannelTitle(),
         youtubeMeta.getVideoId(),
         youtubeMeta.getVideoUri(),
         youtubeMeta.getThumbnailUrl(),

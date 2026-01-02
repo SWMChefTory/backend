@@ -55,6 +55,7 @@ public class RecipeYoutubeMetaTest {
         recipeId = UUID.randomUUID();
         doReturn(videoUri).when(youtubeVideoInfo).getVideoUri();
         doReturn(title).when(youtubeVideoInfo).getTitle();
+        doReturn("Sample Channel").when(youtubeVideoInfo).getChannelTitle();
         doReturn(URI.create(thumbnailUrl)).when(youtubeVideoInfo).getThumbnailUrl();
         doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
         doReturn(now).when(clock).now();
@@ -158,6 +159,7 @@ public class RecipeYoutubeMetaTest {
         recipeId = UUID.randomUUID();
         doReturn(videoUri).when(youtubeVideoInfo).getVideoUri();
         doReturn(title).when(youtubeVideoInfo).getTitle();
+        doReturn("Sample Channel").when(youtubeVideoInfo).getChannelTitle();
         doReturn(URI.create(thumbnailUrl)).when(youtubeVideoInfo).getThumbnailUrl();
         doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
         doReturn(now).when(clock).now();
@@ -214,6 +216,7 @@ public class RecipeYoutubeMetaTest {
         recipeId = UUID.randomUUID();
         doReturn(videoUri).when(youtubeVideoInfo).getVideoUri();
         doReturn(title).when(youtubeVideoInfo).getTitle();
+        doReturn("Sample Channel").when(youtubeVideoInfo).getChannelTitle();
         doReturn(URI.create(thumbnailUrl)).when(youtubeVideoInfo).getThumbnailUrl();
         doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
         doReturn(now).when(clock).now();
@@ -279,6 +282,7 @@ public class RecipeYoutubeMetaTest {
       YoutubeVideoInfo videoInfo = mock(YoutubeVideoInfo.class);
       doReturn(videoUri).when(videoInfo).getVideoUri();
       doReturn("Normal Video").when(videoInfo).getTitle();
+      doReturn("Sample Channel").when(videoInfo).getChannelTitle();
       doReturn(URI.create("https://img.youtube.com/vi/testid/default.jpg"))
           .when(videoInfo)
           .getThumbnailUrl();
@@ -296,6 +300,7 @@ public class RecipeYoutubeMetaTest {
       YoutubeVideoInfo videoInfo = mock(YoutubeVideoInfo.class);
       doReturn(videoUri).when(videoInfo).getVideoUri();
       doReturn("Shorts Video").when(videoInfo).getTitle();
+      doReturn("Sample Channel").when(videoInfo).getChannelTitle();
       doReturn(URI.create("https://img.youtube.com/vi/testid/default.jpg"))
           .when(videoInfo)
           .getThumbnailUrl();

@@ -30,6 +30,9 @@ public class RecipeYoutubeMeta extends MarketScope {
   private String title;
 
   @Column(nullable = false)
+  private String channelTitle;
+
+  @Column(nullable = false)
   private URI thumbnailUrl;
 
   @Column(nullable = false)
@@ -61,6 +64,7 @@ public class RecipeYoutubeMeta extends MarketScope {
         UUID.randomUUID(),
         youtubeVideoInfo.getVideoUri(),
         youtubeVideoInfo.getTitle(),
+        youtubeVideoInfo.getChannelTitle(),
         youtubeVideoInfo.getThumbnailUrl(),
         youtubeVideoInfo.getVideoSeconds(),
         now,
