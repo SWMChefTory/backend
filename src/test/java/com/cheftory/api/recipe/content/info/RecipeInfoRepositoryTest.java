@@ -1302,6 +1302,7 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
         .getVideoUri();
     doReturn(videoId).when(videoInfo).getVideoId();
     doReturn("Test Video").when(videoInfo).getTitle();
+    doReturn("Test Channel").when(videoInfo).getChannelTitle();
     doReturn(URI.create("https://img.youtube.com/vi/" + videoId + "/default.jpg"))
         .when(videoInfo)
         .getThumbnailUrl();

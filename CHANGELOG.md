@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.8] - 2026-01-02
+
+### Added
+- **유튜브 채널명 노출**: 유튜브 영상 메타데이터에 채널명 추가 및 레시피/영상 관련 API 응답 확장
+
+### Changed
+- **유튜브 API 토큰 분리**: 기본 요청과 차단 체크용 토큰을 분리하여 설정/배포 구성 반영
+
+### Removed
+- **Dev 배포 워크플로우**: `deploy.dev.yml` 워크플로우 제거
+
+---
+
 ## [1.1.7] - 2025-12-29
 
 ### Added
@@ -130,4 +143,3 @@ git push origin v1.0.0
 ## Version History
 
 - **1.0.0** (2025-12-29): Initial production release
-

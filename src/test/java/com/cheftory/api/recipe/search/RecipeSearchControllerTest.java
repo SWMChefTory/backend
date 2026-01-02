@@ -125,6 +125,7 @@ public class RecipeSearchControllerTest extends RestDocsTest {
           // RecipeOverview mock 설정
           doReturn(recipeId).when(recipeOverview).getRecipeId();
           doReturn("김치찌개 맛있게 끓이는 법").when(recipeOverview).getVideoTitle();
+          doReturn("김치찌개 채널").when(recipeOverview).getChannelTitle();
           doReturn(URI.create("https://example.com/kimchi_thumbnail.jpg"))
               .when(recipeOverview)
               .getThumbnailUrl();
@@ -192,6 +193,7 @@ public class RecipeSearchControllerTest extends RestDocsTest {
                           fieldWithPath("searched_recipes[].servings").description("인분"),
                           fieldWithPath("searched_recipes[].cooking_time").description("조리 시간(분)"),
                           fieldWithPath("searched_recipes[].video_id").description("레시피 비디오 ID"),
+                          fieldWithPath("searched_recipes[].channel_title").description("레시피 채널명"),
                           fieldWithPath("searched_recipes[].count").description("레시피 조회 수"),
                           fieldWithPath("searched_recipes[].video_url").description("레시피 비디오 URL"),
                           fieldWithPath("searched_recipes[].video_type")
@@ -225,6 +227,8 @@ public class RecipeSearchControllerTest extends RestDocsTest {
           assertThat(responseBody.getInt("searched_recipes[0].cooking_time")).isEqualTo(30);
           assertThat(responseBody.getString("searched_recipes[0].video_id"))
               .isEqualTo("kimchi_video_id");
+          assertThat(responseBody.getString("searched_recipes[0].channel_title"))
+              .isEqualTo("김치찌개 채널");
           assertThat(responseBody.getInt("searched_recipes[0].count")).isEqualTo(500);
           assertThat(responseBody.getString("searched_recipes[0].video_url"))
               .isEqualTo("https://youtube.com/watch?v=kimchi_video_id");

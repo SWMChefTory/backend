@@ -381,6 +381,7 @@ class RecipeInfoValidationBatchConfigTest {
     doReturn(URI.create(videoUrl)).when(videoInfo).getVideoUri();
     doReturn(videoId).when(videoInfo).getVideoId();
     doReturn("Test Video Title").when(videoInfo).getTitle();
+    doReturn("Test Channel").when(videoInfo).getChannelTitle();
     doReturn(URI.create("https://img.youtube.com/vi/" + videoId + "/default.jpg"))
         .when(videoInfo)
         .getThumbnailUrl();
@@ -396,6 +397,7 @@ class RecipeInfoValidationBatchConfigTest {
     doReturn(URI.create(videoUrl)).when(videoInfo).getVideoUri();
     doReturn(videoId).when(videoInfo).getVideoId();
     doReturn("Blocked Video Title").when(videoInfo).getTitle();
+    doReturn("Test Channel").when(videoInfo).getChannelTitle();
     doReturn(URI.create("https://img.youtube.com/vi/" + videoId + "/default.jpg"))
         .when(videoInfo)
         .getThumbnailUrl();

@@ -30,7 +30,8 @@ public class VideoInfoClientTest {
 
   private MockWebServer mockWebServer;
   private VideoInfoClient videoInfoClient;
-  private static final String YOUTUBE_API_KEY = "test-api-key";
+  private static final String YOUTUBE_API_DEFAULT_KEY = "test-api-default-key";
+  private static final String YOUTUBE_API_BLOCK_CHECK_KEY = "test-api-block-check-key";
 
   @BeforeEach
   void setUp() throws IOException {
@@ -40,7 +41,9 @@ public class VideoInfoClientTest {
     WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 
     videoInfoClient = new VideoInfoClient(webClient);
-    ReflectionTestUtils.setField(videoInfoClient, "youtubeKey", YOUTUBE_API_KEY);
+    ReflectionTestUtils.setField(videoInfoClient, "youtubeDefaultKey", YOUTUBE_API_DEFAULT_KEY);
+    ReflectionTestUtils.setField(
+        videoInfoClient, "youtubeBlockCheckKey", YOUTUBE_API_BLOCK_CHECK_KEY);
   }
 
   @AfterEach
@@ -78,6 +81,7 @@ public class VideoInfoClientTest {
                   {
                     "snippet": {
                       "title": "맛있는 김치찌개 만들기",
+                      "channelTitle": "맛있는 집밥 채널",
                       "thumbnails": {
                         "default": {
                           "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg",
@@ -132,6 +136,7 @@ public class VideoInfoClientTest {
           assertThat(result).isNotNull();
           assertThat(result.getVideoUri()).isEqualTo(youtubeUri.getNormalizedUrl());
           assertThat(result.getTitle()).isEqualTo("맛있는 김치찌개 만들기");
+          assertThat(result.getChannelTitle()).isEqualTo("맛있는 집밥 채널");
           assertThat(result.getThumbnailUrl())
               .isEqualTo(URI.create("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"));
           assertThat(result.getVideoSeconds()).isEqualTo(630);
@@ -143,8 +148,8 @@ public class VideoInfoClientTest {
           assertThat(recordedRequest.getPath())
               .contains("/videos")
               .contains("id=" + videoId)
-              .contains("key=" + YOUTUBE_API_KEY)
-              .contains("part=snippet,contentDetails");
+              .contains("key=" + YOUTUBE_API_DEFAULT_KEY)
+              .contains("part=snippet,contentDetails,status");
         }
       }
 
