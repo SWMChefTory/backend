@@ -20,6 +20,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.9] - 2026-01-05
+
+### Added
+
+- **Apple 웹 로그인 지원**: Web Service ID를 통한 Apple Sign In 웹 환경 지원
+  - `AppleProperties`에 `appId` (iOS/Android)와 `serviceId` (Web) 분리
+  - Backward compatibility: 기존 `clientId` 설정만으로도 작동
+
+### Changed
+
+- **AppleTokenVerifier 개선**: Null-safe audience 검증 로직
+  - `Stream.of().filter(Objects::nonNull)` 패턴으로 null 안전성 확보
+  - `Collections.disjoint()` 사용으로 가독성 향상
+  - 명시적인 설정 오류 검증 추가
+
+### Technical
+
+- **환경 변수 추가**: `APPLE_APP_ID`, `APPLE_SERVICE_ID`
+- **배포 설정 업데이트**: GitHub Actions 및 Docker Compose 환경 변수 구성 변경
+
+---
+
 ## [1.1.8] - 2026-01-02
 
 ### Added
