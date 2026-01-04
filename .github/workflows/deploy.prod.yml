@@ -99,7 +99,8 @@ jobs:
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             JWT_REFRESH_TOKEN_EXPIRATION=${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION }}
             JWT_ACCESS_TOKEN_EXPIRATION=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION }}
-            APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
+            APPLE_APP_ID=${{ secrets.APPLE_APP_ID }}
+            APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}
             SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}
             SENTRY_DSN=${{secrets.SENTRY_DSN}}
             OPENSEARCH_HOST=${{ secrets.OPENSEARCH_HOST }}

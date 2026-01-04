@@ -14,6 +14,7 @@ import com.nimbusds.jwt.SignedJWT;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -88,8 +89,18 @@ public class AppleTokenVerifier {
         throw new VerificationException(VerificationErrorCode.APPLE_INVALID_ISSUER);
       }
 
-      if (!claims.getAudience().contains(appleProperties.getClientId())) {
-        log.error("[AppleTokenVerifier] 잘못된 aud: {}", claims.getAudience());
+      // iOS/Android App ID와 Web Service ID 모두 허용
+      List<String> validAudiences = List.of(
+        appleProperties.getAppId(),      // com.cheftory.cheftory (iOS/Android)
+        appleProperties.getServiceId()   // com.cheftory.web (Web)
+      );
+
+      // 토큰의 audience가 유효한 클라이언트 ID 중 하나라도 포함하는지 확인
+      if (claims.getAudience().stream().noneMatch(validAudiences::contains)) {
+        log.error(
+          "[AppleTokenVerifier] 잘못된 aud: {}, 허용된 aud: {}",
+          claims.getAudience(),
+          validAudiences);
         throw new VerificationException(VerificationErrorCode.APPLE_INVALID_AUDIENCE);
       }
 

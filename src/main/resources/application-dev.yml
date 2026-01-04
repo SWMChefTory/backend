@@ -77,7 +77,10 @@ jwt:
   refresh-token-type: ${JWT_REFRESH_TOKEN_TYPE}
 
 apple:
-  client-id: ${APPLE_CLIENT_ID}
+  app-id: ${APPLE_APP_ID}           # iOS/Android용: com.cheftory.cheftory
+  service-id: ${APPLE_SERVICE_ID}   # Web용: com.cheftory.web
+  # Deprecated: backward compatibility - client-id만 있어도 작동
+  # client-id: ${APPLE_CLIENT_ID}
 
 coupang-partners:
   access-key: ${COUPANG_PARTNERS_ACCESS_KEY}
