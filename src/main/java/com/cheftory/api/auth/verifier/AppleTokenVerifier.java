@@ -13,8 +13,12 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.net.URI;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -88,8 +92,26 @@ public class AppleTokenVerifier {
         throw new VerificationException(VerificationErrorCode.APPLE_INVALID_ISSUER);
       }
 
-      if (!claims.getAudience().contains(appleProperties.getClientId())) {
-        log.error("[AppleTokenVerifier] 잘못된 aud: {}", claims.getAudience());
+      // iOS/Android App ID와 Web Service ID 모두 허용 (null-safe)
+      List<String> validAudiences = Stream.of(
+        appleProperties.getAppId(),      // com.cheftory.cheftory (iOS/Android)
+        appleProperties.getServiceId()   // com.cheftory.web (Web)
+      )
+        .filter(Objects::nonNull)  // null 값 필터링
+        .toList();
+
+      // 유효한 audience가 하나도 없으면 설정 오류
+      if (validAudiences.isEmpty()) {
+        log.error("[AppleTokenVerifier] Apple 클라이언트 ID가 설정되지 않았습니다");
+        throw new VerificationException(VerificationErrorCode.APPLE_INVALID_AUDIENCE);
+      }
+
+      // 토큰의 audience와 유효한 클라이언트 ID가 교집합이 없으면 검증 실패
+      if (Collections.disjoint(claims.getAudience(), validAudiences)) {
+        log.error(
+          "[AppleTokenVerifier] 잘못된 aud: {}, 허용된 aud: {}",
+          claims.getAudience(),
+          validAudiences);
         throw new VerificationException(VerificationErrorCode.APPLE_INVALID_AUDIENCE);
       }
 
