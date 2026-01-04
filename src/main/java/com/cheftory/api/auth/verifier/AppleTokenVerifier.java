@@ -13,6 +13,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.net.URI;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -105,8 +106,8 @@ public class AppleTokenVerifier {
         throw new VerificationException(VerificationErrorCode.APPLE_INVALID_AUDIENCE);
       }
 
-      // 토큰의 audience가 유효한 클라이언트 ID 중 하나라도 포함하는지 확인
-      if (claims.getAudience().stream().noneMatch(validAudiences::contains)) {
+      // 토큰의 audience와 유효한 클라이언트 ID가 교집합이 없으면 검증 실패
+      if (Collections.disjoint(claims.getAudience(), validAudiences)) {
         log.error(
           "[AppleTokenVerifier] 잘못된 aud: {}, 허용된 aud: {}",
           claims.getAudience(),
