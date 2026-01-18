@@ -9,6 +9,10 @@ public final class CursorPageable {
   private CursorPageable() {}
 
   public static Pageable firstPage() {
-    return PageRequest.of(0, CURSOR_PAGE_SIZE + 1);
+    return PageRequest.of(0, CURSOR_PAGE_SIZE);
+  }
+
+  public static Pageable probe(Pageable pageable) {
+    return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize() + 1, pageable.getSort());
   }
 }

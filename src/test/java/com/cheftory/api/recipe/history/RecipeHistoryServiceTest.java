@@ -184,32 +184,33 @@ public class RecipeHistoryServiceTest {
     @DisplayName("cursor가 비어 있으면 최근 기록 첫 페이지를 조회한다")
     void shouldGetRecentsFirstPageWithCursor() {
       UUID userId = UUID.randomUUID();
-      UUID recipeId = UUID.randomUUID();
+      UUID id = UUID.randomUUID();
       LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
 
       RecipeHistory history = mock(RecipeHistory.class);
       doReturn(viewedAt).when(history).getViewedAt();
-      doReturn(recipeId).when(history).getId();
+      doReturn(id).when(history).getId();
 
-      List<RecipeHistory> rows =
-          List.of(
-              history, history, history, history, history, history, history, history, history,
-              history, history, history, history, history, history, history, history, history,
-              history, history, history, history);
+      List<RecipeHistory> rows = java.util.Collections.nCopies(21, history);
 
       doReturn(rows)
           .when(repository)
-          .findRecentsFirst(any(UUID.class), any(RecipeHistoryStatus.class), any(Pageable.class));
+          .findRecentsFirst(eq(userId), eq(RecipeHistoryStatus.ACTIVE), any(Pageable.class));
+
       doReturn("next-cursor")
           .when(viewedAtCursorCodec)
-          .encode(new ViewedAtCursor(viewedAt, recipeId));
+          .encode(any(ViewedAtCursor.class));
 
       CursorPage<RecipeHistory> result = service.getRecents(userId, null);
 
-      assertThat(result.items()).hasSize(21);
+      assertThat(result.items()).hasSize(20);
       assertThat(result.nextCursor()).isEqualTo("next-cursor");
+
       verify(repository)
-          .findRecentsFirst(eq(userId), eq(RecipeHistoryStatus.ACTIVE), any(Pageable.class));
+          .findRecentsFirst(
+              eq(userId),
+              eq(RecipeHistoryStatus.ACTIVE),
+              argThat(p -> p.getPageSize() == 21));
     }
 
     @Test
