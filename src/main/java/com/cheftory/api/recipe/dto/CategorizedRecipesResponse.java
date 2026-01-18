@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.dto;
 
+import com.cheftory.api._common.cursor.CursorPage;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -9,20 +10,29 @@ import org.springframework.data.domain.Page;
 
 public record CategorizedRecipesResponse(
     @JsonProperty("categorized_recipes") List<CategorizedRecipe> categorizedRecipes,
-    @JsonProperty("current_page") int currentPage,
-    @JsonProperty("total_pages") int totalPages,
-    @JsonProperty("total_elements") long totalElements,
-    @JsonProperty("has_next") boolean hasNext) {
-  public static CategorizedRecipesResponse from(Page<RecipeHistoryOverview> categorizedRecipes) {
+    @JsonProperty("current_page") Integer currentPage,
+    @JsonProperty("total_pages") Integer totalPages,
+    @JsonProperty("total_elements") Long totalElements,
+    @JsonProperty("has_next") boolean hasNext,
+    @JsonProperty("next_cursor") String nextCursor) {
 
-    List<CategorizedRecipe> responses =
-        categorizedRecipes.stream().map(CategorizedRecipe::from).toList();
+  @Deprecated(forRemoval = true)
+  public static CategorizedRecipesResponse from(Page<RecipeHistoryOverview> page) {
+    List<CategorizedRecipe> responses = page.stream().map(CategorizedRecipe::from).toList();
     return new CategorizedRecipesResponse(
         responses,
-        categorizedRecipes.getNumber(),
-        categorizedRecipes.getTotalPages(),
-        categorizedRecipes.getTotalElements(),
-        categorizedRecipes.hasNext());
+        page.getNumber(),
+        page.getTotalPages(),
+        page.getTotalElements(),
+        page.hasNext(),
+        null);
+  }
+
+  public static CategorizedRecipesResponse from(CursorPage<RecipeHistoryOverview> slice) {
+    List<CategorizedRecipe> responses =
+        slice.items().stream().map(CategorizedRecipe::from).toList();
+    return new CategorizedRecipesResponse(
+        responses, null, null, null, slice.hasNext(), slice.nextCursor());
   }
 
   private record CategorizedRecipe(

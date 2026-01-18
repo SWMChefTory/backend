@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.rank;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -42,5 +43,14 @@ public class RecipeRankRepository {
   public Long count(String key) {
     Long count = redisTemplate.opsForZSet().zCard(key);
     return count != null ? count : 0L;
+  }
+
+  public List<String> findRecipeIdsByRank(String key, int startRank, int count) {
+    long startIndex = Math.max(0, (long) startRank - 1);
+    long endIndex = startIndex + count - 1;
+
+    Set<String> set = redisTemplate.opsForZSet().range(key, startIndex, endIndex);
+    if (set == null || set.isEmpty()) return List.of();
+    return List.copyOf(set);
   }
 }

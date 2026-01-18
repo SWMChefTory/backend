@@ -17,5 +17,6 @@ public interface RecipeYoutubeMetaRepository extends JpaRepository<RecipeYoutube
 
   Optional<RecipeYoutubeMeta> findByRecipeId(UUID recipeId);
 
+  @Deprecated(forRemoval = true)
   Page<RecipeYoutubeMeta> findByStatus(YoutubeMetaStatus status, Pageable pageable);
 }

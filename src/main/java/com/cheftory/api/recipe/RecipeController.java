@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe;
 
 import com.cheftory.api._common.PocOnly;
+import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.recipe.challenge.RecipeCompleteChallenge;
@@ -70,48 +71,75 @@ public class RecipeController {
 
   @GetMapping("/api/v1/recipes/recent")
   public RecentRecipesResponse getRecentInfos(
-      @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistoryOverview> infos = recipeFacade.getRecents(userId, page);
-    return RecentRecipesResponse.from(infos);
+      @UserPrincipal UUID userId,
+      @RequestParam(required = false) @Min(0) Integer page,
+      @RequestParam(required = false) String cursor) {
+    if (page != null) {
+      Page<RecipeHistoryOverview> infos = recipeFacade.getRecents(userId, page);
+      return RecentRecipesResponse.from(infos);
+    }
+
+    return RecentRecipesResponse.from(recipeFacade.getRecents(userId, cursor));
   }
 
   @GetMapping("/api/v1/recipes/recommend")
   @Deprecated
   public RecommendRecipesResponse getRecommendedRecipesDefault(
-      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @RequestParam(required = false) @Min(0) Integer page,
       @RequestParam(defaultValue = "ALL") RecipeInfoVideoQuery query,
-      @UserPrincipal UUID userId) {
-    Page<RecipeOverview> recipes =
-        recipeFacade.getRecommendRecipes(RecipeInfoRecommendType.POPULAR, userId, page, query);
-    return RecommendRecipesResponse.from(recipes);
+      @UserPrincipal UUID userId,
+      @RequestParam(required = false) String cursor) {
+    if (page != null) {
+      return RecommendRecipesResponse.from(
+          recipeFacade.getRecommendRecipes(RecipeInfoRecommendType.POPULAR, userId, page, query));
+    }
+
+    return RecommendRecipesResponse.from(
+        recipeFacade.getRecommendRecipes(RecipeInfoRecommendType.POPULAR, userId, cursor, query));
   }
 
   @GetMapping("/api/v1/recipes/recommend/{type}")
   public RecommendRecipesResponse getRecommendedRecipes(
       @PathVariable String type,
-      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @RequestParam(required = false) @Min(0) Integer page,
       @RequestParam(defaultValue = "ALL") RecipeInfoVideoQuery query,
-      @UserPrincipal UUID userId) {
+      @UserPrincipal UUID userId,
+      @RequestParam(required = false) String cursor) {
     RecipeInfoRecommendType recommendType = RecipeInfoRecommendType.fromString(type);
-    Page<RecipeOverview> recipes =
-        recipeFacade.getRecommendRecipes(recommendType, userId, page, query);
-    return RecommendRecipesResponse.from(recipes);
+
+    if (page != null) {
+      return RecommendRecipesResponse.from(
+          recipeFacade.getRecommendRecipes(recommendType, userId, page, query));
+    }
+
+    return RecommendRecipesResponse.from(
+        recipeFacade.getRecommendRecipes(recommendType, userId, cursor, query));
   }
 
   @GetMapping("/api/v1/recipes/categorized/{recipeCategoryId}")
   public CategorizedRecipesResponse getCategorizedRecipes(
       @PathVariable("recipeCategoryId") UUID categoryId,
       @UserPrincipal UUID userId,
-      @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistoryOverview> infos = recipeFacade.getCategorized(userId, categoryId, page);
-    return CategorizedRecipesResponse.from(infos);
+      @RequestParam(required = false) @Min(0) Integer page,
+      @RequestParam(required = false) String cursor) {
+    if (page != null) {
+      return CategorizedRecipesResponse.from(recipeFacade.getCategorized(userId, categoryId, page));
+    }
+
+    return CategorizedRecipesResponse.from(recipeFacade.getCategorized(userId, categoryId, cursor));
   }
 
   @GetMapping("/api/v1/recipes/uncategorized")
   public UnCategorizedRecipesResponse getUnCategorizedRecipes(
-      @UserPrincipal UUID userId, @RequestParam(defaultValue = "0") @Min(0) Integer page) {
-    Page<RecipeHistoryOverview> infos = recipeFacade.getUnCategorized(userId, page);
-    return UnCategorizedRecipesResponse.from(infos);
+      @UserPrincipal UUID userId,
+      @RequestParam(required = false) @Min(0) Integer page,
+      @RequestParam(required = false) String cursor) {
+    if (page != null) {
+      Page<RecipeHistoryOverview> infos = recipeFacade.getUnCategorized(userId, page);
+      return UnCategorizedRecipesResponse.from(infos);
+    }
+
+    return UnCategorizedRecipesResponse.from(recipeFacade.getUnCategorized(userId, cursor));
   }
 
   @DeleteMapping("/api/v1/recipes/categories/{recipeCategoryId}")
@@ -154,10 +182,18 @@ public class RecipeController {
   @GetMapping("/api/v1/recipes/cuisine/{type}")
   public CuisineRecipesResponse getBrowseRecipes(
       @PathVariable String type,
-      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @RequestParam(required = false) @Min(0) Integer page,
+      @RequestParam(required = false) String cursor,
       @UserPrincipal UUID userId) {
     RecipeCuisineType cuisineType = RecipeCuisineType.fromString(type);
-    Page<RecipeOverview> recipes = recipeFacade.getCuisineRecipes(cuisineType, userId, page);
+
+    if (page != null) {
+      Page<RecipeOverview> recipes = recipeFacade.getCuisineRecipes(cuisineType, userId, page);
+      return CuisineRecipesResponse.from(recipes);
+    }
+
+    CursorPage<RecipeOverview> recipes =
+        recipeFacade.getCuisineRecipes(cuisineType, userId, cursor);
     return CuisineRecipesResponse.from(recipes);
   }
 

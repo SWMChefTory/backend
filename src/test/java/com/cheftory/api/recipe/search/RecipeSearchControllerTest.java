@@ -4,6 +4,7 @@ import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;
 import static com.cheftory.api.utils.RestDocsUtils.requestPreprocessor;
 import static com.cheftory.api.utils.RestDocsUtils.responsePreprocessor;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
@@ -15,6 +16,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
+import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
@@ -182,6 +184,9 @@ public class RecipeSearchControllerTest extends RestDocsTest {
                           parameterWithName("query").description("검색어"),
                           parameterWithName("page")
                               .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                              .optional(),
+                          parameterWithName("cursor")
+                              .description("커서 기반 페이지네이션을 위한 커서 값")
                               .optional()),
                       responseFields(
                           fieldWithPath("searched_recipes").description("검색된 레시피 목록"),
@@ -207,6 +212,7 @@ public class RecipeSearchControllerTest extends RestDocsTest {
                           fieldWithPath("total_pages").description("전체 페이지 수"),
                           fieldWithPath("total_elements").description("전체 요소 수"),
                           fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                          fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"),
                           fieldWithPath("searched_recipes[].credit_cost")
                               .description("레시피 크레딧 비용"))));
 
@@ -242,6 +248,32 @@ public class RecipeSearchControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
           assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
+        }
+
+        @Test
+        @DisplayName("Then - 커서로 검색하면 커서 기반 응답을 반환해야 한다")
+        void thenShouldReturnSearchResultsWithCursor() {
+          String cursor = "cursor-1";
+          String nextCursor = "cursor-2";
+
+          doReturn(CursorPage.of(List.of(recipeOverview), nextCursor))
+              .when(recipeSearchFacade)
+              .searchRecipes(query, userId, cursor);
+
+          given()
+              .contentType(ContentType.JSON)
+              .attribute("userId", userId.toString())
+              .header("Authorization", "Bearer accessToken")
+              .param("query", query)
+              .param("cursor", cursor)
+              .get("/api/v1/recipes/search")
+              .then()
+              .status(HttpStatus.OK)
+              .body("searched_recipes", hasSize(1))
+              .body("has_next", equalTo(true))
+              .body("next_cursor", equalTo(nextCursor));
+
+          verify(recipeSearchFacade).searchRecipes(query, userId, cursor);
         }
       }
     }

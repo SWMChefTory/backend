@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.dto;
 
+import com.cheftory.api._common.cursor.CursorPage;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -9,10 +10,12 @@ import org.springframework.data.domain.Page;
 
 public record RecentRecipesResponse(
     @JsonProperty("recent_recipes") List<RecentRecipeResponse> recentRecipes,
-    @JsonProperty("current_page") int currentPage,
-    @JsonProperty("total_pages") int totalPages,
-    @JsonProperty("total_elements") long totalElements,
-    @JsonProperty("has_next") boolean hasNext) {
+    @JsonProperty("current_page") Integer currentPage,
+    @JsonProperty("total_pages") Integer totalPages,
+    @JsonProperty("total_elements") Long totalElements,
+    @JsonProperty("has_next") boolean hasNext,
+    @JsonProperty("next_cursor") String nextCursor) {
+  @Deprecated(forRemoval = true)
   public static RecentRecipesResponse from(Page<RecipeHistoryOverview> recentRecipes) {
     List<RecentRecipeResponse> responses =
         recentRecipes.stream().map(RecentRecipeResponse::from).toList();
@@ -21,7 +24,15 @@ public record RecentRecipesResponse(
         recentRecipes.getNumber(),
         recentRecipes.getTotalPages(),
         recentRecipes.getTotalElements(),
-        recentRecipes.hasNext());
+        recentRecipes.hasNext(),
+        null);
+  }
+
+  public static RecentRecipesResponse from(CursorPage<RecipeHistoryOverview> recentRecipes) {
+    List<RecentRecipeResponse> responses =
+        recentRecipes.items().stream().map(RecentRecipeResponse::from).toList();
+    return new RecentRecipesResponse(
+        responses, null, null, null, recentRecipes.hasNext(), recentRecipes.nextCursor());
   }
 
   public record RecentRecipeResponse(

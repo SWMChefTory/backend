@@ -1,5 +1,6 @@
 package com.cheftory.api.search;
 
+import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.search.history.SearchHistoryService;
 import com.cheftory.api.search.query.SearchQueryService;
 import com.cheftory.api.search.query.entity.SearchQuery;
@@ -14,8 +15,14 @@ public class SearchFacade {
   private final SearchQueryService searchQueryService;
   private final SearchHistoryService searchHistoryService;
 
-  public Page<SearchQuery> search(UUID userId, String keyword, Integer page) {
+  @Deprecated(forRemoval = true)
+  public Page<SearchQuery> search(UUID userId, String keyword, int page) {
     if (!keyword.isBlank()) searchHistoryService.create(userId, keyword);
     return searchQueryService.searchByKeyword(keyword, page);
+  }
+
+  public CursorPage<SearchQuery> search(UUID userId, String keyword, String cursor) {
+    if (!keyword.isBlank()) searchHistoryService.create(userId, keyword);
+    return searchQueryService.searchByKeyword(keyword, cursor);
   }
 }

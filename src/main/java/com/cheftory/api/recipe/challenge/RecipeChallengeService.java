@@ -55,7 +55,7 @@ public class RecipeChallengeService {
   }
 
   public Page<RecipeCompleteChallenge> getChallengeRecipes(
-      UUID userId, UUID challengeId, Integer page) {
+      UUID userId, UUID challengeId, int page) {
     Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.ASC, "createdAt"));
 
     RecipeUserChallenge recipeUserChallenge =

@@ -7,6 +7,9 @@ import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.I18nTranslator;
+import com.cheftory.api._common.cursor.CountIdCursor;
+import com.cheftory.api._common.cursor.CountIdCursorCodec;
+import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
@@ -15,6 +18,7 @@ import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeSort;
 import com.cheftory.api.recipe.util.RecipePageRequest;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,13 +34,16 @@ class RecipeInfoServiceTest {
   private RecipeInfoRepository recipeInfoRepository;
   private Clock clock;
   private I18nTranslator i18nTranslator;
+  private CountIdCursorCodec countIdCursorCodec;
 
   @BeforeEach
   void setUp() {
     recipeInfoRepository = mock(RecipeInfoRepository.class);
     clock = mock(Clock.class);
     i18nTranslator = mock(I18nTranslator.class);
-    service = new RecipeInfoService(recipeInfoRepository, clock, i18nTranslator);
+    countIdCursorCodec = mock(CountIdCursorCodec.class);
+    service =
+        new RecipeInfoService(recipeInfoRepository, clock, i18nTranslator, countIdCursorCodec);
   }
 
   @Nested
@@ -833,6 +840,72 @@ class RecipeInfoServiceTest {
               .findCuisineRecipes(eq(cuisineName), eq(RecipeStatus.SUCCESS), any(Pageable.class));
         }
       }
+    }
+  }
+
+  @Nested
+  @DisplayName("커서 기반 조회")
+  class CursorQueries {
+
+    @Test
+    @DisplayName("커서가 없으면 인기 레시피 첫 페이지를 조회한다")
+    void shouldGetPopularsFirstPageWithCursor() {
+      RecipeInfo recipeInfo = mock(RecipeInfo.class);
+      UUID recipeId = UUID.randomUUID();
+
+      doReturn(recipeId).when(recipeInfo).getId();
+      doReturn(10).when(recipeInfo).getViewCount();
+
+      List<RecipeInfo> rows = Collections.nCopies(22, recipeInfo);
+      doReturn(rows)
+          .when(recipeInfoRepository)
+          .findPopularFirst(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+      doReturn("next-cursor").when(countIdCursorCodec).encode(any(CountIdCursor.class));
+
+      CursorPage<RecipeInfo> result = service.getPopulars(null, RecipeInfoVideoQuery.ALL);
+
+      assertThat(result.items()).hasSize(21);
+      assertThat(result.nextCursor()).isEqualTo("next-cursor");
+      verify(recipeInfoRepository).findPopularFirst(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("커서가 있으면 인기 레시피 keyset을 조회한다")
+    void shouldGetPopularsKeysetWithCursor() {
+      RecipeInfo recipeInfo = mock(RecipeInfo.class);
+
+      doReturn(new CountIdCursor(10L, UUID.randomUUID())).when(countIdCursorCodec).decode("cursor");
+      doReturn(List.of(recipeInfo))
+          .when(recipeInfoRepository)
+          .findPopularKeyset(
+              eq(RecipeStatus.SUCCESS), eq(10L), any(UUID.class), any(Pageable.class));
+
+      CursorPage<RecipeInfo> result = service.getPopulars("cursor", RecipeInfoVideoQuery.ALL);
+
+      assertThat(result.items()).hasSize(1);
+      verify(recipeInfoRepository)
+          .findPopularKeyset(
+              eq(RecipeStatus.SUCCESS), eq(10L), any(UUID.class), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("커서 기반 cuisine 조회는 keyset을 사용한다")
+    void shouldGetCuisineKeysetWithCursor() {
+      RecipeInfo recipeInfo = mock(RecipeInfo.class);
+
+      doReturn(new CountIdCursor(6L, UUID.randomUUID())).when(countIdCursorCodec).decode("cursor");
+      doReturn("한식").when(i18nTranslator).translate(RecipeCuisineType.KOREAN.messageKey());
+      doReturn(List.of(recipeInfo))
+          .when(recipeInfoRepository)
+          .findCuisineKeyset(
+              eq("한식"), eq(RecipeStatus.SUCCESS), eq(6L), any(UUID.class), any(Pageable.class));
+
+      CursorPage<RecipeInfo> result = service.getCuisines(RecipeCuisineType.KOREAN, "cursor");
+
+      assertThat(result.items()).hasSize(1);
+      verify(recipeInfoRepository)
+          .findCuisineKeyset(
+              eq("한식"), eq(RecipeStatus.SUCCESS), eq(6L), any(UUID.class), any(Pageable.class));
     }
   }
 }

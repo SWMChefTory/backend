@@ -22,6 +22,7 @@ public interface RecipeInfoRepository extends JpaRepository<RecipeInfo, UUID> {
   List<RecipeInfo> findRecipesByIdInAndRecipeStatusIn(
       List<UUID> recipeIds, List<RecipeStatus> statuses);
 
+  @Deprecated(forRemoval = true)
   Page<RecipeInfo> findByRecipeStatus(RecipeStatus status, Pageable pageable);
 
   List<RecipeInfo> findAllByIdIn(List<UUID> ids);
@@ -34,6 +35,7 @@ public interface RecipeInfoRepository extends JpaRepository<RecipeInfo, UUID> {
           + "  WHERE m.recipeId = r.id "
           + "  AND CAST(m.type AS string) = :videoType"
           + ")")
+  @Deprecated(forRemoval = true)
   Page<RecipeInfo> findRecipes(
       @Param("recipeStatus") RecipeStatus recipeStatus,
       Pageable pageable,
@@ -47,8 +49,117 @@ public interface RecipeInfoRepository extends JpaRepository<RecipeInfo, UUID> {
           + "  WHERE t.recipeId = r.id "
           + "  AND t.tag = :query"
           + ")")
+  @Deprecated(forRemoval = true)
   Page<RecipeInfo> findCuisineRecipes(
       @Param("query") String query,
       @Param("recipeStatus") RecipeStatus recipeStatus,
+      Pageable pageable);
+
+  @Query(
+      """
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status
+    and exists (
+      select 1
+      from RecipeTag t
+      where t.recipeId = r.id
+        and t.tag = :tag
+    )
+  order by r.viewCount desc, r.id desc
+""")
+  List<RecipeInfo> findCuisineFirst(
+      @Param("tag") String tag, @Param("status") RecipeStatus status, Pageable pageable);
+
+  @Query(
+      """
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status
+    and exists (
+      select 1
+      from RecipeTag t
+      where t.recipeId = r.id
+        and t.tag = :tag
+    )
+    and (
+      r.viewCount < :lastViewCount
+      or (r.viewCount = :lastViewCount and r.id < :lastId)
+    )
+  order by r.viewCount desc, r.id desc
+""")
+  List<RecipeInfo> findCuisineKeyset(
+      @Param("tag") String tag,
+      @Param("status") RecipeStatus status,
+      @Param("lastViewCount") long lastViewCount,
+      @Param("lastId") UUID lastId,
+      Pageable pageable);
+
+  @Query(
+      """
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status
+  order by r.viewCount desc, r.id desc
+""")
+  List<RecipeInfo> findPopularFirst(@Param("status") RecipeStatus status, Pageable pageable);
+
+  @Query(
+      """
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status
+    and (
+      r.viewCount < :lastViewCount
+      or (r.viewCount = :lastViewCount and r.id < :lastId)
+    )
+  order by r.viewCount desc, r.id desc
+""")
+  List<RecipeInfo> findPopularKeyset(
+      @Param("status") RecipeStatus status,
+      @Param("lastViewCount") long lastViewCount,
+      @Param("lastId") UUID lastId,
+      Pageable pageable);
+
+  @Query(
+      """
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status
+    and exists (
+      select 1
+      from RecipeYoutubeMeta m
+      where m.recipeId = r.id
+        and cast(m.type as string) = :videoType
+    )
+  order by r.viewCount desc, r.id desc
+""")
+  List<RecipeInfo> findPopularByVideoTypeFirst(
+      @Param("status") RecipeStatus status,
+      @Param("videoType") String videoType,
+      Pageable pageable);
+
+  @Query(
+      """
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status
+    and exists (
+      select 1
+      from RecipeYoutubeMeta m
+      where m.recipeId = r.id
+        and cast(m.type as string) = :videoType
+    )
+    and (
+      r.viewCount < :lastViewCount
+      or (r.viewCount = :lastViewCount and r.id < :lastId)
+    )
+  order by r.viewCount desc, r.id desc
+""")
+  List<RecipeInfo> findPopularByVideoTypeKeyset(
+      @Param("status") RecipeStatus status,
+      @Param("videoType") String videoType,
+      @Param("lastViewCount") long lastViewCount,
+      @Param("lastId") UUID lastId,
       Pageable pageable);
 }
