@@ -130,13 +130,14 @@ public class RecipeHistoryService {
 
   public CursorPage<RecipeHistory> getCategorized(UUID userId, UUID categoryId, String cursor) {
     Pageable pageable = CursorPageable.firstPage();
+    Pageable probe = CursorPageable.probe(pageable);
     boolean first = (cursor == null || cursor.isBlank());
 
     List<RecipeHistory> rows =
         first
             ? recipeHistoryRepository.findCategorizedFirst(
-                userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable)
-            : keyset(userId, categoryId, cursor, pageable);
+            userId, categoryId, RecipeHistoryStatus.ACTIVE, probe)
+            : keyset(userId, categoryId, cursor, probe);
 
     return CursorPages.of(
         rows,
@@ -144,11 +145,10 @@ public class RecipeHistoryService {
         h -> viewedAtCursorCodec.encode(new ViewedAtCursor(h.getViewedAt(), h.getId())));
   }
 
-  private List<RecipeHistory> keyset(
-      UUID userId, UUID categoryId, String cursor, Pageable pageable) {
+  private List<RecipeHistory> keyset(UUID userId, UUID categoryId, String cursor, Pageable probe) {
     ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
     return recipeHistoryRepository.findCategorizedKeyset(
-        userId, categoryId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), pageable);
+        userId, categoryId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), probe);
   }
 
   @Deprecated(forRemoval = true)
@@ -158,15 +158,17 @@ public class RecipeHistoryService {
         userId, null, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
+
   public CursorPage<RecipeHistory> getUnCategorized(UUID userId, String cursor) {
     Pageable pageable = CursorPageable.firstPage();
+    Pageable probe = CursorPageable.probe(pageable);
     boolean first = (cursor == null || cursor.isBlank());
 
     List<RecipeHistory> rows =
         first
             ? recipeHistoryRepository.findUncategorizedFirst(
-                userId, RecipeHistoryStatus.ACTIVE, pageable)
-            : keysetUncategorized(userId, cursor, pageable);
+            userId, RecipeHistoryStatus.ACTIVE, probe)
+            : keysetUncategorized(userId, cursor, probe);
 
     return CursorPages.of(
         rows,
@@ -174,12 +176,13 @@ public class RecipeHistoryService {
         h -> viewedAtCursorCodec.encode(new ViewedAtCursor(h.getViewedAt(), h.getId())));
   }
 
-  private List<RecipeHistory> keysetUncategorized(UUID userId, String cursor, Pageable pageable) {
+  private List<RecipeHistory> keysetUncategorized(UUID userId, String cursor, Pageable probe) {
     ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
     return recipeHistoryRepository.findUncategorizedKeyset(
-        userId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), pageable);
+        userId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), probe);
   }
 
+  @Deprecated(forRemoval = true)
   public Page<RecipeHistory> getRecents(UUID userId, int page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findByUserIdAndStatus(
@@ -188,12 +191,13 @@ public class RecipeHistoryService {
 
   public CursorPage<RecipeHistory> getRecents(UUID userId, String cursor) {
     Pageable pageable = CursorPageable.firstPage();
+    Pageable probe = CursorPageable.probe(pageable);
     boolean first = (cursor == null || cursor.isBlank());
 
     List<RecipeHistory> rows =
         first
-            ? recipeHistoryRepository.findRecentsFirst(userId, RecipeHistoryStatus.ACTIVE, pageable)
-            : keysetRecents(userId, cursor, pageable);
+            ? recipeHistoryRepository.findRecentsFirst(userId, RecipeHistoryStatus.ACTIVE, probe)
+            : keysetRecents(userId, cursor, probe);
 
     return CursorPages.of(
         rows,
@@ -201,10 +205,10 @@ public class RecipeHistoryService {
         h -> viewedAtCursorCodec.encode(new ViewedAtCursor(h.getViewedAt(), h.getId())));
   }
 
-  private List<RecipeHistory> keysetRecents(UUID userId, String cursor, Pageable pageable) {
+  private List<RecipeHistory> keysetRecents(UUID userId, String cursor, Pageable probe) {
     ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
     return recipeHistoryRepository.findRecentsKeyset(
-        userId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), pageable);
+        userId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), probe);
   }
 
   public List<RecipeHistoryCategorizedCount> countByCategories(List<UUID> categoryIds) {

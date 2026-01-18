@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.10] - 2026-01-18
+
+### Added
+
+- **커서 공통 모듈**: CountId/ScoreId/ViewedAt/Rank 커서 및 Codec 추가
+
+### Changed
+
+- **커서 기반 페이지네이션 전환**: 레시피 목록/검색/히스토리/랭킹 관련 조회 API를 cursor 기반으로 리팩토링
+- **검색/조회 응답 구조 정리**: CursorPage 응답 포맷 통일 및 관련 조회 로직 정비
+
+---
+
 ## [1.1.9] - 2026-01-05
 
 ### Added

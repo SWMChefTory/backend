@@ -856,16 +856,19 @@ class RecipeInfoServiceTest {
       doReturn(recipeId).when(recipeInfo).getId();
       doReturn(10).when(recipeInfo).getViewCount();
 
-      List<RecipeInfo> rows = Collections.nCopies(22, recipeInfo);
+      List<RecipeInfo> rows = Collections.nCopies(21, recipeInfo);
+
       doReturn(rows)
           .when(recipeInfoRepository)
           .findPopularFirst(eq(RecipeStatus.SUCCESS), any(Pageable.class));
+
       doReturn("next-cursor").when(countIdCursorCodec).encode(any(CountIdCursor.class));
 
       CursorPage<RecipeInfo> result = service.getPopulars(null, RecipeInfoVideoQuery.ALL);
 
-      assertThat(result.items()).hasSize(21);
+      assertThat(result.items()).hasSize(20);
       assertThat(result.nextCursor()).isEqualTo("next-cursor");
+
       verify(recipeInfoRepository).findPopularFirst(eq(RecipeStatus.SUCCESS), any(Pageable.class));
     }
 
