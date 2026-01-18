@@ -1,6 +1,11 @@
 package com.cheftory.api.recipe.history;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api._common.cursor.CursorPageable;
+import com.cheftory.api._common.cursor.CursorPages;
+import com.cheftory.api._common.cursor.ViewedAtCursor;
+import com.cheftory.api._common.cursor.ViewedAtCursorCodec;
 import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import com.cheftory.api.recipe.history.entity.RecipeHistoryCategorizedCount;
 import com.cheftory.api.recipe.history.entity.RecipeHistoryCategorizedCountProjection;
@@ -24,6 +29,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RecipeHistoryService {
   private final RecipeHistoryRepository recipeHistoryRepository;
+  private final ViewedAtCursorCodec viewedAtCursorCodec;
   private final Clock clock;
 
   @Transactional
@@ -115,22 +121,90 @@ public class RecipeHistoryService {
     recipeHistoryRepository.saveAll(histories);
   }
 
-  public Page<RecipeHistory> getCategorized(UUID userId, UUID categoryId, Integer page) {
+  @Deprecated(forRemoval = true)
+  public Page<RecipeHistory> getCategorized(UUID userId, UUID categoryId, int page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
         userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
-  public Page<RecipeHistory> getUnCategorized(UUID userId, Integer page) {
+  public CursorPage<RecipeHistory> getCategorized(UUID userId, UUID categoryId, String cursor) {
+    Pageable pageable = CursorPageable.firstPage();
+    boolean first = (cursor == null || cursor.isBlank());
+
+    List<RecipeHistory> rows =
+        first
+            ? recipeHistoryRepository.findCategorizedFirst(
+                userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable)
+            : keyset(userId, categoryId, cursor, pageable);
+
+    return CursorPages.of(
+        rows,
+        pageable.getPageSize(),
+        h -> viewedAtCursorCodec.encode(new ViewedAtCursor(h.getViewedAt(), h.getId())));
+  }
+
+  private List<RecipeHistory> keyset(
+      UUID userId, UUID categoryId, String cursor, Pageable pageable) {
+    ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
+    return recipeHistoryRepository.findCategorizedKeyset(
+        userId, categoryId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), pageable);
+  }
+
+  @Deprecated(forRemoval = true)
+  public Page<RecipeHistory> getUnCategorized(UUID userId, int page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
         userId, null, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
-  public Page<RecipeHistory> getRecents(UUID userId, Integer page) {
+  public CursorPage<RecipeHistory> getUnCategorized(UUID userId, String cursor) {
+    Pageable pageable = CursorPageable.firstPage();
+    boolean first = (cursor == null || cursor.isBlank());
+
+    List<RecipeHistory> rows =
+        first
+            ? recipeHistoryRepository.findUncategorizedFirst(
+                userId, RecipeHistoryStatus.ACTIVE, pageable)
+            : keysetUncategorized(userId, cursor, pageable);
+
+    return CursorPages.of(
+        rows,
+        pageable.getPageSize(),
+        h -> viewedAtCursorCodec.encode(new ViewedAtCursor(h.getViewedAt(), h.getId())));
+  }
+
+  private List<RecipeHistory> keysetUncategorized(UUID userId, String cursor, Pageable pageable) {
+    ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
+    return recipeHistoryRepository.findUncategorizedKeyset(
+        userId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), pageable);
+  }
+
+  public Page<RecipeHistory> getRecents(UUID userId, int page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
     return recipeHistoryRepository.findByUserIdAndStatus(
         userId, RecipeHistoryStatus.ACTIVE, pageable);
+  }
+
+  public CursorPage<RecipeHistory> getRecents(UUID userId, String cursor) {
+    Pageable pageable = CursorPageable.firstPage();
+    boolean first = (cursor == null || cursor.isBlank());
+
+    List<RecipeHistory> rows =
+        first
+            ? recipeHistoryRepository.findRecentsFirst(userId, RecipeHistoryStatus.ACTIVE, pageable)
+            : keysetRecents(userId, cursor, pageable);
+
+    return CursorPages.of(
+        rows,
+        pageable.getPageSize(),
+        h -> viewedAtCursorCodec.encode(new ViewedAtCursor(h.getViewedAt(), h.getId())));
+  }
+
+  private List<RecipeHistory> keysetRecents(UUID userId, String cursor, Pageable pageable) {
+    ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
+    return recipeHistoryRepository.findRecentsKeyset(
+        userId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), pageable);
   }
 
   public List<RecipeHistoryCategorizedCount> countByCategories(List<UUID> categoryIds) {

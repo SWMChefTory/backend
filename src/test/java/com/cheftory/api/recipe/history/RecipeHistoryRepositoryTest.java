@@ -76,6 +76,154 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
   }
 
   @Nested
+  @DisplayName("커서 기반 조회 쿼리")
+  class CursorQueries {
+
+    @Test
+    @DisplayName("최근 기록 첫 페이지를 조회한다")
+    void shouldFindRecentsFirst() {
+      UUID userId = UUID.randomUUID();
+      when(clock.now())
+          .thenReturn(
+              LocalDateTime.of(2024, 1, 1, 10, 0),
+              LocalDateTime.of(2024, 1, 1, 11, 0),
+              LocalDateTime.of(2024, 1, 1, 12, 0));
+
+      RecipeHistory h1 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+      RecipeHistory h2 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+      RecipeHistory h3 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+
+      Pageable pageable = PageRequest.of(0, 2);
+      List<RecipeHistory> result =
+          repository.findRecentsFirst(userId, RecipeHistoryStatus.ACTIVE, pageable);
+
+      assertThat(result).hasSize(2);
+      assertThat(result.getFirst().getViewedAt()).isEqualTo(h3.getViewedAt());
+      assertThat(result.get(1).getViewedAt()).isEqualTo(h2.getViewedAt());
+    }
+
+    @Test
+    @DisplayName("최근 기록 keyset을 조회한다")
+    void shouldFindRecentsKeyset() {
+      UUID userId = UUID.randomUUID();
+      when(clock.now())
+          .thenReturn(
+              LocalDateTime.of(2024, 1, 1, 10, 0),
+              LocalDateTime.of(2024, 1, 1, 11, 0),
+              LocalDateTime.of(2024, 1, 1, 12, 0));
+
+      RecipeHistory h1 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+      RecipeHistory h2 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+      repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+
+      Pageable pageable = PageRequest.of(0, 2);
+      List<RecipeHistory> result =
+          repository.findRecentsKeyset(
+              userId, RecipeHistoryStatus.ACTIVE, h2.getViewedAt(), h2.getId(), pageable);
+
+      assertThat(result).hasSize(1);
+      assertThat(result.getFirst().getId()).isEqualTo(h1.getId());
+    }
+
+    @Test
+    @DisplayName("카테고리 첫 페이지를 조회한다")
+    void shouldFindCategorizedFirst() {
+      UUID userId = UUID.randomUUID();
+      UUID categoryId = UUID.randomUUID();
+      when(clock.now())
+          .thenReturn(LocalDateTime.of(2024, 1, 2, 10, 0), LocalDateTime.of(2024, 1, 2, 11, 0));
+
+      RecipeHistory h1 = RecipeHistory.create(clock, userId, UUID.randomUUID());
+      h1.updateRecipeCategoryId(categoryId);
+      RecipeHistory h2 = RecipeHistory.create(clock, userId, UUID.randomUUID());
+      h2.updateRecipeCategoryId(categoryId);
+      repository.saveAll(List.of(h1, h2));
+
+      Pageable pageable = PageRequest.of(0, 2);
+      List<RecipeHistory> result =
+          repository.findCategorizedFirst(userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable);
+
+      assertThat(result).hasSize(2);
+      assertThat(result.getFirst().getViewedAt()).isEqualTo(h2.getViewedAt());
+    }
+
+    @Test
+    @DisplayName("카테고리 keyset을 조회한다")
+    void shouldFindCategorizedKeyset() {
+      UUID userId = UUID.randomUUID();
+      UUID categoryId = UUID.randomUUID();
+      when(clock.now())
+          .thenReturn(
+              LocalDateTime.of(2024, 1, 2, 10, 0),
+              LocalDateTime.of(2024, 1, 2, 11, 0),
+              LocalDateTime.of(2024, 1, 2, 12, 0));
+
+      RecipeHistory h1 = RecipeHistory.create(clock, userId, UUID.randomUUID());
+      h1.updateRecipeCategoryId(categoryId);
+      RecipeHistory h2 = RecipeHistory.create(clock, userId, UUID.randomUUID());
+      h2.updateRecipeCategoryId(categoryId);
+      RecipeHistory h3 = RecipeHistory.create(clock, userId, UUID.randomUUID());
+      h3.updateRecipeCategoryId(categoryId);
+      repository.saveAll(List.of(h1, h2, h3));
+
+      Pageable pageable = PageRequest.of(0, 2);
+      List<RecipeHistory> result =
+          repository.findCategorizedKeyset(
+              userId,
+              categoryId,
+              RecipeHistoryStatus.ACTIVE,
+              h2.getViewedAt(),
+              h2.getId(),
+              pageable);
+
+      assertThat(result).hasSize(1);
+      assertThat(result.getFirst().getId()).isEqualTo(h1.getId());
+    }
+
+    @Test
+    @DisplayName("미분류 첫 페이지를 조회한다")
+    void shouldFindUncategorizedFirst() {
+      UUID userId = UUID.randomUUID();
+      when(clock.now())
+          .thenReturn(LocalDateTime.of(2024, 1, 3, 10, 0), LocalDateTime.of(2024, 1, 3, 11, 0));
+
+      RecipeHistory h1 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+      RecipeHistory h2 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+
+      Pageable pageable = PageRequest.of(0, 2);
+      List<RecipeHistory> result =
+          repository.findUncategorizedFirst(userId, RecipeHistoryStatus.ACTIVE, pageable);
+
+      assertThat(result).hasSize(2);
+      assertThat(result.getFirst().getViewedAt()).isEqualTo(h2.getViewedAt());
+      assertThat(result.get(1).getViewedAt()).isEqualTo(h1.getViewedAt());
+    }
+
+    @Test
+    @DisplayName("미분류 keyset을 조회한다")
+    void shouldFindUncategorizedKeyset() {
+      UUID userId = UUID.randomUUID();
+      when(clock.now())
+          .thenReturn(
+              LocalDateTime.of(2024, 1, 3, 10, 0),
+              LocalDateTime.of(2024, 1, 3, 11, 0),
+              LocalDateTime.of(2024, 1, 3, 12, 0));
+
+      RecipeHistory h1 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+      RecipeHistory h2 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+      repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+
+      Pageable pageable = PageRequest.of(0, 2);
+      List<RecipeHistory> result =
+          repository.findUncategorizedKeyset(
+              userId, RecipeHistoryStatus.ACTIVE, h2.getViewedAt(), h2.getId(), pageable);
+
+      assertThat(result).hasSize(1);
+      assertThat(result.getFirst().getId()).isEqualTo(h1.getId());
+    }
+  }
+
+  @Nested
   @DisplayName("레시피 조회 상태 존재 확인")
   class ExistsByRecipeIdAndUserId {
 

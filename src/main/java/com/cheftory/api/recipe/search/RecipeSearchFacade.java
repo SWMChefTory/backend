@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.search;
 
+import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
@@ -35,13 +36,23 @@ public class RecipeSearchFacade {
   private final RecipeTagService recipeTagService;
   private final RecipeInfoService recipeInfoService;
 
-  public Page<RecipeOverview> searchRecipes(Integer page, String query, UUID userId) {
+  @Deprecated(forRemoval = true)
+  public Page<RecipeOverview> searchRecipes(int page, String query, UUID userId) {
     Page<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, page);
 
     List<RecipeInfo> recipes = recipeInfoService.gets(recipeIdsPage.getContent());
 
     List<RecipeOverview> content = makeOverviews(recipes, userId);
     return new PageImpl<>(content, recipeIdsPage.getPageable(), recipeIdsPage.getTotalElements());
+  }
+
+  public CursorPage<RecipeOverview> searchRecipes(String query, UUID userId, String cursor) {
+    CursorPage<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, cursor);
+
+    List<RecipeInfo> recipes = recipeInfoService.gets(recipeIdsPage.items());
+
+    List<RecipeOverview> items = makeOverviews(recipes, userId);
+    return CursorPage.of(items, recipeIdsPage.nextCursor());
   }
 
   private List<RecipeOverview> makeOverviews(List<RecipeInfo> recipes, UUID userId) {

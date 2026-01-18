@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,6 +28,7 @@ class RecipeRankRepositoryTest {
   void setUp() {
     recipeRankRepository = new RecipeRankRepository(redisTemplate);
 
+    Assertions.assertNotNull(redisTemplate.getConnectionFactory());
     redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
   }
 
@@ -236,6 +238,62 @@ class RecipeRankRepositoryTest {
       Set<String> result = recipeRankRepository.findRecipeIds(key, 0, 2);
 
       assertThat(result).hasSize(3);
+    }
+  }
+
+  @Nested
+  @DisplayName("findRecipeIdsByRank 메서드 테스트")
+  class FindRecipeIdsByRankTest {
+
+    @Test
+    @DisplayName("시작 랭크와 개수로 레시피 ID를 조회할 수 있다")
+    void shouldFindRecipeIdsByRank() {
+      String key = "test:ranking";
+      UUID recipeId1 = UUID.randomUUID();
+      UUID recipeId2 = UUID.randomUUID();
+      UUID recipeId3 = UUID.randomUUID();
+      UUID recipeId4 = UUID.randomUUID();
+
+      recipeRankRepository.saveRanking(key, recipeId1, 1);
+      recipeRankRepository.saveRanking(key, recipeId2, 2);
+      recipeRankRepository.saveRanking(key, recipeId3, 3);
+      recipeRankRepository.saveRanking(key, recipeId4, 4);
+
+      var result = recipeRankRepository.findRecipeIdsByRank(key, 2, 2);
+
+      assertThat(result).containsExactly(recipeId2.toString(), recipeId3.toString());
+    }
+
+    @Test
+    @DisplayName("시작 랭크가 1 미만이면 첫 번째부터 조회한다")
+    void shouldClampStartRankWhenLessThanOne() {
+      String key = "test:ranking:clamp";
+      UUID recipeId1 = UUID.randomUUID();
+      UUID recipeId2 = UUID.randomUUID();
+      UUID recipeId3 = UUID.randomUUID();
+
+      recipeRankRepository.saveRanking(key, recipeId1, 1);
+      recipeRankRepository.saveRanking(key, recipeId2, 2);
+      recipeRankRepository.saveRanking(key, recipeId3, 3);
+
+      var result = recipeRankRepository.findRecipeIdsByRank(key, 0, 2);
+
+      assertThat(result).containsExactly(recipeId1.toString(), recipeId2.toString());
+    }
+
+    @Test
+    @DisplayName("범위를 벗어난 랭크 조회는 빈 결과를 반환한다")
+    void shouldReturnEmptyWhenStartRankOutOfBounds() {
+      String key = "test:ranking:out-of-bounds";
+      UUID recipeId1 = UUID.randomUUID();
+      UUID recipeId2 = UUID.randomUUID();
+
+      recipeRankRepository.saveRanking(key, recipeId1, 1);
+      recipeRankRepository.saveRanking(key, recipeId2, 2);
+
+      var result = recipeRankRepository.findRecipeIdsByRank(key, 10, 3);
+
+      assertThat(result).isEmpty();
     }
   }
 

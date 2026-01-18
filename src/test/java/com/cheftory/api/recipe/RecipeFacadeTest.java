@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
 import com.cheftory.api.recipe.challenge.RecipeChallengeService;
@@ -323,6 +324,91 @@ class RecipeFacadeTest {
 
       assertThat(result.getContent()).isEmpty();
     }
+
+    @Test
+    @DisplayName("커서 기반 최근 히스토리를 반환한다")
+    void shouldReturnRecentsWithCursor() {
+      UUID userId = UUID.randomUUID();
+      String cursor = "cursor-1";
+      UUID recipeId = UUID.randomUUID();
+      String nextCursor = "cursor-2";
+
+      CursorPage<RecipeHistory> histories =
+          CursorPage.of(List.of(mockHistory(recipeId, userId)), nextCursor);
+
+      doReturn(histories).when(recipeHistoryService).getRecents(userId, cursor);
+      doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
+          .when(recipeInfoService)
+          .getValidRecipes(anyList());
+      doReturn(List.of(mockYoutubeMeta(recipeId)))
+          .when(recipeYoutubeMetaService)
+          .getByRecipes(anyList());
+      doReturn(List.of(mockDetailMeta(recipeId))).when(recipeDetailMetaService).getIn(anyList());
+      doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
+
+      CursorPage<RecipeHistoryOverview> result = sut.getRecents(userId, cursor);
+
+      assertThat(result.items()).hasSize(1);
+      assertThat(result.nextCursor()).isEqualTo(nextCursor);
+      verify(recipeHistoryService).getRecents(userId, cursor);
+    }
+
+    @Test
+    @DisplayName("커서 기반 카테고리 히스토리를 반환한다")
+    void shouldReturnCategorizedWithCursor() {
+      UUID userId = UUID.randomUUID();
+      UUID categoryId = UUID.randomUUID();
+      String cursor = "cursor-1";
+      UUID recipeId = UUID.randomUUID();
+      String nextCursor = "cursor-2";
+
+      CursorPage<RecipeHistory> histories =
+          CursorPage.of(List.of(mockHistory(recipeId, userId)), nextCursor);
+
+      doReturn(histories).when(recipeHistoryService).getCategorized(userId, categoryId, cursor);
+      doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
+          .when(recipeInfoService)
+          .getValidRecipes(anyList());
+      doReturn(List.of(mockYoutubeMeta(recipeId)))
+          .when(recipeYoutubeMetaService)
+          .getByRecipes(anyList());
+      doReturn(List.of(mockDetailMeta(recipeId))).when(recipeDetailMetaService).getIn(anyList());
+      doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
+
+      CursorPage<RecipeHistoryOverview> result = sut.getCategorized(userId, categoryId, cursor);
+
+      assertThat(result.items()).hasSize(1);
+      assertThat(result.nextCursor()).isEqualTo(nextCursor);
+      verify(recipeHistoryService).getCategorized(userId, categoryId, cursor);
+    }
+
+    @Test
+    @DisplayName("커서 기반 미분류 히스토리를 반환한다")
+    void shouldReturnUncategorizedWithCursor() {
+      UUID userId = UUID.randomUUID();
+      String cursor = "cursor-1";
+      UUID recipeId = UUID.randomUUID();
+      String nextCursor = "cursor-2";
+
+      CursorPage<RecipeHistory> histories =
+          CursorPage.of(List.of(mockHistory(recipeId, userId)), nextCursor);
+
+      doReturn(histories).when(recipeHistoryService).getUnCategorized(userId, cursor);
+      doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
+          .when(recipeInfoService)
+          .getValidRecipes(anyList());
+      doReturn(List.of(mockYoutubeMeta(recipeId)))
+          .when(recipeYoutubeMetaService)
+          .getByRecipes(anyList());
+      doReturn(List.of(mockDetailMeta(recipeId))).when(recipeDetailMetaService).getIn(anyList());
+      doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
+
+      CursorPage<RecipeHistoryOverview> result = sut.getUnCategorized(userId, cursor);
+
+      assertThat(result.items()).hasSize(1);
+      assertThat(result.nextCursor()).isEqualTo(nextCursor);
+      verify(recipeHistoryService).getUnCategorized(userId, cursor);
+    }
   }
 
   @Nested
@@ -429,6 +515,36 @@ class RecipeFacadeTest {
       assertThat(result.getContent()).hasSize(1);
       verify(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, page);
     }
+
+    @Test
+    @DisplayName("커서 기반 cuisine 조회 시 overview를 만들어 반환한다")
+    void shouldReturnCuisineRecipesWithCursor() {
+      String cursor = "cursor-1";
+      String nextCursor = "cursor-2";
+      UUID userId = UUID.randomUUID();
+      UUID recipeId = UUID.randomUUID();
+
+      RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
+      CursorPage<RecipeInfo> recipesPage = CursorPage.of(List.of(recipeInfo), nextCursor);
+
+      doReturn(recipesPage).when(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, cursor);
+
+      doReturn(List.of(mockYoutubeMeta(recipeId)))
+          .when(recipeYoutubeMetaService)
+          .getByRecipes(List.of(recipeId));
+      doReturn(List.of(mockDetailMeta(recipeId)))
+          .when(recipeDetailMetaService)
+          .getIn(List.of(recipeId));
+      doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(List.of(recipeId));
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+
+      CursorPage<RecipeOverview> result =
+          sut.getCuisineRecipes(RecipeCuisineType.KOREAN, userId, cursor);
+
+      assertThat(result.items()).hasSize(1);
+      assertThat(result.nextCursor()).isEqualTo(nextCursor);
+      verify(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, cursor);
+    }
   }
 
   @Nested
@@ -462,6 +578,37 @@ class RecipeFacadeTest {
 
       assertThat(result.getContent()).hasSize(1);
       verify(recipeInfoService).getPopulars(page, RecipeInfoVideoQuery.ALL);
+    }
+
+    @Test
+    @DisplayName("커서 기반 POPULAR 타입은 getPopulars를 호출한다")
+    void shouldReturnPopularRecipesWithCursor() {
+      String cursor = "cursor-1";
+      String nextCursor = "cursor-2";
+      UUID userId = UUID.randomUUID();
+      UUID recipeId = UUID.randomUUID();
+
+      RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
+      CursorPage<RecipeInfo> recipesPage = CursorPage.of(List.of(recipeInfo), nextCursor);
+
+      doReturn(recipesPage).when(recipeInfoService).getPopulars(cursor, RecipeInfoVideoQuery.ALL);
+
+      doReturn(List.of(mockYoutubeMeta(recipeId)))
+          .when(recipeYoutubeMetaService)
+          .getByRecipes(List.of(recipeId));
+      doReturn(List.of(mockDetailMeta(recipeId)))
+          .when(recipeDetailMetaService)
+          .getIn(List.of(recipeId));
+      doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+
+      CursorPage<RecipeOverview> result =
+          sut.getRecommendRecipes(
+              RecipeInfoRecommendType.POPULAR, userId, cursor, RecipeInfoVideoQuery.ALL);
+
+      assertThat(result.items()).hasSize(1);
+      assertThat(result.nextCursor()).isEqualTo(nextCursor);
+      verify(recipeInfoService).getPopulars(cursor, RecipeInfoVideoQuery.ALL);
     }
 
     @Test
@@ -501,6 +648,39 @@ class RecipeFacadeTest {
       assertThat(result.getContent()).hasSize(2);
       verify(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
       verify(recipeInfoService).getValidRecipes(List.of(recipeId1, recipeId2));
+    }
+
+    @Test
+    @DisplayName("커서 기반 CHEF 타입은 랭킹 기반으로 조회한다")
+    void shouldReturnChefRecipesWithCursor() {
+      String cursor = "cursor-1";
+      String nextCursor = "cursor-2";
+      UUID userId = UUID.randomUUID();
+      UUID recipeId = UUID.randomUUID();
+
+      doReturn(CursorPage.of(List.of(recipeId), nextCursor))
+          .when(recipeRankService)
+          .getRecipeIds(RankingType.CHEF, cursor);
+
+      RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
+      doReturn(List.of(recipeInfo)).when(recipeInfoService).getValidRecipes(List.of(recipeId));
+
+      doReturn(List.of(mockYoutubeMeta(recipeId)))
+          .when(recipeYoutubeMetaService)
+          .getByRecipes(List.of(recipeId));
+      doReturn(List.of(mockDetailMeta(recipeId)))
+          .when(recipeDetailMetaService)
+          .getIn(List.of(recipeId));
+      doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
+      doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+
+      CursorPage<RecipeOverview> result =
+          sut.getRecommendRecipes(
+              RecipeInfoRecommendType.CHEF, userId, cursor, RecipeInfoVideoQuery.ALL);
+
+      assertThat(result.items()).hasSize(1);
+      assertThat(result.nextCursor()).isEqualTo(nextCursor);
+      verify(recipeRankService).getRecipeIds(RankingType.CHEF, cursor);
     }
   }
 
