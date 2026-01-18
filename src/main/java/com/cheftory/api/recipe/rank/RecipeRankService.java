@@ -1,5 +1,9 @@
 package com.cheftory.api.recipe.rank;
 
+import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api._common.cursor.CursorPages;
+import com.cheftory.api._common.cursor.RankCursor;
+import com.cheftory.api._common.cursor.RankCursorCodec;
 import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class RecipeRankService {
   private final RecipeRankRepository recipeRankRepository;
   private final RankingKeyGenerator rankingKeyGenerator;
+  private final RankCursorCodec rankCursorCodec;
 
   private static final Integer PAGE_SIZE = 10;
   private static final Duration TTL = Duration.ofDays(2);
@@ -36,7 +41,8 @@ public class RecipeRankService {
     recipeRankRepository.saveLatest(rankingKeyGenerator.getLatestKey(type), newKey);
   }
 
-  public Page<UUID> getRecipeIds(RankingType type, Integer page) {
+  @Deprecated(forRemoval = true)
+  public Page<UUID> getRecipeIds(RankingType type, int page) {
     Pageable pageable = PageRequest.of(page, 10);
     String latestPointerKey = rankingKeyGenerator.getLatestKey(type);
 
@@ -60,5 +66,33 @@ public class RecipeRankService {
     Long totalElements = recipeRankRepository.count(latestKey);
 
     return new PageImpl<>(recipeIds, pageable, totalElements);
+  }
+
+  public CursorPage<UUID> getRecipeIds(RankingType type, String cursor) {
+    final int limit = PAGE_SIZE;
+    final int fetch = limit + 1;
+    final boolean first = (cursor == null || cursor.isBlank());
+
+    final RankCursor rankCursor = first ? null : rankCursorCodec.decode(cursor);
+
+    final String rankingKey =
+        first
+            ? recipeRankRepository
+                .findLatest(rankingKeyGenerator.getLatestKey(type))
+                .orElseThrow(
+                    () -> new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_NOT_FOUND))
+            : rankCursor.rankingKey();
+
+    final int startRank = first ? 1 : rankCursor.lastRank() + 1;
+
+    final List<UUID> rows =
+        recipeRankRepository.findRecipeIdsByRank(rankingKey, startRank, fetch).stream()
+            .map(UUID::fromString)
+            .toList();
+
+    return CursorPages.of(
+        rows,
+        limit,
+        lastItem -> rankCursorCodec.encode(new RankCursor(rankingKey, startRank + limit - 1)));
   }
 }

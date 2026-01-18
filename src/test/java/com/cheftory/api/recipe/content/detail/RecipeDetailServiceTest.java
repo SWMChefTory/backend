@@ -251,20 +251,11 @@ public class RecipeDetailServiceTest {
     @Test
     @DisplayName("ClientRecipeDetailResponse.toRecipeDetail() - null이 아닌 필드들 정상 처리")
     void shouldHandlePartialNullValues() {
-      // given
       ClientRecipeDetailResponse clientResponse =
-          new ClientRecipeDetailResponse(
-              null, // description은 null 허용
-              List.of(), // 빈 리스트는 허용
-              null, // tags는 null 허용
-              null, // servings는 null 허용
-              null // cookTime은 null 허용
-              );
+          new ClientRecipeDetailResponse(null, List.of(), null, null, null);
 
-      // when
       RecipeDetail result = clientResponse.toRecipeDetail();
 
-      // then
       assertThat(result).isNotNull();
       assertThat(result.description()).isNull();
       assertThat(result.ingredients()).isEmpty();

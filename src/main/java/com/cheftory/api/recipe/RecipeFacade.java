@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe;
 
 import com.cheftory.api._common.PocOnly;
+import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
 import com.cheftory.api.recipe.challenge.RecipeChallengeService;
@@ -121,8 +122,8 @@ public class RecipeFacade {
     return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
   }
 
-  public Page<RecipeHistoryOverview> getCategorized(
-      UUID userId, UUID recipeCategoryId, Integer page) {
+  @Deprecated(forRemoval = true)
+  public Page<RecipeHistoryOverview> getCategorized(UUID userId, UUID recipeCategoryId, int page) {
     Page<RecipeHistory> histories =
         recipeHistoryService.getCategorized(userId, recipeCategoryId, page);
 
@@ -130,18 +131,43 @@ public class RecipeFacade {
     return new PageImpl<>(content, histories.getPageable(), histories.getTotalElements());
   }
 
-  public Page<RecipeHistoryOverview> getUnCategorized(UUID userId, Integer page) {
+  public CursorPage<RecipeHistoryOverview> getCategorized(
+      UUID userId, UUID recipeCategoryId, String cursor) {
+    CursorPage<RecipeHistory> histories =
+        recipeHistoryService.getCategorized(userId, recipeCategoryId, cursor);
+
+    List<RecipeHistoryOverview> items = makeHistoryOverviews(histories.items());
+    return CursorPage.of(items, histories.nextCursor());
+  }
+
+  @Deprecated(forRemoval = true)
+  public Page<RecipeHistoryOverview> getUnCategorized(UUID userId, int page) {
     Page<RecipeHistory> histories = recipeHistoryService.getUnCategorized(userId, page);
 
     List<RecipeHistoryOverview> content = makeHistoryOverviews(histories.getContent());
     return new PageImpl<>(content, histories.getPageable(), histories.getTotalElements());
   }
 
-  public Page<RecipeHistoryOverview> getRecents(UUID userId, Integer page) {
+  public CursorPage<RecipeHistoryOverview> getUnCategorized(UUID userId, String cursor) {
+    CursorPage<RecipeHistory> histories = recipeHistoryService.getUnCategorized(userId, cursor);
+
+    List<RecipeHistoryOverview> items = makeHistoryOverviews(histories.items());
+    return CursorPage.of(items, histories.nextCursor());
+  }
+
+  @Deprecated(forRemoval = true)
+  public Page<RecipeHistoryOverview> getRecents(UUID userId, int page) {
     Page<RecipeHistory> histories = recipeHistoryService.getRecents(userId, page);
 
     List<RecipeHistoryOverview> content = makeHistoryOverviews(histories.getContent());
     return new PageImpl<>(content, histories.getPageable(), histories.getTotalElements());
+  }
+
+  public CursorPage<RecipeHistoryOverview> getRecents(UUID userId, String cursor) {
+    CursorPage<RecipeHistory> histories = recipeHistoryService.getRecents(userId, cursor);
+
+    List<RecipeHistoryOverview> items = makeHistoryOverviews(histories.items());
+    return CursorPage.of(items, histories.nextCursor());
   }
 
   /**
@@ -298,15 +324,25 @@ public class RecipeFacade {
     }
   }
 
-  public Page<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, Integer page) {
+  @Deprecated(forRemoval = true)
+  public Page<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, int page) {
     Page<RecipeInfo> recipesPage = recipeInfoService.getCuisines(type, page);
 
     List<RecipeOverview> content = makeOverviews(recipesPage.getContent(), userId);
     return new PageImpl<>(content, recipesPage.getPageable(), recipesPage.getTotalElements());
   }
 
+  public CursorPage<RecipeOverview> getCuisineRecipes(
+      RecipeCuisineType type, UUID userId, String cursor) {
+    CursorPage<RecipeInfo> recipesPage = recipeInfoService.getCuisines(type, cursor);
+
+    List<RecipeOverview> items = makeOverviews(recipesPage.items(), userId);
+    return CursorPage.of(items, recipesPage.nextCursor());
+  }
+
+  @Deprecated(forRemoval = true)
   public Page<RecipeOverview> getRecommendRecipes(
-      RecipeInfoRecommendType type, UUID userId, Integer page, RecipeInfoVideoQuery query) {
+      RecipeInfoRecommendType type, UUID userId, int page, RecipeInfoVideoQuery query) {
 
     Page<RecipeInfo> recipesPage =
         switch (type) {
@@ -319,9 +355,22 @@ public class RecipeFacade {
     return new PageImpl<>(content, recipesPage.getPageable(), recipesPage.getTotalElements());
   }
 
+  public CursorPage<RecipeOverview> getRecommendRecipes(
+      RecipeInfoRecommendType type, UUID userId, String cursor, RecipeInfoVideoQuery query) {
+    CursorPage<RecipeInfo> recipesPage =
+        switch (type) {
+          case POPULAR -> recipeInfoService.getPopulars(cursor, query);
+          case CHEF -> getRankingRecipes(RankingType.CHEF, cursor);
+          case TRENDING -> getRankingRecipes(RankingType.TRENDING, cursor);
+        };
+
+    List<RecipeOverview> items = makeOverviews(recipesPage.items(), userId);
+    return CursorPage.of(items, recipesPage.nextCursor());
+  }
+
   @PocOnly(until = "2025-12-31")
   public Pair<List<RecipeCompleteChallenge>, Page<RecipeOverview>> getChallengeRecipes(
-      UUID challengeId, UUID userId, Integer page) {
+      UUID challengeId, UUID userId, int page) {
     Page<RecipeCompleteChallenge> overviews =
         recipeChallengeService.getChallengeRecipes(userId, challengeId, page);
 
@@ -337,10 +386,26 @@ public class RecipeFacade {
         new PageImpl<>(recipeOverviews, overviews.getPageable(), overviews.getTotalElements()));
   }
 
-  private Page<RecipeInfo> getRankingRecipes(RankingType rankingType, Integer page) {
+  @Deprecated(forRemoval = true)
+  private Page<RecipeInfo> getRankingRecipes(RankingType rankingType, int page) {
     Page<UUID> recipeIds = recipeRankService.getRecipeIds(rankingType, page);
     List<RecipeInfo> recipes = recipeInfoService.getValidRecipes(recipeIds.stream().toList());
 
     return new PageImpl<>(recipes, recipeIds.getPageable(), recipeIds.getTotalElements());
+  }
+
+  private CursorPage<RecipeInfo> getRankingRecipes(RankingType rankingType, String cursor) {
+    CursorPage<UUID> rankedIdsPage = recipeRankService.getRecipeIds(rankingType, cursor);
+
+    List<UUID> rankedIds = rankedIdsPage.items();
+
+    List<RecipeInfo> fetched = recipeInfoService.getValidRecipes(rankedIds);
+
+    Map<UUID, RecipeInfo> map =
+        fetched.stream().collect(Collectors.toMap(RecipeInfo::getId, Function.identity()));
+
+    List<RecipeInfo> ordered = rankedIds.stream().map(map::get).filter(Objects::nonNull).toList();
+
+    return CursorPage.of(ordered, rankedIdsPage.nextCursor());
   }
 }

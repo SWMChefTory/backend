@@ -1292,6 +1292,116 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
         }
       }
     }
+
+    @Nested
+    @DisplayName("커서 기반 조회 쿼리")
+    class CursorQueries {
+
+      @BeforeEach
+      void setUp() {
+        LocalDateTime now = LocalDateTime.now();
+        doReturn(now).when(clock).now();
+        recipeInfoRepository.deleteAllInBatch();
+      }
+
+      @Test
+      @DisplayName("인기 레시피 첫 페이지를 조회한다")
+      void shouldFindPopularFirst() {
+        RecipeInfo recipe1 = RecipeInfo.create(clock);
+        recipe1.success(clock);
+        RecipeInfo recipe2 = RecipeInfo.create(clock);
+        recipe2.success(clock);
+        RecipeInfo recipe3 = RecipeInfo.create(clock);
+        recipe3.success(clock);
+
+        recipeInfoRepository.saveAll(List.of(recipe1, recipe2, recipe3));
+        recipeInfoRepository.increaseCount(recipe1.getId());
+        recipeInfoRepository.increaseCount(recipe1.getId());
+        recipeInfoRepository.increaseCount(recipe2.getId());
+
+        Pageable pageable = PageRequest.of(0, 2);
+        List<RecipeInfo> result =
+            recipeInfoRepository.findPopularFirst(RecipeStatus.SUCCESS, pageable);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.getFirst().getId()).isEqualTo(recipe1.getId());
+        assertThat(result.get(1).getId()).isEqualTo(recipe2.getId());
+      }
+
+      @Test
+      @DisplayName("인기 레시피 keyset을 조회한다")
+      void shouldFindPopularKeyset() {
+        RecipeInfo recipe1 = RecipeInfo.create(clock);
+        recipe1.success(clock);
+        RecipeInfo recipe2 = RecipeInfo.create(clock);
+        recipe2.success(clock);
+        RecipeInfo recipe3 = RecipeInfo.create(clock);
+        recipe3.success(clock);
+
+        recipeInfoRepository.saveAll(List.of(recipe1, recipe2, recipe3));
+        recipeInfoRepository.increaseCount(recipe1.getId());
+        recipeInfoRepository.increaseCount(recipe1.getId());
+        recipeInfoRepository.increaseCount(recipe2.getId());
+
+        RecipeInfo latest = recipeInfoRepository.findById(recipe2.getId()).orElseThrow();
+
+        Pageable pageable = PageRequest.of(0, 2);
+        List<RecipeInfo> result =
+            recipeInfoRepository.findPopularKeyset(
+                RecipeStatus.SUCCESS, latest.getViewCount(), latest.getId(), pageable);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(recipe3.getId());
+      }
+
+      @Test
+      @DisplayName("요리 카테고리 첫 페이지를 조회한다")
+      void shouldFindCuisineFirst() {
+        RecipeInfo recipe1 = RecipeInfo.create(clock);
+        recipe1.success(clock);
+        RecipeInfo recipe2 = RecipeInfo.create(clock);
+        recipe2.success(clock);
+
+        UUID recipeId1 = recipeInfoRepository.save(recipe1).getId();
+        UUID recipeId2 = recipeInfoRepository.save(recipe2).getId();
+        createRecipeTag(recipeId1, "한식");
+        createRecipeTag(recipeId2, "한식");
+
+        recipeInfoRepository.increaseCount(recipeId1);
+
+        Pageable pageable = PageRequest.of(0, 2);
+        List<RecipeInfo> result =
+            recipeInfoRepository.findCuisineFirst("한식", RecipeStatus.SUCCESS, pageable);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.getFirst().getId()).isEqualTo(recipeId1);
+      }
+
+      @Test
+      @DisplayName("요리 카테고리 keyset을 조회한다")
+      void shouldFindCuisineKeyset() {
+        RecipeInfo recipe1 = RecipeInfo.create(clock);
+        recipe1.success(clock);
+        RecipeInfo recipe2 = RecipeInfo.create(clock);
+        recipe2.success(clock);
+
+        UUID recipeId1 = recipeInfoRepository.save(recipe1).getId();
+        UUID recipeId2 = recipeInfoRepository.save(recipe2).getId();
+        createRecipeTag(recipeId1, "한식");
+        createRecipeTag(recipeId2, "한식");
+
+        recipeInfoRepository.increaseCount(recipeId1);
+        RecipeInfo last = recipeInfoRepository.findById(recipeId1).orElseThrow();
+
+        Pageable pageable = PageRequest.of(0, 2);
+        List<RecipeInfo> result =
+            recipeInfoRepository.findCuisineKeyset(
+                "한식", RecipeStatus.SUCCESS, last.getViewCount(), last.getId(), pageable);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(recipeId2);
+      }
+    }
   }
 
   private void createYoutubeMeta(UUID recipeId, YoutubeMetaType type) {

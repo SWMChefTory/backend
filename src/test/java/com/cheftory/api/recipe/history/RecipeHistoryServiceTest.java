@@ -6,6 +6,9 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api._common.cursor.ViewedAtCursor;
+import com.cheftory.api._common.cursor.ViewedAtCursorCodec;
 import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import com.cheftory.api.recipe.history.entity.RecipeHistoryCategorizedCount;
 import com.cheftory.api.recipe.history.entity.RecipeHistoryCategorizedCountProjection;
@@ -36,12 +39,14 @@ public class RecipeHistoryServiceTest {
   private RecipeHistoryRepository repository;
   private RecipeHistoryService service;
   private Clock clock;
+  private ViewedAtCursorCodec viewedAtCursorCodec;
 
   @BeforeEach
   void setUp() {
     repository = mock(RecipeHistoryRepository.class);
     clock = mock(Clock.class);
-    service = new RecipeHistoryService(repository, clock);
+    viewedAtCursorCodec = mock(ViewedAtCursorCodec.class);
+    service = new RecipeHistoryService(repository, viewedAtCursorCodec, clock);
   }
 
   @Nested
@@ -168,6 +173,148 @@ public class RecipeHistoryServiceTest {
         verify(repository).save(any(RecipeHistory.class));
         verify(repository).findByUserIdAndRecipeId(userId, recipeId);
       }
+    }
+  }
+
+  @Nested
+  @DisplayName("커서 기반 조회")
+  class CursorQueries {
+
+    @Test
+    @DisplayName("cursor가 비어 있으면 최근 기록 첫 페이지를 조회한다")
+    void shouldGetRecentsFirstPageWithCursor() {
+      UUID userId = UUID.randomUUID();
+      UUID recipeId = UUID.randomUUID();
+      LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
+
+      RecipeHistory history = mock(RecipeHistory.class);
+      doReturn(viewedAt).when(history).getViewedAt();
+      doReturn(recipeId).when(history).getId();
+
+      List<RecipeHistory> rows =
+          List.of(
+              history, history, history, history, history, history, history, history, history,
+              history, history, history, history, history, history, history, history, history,
+              history, history, history, history);
+
+      doReturn(rows)
+          .when(repository)
+          .findRecentsFirst(any(UUID.class), any(RecipeHistoryStatus.class), any(Pageable.class));
+      doReturn("next-cursor")
+          .when(viewedAtCursorCodec)
+          .encode(new ViewedAtCursor(viewedAt, recipeId));
+
+      CursorPage<RecipeHistory> result = service.getRecents(userId, null);
+
+      assertThat(result.items()).hasSize(21);
+      assertThat(result.nextCursor()).isEqualTo("next-cursor");
+      verify(repository)
+          .findRecentsFirst(eq(userId), eq(RecipeHistoryStatus.ACTIVE), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("cursor가 있으면 최근 기록 keyset을 조회한다")
+    void shouldGetRecentsKeysetWithCursor() {
+      UUID userId = UUID.randomUUID();
+      UUID recipeId = UUID.randomUUID();
+      LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
+      ViewedAtCursor decoded = new ViewedAtCursor(viewedAt, recipeId);
+
+      RecipeHistory history = mock(RecipeHistory.class);
+      doReturn(viewedAt.minusMinutes(1)).when(history).getViewedAt();
+      doReturn(UUID.randomUUID()).when(history).getId();
+
+      doReturn(decoded).when(viewedAtCursorCodec).decode("cursor");
+      doReturn(List.of(history))
+          .when(repository)
+          .findRecentsKeyset(
+              eq(userId),
+              eq(RecipeHistoryStatus.ACTIVE),
+              eq(viewedAt),
+              eq(recipeId),
+              any(Pageable.class));
+
+      CursorPage<RecipeHistory> result = service.getRecents(userId, "cursor");
+
+      assertThat(result.items()).hasSize(1);
+      verify(repository)
+          .findRecentsKeyset(
+              eq(userId),
+              eq(RecipeHistoryStatus.ACTIVE),
+              eq(viewedAt),
+              eq(recipeId),
+              any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("커서 기반 카테고리 조회는 keyset을 사용한다")
+    void shouldGetCategorizedKeysetWithCursor() {
+      UUID userId = UUID.randomUUID();
+      UUID categoryId = UUID.randomUUID();
+      UUID recipeId = UUID.randomUUID();
+      LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 2, 10, 0, 0);
+      ViewedAtCursor decoded = new ViewedAtCursor(viewedAt, recipeId);
+
+      RecipeHistory history = mock(RecipeHistory.class);
+      doReturn(viewedAt.minusMinutes(1)).when(history).getViewedAt();
+      doReturn(UUID.randomUUID()).when(history).getId();
+
+      doReturn(decoded).when(viewedAtCursorCodec).decode("cursor");
+      doReturn(List.of(history))
+          .when(repository)
+          .findCategorizedKeyset(
+              eq(userId),
+              eq(categoryId),
+              eq(RecipeHistoryStatus.ACTIVE),
+              eq(viewedAt),
+              eq(recipeId),
+              any(Pageable.class));
+
+      CursorPage<RecipeHistory> result = service.getCategorized(userId, categoryId, "cursor");
+
+      assertThat(result.items()).hasSize(1);
+      verify(repository)
+          .findCategorizedKeyset(
+              eq(userId),
+              eq(categoryId),
+              eq(RecipeHistoryStatus.ACTIVE),
+              eq(viewedAt),
+              eq(recipeId),
+              any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("커서 기반 미분류 조회는 keyset을 사용한다")
+    void shouldGetUncategorizedKeysetWithCursor() {
+      UUID userId = UUID.randomUUID();
+      UUID recipeId = UUID.randomUUID();
+      LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 3, 10, 0, 0);
+      ViewedAtCursor decoded = new ViewedAtCursor(viewedAt, recipeId);
+
+      RecipeHistory history = mock(RecipeHistory.class);
+      doReturn(viewedAt.minusMinutes(1)).when(history).getViewedAt();
+      doReturn(UUID.randomUUID()).when(history).getId();
+
+      doReturn(decoded).when(viewedAtCursorCodec).decode("cursor");
+      doReturn(List.of(history))
+          .when(repository)
+          .findUncategorizedKeyset(
+              eq(userId),
+              eq(RecipeHistoryStatus.ACTIVE),
+              eq(viewedAt),
+              eq(recipeId),
+              any(Pageable.class));
+
+      CursorPage<RecipeHistory> result = service.getUnCategorized(userId, "cursor");
+
+      assertThat(result.items()).hasSize(1);
+      verify(repository)
+          .findUncategorizedKeyset(
+              eq(userId),
+              eq(RecipeHistoryStatus.ACTIVE),
+              eq(viewedAt),
+              eq(recipeId),
+              any(Pageable.class));
     }
   }
 

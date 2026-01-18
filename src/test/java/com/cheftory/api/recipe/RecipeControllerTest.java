@@ -24,6 +24,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
+import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
@@ -227,6 +228,9 @@ public class RecipeControllerTest extends RestDocsTest {
                           queryParameters(
                               parameterWithName("page")
                                   .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional(),
+                              parameterWithName("cursor")
+                                  .description("커서 기반 페이지네이션을 위한 커서 값")
                                   .optional()),
                           responseFields(
                               fieldWithPath("recent_recipes").description("사용자의 최근 레시피 접근 기록"),
@@ -258,7 +262,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                   "recent_recipes[].recipe_status",
                                   "레시피의 현재 상태: ",
                                   RecipeStatus.class),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                              fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
           verify(recipeFacade).getRecents(userId, page);
 
@@ -286,6 +291,32 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
           assertThat(responseBody.getString("recent_recipes[0].recipe_status"))
               .isEqualTo(RecipeStatus.IN_PROGRESS.name());
+        }
+
+        @Test
+        @DisplayName("Then - 커서로 최근 기록을 조회하면 커서 기반 응답을 반환해야 한다")
+        void thenShouldReturnRecentRecipesWithCursor() {
+          String cursor = "cursor-1";
+          String nextCursor = "cursor-2";
+
+          doReturn(CursorPage.of(List.of(recentRecipe), nextCursor))
+              .when(recipeFacade)
+              .getRecents(userId, cursor);
+
+          var response =
+              given()
+                  .contentType(ContentType.JSON)
+                  .attribute("userId", userId.toString())
+                  .header("Authorization", "Bearer accessToken")
+                  .param("cursor", cursor)
+                  .get("/api/v1/recipes/recent")
+                  .then()
+                  .status(HttpStatus.OK)
+                  .body("recent_recipes", hasSize(1))
+                  .body("has_next", equalTo(true))
+                  .body("next_cursor", equalTo(nextCursor));
+
+          verify(recipeFacade).getRecents(userId, cursor);
         }
       }
     }
@@ -937,6 +968,9 @@ public class RecipeControllerTest extends RestDocsTest {
                           queryParameters(
                               parameterWithName("page")
                                   .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional(),
+                              parameterWithName("cursor")
+                                  .description("커서 기반 페이지네이션을 위한 커서 값")
                                   .optional()),
                           responseFields(
                               fieldWithPath("recommend_recipes").description("추천 레시피 목록"),
@@ -970,7 +1004,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                              fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
           verify(recipeFacade)
               .getRecommendRecipes(
@@ -1009,6 +1044,34 @@ public class RecipeControllerTest extends RestDocsTest {
           assertThat(responseBody.getString("total_pages")).isEqualTo("1");
           assertThat(responseBody.getString("total_elements")).isEqualTo("1");
           assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
+        }
+
+        @Test
+        @DisplayName("Then - 커서로 추천 레시피를 조회하면 커서 기반 응답을 반환해야 한다")
+        void thenShouldReturnRecommendRecipesWithCursor() {
+          String cursor = "cursor-1";
+          String nextCursor = "cursor-2";
+
+          doReturn(CursorPage.of(List.of(recipeOverview), nextCursor))
+              .when(recipeFacade)
+              .getRecommendRecipes(
+                  RecipeInfoRecommendType.POPULAR, userId, cursor, RecipeInfoVideoQuery.ALL);
+
+          given()
+              .contentType(ContentType.JSON)
+              .attribute("userId", userId.toString())
+              .header("Authorization", "Bearer accessToken")
+              .param("cursor", cursor)
+              .get("/api/v1/recipes/recommend")
+              .then()
+              .status(HttpStatus.OK)
+              .body("recommend_recipes", hasSize(1))
+              .body("has_next", equalTo(true))
+              .body("next_cursor", equalTo(nextCursor));
+
+          verify(recipeFacade)
+              .getRecommendRecipes(
+                  RecipeInfoRecommendType.POPULAR, userId, cursor, RecipeInfoVideoQuery.ALL);
         }
       }
     }
@@ -1344,6 +1407,9 @@ public class RecipeControllerTest extends RestDocsTest {
                           queryParameters(
                               parameterWithName("page")
                                   .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional(),
+                              parameterWithName("cursor")
+                                  .description("커서 기반 페이지네이션을 위한 커서 값")
                                   .optional()),
                           responseFields(
                               fieldWithPath("categorized_recipes").description("카테고리별 레시피 목록"),
@@ -1380,7 +1446,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                              fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
           verify(recipeFacade).getCategorized(userId, categoryId, page);
 
@@ -1411,6 +1478,31 @@ public class RecipeControllerTest extends RestDocsTest {
         }
 
         @Test
+        @DisplayName("Then - 커서로 카테고리별 레시피를 조회하면 커서 기반 응답을 반환해야 한다")
+        void thenShouldReturnCategorizedRecipesWithCursor() {
+          String cursor = "cursor-1";
+          String nextCursor = "cursor-2";
+
+          doReturn(CursorPage.of(List.of(categorizedRecipe), nextCursor))
+              .when(recipeFacade)
+              .getCategorized(userId, categoryId, cursor);
+
+          given()
+              .contentType(ContentType.JSON)
+              .attribute("userId", userId.toString())
+              .header("Authorization", "Bearer accessToken")
+              .param("cursor", cursor)
+              .get("/api/v1/recipes/categorized/{recipe_category_id}", categoryId)
+              .then()
+              .status(HttpStatus.OK)
+              .body("categorized_recipes", hasSize(1))
+              .body("has_next", equalTo(true))
+              .body("next_cursor", equalTo(nextCursor));
+
+          verify(recipeFacade).getCategorized(userId, categoryId, cursor);
+        }
+
+        @Test
         @DisplayName("Then - DetailMeta가 null이면 해당 필드는 null로 내려간다")
         void thenDetailMetaNullShouldReturnNullFields() {
           RecipeHistoryOverview nullDetailMetaRecipe = mock(RecipeHistoryOverview.class);
@@ -1428,8 +1520,8 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn(180).when(nullDetailMetaRecipe).getVideoSeconds();
           doReturn(categoryId).when(nullDetailMetaRecipe).getRecipeCategoryId();
           doReturn(null).when(nullDetailMetaRecipe).getDescription();
-          doReturn(null).when(nullDetailMetaRecipe).getServings();
-          doReturn(null).when(nullDetailMetaRecipe).getCookTime();
+          doReturn(0).when(nullDetailMetaRecipe).getServings();
+          doReturn(0).when(nullDetailMetaRecipe).getCookTime();
           doReturn(6L).when(nullDetailMetaRecipe).getCreditCost();
           doReturn(null).when(nullDetailMetaRecipe).getRecipeCreatedAt();
           doReturn(tags).when(nullDetailMetaRecipe).getTags();
@@ -1451,8 +1543,8 @@ public class RecipeControllerTest extends RestDocsTest {
                   .status(HttpStatus.OK)
                   .body("categorized_recipes", hasSize(1))
                   .body("categorized_recipes[0].description", nullValue())
-                  .body("categorized_recipes[0].servings", nullValue())
-                  .body("categorized_recipes[0].cook_time", nullValue())
+                  .body("categorized_recipes[0].servings", equalTo(0))
+                  .body("categorized_recipes[0].cook_time", equalTo(0))
                   .body("categorized_recipes[0].created_at", nullValue())
                   .apply(
                       document(
@@ -1463,6 +1555,9 @@ public class RecipeControllerTest extends RestDocsTest {
                           queryParameters(
                               parameterWithName("page")
                                   .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional(),
+                              parameterWithName("cursor")
+                                  .description("커서 기반 페이지네이션을 위한 커서 값")
                                   .optional()),
                           responseFields(
                               fieldWithPath("categorized_recipes").description("미분류 레시피 목록"),
@@ -1500,14 +1595,15 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                              fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
           verify(recipeFacade).getCategorized(userId, categoryId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThatObject(responseBody.get("categorized_recipes[0].description")).isNull();
-          assertThatObject(responseBody.get("categorized_recipes[0].servings")).isNull();
-          assertThatObject(responseBody.get("categorized_recipes[0].cook_time")).isNull();
+          assertThat(responseBody.getInt("categorized_recipes[0].servings")).isEqualTo(0);
+          assertThat(responseBody.getInt("categorized_recipes[0].cook_time")).isEqualTo(0);
           assertThatObject(responseBody.get("categorized_recipes[0].created_at")).isNull();
         }
 
@@ -1536,6 +1632,9 @@ public class RecipeControllerTest extends RestDocsTest {
                           queryParameters(
                               parameterWithName("page")
                                   .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional(),
+                              parameterWithName("cursor")
+                                  .description("커서 기반 페이지네이션을 위한 커서 값")
                                   .optional()),
                           responseFields(
                               fieldWithPath("categorized_recipes").description("미분류 레시피 목록"),
@@ -1571,7 +1670,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                              fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
           verify(recipeFacade).getCategorized(userId, categoryId, page);
 
@@ -1724,6 +1824,9 @@ public class RecipeControllerTest extends RestDocsTest {
                           queryParameters(
                               parameterWithName("page")
                                   .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional(),
+                              parameterWithName("cursor")
+                                  .description("커서 기반 페이지네이션을 위한 커서 값")
                                   .optional()),
                           responseFields(
                               fieldWithPath("unCategorized_recipes").description("미분류 레시피 목록"),
@@ -1760,7 +1863,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                              fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
           verify(recipeFacade).getUnCategorized(userId, page);
 
@@ -1792,6 +1896,31 @@ public class RecipeControllerTest extends RestDocsTest {
         }
 
         @Test
+        @DisplayName("Then - 커서로 미분류 레시피를 조회하면 커서 기반 응답을 반환해야 한다")
+        void thenShouldReturnUncategorizedRecipesWithCursor() {
+          String cursor = "cursor-1";
+          String nextCursor = "cursor-2";
+
+          doReturn(CursorPage.of(List.of(unCategorizedRecipe), nextCursor))
+              .when(recipeFacade)
+              .getUnCategorized(userId, cursor);
+
+          given()
+              .contentType(ContentType.JSON)
+              .attribute("userId", userId.toString())
+              .header("Authorization", "Bearer accessToken")
+              .param("cursor", cursor)
+              .get("/api/v1/recipes/uncategorized")
+              .then()
+              .status(HttpStatus.OK)
+              .body("unCategorized_recipes", hasSize(1))
+              .body("has_next", equalTo(true))
+              .body("next_cursor", equalTo(nextCursor));
+
+          verify(recipeFacade).getUnCategorized(userId, cursor);
+        }
+
+        @Test
         @DisplayName("Then - DetailMeta가 null이면 해당 필드는 null로 내려간다")
         void thenDetailMetaNullShouldReturnNullFields() {
           RecipeHistoryOverview nullDetailMetaRecipe = mock(RecipeHistoryOverview.class);
@@ -1808,8 +1937,8 @@ public class RecipeControllerTest extends RestDocsTest {
           doReturn("uncategorized_video_id").when(nullDetailMetaRecipe).getVideoId();
           doReturn(240).when(nullDetailMetaRecipe).getVideoSeconds();
           doReturn(null).when(nullDetailMetaRecipe).getDescription();
-          doReturn(null).when(nullDetailMetaRecipe).getServings();
-          doReturn(null).when(nullDetailMetaRecipe).getCookTime();
+          doReturn(0).when(nullDetailMetaRecipe).getServings();
+          doReturn(0).when(nullDetailMetaRecipe).getCookTime();
           doReturn(8L).when(nullDetailMetaRecipe).getCreditCost();
           doReturn(null).when(nullDetailMetaRecipe).getRecipeCreatedAt();
           doReturn(tags).when(nullDetailMetaRecipe).getTags();
@@ -1831,8 +1960,8 @@ public class RecipeControllerTest extends RestDocsTest {
                   .status(HttpStatus.OK)
                   .body("unCategorized_recipes", hasSize(1))
                   .body("unCategorized_recipes[0].description", nullValue())
-                  .body("unCategorized_recipes[0].servings", nullValue())
-                  .body("unCategorized_recipes[0].cook_time", nullValue())
+                  .body("unCategorized_recipes[0].servings", equalTo(0))
+                  .body("unCategorized_recipes[0].cook_time", equalTo(0))
                   .body("unCategorized_recipes[0].created_at", nullValue())
                   .apply(
                       document(
@@ -1843,6 +1972,9 @@ public class RecipeControllerTest extends RestDocsTest {
                           queryParameters(
                               parameterWithName("page")
                                   .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                  .optional(),
+                              parameterWithName("cursor")
+                                  .description("커서 기반 페이지네이션을 위한 커서 값")
                                   .optional()),
                           responseFields(
                               fieldWithPath("unCategorized_recipes").description("미분류 레시피 목록"),
@@ -1879,14 +2011,15 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                              fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
           verify(recipeFacade).getUnCategorized(userId, page);
 
           var responseBody = response.extract().jsonPath();
           assertThatObject(responseBody.get("unCategorized_recipes[0].description")).isNull();
-          assertThatObject(responseBody.get("unCategorized_recipes[0].servings")).isNull();
-          assertThatObject(responseBody.get("unCategorized_recipes[0].cook_time")).isNull();
+          assertThat(responseBody.getInt("unCategorized_recipes[0].servings")).isEqualTo(0);
+          assertThat(responseBody.getInt("unCategorized_recipes[0].cook_time")).isEqualTo(0);
           assertThatObject(responseBody.get("unCategorized_recipes[0].created_at")).isNull();
         }
 
@@ -1949,7 +2082,8 @@ public class RecipeControllerTest extends RestDocsTest {
                               fieldWithPath("current_page").description("현재 페이지 번호"),
                               fieldWithPath("total_pages").description("전체 페이지 수"),
                               fieldWithPath("total_elements").description("전체 요소 수"),
-                              fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                              fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                              fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
           verify(recipeFacade).getUnCategorized(userId, page);
 
@@ -2938,6 +3072,51 @@ public class RecipeControllerTest extends RestDocsTest {
             .getRecommendRecipes(
                 RecipeInfoRecommendType.TRENDING, userId, 0, RecipeInfoVideoQuery.ALL);
       }
+
+      @Test
+      @DisplayName("Then - 커서로 트렌딩 레시피를 조회하면 커서 기반 응답을 반환해야 한다")
+      void thenShouldGetTrendingRecipesWithCursor() {
+        String cursor = "cursor-1";
+        String nextCursor = "cursor-2";
+        var recipeId = UUID.randomUUID();
+        var recipeOverview = mock(RecipeOverview.class);
+
+        doReturn(recipeId).when(recipeOverview).getRecipeId();
+        doReturn("트렌딩 레시피 1").when(recipeOverview).getVideoTitle();
+        doReturn("트렌딩 채널 1").when(recipeOverview).getChannelTitle();
+        doReturn(URI.create("https://example.com/thumb1.jpg"))
+            .when(recipeOverview)
+            .getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=1")).when(recipeOverview).getVideoUri();
+        doReturn("video1").when(recipeOverview).getVideoId();
+        doReturn(180).when(recipeOverview).getVideoSeconds();
+        doReturn(1000).when(recipeOverview).getViewCount();
+        doReturn(false).when(recipeOverview).getIsViewed();
+        doReturn(YoutubeMetaType.NORMAL).when(recipeOverview).getVideoType();
+        doReturn(List.of("인기")).when(recipeOverview).getTags();
+        doReturn("트렌딩 레시피 설명 1").when(recipeOverview).getDescription();
+        doReturn(2).when(recipeOverview).getServings();
+        doReturn(30).when(recipeOverview).getCookTime();
+        doReturn(9L).when(recipeOverview).getCreditCost();
+
+        doReturn(CursorPage.of(List.of(recipeOverview), nextCursor))
+            .when(recipeFacade)
+            .getRecommendRecipes(
+                RecipeInfoRecommendType.TRENDING, userId, cursor, RecipeInfoVideoQuery.ALL);
+
+        given()
+            .queryParam("cursor", cursor)
+            .get("/api/v1/recipes/recommend/trending")
+            .then()
+            .status(HttpStatus.OK)
+            .body("recommend_recipes", hasSize(1))
+            .body("has_next", equalTo(true))
+            .body("next_cursor", equalTo(nextCursor));
+
+        verify(recipeFacade)
+            .getRecommendRecipes(
+                RecipeInfoRecommendType.TRENDING, userId, cursor, RecipeInfoVideoQuery.ALL);
+      }
     }
   }
 
@@ -3050,6 +3229,53 @@ public class RecipeControllerTest extends RestDocsTest {
         verify(recipeFacade)
             .getRecommendRecipes(RecipeInfoRecommendType.CHEF, userId, 0, RecipeInfoVideoQuery.ALL);
       }
+
+      @Test
+      @DisplayName("Then - 커서로 셰프 레시피를 조회하면 커서 기반 응답을 반환해야 한다")
+      void thenShouldGetChefRecipesWithCursor() {
+        String cursor = "cursor-1";
+        String nextCursor = "cursor-2";
+        var recipeId = UUID.randomUUID();
+        var recipeOverview = mock(RecipeOverview.class);
+
+        doReturn(recipeId).when(recipeOverview).getRecipeId();
+        doReturn("셰프 레시피 1").when(recipeOverview).getVideoTitle();
+        doReturn("셰프 채널 1").when(recipeOverview).getChannelTitle();
+        doReturn(URI.create("https://example.com/chef1.jpg"))
+            .when(recipeOverview)
+            .getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=chef1"))
+            .when(recipeOverview)
+            .getVideoUri();
+        doReturn("chef1").when(recipeOverview).getVideoId();
+        doReturn(300).when(recipeOverview).getVideoSeconds();
+        doReturn(5000).when(recipeOverview).getViewCount();
+        doReturn(false).when(recipeOverview).getIsViewed();
+        doReturn(YoutubeMetaType.NORMAL).when(recipeOverview).getVideoType();
+        doReturn(List.of("고급")).when(recipeOverview).getTags();
+        doReturn("셰프 레시피 설명 1").when(recipeOverview).getDescription();
+        doReturn(4).when(recipeOverview).getServings();
+        doReturn(60).when(recipeOverview).getCookTime();
+        doReturn(12L).when(recipeOverview).getCreditCost();
+
+        doReturn(CursorPage.of(List.of(recipeOverview), nextCursor))
+            .when(recipeFacade)
+            .getRecommendRecipes(
+                RecipeInfoRecommendType.CHEF, userId, cursor, RecipeInfoVideoQuery.ALL);
+
+        given()
+            .queryParam("cursor", cursor)
+            .get("/api/v1/recipes/recommend/chef")
+            .then()
+            .status(HttpStatus.OK)
+            .body("recommend_recipes", hasSize(1))
+            .body("has_next", equalTo(true))
+            .body("next_cursor", equalTo(nextCursor));
+
+        verify(recipeFacade)
+            .getRecommendRecipes(
+                RecipeInfoRecommendType.CHEF, userId, cursor, RecipeInfoVideoQuery.ALL);
+      }
     }
 
     @Nested
@@ -3137,6 +3363,9 @@ public class RecipeControllerTest extends RestDocsTest {
                         queryParameters(
                             parameterWithName("page")
                                 .description("페이지 번호 (0부터 시작, 기본값: 0)")
+                                .optional(),
+                            parameterWithName("cursor")
+                                .description("커서 기반 페이지네이션을 위한 커서 값")
                                 .optional()),
                         responseFields(
                             fieldWithPath("cuisine_recipes").description("요리 카테고리별 레시피 목록"),
@@ -3164,7 +3393,8 @@ public class RecipeControllerTest extends RestDocsTest {
                             fieldWithPath("current_page").description("현재 페이지 번호"),
                             fieldWithPath("total_pages").description("전체 페이지 수"),
                             fieldWithPath("total_elements").description("전체 요소 수"),
-                            fieldWithPath("has_next").description("다음 페이지 존재 여부"))));
+                            fieldWithPath("has_next").description("다음 페이지 존재 여부"),
+                            fieldWithPath("next_cursor").description("다음 커서 값 (커서 페이지네이션)"))));
 
         verify(recipeFacade).getCuisineRecipes(RecipeCuisineType.KOREAN, userId, 0);
 
@@ -3189,6 +3419,52 @@ public class RecipeControllerTest extends RestDocsTest {
             .isEqualTo("https://example.com/korean1.jpg");
         assertThat(responseBody.getInt("cuisine_recipes[0].video_seconds")).isEqualTo(180);
         assertThat(responseBody.getLong("cuisine_recipes[0].credit_cost")).isEqualTo(11L);
+      }
+
+      @Test
+      @DisplayName("Then - 커서로 요리 카테고리별 레시피를 조회하면 커서 기반 응답을 반환해야 한다")
+      void thenShouldGetCuisineRecipesWithCursor() {
+        String cursor = "cursor-1";
+        String nextCursor = "cursor-2";
+        var recipeId = UUID.randomUUID();
+        var recipeOverview = mock(RecipeOverview.class);
+
+        doReturn(recipeId).when(recipeOverview).getRecipeId();
+        doReturn("한식 레시피 1").when(recipeOverview).getVideoTitle();
+        doReturn("한식 채널").when(recipeOverview).getChannelTitle();
+        doReturn(URI.create("https://example.com/korean1.jpg"))
+            .when(recipeOverview)
+            .getThumbnailUrl();
+        doReturn(URI.create("https://youtube.com/watch?v=korean1"))
+            .when(recipeOverview)
+            .getVideoUri();
+        doReturn(1000).when(recipeOverview).getViewCount();
+        doReturn("korean1").when(recipeOverview).getVideoId();
+        doReturn(180).when(recipeOverview).getVideoSeconds();
+        doReturn(false).when(recipeOverview).getIsViewed();
+        doReturn(YoutubeMetaType.NORMAL).when(recipeOverview).getVideoType();
+        doReturn(List.of("한식")).when(recipeOverview).getTags();
+        doReturn("맛있는 한식 레시피입니다").when(recipeOverview).getDescription();
+        doReturn(2).when(recipeOverview).getServings();
+        doReturn(30).when(recipeOverview).getCookTime();
+        doReturn(11L).when(recipeOverview).getCreditCost();
+
+        doReturn(CursorPage.of(List.of(recipeOverview), nextCursor))
+            .when(recipeFacade)
+            .getCuisineRecipes(RecipeCuisineType.KOREAN, userId, cursor);
+
+        given()
+            .queryParam("cursor", cursor)
+            .attribute("userId", userId.toString())
+            .header("Authorization", "Bearer accessToken")
+            .get("/api/v1/recipes/cuisine/korean")
+            .then()
+            .status(HttpStatus.OK)
+            .body("cuisine_recipes", hasSize(1))
+            .body("has_next", equalTo(true))
+            .body("next_cursor", equalTo(nextCursor));
+
+        verify(recipeFacade).getCuisineRecipes(RecipeCuisineType.KOREAN, userId, cursor);
       }
     }
 

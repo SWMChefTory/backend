@@ -2,11 +2,15 @@ package com.cheftory.api.recipe.rank;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api._common.cursor.RankCursor;
+import com.cheftory.api._common.cursor.RankCursorCodec;
 import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
@@ -25,13 +29,16 @@ public class RecipeRankServiceTest {
 
   private RecipeRankRepository recipeRankRepository;
   private RankingKeyGenerator rankingKeyGenerator;
+  private RankCursorCodec rankCursorCodec;
   private RecipeRankService recipeRankService;
 
   @BeforeEach
   void setUp() {
     recipeRankRepository = mock(RecipeRankRepository.class);
     rankingKeyGenerator = mock(RankingKeyGenerator.class);
-    recipeRankService = new RecipeRankService(recipeRankRepository, rankingKeyGenerator);
+    rankCursorCodec = mock(RankCursorCodec.class);
+    recipeRankService =
+        new RecipeRankService(recipeRankRepository, rankingKeyGenerator, rankCursorCodec);
   }
 
   @Nested
@@ -298,6 +305,59 @@ public class RecipeRankServiceTest {
           verify(recipeRankRepository).count(actualRankingKey);
         }
       }
+    }
+
+    @Test
+    @DisplayName("커서 기반 첫 페이지를 조회한다")
+    void shouldGetRecipeIdsWithCursorFirst() {
+      RankingType rankingType = RankingType.TRENDING;
+      String latestKey = "trendRecipe:latest";
+      String rankingKey = "trendRecipe:ranking:20240101120000";
+      List<String> recipeIds =
+          List.of(
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID(),
+                  UUID.randomUUID())
+              .stream()
+              .map(UUID::toString)
+              .toList();
+
+      doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
+      doReturn(Optional.of(rankingKey)).when(recipeRankRepository).findLatest(latestKey);
+      doReturn(recipeIds).when(recipeRankRepository).findRecipeIdsByRank(rankingKey, 1, 11);
+      doReturn("next-cursor").when(rankCursorCodec).encode(any(RankCursor.class));
+
+      CursorPage<UUID> result = recipeRankService.getRecipeIds(rankingType, null);
+
+      assertThat(result.items()).hasSize(10);
+      assertThat(result.nextCursor()).isEqualTo("next-cursor");
+      verify(recipeRankRepository).findRecipeIdsByRank(rankingKey, 1, 11);
+    }
+
+    @Test
+    @DisplayName("커서 기반 다음 페이지를 조회한다")
+    void shouldGetRecipeIdsWithCursorNext() {
+      RankingType rankingType = RankingType.CHEF;
+      RankCursor decoded = new RankCursor("chefRecipe:ranking:20240101120000", 10);
+
+      doReturn(decoded).when(rankCursorCodec).decode("cursor");
+      doReturn(List.of(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+          .when(recipeRankRepository)
+          .findRecipeIdsByRank(decoded.rankingKey(), 11, 11);
+
+      CursorPage<UUID> result = recipeRankService.getRecipeIds(rankingType, "cursor");
+
+      assertThat(result.items()).hasSize(2);
+      assertThat(result.nextCursor()).isNull();
+      verify(recipeRankRepository).findRecipeIdsByRank(decoded.rankingKey(), 11, 11);
     }
   }
 }

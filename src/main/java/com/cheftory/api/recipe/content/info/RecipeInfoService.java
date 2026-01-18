@@ -2,6 +2,11 @@ package com.cheftory.api.recipe.content.info;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.I18nTranslator;
+import com.cheftory.api._common.cursor.CountIdCursor;
+import com.cheftory.api._common.cursor.CountIdCursorCodec;
+import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api._common.cursor.CursorPageable;
+import com.cheftory.api._common.cursor.CursorPages;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
@@ -25,6 +30,7 @@ public class RecipeInfoService {
   private final RecipeInfoRepository recipeInfoRepository;
   private final Clock clock;
   private final I18nTranslator i18nTranslator;
+  private final CountIdCursorCodec countIdCursorCodec;
 
   public RecipeInfo getSuccess(UUID recipeId) {
 
@@ -82,13 +88,50 @@ public class RecipeInfoService {
     return recipeInfoRepository.findAllByIdIn(recipeIds);
   }
 
-  public Page<RecipeInfo> getPopulars(Integer page, RecipeInfoVideoQuery videoQuery) {
+  @Deprecated(forRemoval = true)
+  public Page<RecipeInfo> getPopulars(int page, RecipeInfoVideoQuery videoQuery) {
     Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
 
     return switch (videoQuery) {
       case ALL -> recipeInfoRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
       case NORMAL, SHORTS ->
           recipeInfoRepository.findRecipes(RecipeStatus.SUCCESS, pageable, videoQuery.name());
+    };
+  }
+
+  public CursorPage<RecipeInfo> getPopulars(String cursor, RecipeInfoVideoQuery videoQuery) {
+    Pageable pageable = CursorPageable.firstPage();
+    boolean first = (cursor == null || cursor.isBlank());
+
+    List<RecipeInfo> rows =
+        first ? popularFirst(videoQuery, pageable) : popularKeyset(videoQuery, cursor, pageable);
+
+    return CursorPages.of(
+        rows,
+        pageable.getPageSize(),
+        r -> countIdCursorCodec.encode(new CountIdCursor(r.getViewCount(), r.getId())));
+  }
+
+  private List<RecipeInfo> popularFirst(RecipeInfoVideoQuery videoQuery, Pageable pageable) {
+    return switch (videoQuery) {
+      case ALL -> recipeInfoRepository.findPopularFirst(RecipeStatus.SUCCESS, pageable);
+      case NORMAL, SHORTS ->
+          recipeInfoRepository.findPopularByVideoTypeFirst(
+              RecipeStatus.SUCCESS, videoQuery.name(), pageable);
+    };
+  }
+
+  private List<RecipeInfo> popularKeyset(
+      RecipeInfoVideoQuery videoQuery, String cursor, Pageable pageable) {
+    CountIdCursor p = countIdCursorCodec.decode(cursor);
+
+    return switch (videoQuery) {
+      case ALL ->
+          recipeInfoRepository.findPopularKeyset(
+              RecipeStatus.SUCCESS, p.lastCount(), p.lastId(), pageable);
+      case NORMAL, SHORTS ->
+          recipeInfoRepository.findPopularByVideoTypeKeyset(
+              RecipeStatus.SUCCESS, videoQuery.name(), p.lastCount(), p.lastId(), pageable);
     };
   }
 
@@ -129,9 +172,32 @@ public class RecipeInfoService {
         .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
   }
 
-  public Page<RecipeInfo> getCuisines(RecipeCuisineType type, Integer page) {
+  @Deprecated(forRemoval = true)
+  public Page<RecipeInfo> getCuisines(RecipeCuisineType type, int page) {
     Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
     String cuisine = i18nTranslator.translate(type.messageKey());
     return recipeInfoRepository.findCuisineRecipes(cuisine, RecipeStatus.SUCCESS, pageable);
+  }
+
+  public CursorPage<RecipeInfo> getCuisines(RecipeCuisineType type, String cursor) {
+    String tag = i18nTranslator.translate(type.messageKey());
+    Pageable pageable = CursorPageable.firstPage();
+    boolean first = (cursor == null || cursor.isBlank());
+
+    List<RecipeInfo> rows =
+        first
+            ? recipeInfoRepository.findCuisineFirst(tag, RecipeStatus.SUCCESS, pageable)
+            : cuisineKeyset(tag, cursor, pageable);
+
+    return CursorPages.of(
+        rows,
+        pageable.getPageSize(),
+        r -> countIdCursorCodec.encode(new CountIdCursor(r.getViewCount(), r.getId())));
+  }
+
+  private List<RecipeInfo> cuisineKeyset(String tag, String cursor, Pageable pageable) {
+    CountIdCursor p = countIdCursorCodec.decode(cursor);
+    return recipeInfoRepository.findCuisineKeyset(
+        tag, RecipeStatus.SUCCESS, p.lastCount(), p.lastId(), pageable);
   }
 }

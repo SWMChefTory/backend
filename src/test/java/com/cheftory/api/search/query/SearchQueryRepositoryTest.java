@@ -27,6 +27,7 @@ import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
+import org.opensearch.client.opensearch.core.search.Pit;
 import org.opensearch.client.opensearch.core.search.TotalHits;
 import org.opensearch.client.opensearch.core.search.TotalHitsRelation;
 import org.springframework.data.domain.Page;
@@ -162,6 +163,71 @@ public class SearchQueryRepositoryTest {
             .isInstanceOf(SearchException.class)
             .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.SEARCH_FAILED);
       }
+    }
+
+    @Test
+    @DisplayName("When - 커서 첫 페이지를 조회하면 Then - PIT 기반 검색 요청이 생성된다")
+    void whenSearchingFirstCursor_thenCreatesPitRequest() throws IOException {
+      String keyword = "김치찌개";
+      Pageable pageable = PageRequest.of(0, 2);
+
+      SearchQuery recipe1 = SearchQuery.builder().id("1").searchText("김치찌개").build();
+      List<Hit<SearchQuery>> hits = List.of(createHit(recipe1));
+      TotalHits totalHits = TotalHits.of(t -> t.value(1).relation(TotalHitsRelation.Eq));
+      HitsMetadata<SearchQuery> hitsMetadata = HitsMetadata.of(h -> h.hits(hits).total(totalHits));
+      SearchResponse<SearchQuery> mockResponse =
+          SearchResponse.searchResponseOf(
+              r ->
+                  r.hits(hitsMetadata)
+                      .took(1L)
+                      .timedOut(false)
+                      .shards(s -> s.total(1).successful(1).failed(0)));
+
+      doReturn(mockResponse)
+          .when(openSearchClient)
+          .search(any(SearchRequest.class), eq(SearchQuery.class));
+
+      searchQueryRepository.searchByKeywordCursorFirst(keyword, "now", "pit-1", pageable);
+
+      ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+      verify(openSearchClient).search(requestCaptor.capture(), eq(SearchQuery.class));
+
+      SearchRequest capturedRequest = requestCaptor.getValue();
+      Pit pit = capturedRequest.pit();
+      assertThat(pit).isNotNull();
+      assertThat(pit.id()).isEqualTo("pit-1");
+    }
+
+    @Test
+    @DisplayName("When - 커서 keyset을 조회하면 Then - search_after가 포함된다")
+    void whenSearchingCursorKeyset_thenUsesSearchAfter() throws IOException {
+      String keyword = "김치찌개";
+      Pageable pageable = PageRequest.of(0, 2);
+
+      SearchQuery recipe1 = SearchQuery.builder().id("1").searchText("김치찌개").build();
+      List<Hit<SearchQuery>> hits = List.of(createHit(recipe1));
+      TotalHits totalHits = TotalHits.of(t -> t.value(1).relation(TotalHitsRelation.Eq));
+      HitsMetadata<SearchQuery> hitsMetadata = HitsMetadata.of(h -> h.hits(hits).total(totalHits));
+      SearchResponse<SearchQuery> mockResponse =
+          SearchResponse.searchResponseOf(
+              r ->
+                  r.hits(hitsMetadata)
+                      .took(1L)
+                      .timedOut(false)
+                      .shards(s -> s.total(1).successful(1).failed(0)));
+
+      doReturn(mockResponse)
+          .when(openSearchClient)
+          .search(any(SearchRequest.class), eq(SearchQuery.class));
+
+      searchQueryRepository.searchByKeywordCursorKeyset(
+          keyword, "now", "pit-1", 1.2, "id-10", pageable);
+
+      ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+      verify(openSearchClient).search(requestCaptor.capture(), eq(SearchQuery.class));
+
+      SearchRequest capturedRequest = requestCaptor.getValue();
+      assertThat(capturedRequest.searchAfter()).hasSize(2);
     }
   }
 
