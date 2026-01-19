@@ -20,6 +20,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.11] - 2026-01-19
+
+### Added
+
+- **CursorPageable.probe 도입**: hasNext 판정을 위한 pageSize+1 프로브 Pageable 추가
+- **챌린지 커서 페이지네이션**: 챌린지 레시피 조회에 cursor 기반 페이지네이션 지원
+
+### Changed
+
+- **CursorPageable.firstPage 동작 정리**: 응답 사이즈와 일치하도록 firstPage 크기 정렬
+- **커서 페이지네이션 로직 정비**: 레시피 관련 서비스에서 probe 기반 조회로 hasNext 일관성 확보
+- **챌린지 레시피 응답 확장**: `next_cursor` 필드 추가
+
+### Fixed
+
+- **커서 페이지네이션 테스트 보완**: RecipeInfo/History 서비스 테스트에서 probe 결과 반영
+
+---
+
 ## [1.1.10] - 2026-01-18
 
 ### Added

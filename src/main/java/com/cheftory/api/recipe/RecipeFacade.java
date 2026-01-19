@@ -386,6 +386,28 @@ public class RecipeFacade {
         new PageImpl<>(recipeOverviews, overviews.getPageable(), overviews.getTotalElements()));
   }
 
+  @PocOnly(until = "2025-12-31")
+  public Pair<List<RecipeCompleteChallenge>, CursorPage<RecipeOverview>> getChallengeRecipes(
+      UUID challengeId, UUID userId, String cursor) {
+    CursorPage<RecipeCompleteChallenge> overviews =
+        recipeChallengeService.getChallengeRecipes(userId, challengeId, cursor);
+
+    List<RecipeCompleteChallenge> challengeOverviews = overviews.items();
+    List<UUID> recipeIds =
+        challengeOverviews.stream().map(RecipeCompleteChallenge::getRecipeId).toList();
+
+    List<RecipeOverview> fetched =
+        makeOverviews(recipeInfoService.getValidRecipes(recipeIds), userId);
+
+    Map<UUID, RecipeOverview> map =
+        fetched.stream().collect(Collectors.toMap(RecipeOverview::getRecipeId, Function.identity()));
+
+    List<RecipeOverview> ordered =
+        recipeIds.stream().map(map::get).filter(Objects::nonNull).toList();
+
+    return Pair.of(challengeOverviews, CursorPage.of(ordered, overviews.nextCursor()));
+  }
+
   @Deprecated(forRemoval = true)
   private Page<RecipeInfo> getRankingRecipes(RankingType rankingType, int page) {
     Page<UUID> recipeIds = recipeRankService.getRecipeIds(rankingType, page);
