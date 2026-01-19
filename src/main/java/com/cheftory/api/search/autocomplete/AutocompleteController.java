@@ -8,15 +8,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/recipes/search/autocomplete")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class AutocompleteController {
 
   private final AutocompleteService autocompleteService;
 
-  @GetMapping
-  public AutocompletesResponse getAutocomplete(@RequestParam String query) {
+  @Deprecated(forRemoval = true, since = "v1")
+  @GetMapping("/recipes/search/autocomplete")
+  public AutocompletesResponse getRecipeAutocomplete(@RequestParam("query") String query) {
     List<Autocomplete> autocompletes = autocompleteService.autocomplete(query);
+    return AutocompletesResponse.from(autocompletes);
+  }
+
+  @GetMapping("/search/autocomplete")
+  public AutocompletesResponse getAutocomplete(
+      @RequestParam("query") String query,
+      @RequestParam(value = "scope", defaultValue = "RECIPE") AutocompleteScope scope) {
+    List<Autocomplete> autocompletes = autocompleteService.autocomplete(scope, query);
     return AutocompletesResponse.from(autocompletes);
   }
 }

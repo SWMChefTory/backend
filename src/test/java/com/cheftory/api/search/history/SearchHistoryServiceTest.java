@@ -50,9 +50,9 @@ class SearchHistoryServiceTest {
       void setUp() {
         userId = UUID.randomUUID();
         searchText = "김치찌개";
-        key = "recipeSearch:history:" + userId;
+        key = "korea:searchHistory:recipe:" + userId;
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         doNothing().when(repository).save(anyString(), anyString(), any(Clock.class));
         doNothing().when(repository).removeOldEntries(anyString(), anyInt());
         doNothing().when(repository).setExpire(anyString(), any(Duration.class));
@@ -67,7 +67,7 @@ class SearchHistoryServiceTest {
         void thenShouldSaveSearchText() {
           service.create(userId, searchText);
 
-          verify(keyGenerator).generate(userId);
+          verify(keyGenerator).generate(userId, SearchHistoryScope.RECIPE);
           verify(repository).save(key, searchText, clock);
         }
 
@@ -111,7 +111,7 @@ class SearchHistoryServiceTest {
         void thenShouldNotSaveAnything() {
           service.create(userId, searchText);
 
-          verify(keyGenerator, never()).generate(any(UUID.class));
+          verify(keyGenerator, never()).generate(any(UUID.class), any(SearchHistoryScope.class));
           verify(repository, never()).save(anyString(), anyString(), any(Clock.class));
           verify(repository, never()).removeOldEntries(anyString(), anyInt());
           verify(repository, never()).setExpire(anyString(), any(Duration.class));
@@ -141,7 +141,7 @@ class SearchHistoryServiceTest {
         void thenShouldNotSaveAnything() {
           service.create(userId, searchText);
 
-          verify(keyGenerator, never()).generate(any(UUID.class));
+          verify(keyGenerator, never()).generate(any(UUID.class), any(SearchHistoryScope.class));
           verify(repository, never()).save(anyString(), anyString(), any(Clock.class));
           verify(repository, never()).removeOldEntries(anyString(), anyInt());
           verify(repository, never()).setExpire(anyString(), any(Duration.class));
@@ -165,7 +165,7 @@ class SearchHistoryServiceTest {
         trimmedText = "김치찌개";
         key = "recipeSearch:history:" + userId;
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         doNothing().when(repository).save(anyString(), anyString(), any(Clock.class));
         doNothing().when(repository).removeOldEntries(anyString(), anyInt());
         doNothing().when(repository).setExpire(anyString(), any(Duration.class));
@@ -199,7 +199,7 @@ class SearchHistoryServiceTest {
         searchText = "김치찌개!@#$%^&*()";
         key = "recipeSearch:history:" + userId;
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         doNothing().when(repository).save(anyString(), anyString(), any(Clock.class));
         doNothing().when(repository).removeOldEntries(anyString(), anyInt());
         doNothing().when(repository).setExpire(anyString(), any(Duration.class));
@@ -238,7 +238,7 @@ class SearchHistoryServiceTest {
         key = "recipeSearch:history:" + userId;
         expectedHistory = List.of("김치찌개", "된장찌개", "부대찌개");
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         when(repository.findRecent(key, 10)).thenReturn(expectedHistory);
       }
 
@@ -252,7 +252,7 @@ class SearchHistoryServiceTest {
           List<String> result = service.get(userId);
 
           assertThat(result).isEqualTo(expectedHistory);
-          verify(keyGenerator).generate(userId);
+          verify(keyGenerator).generate(userId, SearchHistoryScope.RECIPE);
           verify(repository).findRecent(key, 10);
         }
       }
@@ -270,7 +270,7 @@ class SearchHistoryServiceTest {
         userId = UUID.randomUUID();
         key = "recipeSearch:history:" + userId;
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         when(repository.findRecent(key, 10)).thenReturn(List.of());
       }
 
@@ -284,7 +284,7 @@ class SearchHistoryServiceTest {
           List<String> result = service.get(userId);
 
           assertThat(result).isEmpty();
-          verify(keyGenerator).generate(userId);
+          verify(keyGenerator).generate(userId, SearchHistoryScope.RECIPE);
           verify(repository).findRecent(key, 10);
         }
       }
@@ -306,7 +306,7 @@ class SearchHistoryServiceTest {
             List.of(
                 "검색어1", "검색어2", "검색어3", "검색어4", "검색어5", "검색어6", "검색어7", "검색어8", "검색어9", "검색어10");
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         when(repository.findRecent(key, 10)).thenReturn(expectedHistory);
       }
 
@@ -345,7 +345,7 @@ class SearchHistoryServiceTest {
         searchText = "김치찌개";
         key = "recipeSearch:history:" + userId;
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         doNothing().when(repository).remove(anyString(), anyString());
       }
 
@@ -358,7 +358,7 @@ class SearchHistoryServiceTest {
         void thenShouldDeleteSearchText() {
           service.delete(userId, searchText);
 
-          verify(keyGenerator).generate(userId);
+          verify(keyGenerator).generate(userId, SearchHistoryScope.RECIPE);
           verify(repository).remove(key, searchText);
         }
       }
@@ -386,7 +386,7 @@ class SearchHistoryServiceTest {
         void thenShouldNotDeleteAnything() {
           service.delete(userId, searchText);
 
-          verify(keyGenerator, never()).generate(any(UUID.class));
+          verify(keyGenerator, never()).generate(any(UUID.class), any(SearchHistoryScope.class));
           verify(repository, never()).remove(anyString(), anyString());
         }
       }
@@ -414,7 +414,7 @@ class SearchHistoryServiceTest {
         void thenShouldNotDeleteAnything() {
           service.delete(userId, searchText);
 
-          verify(keyGenerator, never()).generate(any(UUID.class));
+          verify(keyGenerator, never()).generate(any(UUID.class), any(SearchHistoryScope.class));
           verify(repository, never()).remove(anyString(), anyString());
         }
       }
@@ -436,7 +436,7 @@ class SearchHistoryServiceTest {
         trimmedText = "김치찌개";
         key = "recipeSearch:history:" + userId;
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         doNothing().when(repository).remove(anyString(), anyString());
       }
 
@@ -468,7 +468,7 @@ class SearchHistoryServiceTest {
         searchText = "존재하지않는검색어";
         key = "recipeSearch:history:" + userId;
 
-        when(keyGenerator.generate(userId)).thenReturn(key);
+        when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
         doNothing().when(repository).remove(anyString(), anyString());
       }
 
@@ -500,7 +500,7 @@ class SearchHistoryServiceTest {
       String searchText2 = "된장찌개";
       String searchText3 = "부대찌개";
 
-      when(keyGenerator.generate(userId)).thenReturn(key);
+      when(keyGenerator.generate(userId, SearchHistoryScope.RECIPE)).thenReturn(key);
       doNothing().when(repository).save(anyString(), anyString(), any(Clock.class));
       doNothing().when(repository).removeOldEntries(anyString(), anyInt());
       doNothing().when(repository).setExpire(anyString(), any(Duration.class));
@@ -528,7 +528,7 @@ class SearchHistoryServiceTest {
       service.create(userId, "");
       service.create(userId, "   ");
 
-      verify(keyGenerator, never()).generate(any(UUID.class));
+      verify(keyGenerator, never()).generate(any(UUID.class), any(SearchHistoryScope.class));
       verify(repository, never()).save(anyString(), anyString(), any(Clock.class));
     }
   }

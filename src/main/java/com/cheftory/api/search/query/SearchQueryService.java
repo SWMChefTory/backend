@@ -22,12 +22,13 @@ public class SearchQueryService {
   private static final int CURSOR_PAGE_SIZE = 20;
 
   @Deprecated(forRemoval = true)
-  public Page<SearchQuery> searchByKeyword(String text, int page) {
+  public Page<SearchQuery> searchByKeyword(SearchQueryScope scope, String text, int page) {
     Pageable pageable = SearchPageRequest.create(page);
-    return searchQueryRepository.searchByKeyword(text, pageable);
+    return searchQueryRepository.searchByKeyword(scope, text, pageable);
   }
 
-  public CursorPage<SearchQuery> searchByKeyword(String text, String cursor) {
+  public CursorPage<SearchQuery> searchByKeyword(
+      SearchQueryScope scope, String text, String cursor) {
     boolean first = (cursor == null || cursor.isBlank());
     Pageable pageable = PageRequest.of(0, CURSOR_PAGE_SIZE + 1);
 
@@ -38,9 +39,16 @@ public class SearchQueryService {
 
     List<Hit<SearchQuery>> rows =
         first
-            ? searchQueryRepository.searchByKeywordCursorFirst(text, anchorNowIso, pitId, pageable)
+            ? searchQueryRepository.searchByKeywordCursorFirst(
+                scope, text, anchorNowIso, pitId, pageable)
             : searchQueryRepository.searchByKeywordCursorKeyset(
-                text, anchorNowIso, pitId, scoreIdCursor.score(), scoreIdCursor.id(), pageable);
+                scope,
+                text,
+                anchorNowIso,
+                pitId,
+                scoreIdCursor.score(),
+                scoreIdCursor.id(),
+                pageable);
 
     CursorPage<Hit<SearchQuery>> page =
         CursorPages.of(

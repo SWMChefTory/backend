@@ -136,7 +136,7 @@ public class RecipeHistoryService {
     List<RecipeHistory> rows =
         first
             ? recipeHistoryRepository.findCategorizedFirst(
-            userId, categoryId, RecipeHistoryStatus.ACTIVE, probe)
+                userId, categoryId, RecipeHistoryStatus.ACTIVE, probe)
             : keyset(userId, categoryId, cursor, probe);
 
     return CursorPages.of(
@@ -158,7 +158,6 @@ public class RecipeHistoryService {
         userId, null, RecipeHistoryStatus.ACTIVE, pageable);
   }
 
-
   public CursorPage<RecipeHistory> getUnCategorized(UUID userId, String cursor) {
     Pageable pageable = CursorPageable.firstPage();
     Pageable probe = CursorPageable.probe(pageable);
@@ -167,7 +166,7 @@ public class RecipeHistoryService {
     List<RecipeHistory> rows =
         first
             ? recipeHistoryRepository.findUncategorizedFirst(
-            userId, RecipeHistoryStatus.ACTIVE, probe)
+                userId, RecipeHistoryStatus.ACTIVE, probe)
             : keysetUncategorized(userId, cursor, probe);
 
     return CursorPages.of(

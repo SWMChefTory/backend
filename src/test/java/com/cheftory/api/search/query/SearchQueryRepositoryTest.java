@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api._common.MarketContextTestExtension;
 import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
@@ -34,7 +35,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, MarketContextTestExtension.class})
 @DisplayName("RecipeSearchRepository Tests")
 public class SearchQueryRepositoryTest {
 
@@ -85,7 +86,8 @@ public class SearchQueryRepositoryTest {
       @Test
       @DisplayName("When - 검색을 수행하면 Then - 검색 결과가 페이지로 반환된다")
       void whenSearching_thenReturnsPagedResults() throws IOException {
-        Page<SearchQuery> result = searchQueryRepository.searchByKeyword(keyword, pageable);
+        Page<SearchQuery> result =
+            searchQueryRepository.searchByKeyword(SearchQueryScope.RECIPE, keyword, pageable);
 
         assertThat(result.getContent()).hasSize(3);
         assertThat(result.getTotalElements()).isEqualTo(3);
@@ -95,7 +97,7 @@ public class SearchQueryRepositoryTest {
         verify(openSearchClient).search(requestCaptor.capture(), eq(SearchQuery.class));
 
         SearchRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.index()).contains("recipes");
+        assertThat(capturedRequest.index()).contains("search_query");
         assertThat(capturedRequest.from()).isEqualTo(0);
         assertThat(capturedRequest.size()).isEqualTo(3);
       }
@@ -132,7 +134,8 @@ public class SearchQueryRepositoryTest {
       @Test
       @DisplayName("When - 검색을 수행하면 Then - 빈 페이지가 반환된다")
       void whenSearching_thenReturnsEmptyPage() {
-        Page<SearchQuery> result = searchQueryRepository.searchByKeyword(keyword, pageable);
+        Page<SearchQuery> result =
+            searchQueryRepository.searchByKeyword(SearchQueryScope.RECIPE, keyword, pageable);
 
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isEqualTo(0);
@@ -159,7 +162,10 @@ public class SearchQueryRepositoryTest {
       @Test
       @DisplayName("When - 검색을 수행하면 Then - RecipeSearchException 발생한다")
       void whenSearching_thenThrowsRuntimeException() {
-        assertThatThrownBy(() -> searchQueryRepository.searchByKeyword(keyword, pageable))
+        assertThatThrownBy(
+                () ->
+                    searchQueryRepository.searchByKeyword(
+                        SearchQueryScope.RECIPE, keyword, pageable))
             .isInstanceOf(SearchException.class)
             .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.SEARCH_FAILED);
       }
@@ -187,7 +193,8 @@ public class SearchQueryRepositoryTest {
           .when(openSearchClient)
           .search(any(SearchRequest.class), eq(SearchQuery.class));
 
-      searchQueryRepository.searchByKeywordCursorFirst(keyword, "now", "pit-1", pageable);
+      searchQueryRepository.searchByKeywordCursorFirst(
+          SearchQueryScope.RECIPE, keyword, "now", "pit-1", pageable);
 
       ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
       verify(openSearchClient).search(requestCaptor.capture(), eq(SearchQuery.class));
@@ -221,7 +228,7 @@ public class SearchQueryRepositoryTest {
           .search(any(SearchRequest.class), eq(SearchQuery.class));
 
       searchQueryRepository.searchByKeywordCursorKeyset(
-          keyword, "now", "pit-1", 1.2, "id-10", pageable);
+          SearchQueryScope.RECIPE, keyword, "now", "pit-1", 1.2, "id-10", pageable);
 
       ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
       verify(openSearchClient).search(requestCaptor.capture(), eq(SearchQuery.class));
@@ -232,6 +239,6 @@ public class SearchQueryRepositoryTest {
   }
 
   private <T> Hit<T> createHit(T source) {
-    return Hit.of(h -> h.source(source).index("recipes").id("test-id").score(1.0));
+    return Hit.of(h -> h.source(source).index("search_query").id("test-id").score(1.0));
   }
 }

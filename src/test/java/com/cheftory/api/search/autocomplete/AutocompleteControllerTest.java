@@ -66,7 +66,9 @@ public class AutocompleteControllerTest extends RestDocsTest {
 
         autocompletes = List.of(autocomplete1, autocomplete2, autocomplete3);
 
-        doReturn(autocompletes).when(autocompleteService).autocomplete(any(String.class));
+        doReturn(autocompletes)
+            .when(autocompleteService)
+            .autocomplete(any(AutocompleteScope.class), any(String.class));
       }
 
       @Nested
@@ -80,7 +82,7 @@ public class AutocompleteControllerTest extends RestDocsTest {
               given()
                   .contentType(ContentType.JSON)
                   .param("query", query)
-                  .get("/api/v1/recipes/search/autocomplete")
+                  .get("/api/v1/search/autocomplete")
                   .then()
                   .status(HttpStatus.OK)
                   .body("autocompletes", hasSize(3))
@@ -89,13 +91,15 @@ public class AutocompleteControllerTest extends RestDocsTest {
                           getNestedClassPath(this.getClass()) + "/{method-name}",
                           requestPreprocessor(),
                           responsePreprocessor(),
-                          queryParameters(parameterWithName("query").description("자동완성 검색어")),
+                          queryParameters(
+                              parameterWithName("query").description("자동완성 검색어"),
+                              parameterWithName("scope").description("검색 범위").optional()),
                           responseFields(
                               fieldWithPath("autocompletes").description("자동완성 목록"),
                               fieldWithPath("autocompletes[].autocomplete")
                                   .description("자동완성 텍스트"))));
 
-          verify(autocompleteService).autocomplete(query);
+          verify(autocompleteService).autocomplete(AutocompleteScope.RECIPE, query);
 
           var responseBody = response.extract().jsonPath();
           var autocompleteList = responseBody.getList("autocompletes");
@@ -113,7 +117,9 @@ public class AutocompleteControllerTest extends RestDocsTest {
       @BeforeEach
       void setUp() {
         query = "존재하지않는검색어";
-        doReturn(List.of()).when(autocompleteService).autocomplete(any(String.class));
+        doReturn(List.of())
+            .when(autocompleteService)
+            .autocomplete(any(AutocompleteScope.class), any(String.class));
       }
 
       @Nested
@@ -126,12 +132,12 @@ public class AutocompleteControllerTest extends RestDocsTest {
           given()
               .contentType(ContentType.JSON)
               .param("query", query)
-              .get("/api/v1/recipes/search/autocomplete")
+              .get("/api/v1/search/autocomplete")
               .then()
               .status(HttpStatus.OK)
               .body("autocompletes", hasSize(0));
 
-          verify(autocompleteService).autocomplete(query);
+          verify(autocompleteService).autocomplete(AutocompleteScope.RECIPE, query);
         }
       }
     }
@@ -155,7 +161,9 @@ public class AutocompleteControllerTest extends RestDocsTest {
 
         autocompletes = List.of(autocomplete1, autocomplete2);
 
-        doReturn(autocompletes).when(autocompleteService).autocomplete(any(String.class));
+        doReturn(autocompletes)
+            .when(autocompleteService)
+            .autocomplete(any(AutocompleteScope.class), any(String.class));
       }
 
       @Nested
@@ -169,12 +177,12 @@ public class AutocompleteControllerTest extends RestDocsTest {
               given()
                   .contentType(ContentType.JSON)
                   .param("query", query)
-                  .get("/api/v1/recipes/search/autocomplete")
+                  .get("/api/v1/search/autocomplete")
                   .then()
                   .status(HttpStatus.OK)
                   .body("autocompletes", hasSize(2));
 
-          verify(autocompleteService).autocomplete(query);
+          verify(autocompleteService).autocomplete(AutocompleteScope.RECIPE, query);
 
           var responseBody = response.extract().jsonPath();
           assertThat(responseBody.getList("autocompletes")).hasSize(2);

@@ -400,7 +400,8 @@ public class RecipeFacade {
         makeOverviews(recipeInfoService.getValidRecipes(recipeIds), userId);
 
     Map<UUID, RecipeOverview> map =
-        fetched.stream().collect(Collectors.toMap(RecipeOverview::getRecipeId, Function.identity()));
+        fetched.stream()
+            .collect(Collectors.toMap(RecipeOverview::getRecipeId, Function.identity()));
 
     List<RecipeOverview> ordered =
         recipeIds.stream().map(map::get).filter(Objects::nonNull).toList();
