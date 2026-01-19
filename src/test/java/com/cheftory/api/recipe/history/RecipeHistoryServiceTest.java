@@ -197,9 +197,7 @@ public class RecipeHistoryServiceTest {
           .when(repository)
           .findRecentsFirst(eq(userId), eq(RecipeHistoryStatus.ACTIVE), any(Pageable.class));
 
-      doReturn("next-cursor")
-          .when(viewedAtCursorCodec)
-          .encode(any(ViewedAtCursor.class));
+      doReturn("next-cursor").when(viewedAtCursorCodec).encode(any(ViewedAtCursor.class));
 
       CursorPage<RecipeHistory> result = service.getRecents(userId, null);
 
@@ -208,9 +206,7 @@ public class RecipeHistoryServiceTest {
 
       verify(repository)
           .findRecentsFirst(
-              eq(userId),
-              eq(RecipeHistoryStatus.ACTIVE),
-              argThat(p -> p.getPageSize() == 21));
+              eq(userId), eq(RecipeHistoryStatus.ACTIVE), argThat(p -> p.getPageSize() == 21));
     }
 
     @Test

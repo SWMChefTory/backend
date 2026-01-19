@@ -106,8 +106,7 @@ public class RecipeChallengeService {
       UUID userId, UUID challengeId, String cursor) {
     Pageable pageable = PageRequest.of(0, CHALLENGE_PAGE_SIZE, CHALLENGE_SORT);
     Pageable probe =
-        PageRequest.of(
-            pageable.getPageNumber(), pageable.getPageSize() + 1, pageable.getSort());
+        PageRequest.of(pageable.getPageNumber(), pageable.getPageSize() + 1, pageable.getSort());
     boolean first = (cursor == null || cursor.isBlank());
 
     RecipeUserChallenge recipeUserChallenge =
@@ -129,8 +128,7 @@ public class RecipeChallengeService {
             pageable.getPageSize(),
             recipeChallenge ->
                 viewedAtCursorCodec.encode(
-                    new ViewedAtCursor(
-                        recipeChallenge.getCreatedAt(), recipeChallenge.getId())));
+                    new ViewedAtCursor(recipeChallenge.getCreatedAt(), recipeChallenge.getId())));
 
     List<RecipeChallenge> recipeChallengeList = page.items();
     List<UUID> recipeChallengeIds =

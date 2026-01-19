@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api._common.MarketContextTestExtension;
 import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import java.io.IOException;
@@ -29,7 +30,7 @@ import org.opensearch.client.opensearch.core.search.HitsMetadata;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, MarketContextTestExtension.class})
 @DisplayName("RecipeAutocompleteRepository Tests")
 public class AutocompleteRepositoryTest {
 
@@ -77,7 +78,8 @@ public class AutocompleteRepositoryTest {
       @Test
       @DisplayName("When - 자동완성을 검색하면 Then - 자동완성 목록이 반환된다")
       void whenSearchingAutocomplete_thenReturnsAutocompleteList() throws IOException {
-        List<Autocomplete> result = autocompleteRepository.searchAutocomplete(keyword, pageable);
+        List<Autocomplete> result =
+            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
 
         assertThat(result).hasSize(3);
         assertThat(result.get(0).getText()).isEqualTo("김치찌개");
@@ -124,7 +126,8 @@ public class AutocompleteRepositoryTest {
       @Test
       @DisplayName("When - 자동완성을 검색하면 Then - 빈 목록이 반환된다")
       void whenSearchingAutocomplete_thenReturnsEmptyList() {
-        List<Autocomplete> result = autocompleteRepository.searchAutocomplete(keyword, pageable);
+        List<Autocomplete> result =
+            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
 
         assertThat(result).isEmpty();
       }
@@ -167,7 +170,8 @@ public class AutocompleteRepositoryTest {
       @Test
       @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
       void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException {
-        List<Autocomplete> result = autocompleteRepository.searchAutocomplete(keyword, pageable);
+        List<Autocomplete> result =
+            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
 
         assertThat(result).hasSize(3);
         assertThat(result.get(0).getText()).isEqualTo("인기검색어1");
@@ -220,7 +224,8 @@ public class AutocompleteRepositoryTest {
       @Test
       @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
       void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException {
-        List<Autocomplete> result = autocompleteRepository.searchAutocomplete(keyword, pageable);
+        List<Autocomplete> result =
+            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getText()).isEqualTo("빈문자열검색어1");
@@ -264,7 +269,8 @@ public class AutocompleteRepositoryTest {
       @Test
       @DisplayName("When - 자동완성을 검색하면 Then - 페이징이 적용된 결과가 반환된다")
       void whenSearchingAutocomplete_thenReturnsPagedResults() throws IOException {
-        List<Autocomplete> result = autocompleteRepository.searchAutocomplete(keyword, pageable);
+        List<Autocomplete> result =
+            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getText()).isEqualTo("테스트1");
@@ -299,7 +305,10 @@ public class AutocompleteRepositoryTest {
       @Test
       @DisplayName("When - 자동완성을 검색하면 Then - RuntimeException이 발생한다")
       void whenSearchingAutocomplete_thenThrowsRuntimeException() {
-        assertThatThrownBy(() -> autocompleteRepository.searchAutocomplete(keyword, pageable))
+        assertThatThrownBy(
+                () ->
+                    autocompleteRepository.searchAutocomplete(
+                        AutocompleteScope.RECIPE, keyword, pageable))
             .isInstanceOf(SearchException.class)
             .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
       }
@@ -325,7 +334,10 @@ public class AutocompleteRepositoryTest {
       @Test
       @DisplayName("When - 자동완성을 검색하면 Then - RecipeSearchException이 발생한다")
       void whenSearchingAutocomplete_thenThrowsRecipeSearchException() {
-        assertThatThrownBy(() -> autocompleteRepository.searchAutocomplete(keyword, pageable))
+        assertThatThrownBy(
+                () ->
+                    autocompleteRepository.searchAutocomplete(
+                        AutocompleteScope.RECIPE, keyword, pageable))
             .isInstanceOf(SearchException.class)
             .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
       }

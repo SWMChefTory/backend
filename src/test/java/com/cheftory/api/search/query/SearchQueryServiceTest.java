@@ -52,15 +52,26 @@ class SearchQueryServiceTest {
 
     doReturn(rows)
         .when(searchQueryRepository)
-        .searchByKeywordCursorFirst(eq(keyword), eq(anchorNow), eq(pitId), any(Pageable.class));
+        .searchByKeywordCursorFirst(
+            eq(SearchQueryScope.RECIPE),
+            eq(keyword),
+            eq(anchorNow),
+            eq(pitId),
+            any(Pageable.class));
     doReturn("next-cursor").when(scoreIdCursorCodec).encode(any(ScoreIdCursor.class));
 
-    CursorPage<SearchQuery> result = searchQueryService.searchByKeyword(keyword, null);
+    CursorPage<SearchQuery> result =
+        searchQueryService.searchByKeyword(SearchQueryScope.RECIPE, keyword, null);
 
     assertThat(result.items()).hasSize(20);
     assertThat(result.nextCursor()).isEqualTo("next-cursor");
     verify(searchQueryRepository)
-        .searchByKeywordCursorFirst(eq(keyword), eq(anchorNow), eq(pitId), any(Pageable.class));
+        .searchByKeywordCursorFirst(
+            eq(SearchQueryScope.RECIPE),
+            eq(keyword),
+            eq(anchorNow),
+            eq(pitId),
+            any(Pageable.class));
   }
 
   @Test
@@ -73,6 +84,7 @@ class SearchQueryServiceTest {
     doReturn(List.of(Hit.of(h -> h.id("id-11").source(SearchQuery.builder().id("id-11").build()))))
         .when(searchQueryRepository)
         .searchByKeywordCursorKeyset(
+            eq(SearchQueryScope.RECIPE),
             eq(keyword),
             eq(decoded.anchorNowIso()),
             eq(decoded.pitId()),
@@ -80,11 +92,13 @@ class SearchQueryServiceTest {
             eq(decoded.id()),
             any(Pageable.class));
 
-    CursorPage<SearchQuery> result = searchQueryService.searchByKeyword(keyword, "cursor");
+    CursorPage<SearchQuery> result =
+        searchQueryService.searchByKeyword(SearchQueryScope.RECIPE, keyword, "cursor");
 
     assertThat(result.items()).hasSize(1);
     verify(searchQueryRepository)
         .searchByKeywordCursorKeyset(
+            eq(SearchQueryScope.RECIPE),
             eq(keyword),
             eq(decoded.anchorNowIso()),
             eq(decoded.pitId()),

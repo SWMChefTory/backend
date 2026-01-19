@@ -1,5 +1,7 @@
 package com.cheftory.api.search.query;
 
+import com.cheftory.api._common.region.Market;
+import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
@@ -30,15 +32,19 @@ import org.springframework.stereotype.Repository;
 @Slf4j
 public class SearchQueryRepository {
 
-  private static final String INDEX = "recipes";
+  private static final String INDEX = "search_query";
   private static final Time PIT_KEEP_ALIVE = new Time.Builder().time("2m").build();
+
+  private static final String FIELD_SCOPE = "scope";
+  private static final String FIELD_MARKET = "market";
 
   private final OpenSearchClient openSearchClient;
 
   @Deprecated(forRemoval = true)
-  public Page<SearchQuery> searchByKeyword(String keyword, Pageable pageable) {
+  public Page<SearchQuery> searchByKeyword(
+      SearchQueryScope scope, String keyword, Pageable pageable) {
     SearchResponse<SearchQuery> response =
-        doSearchResponse(pageRequest(keyword, pageable), keyword);
+        doSearchResponse(pageRequest(scope, keyword, pageable), keyword);
 
     List<SearchQuery> content = response.hits().hits().stream().map(Hit::source).toList();
     long total = response.hits().total() != null ? response.hits().total().value() : 0;
@@ -57,11 +63,17 @@ public class SearchQueryRepository {
   }
 
   public List<Hit<SearchQuery>> searchByKeywordCursorFirst(
-      String keyword, String anchorNowIso, String pitId, Pageable pageable) {
-    return doSearch(cursorRequest(keyword, anchorNowIso, pitId, null, null, pageable), keyword);
+      SearchQueryScope scope,
+      String keyword,
+      String anchorNowIso,
+      String pitId,
+      Pageable pageable) {
+    return doSearch(
+        cursorRequest(scope, keyword, anchorNowIso, pitId, null, null, pageable), keyword);
   }
 
   public List<Hit<SearchQuery>> searchByKeywordCursorKeyset(
+      SearchQueryScope scope,
       String keyword,
       String anchorNowIso,
       String pitId,
@@ -69,19 +81,20 @@ public class SearchQueryRepository {
       String lastId,
       Pageable pageable) {
     return doSearch(
-        cursorRequest(keyword, anchorNowIso, pitId, lastScore, lastId, pageable), keyword);
+        cursorRequest(scope, keyword, anchorNowIso, pitId, lastScore, lastId, pageable), keyword);
   }
 
-  private SearchRequest pageRequest(String keyword, Pageable pageable) {
+  private SearchRequest pageRequest(SearchQueryScope scope, String keyword, Pageable pageable) {
     return SearchRequest.of(
         s ->
             s.index(INDEX)
-                .query(buildFunctionScoreQuery(keyword, "now"))
+                .query(buildFunctionScoreQuery(scope, keyword, "now"))
                 .from((int) pageable.getOffset())
                 .size(pageable.getPageSize()));
   }
 
   private SearchRequest cursorRequest(
+      SearchQueryScope scope,
       String keyword,
       String anchorNowIso,
       String pitId,
@@ -94,7 +107,7 @@ public class SearchQueryRepository {
           applyPit(s, pitId);
           s.size(pageable.getPageSize())
               .trackScores(true)
-              .query(buildFunctionScoreQuery(keyword, anchorNowIso))
+              .query(buildFunctionScoreQuery(scope, keyword, anchorNowIso))
               .sort(so -> so.score(sc -> sc.order(SortOrder.Desc)))
               .sort(so -> so.field(f -> f.field("_id").order(SortOrder.Asc)));
 
@@ -129,26 +142,44 @@ public class SearchQueryRepository {
     }
   }
 
-  private Query buildFunctionScoreQuery(String keyword, String targetTime) {
+  private Query buildFunctionScoreQuery(SearchQueryScope scope, String keyword, String targetTime) {
+    String scopeValue = scope.name().toLowerCase();
+    String marketValue = currentMarketKey();
+
     return Query.of(
         q ->
             q.functionScore(
                 fs ->
-                    fs.query(buildMultiMatchQuery(keyword))
+                    fs.query(buildFilteredMultiMatch(marketValue, scopeValue, keyword))
                         .functions(buildGaussDecayFunction(targetTime))
                         .boostMode(FunctionBoostMode.Multiply)
                         .scoreMode(FunctionScoreMode.Sum)));
   }
 
-  private Query buildMultiMatchQuery(String keyword) {
+  private Query buildFilteredMultiMatch(String marketValue, String scopeValue, String keyword) {
     return Query.of(
         q ->
-            q.multiMatch(
-                mm ->
-                    mm.query(keyword)
-                        .fields("searchText^10", "searchText.ngram")
-                        .fuzziness("AUTO")
-                        .minimumShouldMatch("50%")));
+            q.bool(
+                b ->
+                    b.filter(
+                            f ->
+                                f.term(
+                                    t -> t.field(FIELD_MARKET).value(FieldValue.of(marketValue))))
+                        .filter(
+                            f -> f.term(t -> t.field(FIELD_SCOPE).value(FieldValue.of(scopeValue))))
+                        .must(
+                            m ->
+                                m.multiMatch(
+                                    mm ->
+                                        mm.query(keyword)
+                                            .fields("searchText^10", "searchText.ngram")
+                                            .fuzziness("AUTO")
+                                            .minimumShouldMatch("50%")))));
+  }
+
+  private String currentMarketKey() {
+    Market market = MarketContext.required().market();
+    return market.name().toLowerCase();
   }
 
   private List<FunctionScore> buildGaussDecayFunction(String targetTime) {

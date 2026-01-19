@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.search.history.SearchHistoryService;
+import com.cheftory.api.search.query.SearchQueryScope;
 import com.cheftory.api.search.query.SearchQueryService;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
@@ -51,9 +52,11 @@ class SearchFacadeTest {
       Pageable pageable = Pageable.ofSize(10).withPage(0); // pageable 검증은 서비스 단에서 하는게 자연스러움
       Page<SearchQuery> searchResults = new PageImpl<>(content, pageable, 3);
 
-      doReturn(searchResults).when(searchQueryService).searchByKeyword(eq(keyword), eq(0));
+      doReturn(searchResults)
+          .when(searchQueryService)
+          .searchByKeyword(eq(SearchQueryScope.RECIPE), eq(keyword), eq(0));
 
-      Page<SearchQuery> result = searchFacade.search(userId, keyword, 0);
+      Page<SearchQuery> result = searchFacade.search(SearchQueryScope.RECIPE, userId, keyword, 0);
 
       assertThat(result.getContent()).hasSize(3);
       assertThat(result.getContent().get(0).getSearchText()).isEqualTo("김치찌개");
@@ -61,7 +64,7 @@ class SearchFacadeTest {
       assertThat(result.getContent().get(2).getSearchText()).isEqualTo("맛있는 김치찌개");
       assertThat(result.getTotalElements()).isEqualTo(3);
 
-      verify(searchQueryService).searchByKeyword(keyword, 0);
+      verify(searchQueryService).searchByKeyword(SearchQueryScope.RECIPE, keyword, 0);
       verify(searchHistoryService).create(userId, keyword);
     }
 
@@ -76,13 +79,16 @@ class SearchFacadeTest {
       SearchQuery recipe = SearchQuery.builder().id("1").searchText("김치찌개").build();
       CursorPage<SearchQuery> cursorPage = CursorPage.of(List.of(recipe), nextCursor);
 
-      doReturn(cursorPage).when(searchQueryService).searchByKeyword(keyword, cursor);
+      doReturn(cursorPage)
+          .when(searchQueryService)
+          .searchByKeyword(eq(SearchQueryScope.RECIPE), eq(keyword), eq(cursor));
 
-      CursorPage<SearchQuery> result = searchFacade.search(userId, keyword, cursor);
+      CursorPage<SearchQuery> result =
+          searchFacade.search(SearchQueryScope.RECIPE, userId, keyword, cursor);
 
       assertThat(result.items()).hasSize(1);
       assertThat(result.nextCursor()).isEqualTo(nextCursor);
-      verify(searchQueryService).searchByKeyword(keyword, cursor);
+      verify(searchQueryService).searchByKeyword(SearchQueryScope.RECIPE, keyword, cursor);
       verify(searchHistoryService).create(userId, keyword);
     }
 
@@ -94,14 +100,16 @@ class SearchFacadeTest {
 
       Page<SearchQuery> emptyResults = Page.empty();
 
-      doReturn(emptyResults).when(searchQueryService).searchByKeyword(eq(keyword), eq(0));
+      doReturn(emptyResults)
+          .when(searchQueryService)
+          .searchByKeyword(eq(SearchQueryScope.RECIPE), eq(keyword), eq(0));
 
-      Page<SearchQuery> result = searchFacade.search(userId, keyword, 0);
+      Page<SearchQuery> result = searchFacade.search(SearchQueryScope.RECIPE, userId, keyword, 0);
 
       assertThat(result.getContent()).isEmpty();
       assertThat(result.getTotalElements()).isEqualTo(0);
 
-      verify(searchQueryService).searchByKeyword(keyword, 0);
+      verify(searchQueryService).searchByKeyword(SearchQueryScope.RECIPE, keyword, 0);
       verify(searchHistoryService).create(userId, keyword);
     }
 
@@ -120,16 +128,18 @@ class SearchFacadeTest {
       Pageable pageable = Pageable.ofSize(10).withPage(0);
       Page<SearchQuery> firstPageResults = new PageImpl<>(firstPageContent, pageable, 15);
 
-      doReturn(firstPageResults).when(searchQueryService).searchByKeyword(eq(keyword), eq(0));
+      doReturn(firstPageResults)
+          .when(searchQueryService)
+          .searchByKeyword(eq(SearchQueryScope.RECIPE), eq(keyword), eq(0));
 
-      Page<SearchQuery> result = searchFacade.search(userId, keyword, 0);
+      Page<SearchQuery> result = searchFacade.search(SearchQueryScope.RECIPE, userId, keyword, 0);
 
       assertThat(result.getContent()).hasSize(3);
       assertThat(result.getContent().getFirst().getSearchText()).isEqualTo("김치찌개");
       assertThat(result.getTotalElements()).isEqualTo(15);
       assertThat(result.getNumber()).isEqualTo(0);
 
-      verify(searchQueryService).searchByKeyword(keyword, 0);
+      verify(searchQueryService).searchByKeyword(SearchQueryScope.RECIPE, keyword, 0);
       verify(searchHistoryService).create(userId, keyword);
     }
 
@@ -145,15 +155,17 @@ class SearchFacadeTest {
       Pageable pageable = Pageable.ofSize(10).withPage(0);
       Page<SearchQuery> searchResults = new PageImpl<>(content, pageable, 1);
 
-      doReturn(searchResults).when(searchQueryService).searchByKeyword(eq(keyword), eq(0));
+      doReturn(searchResults)
+          .when(searchQueryService)
+          .searchByKeyword(eq(SearchQueryScope.RECIPE), eq(keyword), eq(0));
 
-      Page<SearchQuery> result = searchFacade.search(userId, keyword, 0);
+      Page<SearchQuery> result = searchFacade.search(SearchQueryScope.RECIPE, userId, keyword, 0);
 
       assertThat(result.getContent()).hasSize(1);
       assertThat(result.getContent().getFirst().getSearchText()).contains("김치찌개");
       assertThat(result.getContent().getFirst().getSearchText()).contains("레시피");
 
-      verify(searchQueryService).searchByKeyword(keyword, 0);
+      verify(searchQueryService).searchByKeyword(SearchQueryScope.RECIPE, keyword, 0);
       verify(searchHistoryService).create(userId, keyword);
     }
 
@@ -164,13 +176,15 @@ class SearchFacadeTest {
       String keyword = "   ";
 
       Page<SearchQuery> emptyResults = Page.empty();
-      doReturn(emptyResults).when(searchQueryService).searchByKeyword(eq(keyword), eq(0));
+      doReturn(emptyResults)
+          .when(searchQueryService)
+          .searchByKeyword(eq(SearchQueryScope.RECIPE), eq(keyword), eq(0));
 
-      Page<SearchQuery> result = searchFacade.search(userId, keyword, 0);
+      Page<SearchQuery> result = searchFacade.search(SearchQueryScope.RECIPE, userId, keyword, 0);
 
       assertThat(result.getContent()).isEmpty();
 
-      verify(searchQueryService).searchByKeyword(keyword, 0);
+      verify(searchQueryService).searchByKeyword(SearchQueryScope.RECIPE, keyword, 0);
       verify(searchHistoryService, never()).create(any(UUID.class), any(String.class));
     }
   }
