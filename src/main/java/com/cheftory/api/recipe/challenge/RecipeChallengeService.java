@@ -2,6 +2,10 @@ package com.cheftory.api.recipe.challenge;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.PocOnly;
+import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api._common.cursor.CursorPages;
+import com.cheftory.api._common.cursor.ViewedAtCursor;
+import com.cheftory.api._common.cursor.ViewedAtCursorCodec;
 import com.cheftory.api.recipe.challenge.exception.RecipeChallengeErrorCode;
 import com.cheftory.api.recipe.challenge.exception.RecipeChallengeException;
 import java.util.List;
@@ -22,11 +26,16 @@ import org.springframework.stereotype.Service;
 @PocOnly(until = "2025-12-31")
 public class RecipeChallengeService {
 
+  private static final int CHALLENGE_PAGE_SIZE = 10;
+  private static final Sort CHALLENGE_SORT =
+      Sort.by(Sort.Direction.ASC, "createdAt").and(Sort.by(Sort.Direction.ASC, "id"));
+
   private final RecipeUserChallengeRepository recipeUserChallengeRepository;
   private final RecipeChallengeRepository recipeChallengeRepository;
   private final ChallengeRepository challengeRepository;
   private final RecipeUserChallengeCompletionRepository recipeUserChallengeCompletionRepository;
   private final Clock clock;
+  private final ViewedAtCursorCodec viewedAtCursorCodec;
 
   public Challenge getUser(UUID userId) {
     var now = clock.now();
@@ -56,7 +65,7 @@ public class RecipeChallengeService {
 
   public Page<RecipeCompleteChallenge> getChallengeRecipes(
       UUID userId, UUID challengeId, int page) {
-    Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.ASC, "createdAt"));
+    Pageable pageable = PageRequest.of(page, CHALLENGE_PAGE_SIZE, CHALLENGE_SORT);
 
     RecipeUserChallenge recipeUserChallenge =
         recipeUserChallengeRepository.findRecipeUserChallengeByUserIdAndChallengeId(
@@ -91,5 +100,69 @@ public class RecipeChallengeService {
             RecipeCompleteChallenge.of(
                 recipeChallenge.getRecipeId(),
                 finishedRecipeChallengeIds.contains(recipeChallenge.getId())));
+  }
+
+  public CursorPage<RecipeCompleteChallenge> getChallengeRecipes(
+      UUID userId, UUID challengeId, String cursor) {
+    Pageable pageable = PageRequest.of(0, CHALLENGE_PAGE_SIZE, CHALLENGE_SORT);
+    Pageable probe =
+        PageRequest.of(
+            pageable.getPageNumber(), pageable.getPageSize() + 1, pageable.getSort());
+    boolean first = (cursor == null || cursor.isBlank());
+
+    RecipeUserChallenge recipeUserChallenge =
+        recipeUserChallengeRepository.findRecipeUserChallengeByUserIdAndChallengeId(
+            userId, challengeId);
+
+    if (recipeUserChallenge == null) {
+      throw new RecipeChallengeException(RecipeChallengeErrorCode.RECIPE_CHALLENGE_NOT_FOUND);
+    }
+
+    List<RecipeChallenge> recipeChallenges =
+        first
+            ? recipeChallengeRepository.findChallengeFirst(challengeId, probe)
+            : keyset(challengeId, cursor, probe);
+
+    CursorPage<RecipeChallenge> page =
+        CursorPages.of(
+            recipeChallenges,
+            pageable.getPageSize(),
+            recipeChallenge ->
+                viewedAtCursorCodec.encode(
+                    new ViewedAtCursor(
+                        recipeChallenge.getCreatedAt(), recipeChallenge.getId())));
+
+    List<RecipeChallenge> recipeChallengeList = page.items();
+    List<UUID> recipeChallengeIds =
+        recipeChallengeList.stream().map(RecipeChallenge::getId).toList();
+
+    List<RecipeUserChallengeCompletion> completions =
+        recipeChallengeIds.isEmpty()
+            ? List.of()
+            : recipeUserChallengeCompletionRepository
+                .findByRecipeChallengeIdInAndRecipeUserChallengeId(
+                    recipeChallengeIds, recipeUserChallenge.getId());
+
+    Set<UUID> finishedRecipeChallengeIds =
+        completions.stream()
+            .map(RecipeUserChallengeCompletion::getRecipeChallengeId)
+            .collect(Collectors.toSet());
+
+    List<RecipeCompleteChallenge> items =
+        recipeChallengeList.stream()
+            .map(
+                recipeChallenge ->
+                    RecipeCompleteChallenge.of(
+                        recipeChallenge.getRecipeId(),
+                        finishedRecipeChallengeIds.contains(recipeChallenge.getId())))
+            .toList();
+
+    return CursorPage.of(items, page.nextCursor());
+  }
+
+  private List<RecipeChallenge> keyset(UUID challengeId, String cursor, Pageable probe) {
+    ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
+    return recipeChallengeRepository.findChallengeKeyset(
+        challengeId, p.lastViewedAt(), p.lastId(), probe);
   }
 }

@@ -201,10 +201,17 @@ public class RecipeController {
   @GetMapping("/api/v1/recipes/challenge/{challengeId}")
   public ChallengeRecipesResponse getChallengeRecipes(
       @PathVariable UUID challengeId,
-      @RequestParam(defaultValue = "0") @Min(0) Integer page,
+      @RequestParam(required = false) @Min(0) Integer page,
+      @RequestParam(required = false) String cursor,
       @UserPrincipal UUID userId) {
-    Pair<List<RecipeCompleteChallenge>, Page<RecipeOverview>> result =
-        recipeFacade.getChallengeRecipes(challengeId, userId, page);
+    if (page != null) {
+      Pair<List<RecipeCompleteChallenge>, Page<RecipeOverview>> result =
+          recipeFacade.getChallengeRecipes(challengeId, userId, page);
+      return ChallengeRecipesResponse.from(result.getFirst(), result.getSecond());
+    }
+
+    Pair<List<RecipeCompleteChallenge>, CursorPage<RecipeOverview>> result =
+        recipeFacade.getChallengeRecipes(challengeId, userId, cursor);
     return ChallengeRecipesResponse.from(result.getFirst(), result.getSecond());
   }
 }
