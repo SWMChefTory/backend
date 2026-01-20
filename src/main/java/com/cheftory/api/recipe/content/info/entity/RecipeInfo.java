@@ -14,66 +14,67 @@ import lombok.*;
 @Table(name = "recipe")
 public class RecipeInfo extends MarketScope {
 
-  private static final int INITIAL_VIEW_COUNT = 0;
-  private static final long DEFAULT_CREDIT_COST = 1L;
+    private static final int INITIAL_VIEW_COUNT = 0;
+    private static final long DEFAULT_CREDIT_COST = 1L;
 
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private ProcessStep processStep;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProcessStep processStep;
 
-  @Column(nullable = false)
-  private Integer viewCount;
+    @Column(nullable = false)
+    private Integer viewCount;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
-  @Column(nullable = false)
-  private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
-  @Enumerated(EnumType.STRING)
-  private RecipeStatus recipeStatus;
+    @Enumerated(EnumType.STRING)
+    private RecipeStatus recipeStatus;
 
-  @Column(nullable = false)
-  private long creditCost;
+    @Column(nullable = false)
+    private long creditCost;
 
-  public static RecipeInfo create(Clock clock) {
-    LocalDateTime now = clock.now();
-    return new RecipeInfo(
-        UUID.randomUUID(),
-        ProcessStep.READY,
-        INITIAL_VIEW_COUNT,
-        now,
-        now,
-        RecipeStatus.IN_PROGRESS,
-        DEFAULT_CREDIT_COST);
-  }
+    public static RecipeInfo create(Clock clock) {
+        LocalDateTime now = clock.now();
+        return new RecipeInfo(
+                UUID.randomUUID(),
+                ProcessStep.READY,
+                INITIAL_VIEW_COUNT,
+                now,
+                now,
+                RecipeStatus.IN_PROGRESS,
+                DEFAULT_CREDIT_COST);
+    }
 
-  public void success(Clock clock) {
-    this.updatedAt = clock.now();
-    this.recipeStatus = RecipeStatus.SUCCESS;
-  }
+    public void success(Clock clock) {
+        this.updatedAt = clock.now();
+        this.recipeStatus = RecipeStatus.SUCCESS;
+    }
 
-  public void failed(Clock clock) {
-    this.updatedAt = clock.now();
-    this.recipeStatus = RecipeStatus.FAILED;
-  }
+    public void failed(Clock clock) {
+        this.updatedAt = clock.now();
+        this.recipeStatus = RecipeStatus.FAILED;
+    }
 
-  public void block(Clock clock) {
-    this.updatedAt = clock.now();
-    this.recipeStatus = RecipeStatus.BLOCKED;
-  }
+    public void block(Clock clock) {
+        this.updatedAt = clock.now();
+        this.recipeStatus = RecipeStatus.BLOCKED;
+    }
 
-  public boolean isSuccess() {
-    return this.recipeStatus == RecipeStatus.SUCCESS;
-  }
+    public boolean isSuccess() {
+        return this.recipeStatus == RecipeStatus.SUCCESS;
+    }
 
-  public boolean isFailed() {
-    return this.recipeStatus == RecipeStatus.FAILED;
-  }
+    public boolean isFailed() {
+        return this.recipeStatus == RecipeStatus.FAILED;
+    }
 
-  public boolean isBlocked() {
-    return this.recipeStatus == RecipeStatus.BLOCKED;
-  }
+    public boolean isBlocked() {
+        return this.recipeStatus == RecipeStatus.BLOCKED;
+    }
 }

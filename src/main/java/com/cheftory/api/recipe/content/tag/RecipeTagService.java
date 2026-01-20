@@ -12,20 +12,20 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class RecipeTagService {
-  private final RecipeTagRepository recipeTagRepository;
-  private final Clock clock;
+    private final RecipeTagRepository recipeTagRepository;
+    private final Clock clock;
 
-  public List<RecipeTag> gets(UUID recipeId) {
-    return recipeTagRepository.findAllByRecipeId(recipeId);
-  }
+    public List<RecipeTag> gets(UUID recipeId) {
+        return recipeTagRepository.findAllByRecipeId(recipeId);
+    }
 
-  public List<RecipeTag> getIn(List<UUID> recipeIds) {
-    return recipeTagRepository.findAllByRecipeIdIn(recipeIds);
-  }
+    public List<RecipeTag> getIn(List<UUID> recipeIds) {
+        return recipeTagRepository.findAllByRecipeIdIn(recipeIds);
+    }
 
-  public void create(UUID recipeId, List<String> tags) {
-    List<RecipeTag> recipeTags =
-        tags.stream().map(tag -> RecipeTag.create(tag, recipeId, clock)).toList();
-    recipeTagRepository.saveAll(recipeTags);
-  }
+    public void create(UUID recipeId, List<String> tags) {
+        List<RecipeTag> recipeTags =
+                tags.stream().map(tag -> RecipeTag.create(tag, recipeId, clock)).toList();
+        recipeTagRepository.saveAll(recipeTags);
+    }
 }

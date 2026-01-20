@@ -5,7 +5,7 @@ import com.cheftory.api.recipe.exception.RecipeException;
 
 public class RecipeHistoryException extends RecipeException {
 
-  public RecipeHistoryException(ErrorMessage errorMessage) {
-    super(errorMessage);
-  }
+    public RecipeHistoryException(ErrorMessage errorMessage) {
+        super(errorMessage);
+    }
 }

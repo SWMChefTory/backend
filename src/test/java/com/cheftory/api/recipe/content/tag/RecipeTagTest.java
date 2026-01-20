@@ -16,49 +16,49 @@ import org.junit.jupiter.api.Test;
 @DisplayName("RecipeTagTest")
 public class RecipeTagTest {
 
-  @Nested
-  @DisplayName("레시피 태그 생성")
-  class CreateRecipeTag {
-
     @Nested
-    @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-    class GivenValidParameters {
+    @DisplayName("레시피 태그 생성")
+    class CreateRecipeTag {
 
-      private String tag;
-      private UUID recipeId;
-      private Clock clock;
-      private LocalDateTime now;
+        @Nested
+        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
+        class GivenValidParameters {
 
-      @BeforeEach
-      void setUp() {
-        tag = "한식";
-        recipeId = UUID.randomUUID();
-        clock = mock(Clock.class);
-        now = LocalDateTime.now();
-        doReturn(now).when(clock).now();
-      }
+            private String tag;
+            private UUID recipeId;
+            private Clock clock;
+            private LocalDateTime now;
 
-      @Nested
-      @DisplayName("When - 레시피 태그를 생성하면")
-      class WhenCreateRecipeTag {
+            @BeforeEach
+            void setUp() {
+                tag = "한식";
+                recipeId = UUID.randomUUID();
+                clock = mock(Clock.class);
+                now = LocalDateTime.now();
+                doReturn(now).when(clock).now();
+            }
 
-        private RecipeTag recipeTag;
+            @Nested
+            @DisplayName("When - 레시피 태그를 생성하면")
+            class WhenCreateRecipeTag {
 
-        @BeforeEach
-        void setUp() {
-          recipeTag = RecipeTag.create(tag, recipeId, clock);
+                private RecipeTag recipeTag;
+
+                @BeforeEach
+                void setUp() {
+                    recipeTag = RecipeTag.create(tag, recipeId, clock);
+                }
+
+                @DisplayName("Then - 레시피 태그가 생성된다")
+                @Test
+                void thenRecipeTagIsCreated() {
+                    assertThat(recipeTag).isNotNull();
+                    assertThat(recipeTag.getId()).isNotNull();
+                    assertThat(recipeTag.getTag()).isEqualTo(tag);
+                    assertThat(recipeTag.getRecipeId()).isEqualTo(recipeId);
+                    assertThat(recipeTag.getCreatedAt()).isEqualTo(now);
+                }
+            }
         }
-
-        @DisplayName("Then - 레시피 태그가 생성된다")
-        @Test
-        void thenRecipeTagIsCreated() {
-          assertThat(recipeTag).isNotNull();
-          assertThat(recipeTag.getId()).isNotNull();
-          assertThat(recipeTag.getTag()).isEqualTo(tag);
-          assertThat(recipeTag.getRecipeId()).isEqualTo(recipeId);
-          assertThat(recipeTag.getCreatedAt()).isEqualTo(now);
-        }
-      }
     }
-  }
 }

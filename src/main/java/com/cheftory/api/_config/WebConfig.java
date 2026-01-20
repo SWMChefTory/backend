@@ -10,19 +10,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-  private final UserArgumentResolver userArgumentResolver;
+    private final UserArgumentResolver userArgumentResolver;
 
-  public WebConfig(UserArgumentResolver userArgumentResolver) {
-    this.userArgumentResolver = userArgumentResolver;
-  }
+    public WebConfig(UserArgumentResolver userArgumentResolver) {
+        this.userArgumentResolver = userArgumentResolver;
+    }
 
-  @Override
-  public void addResourceHandlers(ResourceHandlerRegistry registry) {
-    registry.addResourceHandler("/docs/**").addResourceLocations("classpath:/static/docs/");
-  }
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/docs/**").addResourceLocations("classpath:/static/docs/");
+    }
 
-  @Override
-  public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-    resolvers.add(userArgumentResolver);
-  }
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(userArgumentResolver);
+    }
 }

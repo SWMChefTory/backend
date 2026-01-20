@@ -11,7 +11,7 @@ plugins {
 spotless {
 	java {
 		target '**/*.java'
-		googleJavaFormat('1.22.0')
+		palantirJavaFormat('2.50.0')
 		removeUnusedImports()
 		trimTrailingWhitespace()
 		endWithNewline()

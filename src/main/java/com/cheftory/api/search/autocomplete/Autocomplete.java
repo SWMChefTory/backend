@@ -17,11 +17,12 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Autocomplete {
-  @Id private String id;
+    @Id
+    private String id;
 
-  @Field(type = FieldType.Text)
-  private String text;
+    @Field(type = FieldType.Text)
+    private String text;
 
-  @Field(type = FieldType.Integer)
-  private Integer count;
+    @Field(type = FieldType.Integer)
+    private Integer count;
 }

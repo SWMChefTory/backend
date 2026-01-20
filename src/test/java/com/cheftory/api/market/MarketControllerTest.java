@@ -19,61 +19,63 @@ import org.springframework.http.HttpStatus;
 @DisplayName("MarketController 테스트")
 class MarketControllerTest extends RestDocsTest {
 
-  private MarketController controller;
-  private GlobalExceptionHandler exceptionHandler;
+    private MarketController controller;
+    private GlobalExceptionHandler exceptionHandler;
 
-  @BeforeEach
-  void setUp() {
-    controller = new MarketController();
-    exceptionHandler = new GlobalExceptionHandler();
-    mockMvc = mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
-  }
+    @BeforeEach
+    void setUp() {
+        controller = new MarketController();
+        exceptionHandler = new GlobalExceptionHandler();
+        mockMvc = mockMvcBuilder(controller).withAdvice(exceptionHandler).build();
+    }
 
-  @AfterEach
-  void tearDown() {
-    MarketContext.currentOrNull();
-  }
-
-  @Nested
-  @DisplayName("GET /api/v1/market")
-  class GetMarket {
+    @AfterEach
+    void tearDown() {
+        MarketContext.currentOrNull();
+    }
 
     @Nested
-    @DisplayName("Given - MarketContext가 설정된 경우")
-    class GivenMarketContextPresent {
+    @DisplayName("GET /api/v1/market")
+    class GetMarket {
 
-      @Test
-      @DisplayName("Then - market과 country_code를 반환한다")
-      void thenReturnsMarketInfo() {
-        try (var ignored = with(new MarketContext.Info(Market.KOREA, "KR"))) {
-          given()
-              .contentType(ContentType.JSON)
-              .when()
-              .get("/api/v1/market")
-              .then()
-              .status(HttpStatus.OK)
-              .body("market", equalTo("KOREA"))
-              .body("country_code", equalTo("KR"));
+        @Nested
+        @DisplayName("Given - MarketContext가 설정된 경우")
+        class GivenMarketContextPresent {
+
+            @Test
+            @DisplayName("Then - market과 country_code를 반환한다")
+            void thenReturnsMarketInfo() {
+                try (var ignored = with(new MarketContext.Info(Market.KOREA, "KR"))) {
+                    given().contentType(ContentType.JSON)
+                            .when()
+                            .get("/api/v1/market")
+                            .then()
+                            .status(HttpStatus.OK)
+                            .body("market", equalTo("KOREA"))
+                            .body("country_code", equalTo("KR"));
+                }
+            }
         }
-      }
+
+        @Nested
+        @DisplayName("Given - MarketContext가 설정되지 않은 경우")
+        class GivenMarketContextMissing {
+
+            @AfterEach
+            void clearContext() {
+                MarketContext.with(null);
+            }
+
+            @Test
+            @DisplayName("Then - UNKNOWN_REGION 에러를 반환한다")
+            void thenReturnsUnknownRegionError() {
+                var response = given().contentType(ContentType.JSON)
+                        .when()
+                        .get("/api/v1/market")
+                        .then();
+
+                assertErrorResponse(response, GlobalErrorCode.UNKNOWN_REGION);
+            }
+        }
     }
-
-    @Nested
-    @DisplayName("Given - MarketContext가 설정되지 않은 경우")
-    class GivenMarketContextMissing {
-
-      @AfterEach
-      void clearContext() {
-        MarketContext.with(null);
-      }
-
-      @Test
-      @DisplayName("Then - UNKNOWN_REGION 에러를 반환한다")
-      void thenReturnsUnknownRegionError() {
-        var response = given().contentType(ContentType.JSON).when().get("/api/v1/market").then();
-
-        assertErrorResponse(response, GlobalErrorCode.UNKNOWN_REGION);
-      }
-    }
-  }
 }

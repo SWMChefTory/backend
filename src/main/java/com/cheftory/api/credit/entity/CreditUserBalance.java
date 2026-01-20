@@ -20,27 +20,27 @@ import lombok.NoArgsConstructor;
 @Table
 public class CreditUserBalance {
 
-  @Id
-  @Column(name = "user_id", nullable = false)
-  private UUID userId;
+    @Id
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 
-  @Column(nullable = false)
-  private long balance;
+    @Column(nullable = false)
+    private long balance;
 
-  @Version
-  @Column(nullable = false)
-  private long version;
+    @Version
+    @Column(nullable = false)
+    private long version;
 
-  public static CreditUserBalance create(UUID userId) {
-    if (userId == null) throw new CreditException(CreditErrorCode.CREDIT_INVALID_USER);
-    return new CreditUserBalance(userId, 0L, 0L);
-  }
-
-  public void apply(long delta) {
-    long next = this.balance + delta;
-    if (next < 0) {
-      throw new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT);
+    public static CreditUserBalance create(UUID userId) {
+        if (userId == null) throw new CreditException(CreditErrorCode.CREDIT_INVALID_USER);
+        return new CreditUserBalance(userId, 0L, 0L);
     }
-    this.balance = next;
-  }
+
+    public void apply(long delta) {
+        long next = this.balance + delta;
+        if (next < 0) {
+            throw new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT);
+        }
+        this.balance = next;
+    }
 }

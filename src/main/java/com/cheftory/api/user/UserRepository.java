@@ -8,8 +8,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
-  Optional<User> findByProviderAndProviderSubAndUserStatus(
-      Provider provider, String sub, UserStatus userStatus);
+    Optional<User> findByProviderAndProviderSubAndUserStatus(Provider provider, String sub, UserStatus userStatus);
 
-  Optional<User> findByIdAndUserStatus(UUID userId, UserStatus userStatus);
+    Optional<User> findByIdAndUserStatus(UUID userId, UserStatus userStatus);
 }

@@ -19,52 +19,52 @@ import org.junit.jupiter.api.Test;
 @DisplayName("RecipeCaptionTest")
 public class RecipeCaptionTest {
 
-  @Nested
-  @DisplayName("레시피 캡션 생성")
-  class CreateRecipeCaption {
-
     @Nested
-    @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-    class GivenValidParameters {
+    @DisplayName("레시피 캡션 생성")
+    class CreateRecipeCaption {
 
-      private List<Segment> segments;
-      private LangCodeType langCodeType;
-      private UUID recipeId;
-      private Clock clock;
-      LocalDateTime now;
+        @Nested
+        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
+        class GivenValidParameters {
 
-      @BeforeEach
-      void setUp() {
-        clock = mock(Clock.class);
-        segments = List.of(new Segment("Hello", 0.0, 2.0), new Segment("World", 2.0, 4.0));
-        langCodeType = LangCodeType.ko;
-        recipeId = UUID.randomUUID();
-        now = LocalDateTime.now();
-        doReturn(now).when(clock).now();
-      }
+            private List<Segment> segments;
+            private LangCodeType langCodeType;
+            private UUID recipeId;
+            private Clock clock;
+            LocalDateTime now;
 
-      @Nested
-      @DisplayName("When - 레시피 캡션을 생성하면")
-      class WhenCreateRecipeCaption {
+            @BeforeEach
+            void setUp() {
+                clock = mock(Clock.class);
+                segments = List.of(new Segment("Hello", 0.0, 2.0), new Segment("World", 2.0, 4.0));
+                langCodeType = LangCodeType.ko;
+                recipeId = UUID.randomUUID();
+                now = LocalDateTime.now();
+                doReturn(now).when(clock).now();
+            }
 
-        private RecipeCaption recipeCaption;
+            @Nested
+            @DisplayName("When - 레시피 캡션을 생성하면")
+            class WhenCreateRecipeCaption {
 
-        @BeforeEach
-        void setUp() {
-          recipeCaption = RecipeCaption.from(segments, langCodeType, recipeId, clock);
+                private RecipeCaption recipeCaption;
+
+                @BeforeEach
+                void setUp() {
+                    recipeCaption = RecipeCaption.from(segments, langCodeType, recipeId, clock);
+                }
+
+                @DisplayName("Then - 레시피 캡션이 생성된다")
+                @Test
+                void thenRecipeCaptionIsCreated() {
+                    assertThat(recipeCaption).isNotNull();
+                    assertThat(recipeCaption.getId()).isNotNull();
+                    assertThat(recipeCaption.getSegments()).isEqualTo(segments);
+                    assertThat(recipeCaption.getLangCode()).isEqualTo(langCodeType);
+                    assertThat(recipeCaption.getRecipeId()).isEqualTo(recipeId);
+                    assertThat(recipeCaption.getCreatedAt()).isEqualTo(now);
+                }
+            }
         }
-
-        @DisplayName("Then - 레시피 캡션이 생성된다")
-        @Test
-        void thenRecipeCaptionIsCreated() {
-          assertThat(recipeCaption).isNotNull();
-          assertThat(recipeCaption.getId()).isNotNull();
-          assertThat(recipeCaption.getSegments()).isEqualTo(segments);
-          assertThat(recipeCaption.getLangCode()).isEqualTo(langCodeType);
-          assertThat(recipeCaption.getRecipeId()).isEqualTo(recipeId);
-          assertThat(recipeCaption.getCreatedAt()).isEqualTo(now);
-        }
-      }
     }
-  }
 }

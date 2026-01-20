@@ -13,9 +13,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExistsUserId {
-  String message() default "존재하지 않는 유저 ID입니다.";
+    String message() default "존재하지 않는 유저 ID입니다.";
 
-  Class<?>[] groups() default {};
+    Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
+    Class<? extends Payload>[] payload() default {};
 }

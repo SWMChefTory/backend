@@ -15,30 +15,30 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
-  @Override
-  public boolean supportsParameter(MethodParameter parameter) {
-    return parameter.hasParameterAnnotation(UserPrincipal.class);
-  }
-
-  @Override
-  public Object resolveArgument(
-      @NonNull MethodParameter parameter,
-      ModelAndViewContainer mavContainer,
-      @NonNull NativeWebRequest webRequest,
-      WebDataBinderFactory binderFactory) {
-
-    var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    if (authentication == null) {
-      throw new AuthException(AuthErrorCode.INVALID_USER);
+    @Override
+    public boolean supportsParameter(MethodParameter parameter) {
+        return parameter.hasParameterAnnotation(UserPrincipal.class);
     }
 
-    Object principal = authentication.getPrincipal();
+    @Override
+    public Object resolveArgument(
+            @NonNull MethodParameter parameter,
+            ModelAndViewContainer mavContainer,
+            @NonNull NativeWebRequest webRequest,
+            WebDataBinderFactory binderFactory) {
 
-    if (!(principal instanceof UUID)) {
-      throw new AuthException(AuthErrorCode.INVALID_USER);
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new AuthException(AuthErrorCode.INVALID_USER);
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (!(principal instanceof UUID)) {
+            throw new AuthException(AuthErrorCode.INVALID_USER);
+        }
+
+        return principal;
     }
-
-    return principal;
-  }
 }

@@ -11,6 +11,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "coupang-partners")
 public class CoupangPartnersProperties {
 
-  private String accessKey;
-  private String secretKey;
+    private String accessKey;
+    private String secretKey;
 }

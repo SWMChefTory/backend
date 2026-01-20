@@ -9,10 +9,10 @@ import lombok.Getter;
 @Getter
 public class RecipeCategoryCount {
 
-  private RecipeCategory recipeCategory;
-  private Integer recipeCount;
+    private RecipeCategory recipeCategory;
+    private Integer recipeCount;
 
-  public static RecipeCategoryCount of(RecipeCategory recipeCategory, Integer count) {
-    return new RecipeCategoryCount(recipeCategory, count);
-  }
+    public static RecipeCategoryCount of(RecipeCategory recipeCategory, Integer count) {
+        return new RecipeCategoryCount(recipeCategory, count);
+    }
 }

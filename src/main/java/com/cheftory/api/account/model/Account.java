@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Account {
 
-  private String accessToken;
-  private String refreshToken;
-  private User user;
+    private String accessToken;
+    private String refreshToken;
+    private User user;
 
-  public static Account of(String accessToken, String refreshToken, User user) {
-    return new Account(accessToken, refreshToken, user);
-  }
+    public static Account of(String accessToken, String refreshToken, User user) {
+        return new Account(accessToken, refreshToken, user);
+    }
 }

@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @PocOnly(until = "2025-12-31")
 public record RecipeCompleteChallengeResponse(@JsonProperty("recipe_id") String recipeId) {
-  public static RecipeCompleteChallengeResponse of(
-      RecipeCompleteChallenge recipeCompleteChallenge) {
-    return new RecipeCompleteChallengeResponse(recipeCompleteChallenge.getRecipeId().toString());
-  }
+    public static RecipeCompleteChallengeResponse of(RecipeCompleteChallenge recipeCompleteChallenge) {
+        return new RecipeCompleteChallengeResponse(
+                recipeCompleteChallenge.getRecipeId().toString());
+    }
 }

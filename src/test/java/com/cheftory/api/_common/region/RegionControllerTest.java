@@ -20,20 +20,21 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 public class RegionControllerTest {
 
-  @Autowired private MockMvc mockMvc;
-  @Autowired private TokenProvider tokenProvider;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @Test
-  void 지역_없으면_400_예외처리() throws Exception {
-    UUID userId = UUID.randomUUID();
-    String validJwt = tokenProvider.createAccessToken(userId);
+    @Autowired
+    private TokenProvider tokenProvider;
 
-    mockMvc
-        .perform(
-            get("/api/security/failed").header(HttpHeaders.AUTHORIZATION, "Bearer " + validJwt))
-        .andExpect(status().is4xxClientError())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.message").value(GlobalErrorCode.UNKNOWN_REGION.getMessage()))
-        .andExpect(jsonPath("$.errorCode").value(GlobalErrorCode.UNKNOWN_REGION.getErrorCode()));
-  }
+    @Test
+    void 지역_없으면_400_예외처리() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String validJwt = tokenProvider.createAccessToken(userId);
+
+        mockMvc.perform(get("/api/security/failed").header(HttpHeaders.AUTHORIZATION, "Bearer " + validJwt))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message").value(GlobalErrorCode.UNKNOWN_REGION.getMessage()))
+                .andExpect(jsonPath("$.errorCode").value(GlobalErrorCode.UNKNOWN_REGION.getErrorCode()));
+    }
 }

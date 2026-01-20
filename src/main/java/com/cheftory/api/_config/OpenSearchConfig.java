@@ -13,34 +13,32 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenSearchConfig {
-  @Value("${opensearch.username}")
-  private String username;
+    @Value("${opensearch.username}")
+    private String username;
 
-  @Value("${opensearch.password}")
-  private String password;
+    @Value("${opensearch.password}")
+    private String password;
 
-  @Value("${opensearch.host}")
-  private String host;
+    @Value("${opensearch.host}")
+    private String host;
 
-  @Value("${opensearch.port}")
-  private int port;
+    @Value("${opensearch.port}")
+    private int port;
 
-  @Bean
-  public OpenSearchClient openSearchClient() {
+    @Bean
+    public OpenSearchClient openSearchClient() {
 
-    final HttpHost httpHost = new HttpHost("http", host, port);
+        final HttpHost httpHost = new HttpHost("http", host, port);
 
-    BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-    credentialsProvider.setCredentials(
-        new AuthScope(httpHost), new UsernamePasswordCredentials(username, password.toCharArray()));
+        BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(
+                new AuthScope(httpHost), new UsernamePasswordCredentials(username, password.toCharArray()));
 
-    final OpenSearchTransport transport =
-        ApacheHttpClient5TransportBuilder.builder(httpHost)
-            .setHttpClientConfigCallback(
-                httpClientBuilder ->
-                    httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
-            .build();
+        final OpenSearchTransport transport = ApacheHttpClient5TransportBuilder.builder(httpHost)
+                .setHttpClientConfigCallback(
+                        httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
+                .build();
 
-    return new OpenSearchClient(transport);
-  }
+        return new OpenSearchClient(transport);
+    }
 }

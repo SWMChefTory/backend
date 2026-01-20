@@ -19,38 +19,37 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/account")
 public class AccountController {
 
-  private final AccountFacade accountFacade;
+    private final AccountFacade accountFacade;
 
-  @PostMapping("/login/oauth")
-  public LoginResponse loginWithOAuth(@RequestBody LoginRequest request) {
-    Account account = accountFacade.login(request.idToken(), request.provider());
-    return LoginResponse.from(account);
-  }
+    @PostMapping("/login/oauth")
+    public LoginResponse loginWithOAuth(@RequestBody LoginRequest request) {
+        Account account = accountFacade.login(request.idToken(), request.provider());
+        return LoginResponse.from(account);
+    }
 
-  @PostMapping("/signup/oauth")
-  public LoginResponse signupWithOAuth(@RequestBody SignupRequest request) {
-    Account account =
-        accountFacade.signup(
-            request.idToken(),
-            request.provider(),
-            request.nickname(),
-            request.gender(),
-            request.dateOfBirth(),
-            request.isTermsOfUseAgreed(),
-            request.isPrivacyAgreed(),
-            request.isMarketingAgreed());
-    return LoginResponse.from(account);
-  }
+    @PostMapping("/signup/oauth")
+    public LoginResponse signupWithOAuth(@RequestBody SignupRequest request) {
+        Account account = accountFacade.signup(
+                request.idToken(),
+                request.provider(),
+                request.nickname(),
+                request.gender(),
+                request.dateOfBirth(),
+                request.isTermsOfUseAgreed(),
+                request.isPrivacyAgreed(),
+                request.isMarketingAgreed());
+        return LoginResponse.from(account);
+    }
 
-  @PostMapping("/logout")
-  public SuccessOnlyResponse logout(@RequestBody LogoutRequest request) {
-    accountFacade.logout(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
-    return SuccessOnlyResponse.create();
-  }
+    @PostMapping("/logout")
+    public SuccessOnlyResponse logout(@RequestBody LogoutRequest request) {
+        accountFacade.logout(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+        return SuccessOnlyResponse.create();
+    }
 
-  @DeleteMapping
-  public SuccessOnlyResponse delete(@RequestBody LogoutRequest request) {
-    accountFacade.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
-    return SuccessOnlyResponse.create();
-  }
+    @DeleteMapping
+    public SuccessOnlyResponse delete(@RequestBody LogoutRequest request) {
+        accountFacade.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+        return SuccessOnlyResponse.create();
+    }
 }

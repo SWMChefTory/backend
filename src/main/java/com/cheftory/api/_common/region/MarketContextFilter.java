@@ -16,33 +16,32 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @Slf4j
 public class MarketContextFilter extends OncePerRequestFilter {
 
-  private final HandlerExceptionResolver handlerExceptionResolver;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
-  @Override
-  protected void doFilterInternal(
-      HttpServletRequest req, HttpServletResponse res, FilterChain chain) {
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) {
 
-    try {
-      String headerValue = req.getHeader(MarketHeaders.COUNTRY_CODE);
-      String countryCode = (headerValue != null) ? headerValue.trim() : null;
+        try {
+            String headerValue = req.getHeader(MarketHeaders.COUNTRY_CODE);
+            String countryCode = (headerValue != null) ? headerValue.trim() : null;
 
-      if (countryCode == null || countryCode.isBlank() || countryCode.length() != 2) {
-        throw new CheftoryException(GlobalErrorCode.UNKNOWN_REGION);
-      }
+            if (countryCode == null || countryCode.isBlank() || countryCode.length() != 2) {
+                throw new CheftoryException(GlobalErrorCode.UNKNOWN_REGION);
+            }
 
-      Market market = Market.fromCountryCode(countryCode);
+            Market market = Market.fromCountryCode(countryCode);
 
-      log.info(
-          "method={}, uri={}, X-Country-Code={}",
-          req.getMethod(),
-          req.getRequestURI(),
-          req.getHeader("X-Country-Code"));
+            log.info(
+                    "method={}, uri={}, X-Country-Code={}",
+                    req.getMethod(),
+                    req.getRequestURI(),
+                    req.getHeader("X-Country-Code"));
 
-      try (var ignored = MarketContext.with(new MarketContext.Info(market, countryCode))) {
-        chain.doFilter(req, res);
-      }
-    } catch (Exception e) {
-      handlerExceptionResolver.resolveException(req, res, null, e);
+            try (var ignored = MarketContext.with(new MarketContext.Info(market, countryCode))) {
+                chain.doFilter(req, res);
+            }
+        } catch (Exception e) {
+            handlerExceptionResolver.resolveException(req, res, null, e);
+        }
     }
-  }
 }

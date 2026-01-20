@@ -12,20 +12,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RecipeIdValidator implements ConstraintValidator<ExistsRecipeId, UUID> {
 
-  private final RecipeInfoService recipeInfoService;
+    private final RecipeInfoService recipeInfoService;
 
-  @Override
-  public boolean isValid(UUID recipeId, ConstraintValidatorContext context) {
-    boolean exists = recipeInfoService.exists(recipeId);
+    @Override
+    public boolean isValid(UUID recipeId, ConstraintValidatorContext context) {
+        boolean exists = recipeInfoService.exists(recipeId);
 
-    if (!exists) {
-      context.disableDefaultConstraintViolation();
-      context
-          .buildConstraintViolationWithTemplate(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.name())
-          .addConstraintViolation();
-      return false;
+        if (!exists) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.name())
+                    .addConstraintViolation();
+            return false;
+        }
+
+        return true;
     }
-
-    return true;
-  }
 }

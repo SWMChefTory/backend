@@ -9,34 +9,34 @@ import org.apache.commons.lang3.StringUtils;
 @Converter
 public class GenericJsonConverter<T> implements AttributeConverter<T, String> {
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
-  private final TypeReference<T> typeReference;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TypeReference<T> typeReference;
 
-  protected GenericJsonConverter(TypeReference<T> typeReference) {
-    this.typeReference = typeReference;
-  }
+    protected GenericJsonConverter(TypeReference<T> typeReference) {
+        this.typeReference = typeReference;
+    }
 
-  @Override
-  public String convertToDatabaseColumn(T attribute) {
-    if (attribute == null) {
-      return null;
+    @Override
+    public String convertToDatabaseColumn(T attribute) {
+        if (attribute == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(attribute);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to serialize list of strings", e);
+        }
     }
-    try {
-      return objectMapper.writeValueAsString(attribute);
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Failed to serialize list of strings", e);
-    }
-  }
 
-  @Override
-  public T convertToEntityAttribute(String dbData) {
-    if (StringUtils.isBlank(dbData)) {
-      return null;
+    @Override
+    public T convertToEntityAttribute(String dbData) {
+        if (StringUtils.isBlank(dbData)) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(dbData, typeReference);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to deserialize JSON to list of strings", e);
+        }
     }
-    try {
-      return objectMapper.readValue(dbData, typeReference);
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Failed to deserialize JSON to list of strings", e);
-    }
-  }
 }

@@ -16,19 +16,18 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class VoiceCommandHistoryController {
 
-  private final VoiceCommandHistoryService voiceCommandHistoryService;
+    private final VoiceCommandHistoryService voiceCommandHistoryService;
 
-  @PostMapping("")
-  public SuccessOnlyResponse createVoiceCommandHistory(
-      @Valid @RequestBody VoiceCommandHistoryCreateRequest request) {
-    voiceCommandHistoryService.create(
-        request.transcribe(),
-        request.result(),
-        request.userId(),
-        request.sttModel(),
-        request.intentModel(),
-        request.start(),
-        request.end());
-    return SuccessOnlyResponse.create();
-  }
+    @PostMapping("")
+    public SuccessOnlyResponse createVoiceCommandHistory(@Valid @RequestBody VoiceCommandHistoryCreateRequest request) {
+        voiceCommandHistoryService.create(
+                request.transcribe(),
+                request.result(),
+                request.userId(),
+                request.sttModel(),
+                request.intentModel(),
+                request.start(),
+                request.end());
+        return SuccessOnlyResponse.create();
+    }
 }

@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/affiliate")
 public class AffiliateController {
 
-  private final AffiliateService affiliateService;
+    private final AffiliateService affiliateService;
 
-  @GetMapping("/search/coupang")
-  public AffiliateSearchResponse searchProducts(@NotBlank @RequestParam String keyword) {
-    return AffiliateSearchResponse.from(affiliateService.searchCoupangProducts(keyword));
-  }
+    @GetMapping("/search/coupang")
+    public AffiliateSearchResponse searchProducts(@NotBlank @RequestParam String keyword) {
+        return AffiliateSearchResponse.from(affiliateService.searchCoupangProducts(keyword));
+    }
 }

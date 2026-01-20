@@ -15,19 +15,21 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class RecipeStepService {
-  private final RecipeStepClient recipeStepClient;
-  private final RecipeStepRepository recipeStepRepository;
-  private final Clock clock;
+    private final RecipeStepClient recipeStepClient;
+    private final RecipeStepRepository recipeStepRepository;
+    private final Clock clock;
 
-  public List<UUID> create(UUID recipeId, RecipeCaption recipeCaption) {
-    ClientRecipeStepsResponse response = recipeStepClient.fetchRecipeSteps(recipeCaption);
+    public List<UUID> create(UUID recipeId, RecipeCaption recipeCaption) {
+        ClientRecipeStepsResponse response = recipeStepClient.fetchRecipeSteps(recipeCaption);
 
-    List<RecipeStep> recipeSteps = response.toRecipeSteps(recipeId, clock);
+        List<RecipeStep> recipeSteps = response.toRecipeSteps(recipeId, clock);
 
-    return recipeStepRepository.saveAll(recipeSteps).stream().map(RecipeStep::getId).toList();
-  }
+        return recipeStepRepository.saveAll(recipeSteps).stream()
+                .map(RecipeStep::getId)
+                .toList();
+    }
 
-  public List<RecipeStep> gets(UUID recipeId) {
-    return recipeStepRepository.findAllByRecipeId(recipeId, RecipeStepSort.STEP_ORDER_ASC);
-  }
+    public List<RecipeStep> gets(UUID recipeId) {
+        return recipeStepRepository.findAllByRecipeId(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+    }
 }

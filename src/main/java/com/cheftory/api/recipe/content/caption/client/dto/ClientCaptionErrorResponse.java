@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ClientCaptionErrorResponse {
-  @JsonProperty("error_code")
-  private String errorCode;
+    @JsonProperty("error_code")
+    private String errorCode;
 
-  @JsonProperty("error_message")
-  private String errorMessage;
+    @JsonProperty("error_message")
+    private String errorMessage;
 }

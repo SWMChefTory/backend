@@ -21,21 +21,22 @@ import lombok.NoArgsConstructor;
 @PocOnly(until = "2025-12-31")
 public class RecipeUserChallenge extends MarketScope {
 
-  @Id UUID id;
+    @Id
+    UUID id;
 
-  @Column(nullable = false)
-  UUID challengeId;
+    @Column(nullable = false)
+    UUID challengeId;
 
-  @Column(nullable = false)
-  UUID userId;
+    @Column(nullable = false)
+    UUID userId;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
-  @Column(nullable = false)
-  private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  private RecipeUserChallengeStatus status;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private RecipeUserChallengeStatus status;
 }

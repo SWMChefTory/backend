@@ -16,65 +16,65 @@ import org.junit.jupiter.params.provider.EnumSource;
 @DisplayName("RecipeProgress")
 class RecipeProgressTest {
 
-  private Clock clock;
-  private LocalDateTime now;
-  private UUID recipeId;
+    private Clock clock;
+    private LocalDateTime now;
+    private UUID recipeId;
 
-  @BeforeEach
-  void setUp() {
-    clock = mock(Clock.class);
-    now = LocalDateTime.now();
-    when(clock.now()).thenReturn(now);
-    recipeId = UUID.randomUUID();
-  }
+    @BeforeEach
+    void setUp() {
+        clock = mock(Clock.class);
+        now = LocalDateTime.now();
+        when(clock.now()).thenReturn(now);
+        recipeId = UUID.randomUUID();
+    }
 
-  @ParameterizedTest(name = "Step={0} 에 대해 생성 성공")
-  @EnumSource(RecipeProgressStep.class)
-  void create_with_all_steps(RecipeProgressStep step) {
-    RecipeProgressDetail detail = pickDefaultDetailFor(step);
+    @ParameterizedTest(name = "Step={0} 에 대해 생성 성공")
+    @EnumSource(RecipeProgressStep.class)
+    void create_with_all_steps(RecipeProgressStep step) {
+        RecipeProgressDetail detail = pickDefaultDetailFor(step);
 
-    RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail);
+        RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail);
 
-    assertThat(progress).isNotNull();
-    assertThat(progress.getId()).isNotNull();
-    assertThat(progress.getRecipeId()).isEqualTo(recipeId);
-    assertThat(progress.getStep()).isEqualTo(step);
-    assertThat(progress.getDetail()).isEqualTo(detail);
-    assertThat(progress.getCreatedAt()).isEqualTo(now);
-  }
+        assertThat(progress).isNotNull();
+        assertThat(progress.getId()).isNotNull();
+        assertThat(progress.getRecipeId()).isEqualTo(recipeId);
+        assertThat(progress.getStep()).isEqualTo(step);
+        assertThat(progress.getDetail()).isEqualTo(detail);
+        assertThat(progress.getCreatedAt()).isEqualTo(now);
+    }
 
-  @ParameterizedTest(name = "Detail={0} 에 대해 생성 성공")
-  @EnumSource(RecipeProgressDetail.class)
-  void create_with_all_details(RecipeProgressDetail detail) {
-    RecipeProgressStep step = pickDefaultStepFor(detail);
+    @ParameterizedTest(name = "Detail={0} 에 대해 생성 성공")
+    @EnumSource(RecipeProgressDetail.class)
+    void create_with_all_details(RecipeProgressDetail detail) {
+        RecipeProgressStep step = pickDefaultStepFor(detail);
 
-    RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail);
+        RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail);
 
-    assertThat(progress).isNotNull();
-    assertThat(progress.getStep()).isEqualTo(step);
-    assertThat(progress.getDetail()).isEqualTo(detail);
-    assertThat(progress.getCreatedAt()).isEqualTo(now);
-  }
+        assertThat(progress).isNotNull();
+        assertThat(progress.getStep()).isEqualTo(step);
+        assertThat(progress.getDetail()).isEqualTo(detail);
+        assertThat(progress.getCreatedAt()).isEqualTo(now);
+    }
 
-  private RecipeProgressStep pickDefaultStepFor(RecipeProgressDetail detail) {
-    return switch (detail) {
-      case READY -> RecipeProgressStep.READY;
-      case CAPTION -> RecipeProgressStep.CAPTION;
-      case STEP -> RecipeProgressStep.STEP;
-      case FINISHED -> RecipeProgressStep.FINISHED;
-      case BRIEFING -> RecipeProgressStep.BRIEFING;
-      case TAG, DETAIL_META, INGREDIENT -> RecipeProgressStep.DETAIL;
-    };
-  }
+    private RecipeProgressStep pickDefaultStepFor(RecipeProgressDetail detail) {
+        return switch (detail) {
+            case READY -> RecipeProgressStep.READY;
+            case CAPTION -> RecipeProgressStep.CAPTION;
+            case STEP -> RecipeProgressStep.STEP;
+            case FINISHED -> RecipeProgressStep.FINISHED;
+            case BRIEFING -> RecipeProgressStep.BRIEFING;
+            case TAG, DETAIL_META, INGREDIENT -> RecipeProgressStep.DETAIL;
+        };
+    }
 
-  private RecipeProgressDetail pickDefaultDetailFor(RecipeProgressStep step) {
-    return switch (step) {
-      case READY -> RecipeProgressDetail.READY;
-      case CAPTION -> RecipeProgressDetail.CAPTION;
-      case DETAIL -> RecipeProgressDetail.DETAIL_META;
-      case STEP -> RecipeProgressDetail.STEP;
-      case FINISHED -> RecipeProgressDetail.FINISHED;
-      case BRIEFING -> RecipeProgressDetail.BRIEFING;
-    };
-  }
+    private RecipeProgressDetail pickDefaultDetailFor(RecipeProgressStep step) {
+        return switch (step) {
+            case READY -> RecipeProgressDetail.READY;
+            case CAPTION -> RecipeProgressDetail.CAPTION;
+            case DETAIL -> RecipeProgressDetail.DETAIL_META;
+            case STEP -> RecipeProgressDetail.STEP;
+            case FINISHED -> RecipeProgressDetail.FINISHED;
+            case BRIEFING -> RecipeProgressDetail.BRIEFING;
+        };
+    }
 }

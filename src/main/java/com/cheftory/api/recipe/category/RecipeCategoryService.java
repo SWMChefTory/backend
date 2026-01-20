@@ -15,30 +15,27 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RecipeCategoryService {
 
-  private final RecipeCategoryRepository recipeCategoryRepository;
-  private final Clock clock;
+    private final RecipeCategoryRepository recipeCategoryRepository;
+    private final Clock clock;
 
-  public UUID create(String name, UUID userId) {
-    RecipeCategory recipeCategory = RecipeCategory.create(clock, name, userId);
-    return recipeCategoryRepository.save(recipeCategory).getId();
-  }
+    public UUID create(String name, UUID userId) {
+        RecipeCategory recipeCategory = RecipeCategory.create(clock, name, userId);
+        return recipeCategoryRepository.save(recipeCategory).getId();
+    }
 
-  @Transactional
-  public void delete(UUID recipeCategoryId) {
-    RecipeCategory recipeCategory =
-        recipeCategoryRepository
-            .findById(recipeCategoryId)
-            .orElseThrow(
-                () ->
-                    new RecipeCategoryException(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND));
-    recipeCategory.delete();
-  }
+    @Transactional
+    public void delete(UUID recipeCategoryId) {
+        RecipeCategory recipeCategory = recipeCategoryRepository
+                .findById(recipeCategoryId)
+                .orElseThrow(() -> new RecipeCategoryException(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND));
+        recipeCategory.delete();
+    }
 
-  public List<RecipeCategory> getUsers(UUID userId) {
-    return recipeCategoryRepository.findAllByUserIdAndStatus(userId, RecipeCategoryStatus.ACTIVE);
-  }
+    public List<RecipeCategory> getUsers(UUID userId) {
+        return recipeCategoryRepository.findAllByUserIdAndStatus(userId, RecipeCategoryStatus.ACTIVE);
+    }
 
-  public boolean exists(UUID recipeCategoryId) {
-    return recipeCategoryRepository.existsById(recipeCategoryId);
-  }
+    public boolean exists(UUID recipeCategoryId) {
+        return recipeCategoryRepository.existsById(recipeCategoryId);
+    }
 }

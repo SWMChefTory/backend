@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public class AuthException extends CheftoryException {
 
-  public AuthException(AuthErrorCode errorCode) {
-    super(errorCode);
-  }
+    public AuthException(AuthErrorCode errorCode) {
+        super(errorCode);
+    }
 }

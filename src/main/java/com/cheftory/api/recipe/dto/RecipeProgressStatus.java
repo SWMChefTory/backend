@@ -11,10 +11,10 @@ import lombok.Getter;
 @Getter
 public class RecipeProgressStatus {
 
-  private List<RecipeProgress> progresses;
-  private RecipeInfo recipe;
+    private List<RecipeProgress> progresses;
+    private RecipeInfo recipe;
 
-  public static RecipeProgressStatus of(RecipeInfo recipe, List<RecipeProgress> progresses) {
-    return new RecipeProgressStatus(progresses, recipe);
-  }
+    public static RecipeProgressStatus of(RecipeInfo recipe, List<RecipeProgress> progresses) {
+        return new RecipeProgressStatus(progresses, recipe);
+    }
 }

@@ -13,20 +13,20 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class RecipeSearchAdapter implements RecipeSearchPort {
-  private final SearchFacade searchFacade;
+    private final SearchFacade searchFacade;
 
-  @Override
-  @Deprecated(forRemoval = true)
-  public Page<UUID> searchRecipeIds(UUID userId, String query, int page) {
-    Page<SearchQuery> results = searchFacade.search(SearchQueryScope.RECIPE, userId, query, page);
-    return results.map(s -> UUID.fromString(s.getId()));
-  }
+    @Override
+    @Deprecated(forRemoval = true)
+    public Page<UUID> searchRecipeIds(UUID userId, String query, int page) {
+        Page<SearchQuery> results = searchFacade.search(SearchQueryScope.RECIPE, userId, query, page);
+        return results.map(s -> UUID.fromString(s.getId()));
+    }
 
-  @Override
-  public CursorPage<UUID> searchRecipeIds(UUID userId, String query, String cursor) {
-    CursorPage<SearchQuery> results =
-        searchFacade.search(SearchQueryScope.RECIPE, userId, query, cursor);
-    List<UUID> items = results.items().stream().map(s -> UUID.fromString(s.getId())).toList();
-    return CursorPage.of(items, results.nextCursor());
-  }
+    @Override
+    public CursorPage<UUID> searchRecipeIds(UUID userId, String query, String cursor) {
+        CursorPage<SearchQuery> results = searchFacade.search(SearchQueryScope.RECIPE, userId, query, cursor);
+        List<UUID> items =
+                results.items().stream().map(s -> UUID.fromString(s.getId())).toList();
+        return CursorPage.of(items, results.nextCursor());
+    }
 }

@@ -21,26 +21,25 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private final TokenProvider tokenProvider;
+    private final TokenProvider tokenProvider;
 
-  @Override
-  protected void doFilterInternal(
-      @NonNull HttpServletRequest request,
-      @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain)
-      throws ServletException, IOException {
-    try {
-      String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-      UUID userId =
-          tokenProvider.getUserIdFromToken(BearerAuthorizationUtils.removePrefix(jwtToken));
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
+        try {
+            String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+            UUID userId = tokenProvider.getUserIdFromToken(BearerAuthorizationUtils.removePrefix(jwtToken));
 
-      UsernamePasswordAuthenticationToken authentication =
-          new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-    } catch (Exception e) {
-      request.setAttribute("Exception", e);
+        } catch (Exception e) {
+            request.setAttribute("Exception", e);
+        }
+        filterChain.doFilter(request, response);
     }
-    filterChain.doFilter(request, response);
-  }
 }

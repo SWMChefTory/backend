@@ -11,14 +11,15 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class AutocompleteService {
-  private final AutocompleteRepository autocompleteRepository;
+    private final AutocompleteRepository autocompleteRepository;
 
-  public List<Autocomplete> autocomplete(String keyword) {
-    return autocomplete(AutocompleteScope.RECIPE, keyword);
-  }
+    public List<Autocomplete> autocomplete(String keyword) {
+        return autocomplete(AutocompleteScope.RECIPE, keyword);
+    }
 
-  public List<Autocomplete> autocomplete(AutocompleteScope scope, String keyword) {
-    Pageable pageable = SearchPageRequest.create(0);
-    return autocompleteRepository.searchAutocomplete(scope, keyword, pageable).stream().toList();
-  }
+    public List<Autocomplete> autocomplete(AutocompleteScope scope, String keyword) {
+        Pageable pageable = SearchPageRequest.create(0);
+        return autocompleteRepository.searchAutocomplete(scope, keyword, pageable).stream()
+                .toList();
+    }
 }

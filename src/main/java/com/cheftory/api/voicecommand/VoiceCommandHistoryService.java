@@ -11,18 +11,18 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class VoiceCommandHistoryService {
 
-  private final VoiceCommandHistoryRepository voiceCommandHistoryRepository;
+    private final VoiceCommandHistoryRepository voiceCommandHistoryRepository;
 
-  public void create(
-      String transcribe,
-      String result,
-      UUID userId,
-      String sttModel,
-      String intentModel,
-      Integer start,
-      Integer end) {
-    VoiceCommandHistory voiceCommandHistory =
-        VoiceCommandHistory.create(sttModel, transcribe, intentModel, result, userId, start, end);
-    voiceCommandHistoryRepository.save(voiceCommandHistory);
-  }
+    public void create(
+            String transcribe,
+            String result,
+            UUID userId,
+            String sttModel,
+            String intentModel,
+            Integer start,
+            Integer end) {
+        VoiceCommandHistory voiceCommandHistory =
+                VoiceCommandHistory.create(sttModel, transcribe, intentModel, result, userId, start, end);
+        voiceCommandHistoryRepository.save(voiceCommandHistory);
+    }
 }

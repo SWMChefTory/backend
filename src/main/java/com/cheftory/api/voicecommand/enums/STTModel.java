@@ -7,23 +7,21 @@ import lombok.Getter;
 
 @Getter
 public enum STTModel {
-  VITO("VITO"),
-  OPENAI("OPENAI"),
-  CLOVA("CLOVA");
+    VITO("VITO"),
+    OPENAI("OPENAI"),
+    CLOVA("CLOVA");
 
-  private final String value;
+    private final String value;
 
-  STTModel(String value) {
-    this.value = value;
-  }
+    STTModel(String value) {
+        this.value = value;
+    }
 
-  public static STTModel fromValue(String value) {
-    return Arrays.stream(values())
-        .filter(model -> model.value.equals(value))
-        .findFirst()
-        .orElseThrow(
-            () ->
-                new VoiceCommandHistoryException(
-                    VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL));
-  }
+    public static STTModel fromValue(String value) {
+        return Arrays.stream(values())
+                .filter(model -> model.value.equals(value))
+                .findFirst()
+                .orElseThrow(
+                        () -> new VoiceCommandHistoryException(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL));
+    }
 }

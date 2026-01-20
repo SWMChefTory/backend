@@ -21,30 +21,30 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "recipe_category")
 public class RecipeCategory extends MarketScope {
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Column(nullable = false)
-  private String name;
+    @Column(nullable = false)
+    private String name;
 
-  @Column(nullable = false)
-  private UUID userId;
+    @Column(nullable = false)
+    private UUID userId;
 
-  @Column(nullable = false)
-  private RecipeCategoryStatus status;
+    @Column(nullable = false)
+    private RecipeCategoryStatus status;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
-  public static RecipeCategory create(Clock clock, String name, UUID userId) {
-    if (name == null || name.trim().isEmpty()) {
-      throw new RecipeCategoryException(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
+    public static RecipeCategory create(Clock clock, String name, UUID userId) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new RecipeCategoryException(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
+        }
+
+        return new RecipeCategory(UUID.randomUUID(), name, userId, RecipeCategoryStatus.ACTIVE, clock.now());
     }
 
-    return new RecipeCategory(
-        UUID.randomUUID(), name, userId, RecipeCategoryStatus.ACTIVE, clock.now());
-  }
-
-  public void delete() {
-    this.status = RecipeCategoryStatus.DELETED;
-  }
+    public void delete() {
+        this.status = RecipeCategoryStatus.DELETED;
+    }
 }

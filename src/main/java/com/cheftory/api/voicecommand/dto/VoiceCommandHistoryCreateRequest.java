@@ -6,10 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record VoiceCommandHistoryCreateRequest(
-    @NotNull @JsonProperty("transcribe") String transcribe,
-    @NotNull @JsonProperty("intent") String result,
-    @NotNull @ExistsUserId @JsonProperty("user_id") UUID userId,
-    @NotNull @JsonProperty("stt_model") String sttModel,
-    @NotNull @JsonProperty("intent_model") String intentModel,
-    @NotNull @JsonProperty("start") Integer start,
-    @NotNull @JsonProperty("end") Integer end) {}
+        @NotNull @JsonProperty("transcribe") String transcribe,
+        @NotNull @JsonProperty("intent") String result,
+        @NotNull @ExistsUserId @JsonProperty("user_id") UUID userId,
+        @NotNull @JsonProperty("stt_model") String sttModel,
+        @NotNull @JsonProperty("intent_model") String intentModel,
+        @NotNull @JsonProperty("start") Integer start,
+        @NotNull @JsonProperty("end") Integer end) {}

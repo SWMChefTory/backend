@@ -8,17 +8,17 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeCategoryCounts {
-  private final Integer uncategorizedCount;
-  private final List<RecipeCategoryCount> categorizedCounts;
-  private final Integer totalCount;
+    private final Integer uncategorizedCount;
+    private final List<RecipeCategoryCount> categorizedCounts;
+    private final Integer totalCount;
 
-  public static RecipeCategoryCounts of(
-      Integer uncategorizedCount, List<RecipeCategoryCount> categorizedCounts) {
+    public static RecipeCategoryCounts of(Integer uncategorizedCount, List<RecipeCategoryCount> categorizedCounts) {
 
-    int total =
-        uncategorizedCount
-            + categorizedCounts.stream().mapToInt(RecipeCategoryCount::getRecipeCount).sum();
+        int total = uncategorizedCount
+                + categorizedCounts.stream()
+                        .mapToInt(RecipeCategoryCount::getRecipeCount)
+                        .sum();
 
-    return new RecipeCategoryCounts(uncategorizedCount, categorizedCounts, total);
-  }
+        return new RecipeCategoryCounts(uncategorizedCount, categorizedCounts, total);
+    }
 }

@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/papi/v1/recipes")
 @RequiredArgsConstructor
 public class RecipeCaptionController {
-  private final RecipeCaptionService recipeCaptionService;
+    private final RecipeCaptionService recipeCaptionService;
 
-  @GetMapping("/{recipeId}/caption")
-  public RecipeCaptionsResponse getRecipeCaption(@PathVariable @ExistsRecipeId UUID recipeId) {
-    return RecipeCaptionsResponse.from(recipeCaptionService.findByRecipeId(recipeId));
-  }
+    @GetMapping("/{recipeId}/caption")
+    public RecipeCaptionsResponse getRecipeCaption(@PathVariable @ExistsRecipeId UUID recipeId) {
+        return RecipeCaptionsResponse.from(recipeCaptionService.findByRecipeId(recipeId));
+    }
 }

@@ -9,15 +9,15 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CreditAdapter implements RecipeCreditPort {
-  private final CreditService creditService;
+    private final CreditService creditService;
 
-  @Override
-  public void spendRecipeCreate(UUID userId, UUID recipeId, long creditCost) {
-    creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
-  }
+    @Override
+    public void spendRecipeCreate(UUID userId, UUID recipeId, long creditCost) {
+        creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
+    }
 
-  @Override
-  public void refundRecipeCreate(UUID userId, UUID recipeId, long creditCost) {
-    creditService.grant(Credit.recipeCreateRefund(userId, recipeId, creditCost));
-  }
+    @Override
+    public void refundRecipeCreate(UUID userId, UUID recipeId, long creditCost) {
+        creditService.grant(Credit.recipeCreateRefund(userId, recipeId, creditCost));
+    }
 }

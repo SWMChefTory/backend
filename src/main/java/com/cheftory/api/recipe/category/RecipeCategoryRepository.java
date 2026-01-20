@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecipeCategoryRepository extends JpaRepository<RecipeCategory, UUID> {
 
-  List<RecipeCategory> findAllByUserIdAndStatus(UUID userId, RecipeCategoryStatus status);
+    List<RecipeCategory> findAllByUserIdAndStatus(UUID userId, RecipeCategoryStatus status);
 }

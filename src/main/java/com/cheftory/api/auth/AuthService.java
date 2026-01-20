@@ -19,68 +19,66 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-  private final GoogleTokenVerifier googleVerifier;
-  private final AppleTokenVerifier appleVerifier;
-  private final TokenProvider jwtProvider;
-  private final LoginRepository loginRepository;
-  private final Clock clock;
+    private final GoogleTokenVerifier googleVerifier;
+    private final AppleTokenVerifier appleVerifier;
+    private final TokenProvider jwtProvider;
+    private final LoginRepository loginRepository;
+    private final Clock clock;
 
-  public String extractProviderSubFromIdToken(String idToken, Provider provider) {
-    try {
-      return switch (provider) {
-        case GOOGLE -> googleVerifier.getSubFromToken(idToken);
-        case APPLE -> appleVerifier.getSubFromToken(idToken);
-        default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
-      };
-    } catch (Exception e) {
-      throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
+    public String extractProviderSubFromIdToken(String idToken, Provider provider) {
+        try {
+            return switch (provider) {
+                case GOOGLE -> googleVerifier.getSubFromToken(idToken);
+                case APPLE -> appleVerifier.getSubFromToken(idToken);
+                default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
+            };
+        } catch (Exception e) {
+            throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
+        }
     }
-  }
 
-  public UUID extractUserIdFromToken(String token) {
-    return jwtProvider.getUserIdFromToken(token);
-  }
-
-  public AuthTokens reissue(String refreshToken) {
-
-    if (!jwtProvider.isRefreshToken(refreshToken)) {
-      throw new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+    public UUID extractUserIdFromToken(String token) {
+        return jwtProvider.getUserIdFromToken(token);
     }
-    UUID userId = extractUserIdFromToken(refreshToken);
 
-    AuthTokens authTokens = createAuthToken(userId);
-    updateRefreshToken(userId, refreshToken, authTokens.refreshToken());
-    return authTokens;
-  }
+    public AuthTokens reissue(String refreshToken) {
 
-  public AuthTokens createAuthToken(UUID userId) {
-    String accessToken = jwtProvider.createAccessToken(userId);
-    String refreshToken = jwtProvider.createRefreshToken(userId);
-    return AuthTokens.of(accessToken, refreshToken);
-  }
+        if (!jwtProvider.isRefreshToken(refreshToken)) {
+            throw new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        }
+        UUID userId = extractUserIdFromToken(refreshToken);
 
-  public void saveLoginSession(UUID userId, String refreshToken) {
-    LocalDateTime refreshTokenExpiredAt = jwtProvider.getExpiration(refreshToken);
-    Login log = Login.create(userId, refreshToken, refreshTokenExpiredAt, clock);
-    loginRepository.save(log);
-  }
+        AuthTokens authTokens = createAuthToken(userId);
+        updateRefreshToken(userId, refreshToken, authTokens.refreshToken());
+        return authTokens;
+    }
 
-  private void updateRefreshToken(UUID userId, String oldRefreshToken, String newRefreshToken) {
-    Login log =
-        loginRepository
-            .findByUserIdAndRefreshToken(userId, oldRefreshToken)
-            .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+    public AuthTokens createAuthToken(UUID userId) {
+        String accessToken = jwtProvider.createAccessToken(userId);
+        String refreshToken = jwtProvider.createRefreshToken(userId);
+        return AuthTokens.of(accessToken, refreshToken);
+    }
 
-    LocalDateTime refreshTokenExpiredAt = jwtProvider.getExpiration(newRefreshToken);
-    log.updateRefreshToken(newRefreshToken, refreshTokenExpiredAt);
-    loginRepository.save(log);
-  }
+    public void saveLoginSession(UUID userId, String refreshToken) {
+        LocalDateTime refreshTokenExpiredAt = jwtProvider.getExpiration(refreshToken);
+        Login log = Login.create(userId, refreshToken, refreshTokenExpiredAt, clock);
+        loginRepository.save(log);
+    }
 
-  public void deleteRefreshToken(UUID userId, String refreshToken) {
-    Login log =
-        loginRepository
-            .findByUserIdAndRefreshToken(userId, refreshToken)
-            .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
-    loginRepository.delete(log);
-  }
+    private void updateRefreshToken(UUID userId, String oldRefreshToken, String newRefreshToken) {
+        Login log = loginRepository
+                .findByUserIdAndRefreshToken(userId, oldRefreshToken)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+
+        LocalDateTime refreshTokenExpiredAt = jwtProvider.getExpiration(newRefreshToken);
+        log.updateRefreshToken(newRefreshToken, refreshTokenExpiredAt);
+        loginRepository.save(log);
+    }
+
+    public void deleteRefreshToken(UUID userId, String refreshToken) {
+        Login log = loginRepository
+                .findByUserIdAndRefreshToken(userId, refreshToken)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+        loginRepository.delete(log);
+    }
 }

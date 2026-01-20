@@ -22,184 +22,178 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @DisplayName("RecipeProgressRepository 테스트")
 public class RecipeProgressRepositoryTest extends DbContextTest {
 
-  @Autowired private RecipeProgressRepository recipeProgressRepository;
+    @Autowired
+    private RecipeProgressRepository recipeProgressRepository;
 
-  @MockitoBean private Clock clock;
+    @MockitoBean
+    private Clock clock;
 
-  private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+    private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
-  @BeforeEach
-  void setUp() {
-    doReturn(FIXED_TIME).when(clock).now();
-  }
-
-  @Nested
-  @DisplayName("레시피 진행 상황 조회")
-  class FindRecipeProgress {
+    @BeforeEach
+    void setUp() {
+        doReturn(FIXED_TIME).when(clock).now();
+    }
 
     @Nested
-    @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
-    class GivenValidRecipeId {
+    @DisplayName("레시피 진행 상황 조회")
+    class FindRecipeProgress {
 
-      private UUID recipeId;
-      private RecipeProgressStep step;
-      private RecipeProgressDetail detail;
+        @Nested
+        @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+        class GivenValidRecipeId {
 
-      @BeforeEach
-      void setUp() {
+            private UUID recipeId;
+            private RecipeProgressStep step;
+            private RecipeProgressDetail detail;
 
-        recipeId = UUID.randomUUID();
-        step = RecipeProgressStep.READY;
-        detail = RecipeProgressDetail.READY;
+            @BeforeEach
+            void setUp() {
 
-        RecipeProgress recipeProgress = RecipeProgress.create(recipeId, clock, step, detail);
-        recipeProgressRepository.save(recipeProgress);
-      }
+                recipeId = UUID.randomUUID();
+                step = RecipeProgressStep.READY;
+                detail = RecipeProgressDetail.READY;
 
-      @Nested
-      @DisplayName("When - 레시피 진행 상황을 조회하면")
-      class WhenFindRecipeProgress {
-        List<RecipeProgress> results;
+                RecipeProgress recipeProgress = RecipeProgress.create(recipeId, clock, step, detail);
+                recipeProgressRepository.save(recipeProgress);
+            }
 
-        @BeforeEach
-        void setUp() {
-          results =
-              recipeProgressRepository.findAllByRecipeId(
-                  recipeId, RecipeProgressSort.CREATE_AT_ASC);
+            @Nested
+            @DisplayName("When - 레시피 진행 상황을 조회하면")
+            class WhenFindRecipeProgress {
+                List<RecipeProgress> results;
+
+                @BeforeEach
+                void setUp() {
+                    results = recipeProgressRepository.findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
+                }
+
+                @DisplayName("Then - 해당 레시피의 진행 상황이 반환된다")
+                @Test
+                void shouldReturnRecipeProgress() {
+
+                    assertThat(results).hasSize(1);
+                    assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
+                    assertThat(results.getFirst().getStep()).isEqualTo(step);
+                    assertThat(results.getFirst().getDetail()).isEqualTo(detail);
+                    assertThat(results.getFirst().getCreatedAt()).isEqualTo(FIXED_TIME);
+                }
+            }
         }
-
-        @DisplayName("Then - 해당 레시피의 진행 상황이 반환된다")
-        @Test
-        void shouldReturnRecipeProgress() {
-
-          assertThat(results).hasSize(1);
-          assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
-          assertThat(results.getFirst().getStep()).isEqualTo(step);
-          assertThat(results.getFirst().getDetail()).isEqualTo(detail);
-          assertThat(results.getFirst().getCreatedAt()).isEqualTo(FIXED_TIME);
-        }
-      }
     }
-  }
-
-  @Nested
-  @DisplayName("레시피 진행 상황 정렬 조회")
-  class FindRecipeProgressWithSort {
 
     @Nested
-    @DisplayName("Given - 여러 개의 레시피 진행 상황이 시간 순서대로 저장되어 있을 때")
-    class GivenMultipleRecipeProgressInTimeOrder {
+    @DisplayName("레시피 진행 상황 정렬 조회")
+    class FindRecipeProgressWithSort {
 
-      private UUID recipeId;
-      private LocalDateTime firstTime;
-      private LocalDateTime secondTime;
-      private LocalDateTime thirdTime;
+        @Nested
+        @DisplayName("Given - 여러 개의 레시피 진행 상황이 시간 순서대로 저장되어 있을 때")
+        class GivenMultipleRecipeProgressInTimeOrder {
 
-      @BeforeEach
-      void setUp() {
-        recipeId = UUID.randomUUID();
-        firstTime = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
-        secondTime = LocalDateTime.of(2024, 1, 1, 11, 0, 0);
-        thirdTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+            private UUID recipeId;
+            private LocalDateTime firstTime;
+            private LocalDateTime secondTime;
+            private LocalDateTime thirdTime;
 
-        // 세 번째로 생성된 것 먼저 저장
-        doReturn(thirdTime).when(clock).now();
-        RecipeProgress thirdProgress =
-            RecipeProgress.create(
-                recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-        recipeProgressRepository.save(thirdProgress);
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                firstTime = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
+                secondTime = LocalDateTime.of(2024, 1, 1, 11, 0, 0);
+                thirdTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
-        // 첫 번째로 생성된 것 저장
-        doReturn(firstTime).when(clock).now();
-        RecipeProgress firstProgress =
-            RecipeProgress.create(
-                recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY);
-        recipeProgressRepository.save(firstProgress);
+                // 세 번째로 생성된 것 먼저 저장
+                doReturn(thirdTime).when(clock).now();
+                RecipeProgress thirdProgress = RecipeProgress.create(
+                        recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                recipeProgressRepository.save(thirdProgress);
 
-        // 두 번째로 생성된 것 저장
-        doReturn(secondTime).when(clock).now();
-        RecipeProgress secondProgress =
-            RecipeProgress.create(
-                recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
-        recipeProgressRepository.save(secondProgress);
-      }
+                // 첫 번째로 생성된 것 저장
+                doReturn(firstTime).when(clock).now();
+                RecipeProgress firstProgress =
+                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY);
+                recipeProgressRepository.save(firstProgress);
 
-      @Nested
-      @DisplayName("When - createdAt 오름차순으로 정렬하여 조회하면")
-      class WhenFindWithCreatedAtAscSort {
-        List<RecipeProgress> results;
+                // 두 번째로 생성된 것 저장
+                doReturn(secondTime).when(clock).now();
+                RecipeProgress secondProgress =
+                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+                recipeProgressRepository.save(secondProgress);
+            }
 
-        @BeforeEach
-        void setUp() {
-          results =
-              recipeProgressRepository.findAllByRecipeId(
-                  recipeId, RecipeProgressSort.CREATE_AT_ASC);
+            @Nested
+            @DisplayName("When - createdAt 오름차순으로 정렬하여 조회하면")
+            class WhenFindWithCreatedAtAscSort {
+                List<RecipeProgress> results;
+
+                @BeforeEach
+                void setUp() {
+                    results = recipeProgressRepository.findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
+                }
+
+                @DisplayName("Then - 생성 시간 순서대로 정렬된 결과가 반환된다")
+                @Test
+                void shouldReturnRecipeProgressSortedByCreatedAtAsc() {
+                    assertThat(results).hasSize(3);
+
+                    // 첫 번째: 가장 이른 시간
+                    assertThat(results.get(0).getCreatedAt()).isEqualTo(firstTime);
+                    assertThat(results.get(0).getStep()).isEqualTo(RecipeProgressStep.READY);
+
+                    // 두 번째: 중간 시간
+                    assertThat(results.get(1).getCreatedAt()).isEqualTo(secondTime);
+                    assertThat(results.get(1).getStep()).isEqualTo(RecipeProgressStep.STEP);
+
+                    // 세 번째: 가장 늦은 시간
+                    assertThat(results.get(2).getCreatedAt()).isEqualTo(thirdTime);
+                    assertThat(results.get(2).getStep()).isEqualTo(RecipeProgressStep.FINISHED);
+                }
+            }
         }
-
-        @DisplayName("Then - 생성 시간 순서대로 정렬된 결과가 반환된다")
-        @Test
-        void shouldReturnRecipeProgressSortedByCreatedAtAsc() {
-          assertThat(results).hasSize(3);
-
-          // 첫 번째: 가장 이른 시간
-          assertThat(results.get(0).getCreatedAt()).isEqualTo(firstTime);
-          assertThat(results.get(0).getStep()).isEqualTo(RecipeProgressStep.READY);
-
-          // 두 번째: 중간 시간
-          assertThat(results.get(1).getCreatedAt()).isEqualTo(secondTime);
-          assertThat(results.get(1).getStep()).isEqualTo(RecipeProgressStep.STEP);
-
-          // 세 번째: 가장 늦은 시간
-          assertThat(results.get(2).getCreatedAt()).isEqualTo(thirdTime);
-          assertThat(results.get(2).getStep()).isEqualTo(RecipeProgressStep.FINISHED);
-        }
-      }
     }
-  }
-
-  @Nested
-  @DisplayName("레시피 진행 상황 생성")
-  class CreateRecipeProgress {
 
     @Nested
-    @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-    class GivenValidParameters {
+    @DisplayName("레시피 진행 상황 생성")
+    class CreateRecipeProgress {
 
-      private UUID recipeId;
-      private RecipeProgressStep step;
-      private RecipeProgressDetail detail;
+        @Nested
+        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
+        class GivenValidParameters {
 
-      @BeforeEach
-      void setUp() {
-        recipeId = UUID.randomUUID();
-        step = RecipeProgressStep.STEP;
-        detail = RecipeProgressDetail.DETAIL_META;
-      }
+            private UUID recipeId;
+            private RecipeProgressStep step;
+            private RecipeProgressDetail detail;
 
-      @Nested
-      @DisplayName("When - 레시피 진행 상황을 생성하면")
-      class WhenCreateRecipeProgress {
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                step = RecipeProgressStep.STEP;
+                detail = RecipeProgressDetail.DETAIL_META;
+            }
 
-        @BeforeEach
-        void setUp() {
-          RecipeProgress recipeProgress = RecipeProgress.create(recipeId, clock, step, detail);
-          recipeProgressRepository.save(recipeProgress);
+            @Nested
+            @DisplayName("When - 레시피 진행 상황을 생성하면")
+            class WhenCreateRecipeProgress {
+
+                @BeforeEach
+                void setUp() {
+                    RecipeProgress recipeProgress = RecipeProgress.create(recipeId, clock, step, detail);
+                    recipeProgressRepository.save(recipeProgress);
+                }
+
+                @DisplayName("Then - 레시피 진행 상황이 저장된다")
+                @Test
+                void shouldSaveRecipeProgress() {
+                    List<RecipeProgress> results =
+                            recipeProgressRepository.findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
+
+                    assertThat(results).hasSize(1);
+                    assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
+                    assertThat(results.getFirst().getStep()).isEqualTo(step);
+                    assertThat(results.getFirst().getDetail()).isEqualTo(detail);
+                    assertThat(results.getFirst().getCreatedAt()).isEqualTo(FIXED_TIME);
+                }
+            }
         }
-
-        @DisplayName("Then - 레시피 진행 상황이 저장된다")
-        @Test
-        void shouldSaveRecipeProgress() {
-          List<RecipeProgress> results =
-              recipeProgressRepository.findAllByRecipeId(
-                  recipeId, RecipeProgressSort.CREATE_AT_ASC);
-
-          assertThat(results).hasSize(1);
-          assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
-          assertThat(results.getFirst().getStep()).isEqualTo(step);
-          assertThat(results.getFirst().getDetail()).isEqualTo(detail);
-          assertThat(results.getFirst().getCreatedAt()).isEqualTo(FIXED_TIME);
-        }
-      }
     }
-  }
 }

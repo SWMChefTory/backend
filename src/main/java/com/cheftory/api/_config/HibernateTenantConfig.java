@@ -10,10 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class HibernateTenantConfig {
 
-  @Bean
-  public HibernatePropertiesCustomizer tenantIdResolverCustomizer(
-      MarketTenantIdentifierResolver resolver) {
-    return (Map<String, Object> props) ->
-        props.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, resolver);
-  }
+    @Bean
+    public HibernatePropertiesCustomizer tenantIdResolverCustomizer(MarketTenantIdentifierResolver resolver) {
+        return (Map<String, Object> props) -> props.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, resolver);
+    }
 }

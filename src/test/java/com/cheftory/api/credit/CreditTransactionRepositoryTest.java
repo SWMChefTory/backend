@@ -20,72 +20,75 @@ import org.springframework.dao.DataIntegrityViolationException;
 @DisplayName("CreditTransactionRepositoryTest")
 class CreditTransactionRepositoryTest extends DbContextTest {
 
-  @Autowired private CreditTransactionRepository txRepository;
-  @Autowired private EntityManager em;
+    @Autowired
+    private CreditTransactionRepository txRepository;
 
-  @Nested
-  @DisplayName("existsByIdempotencyKey")
-  class ExistsByIdempotencyKey {
+    @Autowired
+    private EntityManager em;
 
-    @Test
-    @DisplayName("저장된 idempotencyKey면 true")
-    void exists_true() {
-      String idem = "idem-" + UUID.randomUUID();
-      CreditTransaction tx = newTx(idem, 100L);
+    @Nested
+    @DisplayName("existsByIdempotencyKey")
+    class ExistsByIdempotencyKey {
 
-      txRepository.saveAndFlush(tx);
-      em.clear();
+        @Test
+        @DisplayName("저장된 idempotencyKey면 true")
+        void exists_true() {
+            String idem = "idem-" + UUID.randomUUID();
+            CreditTransaction tx = newTx(idem, 100L);
 
-      assertThat(txRepository.existsByIdempotencyKey(idem)).isTrue();
+            txRepository.saveAndFlush(tx);
+            em.clear();
+
+            assertThat(txRepository.existsByIdempotencyKey(idem)).isTrue();
+        }
+
+        @Test
+        @DisplayName("없는 idempotencyKey면 false")
+        void exists_false() {
+            assertThat(txRepository.existsByIdempotencyKey("nope-" + UUID.randomUUID()))
+                    .isFalse();
+        }
     }
 
-    @Test
-    @DisplayName("없는 idempotencyKey면 false")
-    void exists_false() {
-      assertThat(txRepository.existsByIdempotencyKey("nope-" + UUID.randomUUID())).isFalse();
+    @Nested
+    @DisplayName("유니크 제약(uq_credit_tx_idempotency_key)")
+    class UniqueIdempotencyKey {
+
+        @Test
+        @DisplayName("같은 idempotencyKey로 두 번 저장하면 DataIntegrityViolationException")
+        void duplicate_idempotencyKey_throws() {
+            String idem = "idem-dup-" + UUID.randomUUID();
+
+            txRepository.saveAndFlush(newTx(idem, 100L));
+            em.clear();
+
+            assertThatThrownBy(() -> txRepository.saveAndFlush(newTx(idem, 50L)))
+                    .isInstanceOf(DataIntegrityViolationException.class);
+        }
     }
-  }
 
-  @Nested
-  @DisplayName("유니크 제약(uq_credit_tx_idempotency_key)")
-  class UniqueIdempotencyKey {
+    private static CreditTransaction newTx(String idempotencyKey, long amount) {
+        try {
+            Constructor<CreditTransaction> ctor = CreditTransaction.class.getDeclaredConstructor(
+                    UUID.class,
+                    UUID.class,
+                    CreditTransactionType.class,
+                    CreditReason.class,
+                    long.class,
+                    String.class,
+                    LocalDateTime.class);
+            ctor.setAccessible(true);
 
-    @Test
-    @DisplayName("같은 idempotencyKey로 두 번 저장하면 DataIntegrityViolationException")
-    void duplicate_idempotencyKey_throws() {
-      String idem = "idem-dup-" + UUID.randomUUID();
-
-      txRepository.saveAndFlush(newTx(idem, 100L));
-      em.clear();
-
-      assertThatThrownBy(() -> txRepository.saveAndFlush(newTx(idem, 50L)))
-          .isInstanceOf(DataIntegrityViolationException.class);
+            return ctor.newInstance(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    CreditTransactionType.GRANT,
+                    CreditReason.values()[0],
+                    amount,
+                    idempotencyKey,
+                    LocalDateTime.now());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
-
-  private static CreditTransaction newTx(String idempotencyKey, long amount) {
-    try {
-      Constructor<CreditTransaction> ctor =
-          CreditTransaction.class.getDeclaredConstructor(
-              UUID.class,
-              UUID.class,
-              CreditTransactionType.class,
-              CreditReason.class,
-              long.class,
-              String.class,
-              LocalDateTime.class);
-      ctor.setAccessible(true);
-
-      return ctor.newInstance(
-          UUID.randomUUID(),
-          UUID.randomUUID(),
-          CreditTransactionType.GRANT,
-          CreditReason.values()[0],
-          amount,
-          idempotencyKey,
-          LocalDateTime.now());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
 }

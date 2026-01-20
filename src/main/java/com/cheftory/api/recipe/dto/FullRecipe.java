@@ -18,36 +18,39 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class FullRecipe {
-  private List<RecipeIngredient> recipeIngredients;
-  private List<RecipeTag> recipeTags;
-  @Nullable private RecipeDetailMeta recipeDetailMeta;
-  private List<RecipeStep> recipeSteps;
-  private List<RecipeProgress> recipeProgresses;
-  private RecipeHistory recipeHistory;
-  private RecipeYoutubeMeta recipeYoutubeMeta;
-  private RecipeInfo recipe;
-  private List<RecipeBriefing> recipeBriefings;
+    private List<RecipeIngredient> recipeIngredients;
+    private List<RecipeTag> recipeTags;
 
-  public static FullRecipe of(
-      List<RecipeStep> recipeSteps,
-      List<RecipeIngredient> recipeIngredients,
-      @Nullable RecipeDetailMeta recipeDetailMeta,
-      List<RecipeProgress> recipeProgresses,
-      List<RecipeTag> recipeTags,
-      RecipeYoutubeMeta recipeYoutubeMeta,
-      RecipeHistory recipeHistory,
-      RecipeInfo recipe,
-      List<RecipeBriefing> recipeBriefings) {
+    @Nullable
+    private RecipeDetailMeta recipeDetailMeta;
 
-    return new FullRecipe(
-        recipeIngredients,
-        recipeTags,
-        recipeDetailMeta,
-        recipeSteps,
-        recipeProgresses,
-        recipeHistory,
-        recipeYoutubeMeta,
-        recipe,
-        recipeBriefings);
-  }
+    private List<RecipeStep> recipeSteps;
+    private List<RecipeProgress> recipeProgresses;
+    private RecipeHistory recipeHistory;
+    private RecipeYoutubeMeta recipeYoutubeMeta;
+    private RecipeInfo recipe;
+    private List<RecipeBriefing> recipeBriefings;
+
+    public static FullRecipe of(
+            List<RecipeStep> recipeSteps,
+            List<RecipeIngredient> recipeIngredients,
+            @Nullable RecipeDetailMeta recipeDetailMeta,
+            List<RecipeProgress> recipeProgresses,
+            List<RecipeTag> recipeTags,
+            RecipeYoutubeMeta recipeYoutubeMeta,
+            RecipeHistory recipeHistory,
+            RecipeInfo recipe,
+            List<RecipeBriefing> recipeBriefings) {
+
+        return new FullRecipe(
+                recipeIngredients,
+                recipeTags,
+                recipeDetailMeta,
+                recipeSteps,
+                recipeProgresses,
+                recipeHistory,
+                recipeYoutubeMeta,
+                recipe,
+                recipeBriefings);
+    }
 }
