@@ -100,8 +100,8 @@ public class RecipeInfoService {
   }
 
   public CursorPage<RecipeInfo> getPopulars(String cursor, RecipeInfoVideoQuery videoQuery) {
-    Pageable pageable = CursorPageable.firstPage();      // limit=20 (응답용)
-    Pageable probe = CursorPageable.probe(pageable);     // limit+1=21 (hasNext 판별용)
+    Pageable pageable = CursorPageable.firstPage();
+    Pageable probe = CursorPageable.probe(pageable);
     boolean first = (cursor == null || cursor.isBlank());
 
     List<RecipeInfo> rows =

@@ -21,11 +21,27 @@ public class SearchHistoryService {
   private static final Duration TTL = Duration.ofDays(30);
 
   public void create(UUID userId, String searchText) {
+    create(userId, SearchHistoryScope.RECIPE, searchText);
+  }
+
+  public List<String> get(UUID userId) {
+    return get(userId, SearchHistoryScope.RECIPE);
+  }
+
+  public void delete(UUID userId, String searchText) {
+    delete(userId, SearchHistoryScope.RECIPE, searchText);
+  }
+
+  public void deleteAll(UUID userId) {
+    deleteAll(userId, SearchHistoryScope.RECIPE);
+  }
+
+  public void create(UUID userId, SearchHistoryScope scope, String searchText) {
     if (searchText == null || searchText.isBlank()) {
       return;
     }
 
-    String key = keyGenerator.generate(userId);
+    String key = keyGenerator.generate(userId, scope);
     String trimmedText = searchText.trim();
 
     repository.save(key, trimmedText, clock);
@@ -33,24 +49,24 @@ public class SearchHistoryService {
     repository.setExpire(key, TTL);
   }
 
-  public List<String> get(UUID userId) {
-    String key = keyGenerator.generate(userId);
+  public List<String> get(UUID userId, SearchHistoryScope scope) {
+    String key = keyGenerator.generate(userId, scope);
     return repository.findRecent(key, MAX_HISTORY);
   }
 
-  public void delete(UUID userId, String searchText) {
+  public void delete(UUID userId, SearchHistoryScope scope, String searchText) {
     if (searchText == null || searchText.isBlank()) {
       return;
     }
 
-    String key = keyGenerator.generate(userId);
+    String key = keyGenerator.generate(userId, scope);
     String trimmedText = searchText.trim();
 
     repository.remove(key, trimmedText);
   }
 
-  public void deleteAll(UUID userId) {
-    String key = keyGenerator.generate(userId);
+  public void deleteAll(UUID userId, SearchHistoryScope scope) {
+    String key = keyGenerator.generate(userId, scope);
     repository.deleteAll(key);
   }
 }

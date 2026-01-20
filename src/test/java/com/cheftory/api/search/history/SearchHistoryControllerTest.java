@@ -34,17 +34,18 @@ public class SearchHistoryControllerTest {
       UUID userId = UUID.randomUUID();
       List<String> mockHistories = List.of("김치찌개", "된장찌개", "부대찌개");
 
-      when(searchHistoryService.get(userId)).thenReturn(mockHistories);
+      when(searchHistoryService.get(userId, SearchHistoryScope.RECIPE)).thenReturn(mockHistories);
 
       // When
-      SearchHistoriesResponse result = searchHistoryController.getRecipeSearchHistories(userId);
+      SearchHistoriesResponse result =
+          searchHistoryController.getSearchHistories(userId, SearchHistoryScope.RECIPE);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.histories()).hasSize(3);
       assertThat(result.histories().stream().map(h -> h.history()).toList())
           .containsExactly("김치찌개", "된장찌개", "부대찌개");
-      verify(searchHistoryService).get(userId);
+      verify(searchHistoryService).get(userId, SearchHistoryScope.RECIPE);
     }
 
     @Test
@@ -54,15 +55,16 @@ public class SearchHistoryControllerTest {
       UUID userId = UUID.randomUUID();
       List<String> emptyHistories = List.of();
 
-      when(searchHistoryService.get(userId)).thenReturn(emptyHistories);
+      when(searchHistoryService.get(userId, SearchHistoryScope.RECIPE)).thenReturn(emptyHistories);
 
       // When
-      SearchHistoriesResponse result = searchHistoryController.getRecipeSearchHistories(userId);
+      SearchHistoriesResponse result =
+          searchHistoryController.getSearchHistories(userId, SearchHistoryScope.RECIPE);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.histories()).isEmpty();
-      verify(searchHistoryService).get(userId);
+      verify(searchHistoryService).get(userId, SearchHistoryScope.RECIPE);
     }
 
     @Test
@@ -72,16 +74,17 @@ public class SearchHistoryControllerTest {
       UUID userId = UUID.randomUUID();
       List<String> singleHistory = List.of("파스타");
 
-      when(searchHistoryService.get(userId)).thenReturn(singleHistory);
+      when(searchHistoryService.get(userId, SearchHistoryScope.RECIPE)).thenReturn(singleHistory);
 
       // When
-      SearchHistoriesResponse result = searchHistoryController.getRecipeSearchHistories(userId);
+      SearchHistoriesResponse result =
+          searchHistoryController.getSearchHistories(userId, SearchHistoryScope.RECIPE);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.histories()).hasSize(1);
       assertThat(result.histories().get(0).history()).isEqualTo("파스타");
-      verify(searchHistoryService).get(userId);
+      verify(searchHistoryService).get(userId, SearchHistoryScope.RECIPE);
     }
   }
 
@@ -98,12 +101,12 @@ public class SearchHistoryControllerTest {
 
       // When
       SuccessOnlyResponse result =
-          searchHistoryController.deleteRecipeSearchHistory(userId, searchText);
+          searchHistoryController.deleteSearchHistory(userId, SearchHistoryScope.RECIPE, searchText);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.message()).isEqualTo("success");
-      verify(searchHistoryService).delete(userId, searchText);
+      verify(searchHistoryService).delete(userId, SearchHistoryScope.RECIPE, searchText);
     }
 
     @Test
@@ -115,12 +118,12 @@ public class SearchHistoryControllerTest {
 
       // When
       SuccessOnlyResponse result =
-          searchHistoryController.deleteRecipeSearchHistory(userId, searchText);
+          searchHistoryController.deleteSearchHistory(userId, SearchHistoryScope.RECIPE, searchText);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.message()).isEqualTo("success");
-      verify(searchHistoryService).delete(userId, searchText);
+      verify(searchHistoryService).delete(userId, SearchHistoryScope.RECIPE, searchText);
     }
 
     @Test
@@ -132,12 +135,12 @@ public class SearchHistoryControllerTest {
 
       // When
       SuccessOnlyResponse result =
-          searchHistoryController.deleteRecipeSearchHistory(userId, searchText);
+          searchHistoryController.deleteSearchHistory(userId, SearchHistoryScope.RECIPE, searchText);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.message()).isEqualTo("success");
-      verify(searchHistoryService).delete(userId, searchText);
+      verify(searchHistoryService).delete(userId, SearchHistoryScope.RECIPE, searchText);
     }
 
     @Test
@@ -149,12 +152,12 @@ public class SearchHistoryControllerTest {
 
       // When
       SuccessOnlyResponse result =
-          searchHistoryController.deleteRecipeSearchHistory(userId, searchText);
+          searchHistoryController.deleteSearchHistory(userId, SearchHistoryScope.RECIPE, searchText);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.message()).isEqualTo("success");
-      verify(searchHistoryService).delete(userId, searchText);
+      verify(searchHistoryService).delete(userId, SearchHistoryScope.RECIPE, searchText);
     }
 
     @Test
@@ -167,12 +170,12 @@ public class SearchHistoryControllerTest {
 
       // When
       SuccessOnlyResponse result =
-          searchHistoryController.deleteRecipeSearchHistory(userId, searchText);
+          searchHistoryController.deleteSearchHistory(userId, SearchHistoryScope.RECIPE, searchText);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.message()).isEqualTo("success");
-      verify(searchHistoryService).delete(userId, searchText);
+      verify(searchHistoryService).delete(userId, SearchHistoryScope.RECIPE, searchText);
     }
   }
 
@@ -187,12 +190,13 @@ public class SearchHistoryControllerTest {
       UUID userId = UUID.randomUUID();
 
       // When
-      SuccessOnlyResponse result = searchHistoryController.deleteAllRecipeSearchHistories(userId);
+      SuccessOnlyResponse result =
+          searchHistoryController.deleteAllSearchHistories(userId, SearchHistoryScope.RECIPE);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.message()).isEqualTo("success");
-      verify(searchHistoryService).deleteAll(userId);
+      verify(searchHistoryService).deleteAll(userId, SearchHistoryScope.RECIPE);
     }
 
     @Test
@@ -202,12 +206,13 @@ public class SearchHistoryControllerTest {
       UUID userId = UUID.randomUUID();
 
       // When
-      SuccessOnlyResponse result = searchHistoryController.deleteAllRecipeSearchHistories(userId);
+      SuccessOnlyResponse result =
+          searchHistoryController.deleteAllSearchHistories(userId, SearchHistoryScope.RECIPE);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.message()).isEqualTo("success");
-      verify(searchHistoryService).deleteAll(userId);
+      verify(searchHistoryService).deleteAll(userId, SearchHistoryScope.RECIPE);
     }
 
     @Test
@@ -217,12 +222,13 @@ public class SearchHistoryControllerTest {
       UUID userId = UUID.randomUUID();
 
       // When
-      SuccessOnlyResponse result = searchHistoryController.deleteAllRecipeSearchHistories(userId);
+      SuccessOnlyResponse result =
+          searchHistoryController.deleteAllSearchHistories(userId, SearchHistoryScope.RECIPE);
 
       // Then
       assertThat(result).isNotNull();
       assertThat(result.message()).isEqualTo("success");
-      verify(searchHistoryService).deleteAll(userId);
+      verify(searchHistoryService).deleteAll(userId, SearchHistoryScope.RECIPE);
     }
   }
 }

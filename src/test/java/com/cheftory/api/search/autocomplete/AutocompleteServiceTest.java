@@ -66,7 +66,8 @@ public class AutocompleteServiceTest {
 
         doReturn(autocompletes)
             .when(autocompleteRepository)
-            .searchAutocomplete(any(String.class), any(Pageable.class));
+            .searchAutocomplete(
+                any(AutocompleteScope.class), any(String.class), any(Pageable.class));
       }
 
       @Nested
@@ -83,7 +84,8 @@ public class AutocompleteServiceTest {
           assertThat(result.get(0).getText()).isEqualTo("김치찌개");
           assertThat(result.get(1).getText()).isEqualTo("김치전");
           assertThat(result.get(2).getText()).isEqualTo("김치볶음밥");
-          verify(autocompleteRepository).searchAutocomplete(keyword, SearchPageRequest.create(0));
+          verify(autocompleteRepository)
+              .searchAutocomplete(AutocompleteScope.RECIPE, keyword, SearchPageRequest.create(0));
         }
       }
     }
@@ -100,7 +102,8 @@ public class AutocompleteServiceTest {
 
         doReturn(List.of())
             .when(autocompleteRepository)
-            .searchAutocomplete(any(String.class), any(Pageable.class));
+            .searchAutocomplete(
+                any(AutocompleteScope.class), any(String.class), any(Pageable.class));
       }
 
       @Nested
@@ -114,7 +117,8 @@ public class AutocompleteServiceTest {
               autocompleteService.autocomplete(keyword);
 
           assertThat(result).isEmpty();
-          verify(autocompleteRepository).searchAutocomplete(keyword, SearchPageRequest.create(0));
+          verify(autocompleteRepository)
+              .searchAutocomplete(AutocompleteScope.RECIPE, keyword, SearchPageRequest.create(0));
         }
       }
     }
@@ -148,7 +152,8 @@ public class AutocompleteServiceTest {
 
         doReturn(autocompletes)
             .when(autocompleteRepository)
-            .searchAutocomplete(any(String.class), any(Pageable.class));
+            .searchAutocomplete(
+                any(AutocompleteScope.class), any(String.class), any(Pageable.class));
       }
 
       @Nested
@@ -164,7 +169,8 @@ public class AutocompleteServiceTest {
           assertThat(result).hasSize(2);
           assertThat(result.get(0).getText()).isEqualTo("파스타");
           assertThat(result.get(1).getText()).isEqualTo("파김치");
-          verify(autocompleteRepository).searchAutocomplete(keyword, SearchPageRequest.create(0));
+          verify(autocompleteRepository)
+              .searchAutocomplete(AutocompleteScope.RECIPE, keyword, SearchPageRequest.create(0));
         }
       }
     }
@@ -211,7 +217,8 @@ public class AutocompleteServiceTest {
 
         doReturn(autocompletes)
             .when(autocompleteRepository)
-            .searchAutocomplete(any(String.class), any(Pageable.class));
+            .searchAutocomplete(
+                any(AutocompleteScope.class), any(String.class), any(Pageable.class));
       }
 
       @Nested
@@ -226,7 +233,8 @@ public class AutocompleteServiceTest {
 
           assertThat(result).hasSize(5);
           assertThat(result.get(0).getText()).isEqualTo("김치찌개");
-          verify(autocompleteRepository).searchAutocomplete(keyword, SearchPageRequest.create(0));
+          verify(autocompleteRepository)
+              .searchAutocomplete(AutocompleteScope.RECIPE, keyword, SearchPageRequest.create(0));
         }
       }
     }
