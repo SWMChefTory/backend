@@ -21,47 +21,49 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class RedisConfig {
 
-  @Bean
-  public GenericJackson2JsonRedisSerializer redisValueSerializer() {
-    ObjectMapper om = new ObjectMapper();
-    om.registerModule(new JavaTimeModule());
-    om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    om.activateDefaultTyping(
-        BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build(),
-        ObjectMapper.DefaultTyping.NON_FINAL,
-        JsonTypeInfo.As.PROPERTY);
-    return new GenericJackson2JsonRedisSerializer(om);
-  }
+    @Bean
+    public GenericJackson2JsonRedisSerializer redisValueSerializer() {
+        ObjectMapper om = new ObjectMapper();
+        om.registerModule(new JavaTimeModule());
+        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        om.activateDefaultTyping(
+                BasicPolymorphicTypeValidator.builder()
+                        .allowIfBaseType(Object.class)
+                        .build(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY);
+        return new GenericJackson2JsonRedisSerializer(om);
+    }
 
-  @Bean
-  public RedisTemplate<String, Object> redisTemplate(
-      RedisConnectionFactory connectionFactory, GenericJackson2JsonRedisSerializer serializer) {
-    RedisTemplate<String, Object> t = new RedisTemplate<>();
-    t.setConnectionFactory(connectionFactory);
-    t.setKeySerializer(new StringRedisSerializer());
-    t.setHashKeySerializer(new StringRedisSerializer());
-    t.setValueSerializer(serializer);
-    t.setHashValueSerializer(serializer);
-    t.afterPropertiesSet();
-    return t;
-  }
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(
+            RedisConnectionFactory connectionFactory, GenericJackson2JsonRedisSerializer serializer) {
+        RedisTemplate<String, Object> t = new RedisTemplate<>();
+        t.setConnectionFactory(connectionFactory);
+        t.setKeySerializer(new StringRedisSerializer());
+        t.setHashKeySerializer(new StringRedisSerializer());
+        t.setValueSerializer(serializer);
+        t.setHashValueSerializer(serializer);
+        t.afterPropertiesSet();
+        return t;
+    }
 
-  @Bean
-  public RedisCacheConfiguration cacheConfiguration(GenericJackson2JsonRedisSerializer serializer) {
-    return RedisCacheConfiguration.defaultCacheConfig()
-        .serializeKeysWith(
-            org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
-                .fromSerializer(new StringRedisSerializer()))
-        .serializeValuesWith(
-            org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
-                .fromSerializer(serializer));
-  }
+    @Bean
+    public RedisCacheConfiguration cacheConfiguration(GenericJackson2JsonRedisSerializer serializer) {
+        return RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(
+                        org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
+                                .fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(
+                        org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
+                                .fromSerializer(serializer));
+    }
 
-  @Bean
-  public RedisCacheManager cacheManager(
-      RedisConnectionFactory connectionFactory, RedisCacheConfiguration redisCacheConfiguration) {
-    return RedisCacheManager.builder(connectionFactory)
-        .cacheDefaults(redisCacheConfiguration)
-        .build();
-  }
+    @Bean
+    public RedisCacheManager cacheManager(
+            RedisConnectionFactory connectionFactory, RedisCacheConfiguration redisCacheConfiguration) {
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(redisCacheConfiguration)
+                .build();
+    }
 }

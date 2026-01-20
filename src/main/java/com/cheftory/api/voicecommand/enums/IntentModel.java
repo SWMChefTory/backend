@@ -7,23 +7,21 @@ import lombok.Getter;
 
 @Getter
 public enum IntentModel {
-  GPT4_1("GPT4.1"),
-  REGEX("REGEX"),
-  NLU("NLU");
+    GPT4_1("GPT4.1"),
+    REGEX("REGEX"),
+    NLU("NLU");
 
-  private final String value;
+    private final String value;
 
-  IntentModel(String value) {
-    this.value = value;
-  }
+    IntentModel(String value) {
+        this.value = value;
+    }
 
-  public static IntentModel fromValue(String value) {
-    return Arrays.stream(values())
-        .filter(model -> model.value.equals(value))
-        .findFirst()
-        .orElseThrow(
-            () ->
-                new VoiceCommandHistoryException(
-                    VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL));
-  }
+    public static IntentModel fromValue(String value) {
+        return Arrays.stream(values())
+                .filter(model -> model.value.equals(value))
+                .findFirst()
+                .orElseThrow(() ->
+                        new VoiceCommandHistoryException(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL));
+    }
 }

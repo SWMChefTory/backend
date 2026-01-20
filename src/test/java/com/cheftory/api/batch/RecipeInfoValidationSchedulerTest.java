@@ -22,47 +22,51 @@ import org.springframework.batch.core.launch.JobLauncher;
 @DisplayName("RecipeValidationScheduler 테스트")
 class RecipeInfoValidationSchedulerTest {
 
-  @Mock private JobLauncher jobLauncher;
+    @Mock
+    private JobLauncher jobLauncher;
 
-  @Mock private Job youtubeValidationJob;
+    @Mock
+    private Job youtubeValidationJob;
 
-  @Mock private JobExecution jobExecution;
+    @Mock
+    private JobExecution jobExecution;
 
-  @InjectMocks private RecipeValidationScheduler scheduler;
+    @InjectMocks
+    private RecipeValidationScheduler scheduler;
 
-  @Test
-  @DisplayName("스케줄러가 YouTube 검증 Job을 성공적으로 실행")
-  void shouldRunYouTubeValidationJobSuccessfully() throws Exception {
-    when(jobExecution.getId()).thenReturn(1L);
-    when(jobLauncher.run(eq(youtubeValidationJob), any(JobParameters.class)))
-        .thenReturn(jobExecution);
+    @Test
+    @DisplayName("스케줄러가 YouTube 검증 Job을 성공적으로 실행")
+    void shouldRunYouTubeValidationJobSuccessfully() throws Exception {
+        when(jobExecution.getId()).thenReturn(1L);
+        when(jobLauncher.run(eq(youtubeValidationJob), any(JobParameters.class)))
+                .thenReturn(jobExecution);
 
-    scheduler.runYouTubeValidation();
+        scheduler.runYouTubeValidation();
 
-    verify(jobLauncher, times(2)).run(eq(youtubeValidationJob), any(JobParameters.class));
-  }
+        verify(jobLauncher, times(2)).run(eq(youtubeValidationJob), any(JobParameters.class));
+    }
 
-  @Test
-  @DisplayName("Job 실행 중 예외 발생 시 로깅하고 정상 종료")
-  void shouldHandleExceptionDuringJobExecution() throws Exception {
-    when(jobLauncher.run(eq(youtubeValidationJob), any(JobParameters.class)))
-        .thenThrow(new RuntimeException("Job execution failed"));
+    @Test
+    @DisplayName("Job 실행 중 예외 발생 시 로깅하고 정상 종료")
+    void shouldHandleExceptionDuringJobExecution() throws Exception {
+        when(jobLauncher.run(eq(youtubeValidationJob), any(JobParameters.class)))
+                .thenThrow(new RuntimeException("Job execution failed"));
 
-    scheduler.runYouTubeValidation();
+        scheduler.runYouTubeValidation();
 
-    verify(jobLauncher, times(2)).run(eq(youtubeValidationJob), any(JobParameters.class));
-  }
+        verify(jobLauncher, times(2)).run(eq(youtubeValidationJob), any(JobParameters.class));
+    }
 
-  @Test
-  @DisplayName("매번 새로운 JobParameters로 Job 실행")
-  void shouldRunJobWithNewParametersEachTime() throws Exception {
-    when(jobExecution.getId()).thenReturn(1L);
-    when(jobLauncher.run(eq(youtubeValidationJob), any(JobParameters.class)))
-        .thenReturn(jobExecution);
+    @Test
+    @DisplayName("매번 새로운 JobParameters로 Job 실행")
+    void shouldRunJobWithNewParametersEachTime() throws Exception {
+        when(jobExecution.getId()).thenReturn(1L);
+        when(jobLauncher.run(eq(youtubeValidationJob), any(JobParameters.class)))
+                .thenReturn(jobExecution);
 
-    scheduler.runYouTubeValidation();
-    scheduler.runYouTubeValidation();
+        scheduler.runYouTubeValidation();
+        scheduler.runYouTubeValidation();
 
-    verify(jobLauncher, times(4)).run(eq(youtubeValidationJob), any(JobParameters.class));
-  }
+        verify(jobLauncher, times(4)).run(eq(youtubeValidationJob), any(JobParameters.class));
+    }
 }

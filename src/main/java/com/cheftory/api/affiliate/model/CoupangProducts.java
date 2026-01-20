@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoupangProducts {
-  private List<CoupangProduct> coupangProducts;
+    private List<CoupangProduct> coupangProducts;
 
-  public static CoupangProducts of(List<CoupangProduct> coupangProducts) {
-    return new CoupangProducts(coupangProducts);
-  }
+    public static CoupangProducts of(List<CoupangProduct> coupangProducts) {
+        return new CoupangProducts(coupangProducts);
+    }
 }

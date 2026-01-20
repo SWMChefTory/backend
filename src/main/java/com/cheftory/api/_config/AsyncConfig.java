@@ -15,39 +15,39 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 public class AsyncConfig {
 
-  @Bean(destroyMethod = "close")
-  public ExecutorService asyncVirtualThreadExecutorService() {
-    return Executors.newVirtualThreadPerTaskExecutor();
-  }
+    @Bean(destroyMethod = "close")
+    public ExecutorService asyncVirtualThreadExecutorService() {
+        return Executors.newVirtualThreadPerTaskExecutor();
+    }
 
-  @Bean
-  public TaskDecorator marketContextTaskDecorator() {
-    return MarketContext::wrap;
-  }
+    @Bean
+    public TaskDecorator marketContextTaskDecorator() {
+        return MarketContext::wrap;
+    }
 
-  @Bean("recipeCreateExecutor")
-  public AsyncTaskExecutor recipeCreateExecutor(
-      ExecutorService asyncVirtualThreadExecutorService, TaskDecorator marketContextTaskDecorator) {
-    return new AsyncTaskExecutor() {
-      @Override
-      public void execute(Runnable task) {
-        asyncVirtualThreadExecutorService.execute(marketContextTaskDecorator.decorate(task));
-      }
+    @Bean("recipeCreateExecutor")
+    public AsyncTaskExecutor recipeCreateExecutor(
+            ExecutorService asyncVirtualThreadExecutorService, TaskDecorator marketContextTaskDecorator) {
+        return new AsyncTaskExecutor() {
+            @Override
+            public void execute(Runnable task) {
+                asyncVirtualThreadExecutorService.execute(marketContextTaskDecorator.decorate(task));
+            }
 
-      @Override
-      public void execute(Runnable task, long startTimeout) {
-        asyncVirtualThreadExecutorService.execute(marketContextTaskDecorator.decorate(task));
-      }
+            @Override
+            public void execute(Runnable task, long startTimeout) {
+                asyncVirtualThreadExecutorService.execute(marketContextTaskDecorator.decorate(task));
+            }
 
-      @Override
-      public Future<?> submit(Runnable task) {
-        return asyncVirtualThreadExecutorService.submit(marketContextTaskDecorator.decorate(task));
-      }
+            @Override
+            public Future<?> submit(Runnable task) {
+                return asyncVirtualThreadExecutorService.submit(marketContextTaskDecorator.decorate(task));
+            }
 
-      @Override
-      public <T> Future<T> submit(Callable<T> task) {
-        return asyncVirtualThreadExecutorService.submit(MarketContext.wrap(task));
-      }
-    };
-  }
+            @Override
+            public <T> Future<T> submit(Callable<T> task) {
+                return asyncVirtualThreadExecutorService.submit(MarketContext.wrap(task));
+            }
+        };
+    }
 }

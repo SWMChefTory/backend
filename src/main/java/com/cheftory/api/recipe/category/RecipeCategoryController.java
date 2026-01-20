@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recipes/categories")
 public class RecipeCategoryController {
-  private final RecipeCategoryService recipeCategoryService;
+    private final RecipeCategoryService recipeCategoryService;
 
-  @PostMapping
-  public RecipeCategoryResponse.Create createCategory(
-      @RequestBody RecipeCategoryRequest.Create request, @UserPrincipal UUID userId) {
-    UUID recipeCategoryId = recipeCategoryService.create(request.name(), userId);
-    return RecipeCategoryResponse.Create.from(recipeCategoryId);
-  }
+    @PostMapping
+    public RecipeCategoryResponse.Create createCategory(
+            @RequestBody RecipeCategoryRequest.Create request, @UserPrincipal UUID userId) {
+        UUID recipeCategoryId = recipeCategoryService.create(request.name(), userId);
+        return RecipeCategoryResponse.Create.from(recipeCategoryId);
+    }
 }

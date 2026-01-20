@@ -19,19 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("")
 public class AuthController {
 
-  private final AuthService authService;
+    private final AuthService authService;
 
-  @PostMapping("/papi/v1/auth/extract-user-id")
-  public ResponseEntity<UserId> loginWithOAuth(@RequestHeader("Authorization") String accessToken) {
-    UUID userId =
-        authService.extractUserIdFromToken(BearerAuthorizationUtils.removePrefix(accessToken));
-    return ResponseEntity.ok(new UserId(userId.toString()));
-  }
+    @PostMapping("/papi/v1/auth/extract-user-id")
+    public ResponseEntity<UserId> loginWithOAuth(@RequestHeader("Authorization") String accessToken) {
+        UUID userId = authService.extractUserIdFromToken(BearerAuthorizationUtils.removePrefix(accessToken));
+        return ResponseEntity.ok(new UserId(userId.toString()));
+    }
 
-  @PostMapping("/api/v1/auth/token/reissue")
-  public TokenReissueResponse reissueToken(@RequestBody TokenReissueRequest request) {
-    AuthTokens authTokens =
-        authService.reissue(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
-    return TokenReissueResponse.from(authTokens);
-  }
+    @PostMapping("/api/v1/auth/token/reissue")
+    public TokenReissueResponse reissueToken(@RequestBody TokenReissueRequest request) {
+        AuthTokens authTokens = authService.reissue(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+        return TokenReissueResponse.from(authTokens);
+    }
 }

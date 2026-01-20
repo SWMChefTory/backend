@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public class VerificationException extends CheftoryException {
 
-  public VerificationException(VerificationErrorCode errorCode) {
-    super(errorCode);
-  }
+    public VerificationException(VerificationErrorCode errorCode) {
+        super(errorCode);
+    }
 }

@@ -14,144 +14,143 @@ import org.junit.jupiter.api.Test;
 @DisplayName("Clock Tests")
 class ClockTest {
 
-  private Clock clock;
+    private Clock clock;
 
-  @BeforeEach
-  void setUp() {
-    clock = new Clock();
-  }
-
-  @Nested
-  @DisplayName("now 메서드 테스트")
-  class NowTest {
-
-    @Test
-    @DisplayName("현재 시간을 서울 시간으로 반환한다")
-    void shouldReturnCurrentTimeInSeoulTimeZone() {
-      LocalDateTime result = clock.now();
-
-      assertThat(result).isNotNull();
-
-      LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-      assertThat(result).isBetween(now.minusSeconds(1), now.plusSeconds(1));
+    @BeforeEach
+    void setUp() {
+        clock = new Clock();
     }
 
-    @Test
-    @DisplayName("반환된 시간이 LocalDateTime 타입이다")
-    void shouldReturnLocalDateTimeType() {
-      LocalDateTime result = clock.now();
+    @Nested
+    @DisplayName("now 메서드 테스트")
+    class NowTest {
 
-      assertThat(result).isInstanceOf(LocalDateTime.class);
+        @Test
+        @DisplayName("현재 시간을 서울 시간으로 반환한다")
+        void shouldReturnCurrentTimeInSeoulTimeZone() {
+            LocalDateTime result = clock.now();
+
+            assertThat(result).isNotNull();
+
+            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+            assertThat(result).isBetween(now.minusSeconds(1), now.plusSeconds(1));
+        }
+
+        @Test
+        @DisplayName("반환된 시간이 LocalDateTime 타입이다")
+        void shouldReturnLocalDateTimeType() {
+            LocalDateTime result = clock.now();
+
+            assertThat(result).isInstanceOf(LocalDateTime.class);
+        }
+
+        @Test
+        @DisplayName("연속 호출 시 시간이 증가한다")
+        void shouldReturnIncreasingTimeOnConsecutiveCalls() throws InterruptedException {
+            LocalDateTime firstCall = clock.now();
+            Thread.sleep(10);
+            LocalDateTime secondCall = clock.now();
+
+            assertThat(secondCall).isAfter(firstCall);
+        }
     }
 
-    @Test
-    @DisplayName("연속 호출 시 시간이 증가한다")
-    void shouldReturnIncreasingTimeOnConsecutiveCalls() throws InterruptedException {
-      LocalDateTime firstCall = clock.now();
-      Thread.sleep(10);
-      LocalDateTime secondCall = clock.now();
+    @Nested
+    @DisplayName("nowMillis 메서드 테스트")
+    class NowMillisTest {
 
-      assertThat(secondCall).isAfter(firstCall);
-    }
-  }
+        @Test
+        @DisplayName("현재 시간을 밀리초로 반환한다")
+        void shouldReturnCurrentTimeInMillis() {
+            long result = clock.nowMillis();
 
-  @Nested
-  @DisplayName("nowMillis 메서드 테스트")
-  class NowMillisTest {
+            assertThat(result).isPositive();
 
-    @Test
-    @DisplayName("현재 시간을 밀리초로 반환한다")
-    void shouldReturnCurrentTimeInMillis() {
-      long result = clock.nowMillis();
+            long now = Instant.now().toEpochMilli();
+            assertThat(result).isCloseTo(now, org.assertj.core.data.Offset.offset(1000L));
+        }
 
-      assertThat(result).isPositive();
+        @Test
+        @DisplayName("반환된 값이 long 타입이다")
+        void shouldReturnLongType() {
+            long result = clock.nowMillis();
 
-      long now = Instant.now().toEpochMilli();
-      assertThat(result).isCloseTo(now, org.assertj.core.data.Offset.offset(1000L));
-    }
+            assertThat(result).isInstanceOf(Long.class);
+        }
 
-    @Test
-    @DisplayName("반환된 값이 long 타입이다")
-    void shouldReturnLongType() {
-      long result = clock.nowMillis();
+        @Test
+        @DisplayName("연속 호출 시 시간이 증가한다")
+        void shouldReturnIncreasingTimeOnConsecutiveCalls() throws InterruptedException {
+            long firstCall = clock.nowMillis();
+            Thread.sleep(10);
+            long secondCall = clock.nowMillis();
 
-      assertThat(result).isInstanceOf(Long.class);
-    }
+            assertThat(secondCall).isGreaterThan(firstCall);
+        }
 
-    @Test
-    @DisplayName("연속 호출 시 시간이 증가한다")
-    void shouldReturnIncreasingTimeOnConsecutiveCalls() throws InterruptedException {
-      long firstCall = clock.nowMillis();
-      Thread.sleep(10);
-      long secondCall = clock.nowMillis();
+        @Test
+        @DisplayName("now()와 nowMillis()의 시간이 일치한다")
+        void shouldReturnConsistentTimeBetweenNowAndNowMillis() {
+            LocalDateTime nowResult = clock.now();
+            long nowMillisResult = clock.nowMillis();
 
-      assertThat(secondCall).isGreaterThan(firstCall);
-    }
+            ZonedDateTime seoulTime = nowResult.atZone(ZoneId.of("Asia/Seoul"));
+            long expectedMillis = seoulTime.toInstant().toEpochMilli();
 
-    @Test
-    @DisplayName("now()와 nowMillis()의 시간이 일치한다")
-    void shouldReturnConsistentTimeBetweenNowAndNowMillis() {
-      LocalDateTime nowResult = clock.now();
-      long nowMillisResult = clock.nowMillis();
-
-      ZonedDateTime seoulTime = nowResult.atZone(ZoneId.of("Asia/Seoul"));
-      long expectedMillis = seoulTime.toInstant().toEpochMilli();
-
-      assertThat(nowMillisResult)
-          .isCloseTo(expectedMillis, org.assertj.core.data.Offset.offset(1000L));
-    }
-  }
-
-  @Nested
-  @DisplayName("시간대 테스트")
-  class TimeZoneTest {
-
-    @Test
-    @DisplayName("now()는 서울 시간대를 사용한다")
-    void shouldUseSeoulTimeZone() {
-      LocalDateTime result = clock.now();
-
-      ZonedDateTime seoulTime = result.atZone(ZoneId.of("Asia/Seoul"));
-
-      assertThat(seoulTime.getOffset().getTotalSeconds()).isEqualTo(9 * 3600);
+            assertThat(nowMillisResult).isCloseTo(expectedMillis, org.assertj.core.data.Offset.offset(1000L));
+        }
     }
 
-    @Test
-    @DisplayName("nowMillis()는 UTC 기준이다")
-    void shouldUseUtcForNowMillis() {
-      long result = clock.nowMillis();
+    @Nested
+    @DisplayName("시간대 테스트")
+    class TimeZoneTest {
 
-      Instant instant = Instant.ofEpochMilli(result);
-      ZonedDateTime seoulTime = instant.atZone(ZoneId.of("Asia/Seoul"));
+        @Test
+        @DisplayName("now()는 서울 시간대를 사용한다")
+        void shouldUseSeoulTimeZone() {
+            LocalDateTime result = clock.now();
 
-      assertThat(seoulTime.getOffset().getTotalSeconds()).isEqualTo(9 * 3600);
+            ZonedDateTime seoulTime = result.atZone(ZoneId.of("Asia/Seoul"));
+
+            assertThat(seoulTime.getOffset().getTotalSeconds()).isEqualTo(9 * 3600);
+        }
+
+        @Test
+        @DisplayName("nowMillis()는 UTC 기준이다")
+        void shouldUseUtcForNowMillis() {
+            long result = clock.nowMillis();
+
+            Instant instant = Instant.ofEpochMilli(result);
+            ZonedDateTime seoulTime = instant.atZone(ZoneId.of("Asia/Seoul"));
+
+            assertThat(seoulTime.getOffset().getTotalSeconds()).isEqualTo(9 * 3600);
+        }
     }
-  }
 
-  @Nested
-  @DisplayName("성능 테스트")
-  class PerformanceTest {
+    @Nested
+    @DisplayName("성능 테스트")
+    class PerformanceTest {
 
-    @Test
-    @DisplayName("now() 메서드가 빠르게 실행된다")
-    void shouldExecuteNowMethodQuickly() {
-      long startTime = System.nanoTime();
-      clock.now();
-      long endTime = System.nanoTime();
+        @Test
+        @DisplayName("now() 메서드가 빠르게 실행된다")
+        void shouldExecuteNowMethodQuickly() {
+            long startTime = System.nanoTime();
+            clock.now();
+            long endTime = System.nanoTime();
 
-      long executionTime = endTime - startTime;
-      assertThat(executionTime).isLessThan(10_000_000L);
+            long executionTime = endTime - startTime;
+            assertThat(executionTime).isLessThan(10_000_000L);
+        }
+
+        @Test
+        @DisplayName("nowMillis() 메서드가 빠르게 실행된다")
+        void shouldExecuteNowMillisMethodQuickly() {
+            long startTime = System.nanoTime();
+            clock.nowMillis();
+            long endTime = System.nanoTime();
+
+            long executionTime = endTime - startTime;
+            assertThat(executionTime).isLessThan(10_000_000L);
+        }
     }
-
-    @Test
-    @DisplayName("nowMillis() 메서드가 빠르게 실행된다")
-    void shouldExecuteNowMillisMethodQuickly() {
-      long startTime = System.nanoTime();
-      clock.nowMillis();
-      long endTime = System.nanoTime();
-
-      long executionTime = endTime - startTime;
-      assertThat(executionTime).isLessThan(10_000_000L);
-    }
-  }
 }

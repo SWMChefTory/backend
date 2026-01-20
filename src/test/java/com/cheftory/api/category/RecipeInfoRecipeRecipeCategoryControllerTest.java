@@ -32,86 +32,82 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @DisplayName("RecipeCategory Controller")
 public class RecipeInfoRecipeRecipeCategoryControllerTest extends RestDocsTest {
 
-  private RecipeCategoryController controller;
-  private RecipeCategoryService recipeCategoryService;
-  private GlobalExceptionHandler exceptionHandler;
-  private UserArgumentResolver userArgumentResolver;
+    private RecipeCategoryController controller;
+    private RecipeCategoryService recipeCategoryService;
+    private GlobalExceptionHandler exceptionHandler;
+    private UserArgumentResolver userArgumentResolver;
 
-  @BeforeEach
-  void setUp() {
-    recipeCategoryService = mock(RecipeCategoryService.class);
-    exceptionHandler = new GlobalExceptionHandler();
-    userArgumentResolver = new UserArgumentResolver();
-    controller = new RecipeCategoryController(recipeCategoryService);
+    @BeforeEach
+    void setUp() {
+        recipeCategoryService = mock(RecipeCategoryService.class);
+        exceptionHandler = new GlobalExceptionHandler();
+        userArgumentResolver = new UserArgumentResolver();
+        controller = new RecipeCategoryController(recipeCategoryService);
 
-    mockMvc =
-        mockMvcBuilder(controller)
-            .withValidator(RecipeCategoryService.class, recipeCategoryService)
-            .withAdvice(exceptionHandler)
-            .withArgumentResolver(userArgumentResolver)
-            .build();
-  }
-
-  @Nested
-  @DisplayName("레시피 카테고리 생성")
-  class CreateRecipeInfoRecipeCategory {
+        mockMvc = mockMvcBuilder(controller)
+                .withValidator(RecipeCategoryService.class, recipeCategoryService)
+                .withAdvice(exceptionHandler)
+                .withArgumentResolver(userArgumentResolver)
+                .build();
+    }
 
     @Nested
-    @DisplayName("Given - 레시피 카테고리 생성 요청이 주어졌을 때")
-    class GivenValidParametersForCreate {
-      private String categoryName;
-      private UUID userId;
-      private Map<String, Object> request;
+    @DisplayName("레시피 카테고리 생성")
+    class CreateRecipeInfoRecipeCategory {
 
-      @BeforeEach
-      void setUp() {
-        categoryName = "한식";
-        userId = UUID.randomUUID();
-        var authentication = new UsernamePasswordAuthenticationToken(userId, null);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        @Nested
+        @DisplayName("Given - 레시피 카테고리 생성 요청이 주어졌을 때")
+        class GivenValidParametersForCreate {
+            private String categoryName;
+            private UUID userId;
+            private Map<String, Object> request;
 
-        request = Map.of("name", categoryName);
-      }
+            @BeforeEach
+            void setUp() {
+                categoryName = "한식";
+                userId = UUID.randomUUID();
+                var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-      @Nested
-      @DisplayName("When - 레시피 카테고리를 생성해야 한다면")
-      class WhenCreatingRecipeInfoRecipeCategory {
+                request = Map.of("name", categoryName);
+            }
 
-        private UUID recipeCategoryId;
+            @Nested
+            @DisplayName("When - 레시피 카테고리를 생성해야 한다면")
+            class WhenCreatingRecipeInfoRecipeCategory {
 
-        @BeforeEach
-        void setUp() {
-          recipeCategoryId = UUID.randomUUID();
-          doReturn(recipeCategoryId).when(recipeCategoryService).create("한식", userId);
+                private UUID recipeCategoryId;
+
+                @BeforeEach
+                void setUp() {
+                    recipeCategoryId = UUID.randomUUID();
+                    doReturn(recipeCategoryId).when(recipeCategoryService).create("한식", userId);
+                }
+
+                @Test
+                @DisplayName("Then - 레시피 카테고리를 생성한다")
+                void thenShouldCreateRecipeCategory() {
+                    var response = given().contentType(ContentType.JSON)
+                            .attribute("userId", userId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .body(request)
+                            .post("/api/v1/recipes/categories")
+                            .then()
+                            .status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    requestAccessTokenFields(),
+                                    requestFields(fieldWithPath("name").description("레시피 카테고리 이름")),
+                                    responseFields(
+                                            fieldWithPath("recipe_category_id").description("레시피 카테고리 ID"))));
+
+                    response.assertThat().body("recipe_category_id", equalTo(recipeCategoryId.toString()));
+
+                    verify(recipeCategoryService).create("한식", userId);
+                }
+            }
         }
-
-        @Test
-        @DisplayName("Then - 레시피 카테고리를 생성한다")
-        void thenShouldCreateRecipeCategory() {
-          var response =
-              given()
-                  .contentType(ContentType.JSON)
-                  .attribute("userId", userId.toString())
-                  .header("Authorization", "Bearer accessToken")
-                  .body(request)
-                  .post("/api/v1/recipes/categories")
-                  .then()
-                  .status(HttpStatus.OK)
-                  .apply(
-                      document(
-                          getNestedClassPath(this.getClass()) + "/{method-name}",
-                          requestPreprocessor(),
-                          responsePreprocessor(),
-                          requestAccessTokenFields(),
-                          requestFields(fieldWithPath("name").description("레시피 카테고리 이름")),
-                          responseFields(
-                              fieldWithPath("recipe_category_id").description("레시피 카테고리 ID"))));
-
-          response.assertThat().body("recipe_category_id", equalTo(recipeCategoryId.toString()));
-
-          verify(recipeCategoryService).create("한식", userId);
-        }
-      }
     }
-  }
 }

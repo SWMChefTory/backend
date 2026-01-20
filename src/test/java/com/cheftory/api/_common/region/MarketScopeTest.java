@@ -10,29 +10,28 @@ import org.junit.jupiter.api.Test;
 @DisplayName("MarketScope Tests")
 class MarketScopeTest {
 
-  private static class TestEntity extends MarketScope {}
+    private static class TestEntity extends MarketScope {}
 
-  @Test
-  void onCreate_shouldSetCountryCode() throws Exception {
-    try (var ignored = MarketContext.with(new MarketContext.Info(Market.KOREA, "KR"))) {
-      TestEntity e = new TestEntity();
+    @Test
+    void onCreate_shouldSetCountryCode() throws Exception {
+        try (var ignored = MarketContext.with(new MarketContext.Info(Market.KOREA, "KR"))) {
+            TestEntity e = new TestEntity();
 
-      Method m = MarketScope.class.getDeclaredMethod("onCreate");
-      m.setAccessible(true);
-      m.invoke(e);
+            Method m = MarketScope.class.getDeclaredMethod("onCreate");
+            m.setAccessible(true);
+            m.invoke(e);
 
-      assertThat(e.getCountryCode()).isEqualTo("KR");
+            assertThat(e.getCountryCode()).isEqualTo("KR");
+        }
     }
-  }
 
-  @Test
-  void onCreate_shouldThrow_whenNoContext() throws Exception {
-    TestEntity e = new TestEntity();
+    @Test
+    void onCreate_shouldThrow_whenNoContext() throws Exception {
+        TestEntity e = new TestEntity();
 
-    Method m = MarketScope.class.getDeclaredMethod("onCreate");
-    m.setAccessible(true);
+        Method m = MarketScope.class.getDeclaredMethod("onCreate");
+        m.setAccessible(true);
 
-    assertThatThrownBy(() -> m.invoke(e))
-        .hasCauseInstanceOf(com.cheftory.api.exception.CheftoryException.class);
-  }
+        assertThatThrownBy(() -> m.invoke(e)).hasCauseInstanceOf(com.cheftory.api.exception.CheftoryException.class);
+    }
 }

@@ -12,19 +12,19 @@ import org.springframework.data.jpa.repository.Query;
 @PocOnly(until = "2025-12-31")
 public interface RecipeChallengeRepository extends JpaRepository<RecipeChallenge, UUID> {
 
-  Page<RecipeChallenge> findAllByChallengeId(UUID challengeId, Pageable pageable);
+    Page<RecipeChallenge> findAllByChallengeId(UUID challengeId, Pageable pageable);
 
-  @Query(
-      """
+    @Query(
+            """
       select c
       from RecipeChallenge c
       where c.challengeId = :challengeId
       order by c.createdAt asc, c.id asc
       """)
-  List<RecipeChallenge> findChallengeFirst(UUID challengeId, Pageable pageable);
+    List<RecipeChallenge> findChallengeFirst(UUID challengeId, Pageable pageable);
 
-  @Query(
-      """
+    @Query(
+            """
       select c
       from RecipeChallenge c
       where c.challengeId = :challengeId
@@ -34,6 +34,6 @@ public interface RecipeChallengeRepository extends JpaRepository<RecipeChallenge
         )
       order by c.createdAt asc, c.id asc
       """)
-  List<RecipeChallenge> findChallengeKeyset(
-      UUID challengeId, LocalDateTime lastCreatedAt, UUID lastId, Pageable pageable);
+    List<RecipeChallenge> findChallengeKeyset(
+            UUID challengeId, LocalDateTime lastCreatedAt, UUID lastId, Pageable pageable);
 }

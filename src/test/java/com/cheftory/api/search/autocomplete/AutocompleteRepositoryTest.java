@@ -34,317 +34,305 @@ import org.springframework.data.domain.Pageable;
 @DisplayName("RecipeAutocompleteRepository Tests")
 public class AutocompleteRepositoryTest {
 
-  @Mock private OpenSearchClient openSearchClient;
-  @InjectMocks private AutocompleteRepository autocompleteRepository;
+    @Mock
+    private OpenSearchClient openSearchClient;
 
-  @Nested
-  @DisplayName("자동완성 검색")
-  class SearchAutocomplete {
-
-    @Nested
-    @DisplayName("Given - 유효한 검색어가 주어졌을 때")
-    class GivenValidKeyword {
-
-      private String keyword;
-      private Pageable pageable;
-      private SearchResponse<Autocomplete> mockResponse;
-
-      @BeforeEach
-      void setUp() throws IOException {
-        keyword = "김치";
-        pageable = PageRequest.of(0, 5);
-
-        Autocomplete auto1 = Autocomplete.builder().id("1").text("김치찌개").count(100).build();
-        Autocomplete auto2 = Autocomplete.builder().id("2").text("김치전").count(80).build();
-        Autocomplete auto3 = Autocomplete.builder().id("3").text("김치볶음밥").count(60).build();
-
-        List<Hit<Autocomplete>> hits =
-            List.of(createHit(auto1), createHit(auto2), createHit(auto3));
-
-        HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
-        mockResponse =
-            SearchResponse.searchResponseOf(
-                r ->
-                    r.hits(hitsMetadata)
-                        .took(1L)
-                        .timedOut(false)
-                        .shards(s -> s.total(1).successful(1).failed(0)));
-
-        doReturn(mockResponse)
-            .when(openSearchClient)
-            .search(any(SearchRequest.class), eq(Autocomplete.class));
-      }
-
-      @Test
-      @DisplayName("When - 자동완성을 검색하면 Then - 자동완성 목록이 반환된다")
-      void whenSearchingAutocomplete_thenReturnsAutocompleteList() throws IOException {
-        List<Autocomplete> result =
-            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
-
-        assertThat(result).hasSize(3);
-        assertThat(result.get(0).getText()).isEqualTo("김치찌개");
-        assertThat(result.get(0).getCount()).isEqualTo(100);
-        assertThat(result.get(1).getText()).isEqualTo("김치전");
-        assertThat(result.get(2).getText()).isEqualTo("김치볶음밥");
-
-        ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
-        verify(openSearchClient).search(requestCaptor.capture(), eq(Autocomplete.class));
-
-        SearchRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.index()).contains("autocomplete");
-        assertThat(capturedRequest.from()).isEqualTo(0);
-        assertThat(capturedRequest.size()).isEqualTo(5);
-      }
-    }
+    @InjectMocks
+    private AutocompleteRepository autocompleteRepository;
 
     @Nested
-    @DisplayName("Given - 검색 결과가 없는 경우")
-    class GivenNoResults {
+    @DisplayName("자동완성 검색")
+    class SearchAutocomplete {
 
-      private String keyword;
-      private Pageable pageable;
+        @Nested
+        @DisplayName("Given - 유효한 검색어가 주어졌을 때")
+        class GivenValidKeyword {
 
-      @BeforeEach
-      void setUp() throws IOException {
-        keyword = "존재하지않는검색어";
-        pageable = PageRequest.of(0, 5);
+            private String keyword;
+            private Pageable pageable;
+            private SearchResponse<Autocomplete> mockResponse;
 
-        HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(List.of()));
-        SearchResponse<Autocomplete> mockResponse =
-            SearchResponse.searchResponseOf(
-                r ->
-                    r.hits(hitsMetadata)
-                        .took(1L)
-                        .timedOut(false)
-                        .shards(s -> s.total(1).successful(1).failed(0)));
+            @BeforeEach
+            void setUp() throws IOException {
+                keyword = "김치";
+                pageable = PageRequest.of(0, 5);
 
-        doReturn(mockResponse)
-            .when(openSearchClient)
-            .search(any(SearchRequest.class), eq(Autocomplete.class));
-      }
+                Autocomplete auto1 =
+                        Autocomplete.builder().id("1").text("김치찌개").count(100).build();
+                Autocomplete auto2 =
+                        Autocomplete.builder().id("2").text("김치전").count(80).build();
+                Autocomplete auto3 =
+                        Autocomplete.builder().id("3").text("김치볶음밥").count(60).build();
 
-      @Test
-      @DisplayName("When - 자동완성을 검색하면 Then - 빈 목록이 반환된다")
-      void whenSearchingAutocomplete_thenReturnsEmptyList() {
-        List<Autocomplete> result =
-            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+                List<Hit<Autocomplete>> hits = List.of(createHit(auto1), createHit(auto2), createHit(auto3));
 
-        assertThat(result).isEmpty();
-      }
+                HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
+                mockResponse = SearchResponse.searchResponseOf(
+                        r -> r.hits(hitsMetadata).took(1L).timedOut(false).shards(s -> s.total(1)
+                                .successful(1)
+                                .failed(0)));
+
+                doReturn(mockResponse).when(openSearchClient).search(any(SearchRequest.class), eq(Autocomplete.class));
+            }
+
+            @Test
+            @DisplayName("When - 자동완성을 검색하면 Then - 자동완성 목록이 반환된다")
+            void whenSearchingAutocomplete_thenReturnsAutocompleteList() throws IOException {
+                List<Autocomplete> result =
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+
+                assertThat(result).hasSize(3);
+                assertThat(result.get(0).getText()).isEqualTo("김치찌개");
+                assertThat(result.get(0).getCount()).isEqualTo(100);
+                assertThat(result.get(1).getText()).isEqualTo("김치전");
+                assertThat(result.get(2).getText()).isEqualTo("김치볶음밥");
+
+                ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+                verify(openSearchClient).search(requestCaptor.capture(), eq(Autocomplete.class));
+
+                SearchRequest capturedRequest = requestCaptor.getValue();
+                assertThat(capturedRequest.index()).contains("autocomplete");
+                assertThat(capturedRequest.from()).isEqualTo(0);
+                assertThat(capturedRequest.size()).isEqualTo(5);
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 검색 결과가 없는 경우")
+        class GivenNoResults {
+
+            private String keyword;
+            private Pageable pageable;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                keyword = "존재하지않는검색어";
+                pageable = PageRequest.of(0, 5);
+
+                HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(List.of()));
+                SearchResponse<Autocomplete> mockResponse = SearchResponse.searchResponseOf(
+                        r -> r.hits(hitsMetadata).took(1L).timedOut(false).shards(s -> s.total(1)
+                                .successful(1)
+                                .failed(0)));
+
+                doReturn(mockResponse).when(openSearchClient).search(any(SearchRequest.class), eq(Autocomplete.class));
+            }
+
+            @Test
+            @DisplayName("When - 자동완성을 검색하면 Then - 빈 목록이 반환된다")
+            void whenSearchingAutocomplete_thenReturnsEmptyList() {
+                List<Autocomplete> result =
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+
+                assertThat(result).isEmpty();
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 검색어가 null인 경우")
+        class GivenNullKeyword {
+
+            private String keyword;
+            private Pageable pageable;
+            private SearchResponse<Autocomplete> mockResponse;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                keyword = null;
+                pageable = PageRequest.of(0, 5);
+
+                Autocomplete auto1 =
+                        Autocomplete.builder().id("1").text("인기검색어1").count(200).build();
+                Autocomplete auto2 =
+                        Autocomplete.builder().id("2").text("인기검색어2").count(150).build();
+                Autocomplete auto3 =
+                        Autocomplete.builder().id("3").text("인기검색어3").count(100).build();
+
+                List<Hit<Autocomplete>> hits = List.of(createHit(auto1), createHit(auto2), createHit(auto3));
+
+                HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
+                mockResponse = SearchResponse.searchResponseOf(
+                        r -> r.hits(hitsMetadata).took(1L).timedOut(false).shards(s -> s.total(1)
+                                .successful(1)
+                                .failed(0)));
+
+                doReturn(mockResponse).when(openSearchClient).search(any(SearchRequest.class), eq(Autocomplete.class));
+            }
+
+            @Test
+            @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
+            void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException {
+                List<Autocomplete> result =
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+
+                assertThat(result).hasSize(3);
+                assertThat(result.get(0).getText()).isEqualTo("인기검색어1");
+                assertThat(result.get(0).getCount()).isEqualTo(200);
+                assertThat(result.get(1).getText()).isEqualTo("인기검색어2");
+                assertThat(result.get(2).getText()).isEqualTo("인기검색어3");
+
+                ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+                verify(openSearchClient).search(requestCaptor.capture(), eq(Autocomplete.class));
+
+                SearchRequest capturedRequest = requestCaptor.getValue();
+                assertThat(capturedRequest.index()).contains("autocomplete");
+                assertThat(capturedRequest.from()).isEqualTo(0);
+                assertThat(capturedRequest.size()).isEqualTo(5);
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 검색어가 빈 문자열인 경우")
+        class GivenBlankKeyword {
+
+            private String keyword;
+            private Pageable pageable;
+            private SearchResponse<Autocomplete> mockResponse;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                keyword = "   ";
+                pageable = PageRequest.of(0, 5);
+
+                Autocomplete auto1 = Autocomplete.builder()
+                        .id("1")
+                        .text("빈문자열검색어1")
+                        .count(300)
+                        .build();
+                Autocomplete auto2 = Autocomplete.builder()
+                        .id("2")
+                        .text("빈문자열검색어2")
+                        .count(250)
+                        .build();
+
+                List<Hit<Autocomplete>> hits = List.of(createHit(auto1), createHit(auto2));
+
+                HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
+                mockResponse = SearchResponse.searchResponseOf(
+                        r -> r.hits(hitsMetadata).took(1L).timedOut(false).shards(s -> s.total(1)
+                                .successful(1)
+                                .failed(0)));
+
+                doReturn(mockResponse).when(openSearchClient).search(any(SearchRequest.class), eq(Autocomplete.class));
+            }
+
+            @Test
+            @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
+            void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException {
+                List<Autocomplete> result =
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+
+                assertThat(result).hasSize(2);
+                assertThat(result.get(0).getText()).isEqualTo("빈문자열검색어1");
+                assertThat(result.get(0).getCount()).isEqualTo(300);
+                assertThat(result.get(1).getText()).isEqualTo("빈문자열검색어2");
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 페이징이 적용된 경우")
+        class GivenPagination {
+
+            private String keyword;
+            private Pageable pageable;
+            private SearchResponse<Autocomplete> mockResponse;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                keyword = "테스트";
+                pageable = PageRequest.of(1, 2); // 두 번째 페이지, 페이지당 2개
+
+                Autocomplete auto1 =
+                        Autocomplete.builder().id("1").text("테스트1").count(100).build();
+                Autocomplete auto2 =
+                        Autocomplete.builder().id("2").text("테스트2").count(90).build();
+
+                List<Hit<Autocomplete>> hits = List.of(createHit(auto1), createHit(auto2));
+
+                HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
+                mockResponse = SearchResponse.searchResponseOf(
+                        r -> r.hits(hitsMetadata).took(1L).timedOut(false).shards(s -> s.total(1)
+                                .successful(1)
+                                .failed(0)));
+
+                doReturn(mockResponse).when(openSearchClient).search(any(SearchRequest.class), eq(Autocomplete.class));
+            }
+
+            @Test
+            @DisplayName("When - 자동완성을 검색하면 Then - 페이징이 적용된 결과가 반환된다")
+            void whenSearchingAutocomplete_thenReturnsPagedResults() throws IOException {
+                List<Autocomplete> result =
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+
+                assertThat(result).hasSize(2);
+                assertThat(result.get(0).getText()).isEqualTo("테스트1");
+                assertThat(result.get(1).getText()).isEqualTo("테스트2");
+
+                ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+                verify(openSearchClient).search(requestCaptor.capture(), eq(Autocomplete.class));
+
+                SearchRequest capturedRequest = requestCaptor.getValue();
+                assertThat(capturedRequest.from()).isEqualTo(2); // page 1 * size 2 = offset 2
+                assertThat(capturedRequest.size()).isEqualTo(2);
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - OpenSearch에서 IOException이 발생한 경우")
+        class GivenIOException {
+
+            private String keyword;
+            private Pageable pageable;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                keyword = "test";
+                pageable = PageRequest.of(0, 5);
+
+                doThrow(new IOException("OpenSearch connection failed"))
+                        .when(openSearchClient)
+                        .search(any(SearchRequest.class), eq(Autocomplete.class));
+            }
+
+            @Test
+            @DisplayName("When - 자동완성을 검색하면 Then - RuntimeException이 발생한다")
+            void whenSearchingAutocomplete_thenThrowsRuntimeException() {
+                assertThatThrownBy(() ->
+                                autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable))
+                        .isInstanceOf(SearchException.class)
+                        .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - OpenSearch에서 RuntimeException이 발생한 경우")
+        class GivenRuntimeException {
+
+            private String keyword;
+            private Pageable pageable;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                keyword = "test";
+                pageable = PageRequest.of(0, 5);
+
+                doThrow(new RuntimeException("OpenSearch internal error"))
+                        .when(openSearchClient)
+                        .search(any(SearchRequest.class), eq(Autocomplete.class));
+            }
+
+            @Test
+            @DisplayName("When - 자동완성을 검색하면 Then - RecipeSearchException이 발생한다")
+            void whenSearchingAutocomplete_thenThrowsRecipeSearchException() {
+                assertThatThrownBy(() ->
+                                autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable))
+                        .isInstanceOf(SearchException.class)
+                        .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
+            }
+        }
     }
 
-    @Nested
-    @DisplayName("Given - 검색어가 null인 경우")
-    class GivenNullKeyword {
-
-      private String keyword;
-      private Pageable pageable;
-      private SearchResponse<Autocomplete> mockResponse;
-
-      @BeforeEach
-      void setUp() throws IOException {
-        keyword = null;
-        pageable = PageRequest.of(0, 5);
-
-        Autocomplete auto1 = Autocomplete.builder().id("1").text("인기검색어1").count(200).build();
-        Autocomplete auto2 = Autocomplete.builder().id("2").text("인기검색어2").count(150).build();
-        Autocomplete auto3 = Autocomplete.builder().id("3").text("인기검색어3").count(100).build();
-
-        List<Hit<Autocomplete>> hits =
-            List.of(createHit(auto1), createHit(auto2), createHit(auto3));
-
-        HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
-        mockResponse =
-            SearchResponse.searchResponseOf(
-                r ->
-                    r.hits(hitsMetadata)
-                        .took(1L)
-                        .timedOut(false)
-                        .shards(s -> s.total(1).successful(1).failed(0)));
-
-        doReturn(mockResponse)
-            .when(openSearchClient)
-            .search(any(SearchRequest.class), eq(Autocomplete.class));
-      }
-
-      @Test
-      @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
-      void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException {
-        List<Autocomplete> result =
-            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
-
-        assertThat(result).hasSize(3);
-        assertThat(result.get(0).getText()).isEqualTo("인기검색어1");
-        assertThat(result.get(0).getCount()).isEqualTo(200);
-        assertThat(result.get(1).getText()).isEqualTo("인기검색어2");
-        assertThat(result.get(2).getText()).isEqualTo("인기검색어3");
-
-        ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
-        verify(openSearchClient).search(requestCaptor.capture(), eq(Autocomplete.class));
-
-        SearchRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.index()).contains("autocomplete");
-        assertThat(capturedRequest.from()).isEqualTo(0);
-        assertThat(capturedRequest.size()).isEqualTo(5);
-      }
+    private <T> Hit<T> createHit(T source) {
+        return Hit.of(h -> h.source(source).index("autocomplete").id("test-id").score(1.0));
     }
-
-    @Nested
-    @DisplayName("Given - 검색어가 빈 문자열인 경우")
-    class GivenBlankKeyword {
-
-      private String keyword;
-      private Pageable pageable;
-      private SearchResponse<Autocomplete> mockResponse;
-
-      @BeforeEach
-      void setUp() throws IOException {
-        keyword = "   ";
-        pageable = PageRequest.of(0, 5);
-
-        Autocomplete auto1 = Autocomplete.builder().id("1").text("빈문자열검색어1").count(300).build();
-        Autocomplete auto2 = Autocomplete.builder().id("2").text("빈문자열검색어2").count(250).build();
-
-        List<Hit<Autocomplete>> hits = List.of(createHit(auto1), createHit(auto2));
-
-        HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
-        mockResponse =
-            SearchResponse.searchResponseOf(
-                r ->
-                    r.hits(hitsMetadata)
-                        .took(1L)
-                        .timedOut(false)
-                        .shards(s -> s.total(1).successful(1).failed(0)));
-
-        doReturn(mockResponse)
-            .when(openSearchClient)
-            .search(any(SearchRequest.class), eq(Autocomplete.class));
-      }
-
-      @Test
-      @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
-      void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException {
-        List<Autocomplete> result =
-            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
-
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getText()).isEqualTo("빈문자열검색어1");
-        assertThat(result.get(0).getCount()).isEqualTo(300);
-        assertThat(result.get(1).getText()).isEqualTo("빈문자열검색어2");
-      }
-    }
-
-    @Nested
-    @DisplayName("Given - 페이징이 적용된 경우")
-    class GivenPagination {
-
-      private String keyword;
-      private Pageable pageable;
-      private SearchResponse<Autocomplete> mockResponse;
-
-      @BeforeEach
-      void setUp() throws IOException {
-        keyword = "테스트";
-        pageable = PageRequest.of(1, 2); // 두 번째 페이지, 페이지당 2개
-
-        Autocomplete auto1 = Autocomplete.builder().id("1").text("테스트1").count(100).build();
-        Autocomplete auto2 = Autocomplete.builder().id("2").text("테스트2").count(90).build();
-
-        List<Hit<Autocomplete>> hits = List.of(createHit(auto1), createHit(auto2));
-
-        HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
-        mockResponse =
-            SearchResponse.searchResponseOf(
-                r ->
-                    r.hits(hitsMetadata)
-                        .took(1L)
-                        .timedOut(false)
-                        .shards(s -> s.total(1).successful(1).failed(0)));
-
-        doReturn(mockResponse)
-            .when(openSearchClient)
-            .search(any(SearchRequest.class), eq(Autocomplete.class));
-      }
-
-      @Test
-      @DisplayName("When - 자동완성을 검색하면 Then - 페이징이 적용된 결과가 반환된다")
-      void whenSearchingAutocomplete_thenReturnsPagedResults() throws IOException {
-        List<Autocomplete> result =
-            autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
-
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getText()).isEqualTo("테스트1");
-        assertThat(result.get(1).getText()).isEqualTo("테스트2");
-
-        ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
-        verify(openSearchClient).search(requestCaptor.capture(), eq(Autocomplete.class));
-
-        SearchRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.from()).isEqualTo(2); // page 1 * size 2 = offset 2
-        assertThat(capturedRequest.size()).isEqualTo(2);
-      }
-    }
-
-    @Nested
-    @DisplayName("Given - OpenSearch에서 IOException이 발생한 경우")
-    class GivenIOException {
-
-      private String keyword;
-      private Pageable pageable;
-
-      @BeforeEach
-      void setUp() throws IOException {
-        keyword = "test";
-        pageable = PageRequest.of(0, 5);
-
-        doThrow(new IOException("OpenSearch connection failed"))
-            .when(openSearchClient)
-            .search(any(SearchRequest.class), eq(Autocomplete.class));
-      }
-
-      @Test
-      @DisplayName("When - 자동완성을 검색하면 Then - RuntimeException이 발생한다")
-      void whenSearchingAutocomplete_thenThrowsRuntimeException() {
-        assertThatThrownBy(
-                () ->
-                    autocompleteRepository.searchAutocomplete(
-                        AutocompleteScope.RECIPE, keyword, pageable))
-            .isInstanceOf(SearchException.class)
-            .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
-      }
-    }
-
-    @Nested
-    @DisplayName("Given - OpenSearch에서 RuntimeException이 발생한 경우")
-    class GivenRuntimeException {
-
-      private String keyword;
-      private Pageable pageable;
-
-      @BeforeEach
-      void setUp() throws IOException {
-        keyword = "test";
-        pageable = PageRequest.of(0, 5);
-
-        doThrow(new RuntimeException("OpenSearch internal error"))
-            .when(openSearchClient)
-            .search(any(SearchRequest.class), eq(Autocomplete.class));
-      }
-
-      @Test
-      @DisplayName("When - 자동완성을 검색하면 Then - RecipeSearchException이 발생한다")
-      void whenSearchingAutocomplete_thenThrowsRecipeSearchException() {
-        assertThatThrownBy(
-                () ->
-                    autocompleteRepository.searchAutocomplete(
-                        AutocompleteScope.RECIPE, keyword, pageable))
-            .isInstanceOf(SearchException.class)
-            .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
-      }
-    }
-  }
-
-  private <T> Hit<T> createHit(T source) {
-    return Hit.of(h -> h.source(source).index("autocomplete").id("test-id").score(1.0));
-  }
 }

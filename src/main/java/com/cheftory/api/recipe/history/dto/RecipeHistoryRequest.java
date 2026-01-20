@@ -6,6 +6,5 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record RecipeHistoryRequest() {
-  public record UpdateCategory(
-      @JsonProperty("category_id") @NotNull @ExistsRecipeCategoryId UUID categoryId) {}
+    public record UpdateCategory(@JsonProperty("category_id") @NotNull @ExistsRecipeCategoryId UUID categoryId) {}
 }

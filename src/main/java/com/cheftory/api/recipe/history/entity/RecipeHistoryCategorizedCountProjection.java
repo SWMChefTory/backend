@@ -3,7 +3,7 @@ package com.cheftory.api.recipe.history.entity;
 import java.util.UUID;
 
 public interface RecipeHistoryCategorizedCountProjection {
-  UUID getCategoryId();
+    UUID getCategoryId();
 
-  Long getCount();
+    Long getCount();
 }

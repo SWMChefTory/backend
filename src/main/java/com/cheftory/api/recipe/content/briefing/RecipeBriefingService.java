@@ -17,21 +17,21 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class RecipeBriefingService {
 
-  private final BriefingClient briefingClient;
-  private final RecipeBriefingRepository recipeBriefingRepository;
-  private final Clock clock;
+    private final BriefingClient briefingClient;
+    private final RecipeBriefingRepository recipeBriefingRepository;
+    private final Clock clock;
 
-  public void create(String videoId, UUID recipeId) {
-    try {
-      BriefingClientResponse response = briefingClient.fetchBriefing(videoId);
-      List<RecipeBriefing> recipeBriefings = response.toRecipeBriefing(recipeId, clock);
-      recipeBriefingRepository.saveAll(recipeBriefings);
-    } catch (Exception e) {
-      throw new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+    public void create(String videoId, UUID recipeId) {
+        try {
+            BriefingClientResponse response = briefingClient.fetchBriefing(videoId);
+            List<RecipeBriefing> recipeBriefings = response.toRecipeBriefing(recipeId, clock);
+            recipeBriefingRepository.saveAll(recipeBriefings);
+        } catch (Exception e) {
+            throw new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+        }
     }
-  }
 
-  public List<RecipeBriefing> gets(UUID recipeId) {
-    return recipeBriefingRepository.findAllByRecipeId(recipeId);
-  }
+    public List<RecipeBriefing> gets(UUID recipeId) {
+        return recipeBriefingRepository.findAllByRecipeId(recipeId);
+    }
 }

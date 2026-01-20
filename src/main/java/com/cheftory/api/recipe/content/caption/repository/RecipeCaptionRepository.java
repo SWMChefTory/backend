@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecipeCaptionRepository extends JpaRepository<RecipeCaption, UUID> {
 
-  Optional<RecipeCaption> findByRecipeId(UUID recipeId);
+    Optional<RecipeCaption> findByRecipeId(UUID recipeId);
 }

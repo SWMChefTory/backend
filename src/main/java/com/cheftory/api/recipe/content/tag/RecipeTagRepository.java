@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecipeTagRepository extends JpaRepository<RecipeTag, UUID> {
-  List<RecipeTag> findAllByRecipeId(UUID recipeId);
+    List<RecipeTag> findAllByRecipeId(UUID recipeId);
 
-  List<RecipeTag> findAllByRecipeIdIn(List<UUID> recipeIds);
+    List<RecipeTag> findAllByRecipeIdIn(List<UUID> recipeIds);
 }

@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RecipeHistoryCategorizedCount {
-  private UUID categoryId;
-  private Integer count;
+    private UUID categoryId;
+    private Integer count;
 
-  public static RecipeHistoryCategorizedCount of(UUID categoryId, Integer count) {
-    return new RecipeHistoryCategorizedCount(categoryId, count);
-  }
+    public static RecipeHistoryCategorizedCount of(UUID categoryId, Integer count) {
+        return new RecipeHistoryCategorizedCount(categoryId, count);
+    }
 }

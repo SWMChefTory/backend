@@ -27,60 +27,56 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @DisplayName("Credit Controller")
 class CreditControllerTest extends RestDocsTest {
 
-  private CreditService creditService;
-  private CreditController controller;
-  private GlobalExceptionHandler exceptionHandler;
-  private UserArgumentResolver userArgumentResolver;
-
-  @BeforeEach
-  void setUp() {
-    creditService = mock(CreditService.class);
-    controller = new CreditController(creditService);
-    exceptionHandler = new GlobalExceptionHandler();
-    userArgumentResolver = new UserArgumentResolver();
-
-    mockMvc =
-        mockMvcBuilder(controller)
-            .withAdvice(exceptionHandler)
-            .withArgumentResolver(userArgumentResolver)
-            .build();
-  }
-
-  @Nested
-  @DisplayName("크레딧 잔액 조회")
-  class GetBalance {
-
-    private UUID userId;
+    private CreditService creditService;
+    private CreditController controller;
+    private GlobalExceptionHandler exceptionHandler;
+    private UserArgumentResolver userArgumentResolver;
 
     @BeforeEach
     void setUp() {
-      userId = UUID.randomUUID();
-      var authentication = new UsernamePasswordAuthenticationToken(userId, null);
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+        creditService = mock(CreditService.class);
+        controller = new CreditController(creditService);
+        exceptionHandler = new GlobalExceptionHandler();
+        userArgumentResolver = new UserArgumentResolver();
+
+        mockMvc = mockMvcBuilder(controller)
+                .withAdvice(exceptionHandler)
+                .withArgumentResolver(userArgumentResolver)
+                .build();
     }
 
-    @Test
-    @DisplayName("Given - user_id가 주어졌을 때 Then - balance를 반환한다")
-    void shouldReturnBalance() {
-      doReturn(123L).when(creditService).getBalance(any(UUID.class));
+    @Nested
+    @DisplayName("크레딧 잔액 조회")
+    class GetBalance {
 
-      var response =
-          given()
-              .contentType(ContentType.JSON)
-              .attribute("userId", userId.toString())
-              .header("Authorization", "Bearer accessToken")
-              .get("/api/v1/credit/balance")
-              .then()
-              .status(HttpStatus.OK)
-              .apply(
-                  document(
-                      getNestedClassPath(this.getClass()) + "/{method-name}",
-                      requestPreprocessor(),
-                      responsePreprocessor(),
-                      responseFields(fieldWithPath("balance").description("현재 크레딧 잔액"))));
+        private UUID userId;
 
-      var responseBody = response.extract().jsonPath();
-      assertThat(responseBody.getLong("balance")).isEqualTo(123L);
+        @BeforeEach
+        void setUp() {
+            userId = UUID.randomUUID();
+            var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+
+        @Test
+        @DisplayName("Given - user_id가 주어졌을 때 Then - balance를 반환한다")
+        void shouldReturnBalance() {
+            doReturn(123L).when(creditService).getBalance(any(UUID.class));
+
+            var response = given().contentType(ContentType.JSON)
+                    .attribute("userId", userId.toString())
+                    .header("Authorization", "Bearer accessToken")
+                    .get("/api/v1/credit/balance")
+                    .then()
+                    .status(HttpStatus.OK)
+                    .apply(document(
+                            getNestedClassPath(this.getClass()) + "/{method-name}",
+                            requestPreprocessor(),
+                            responsePreprocessor(),
+                            responseFields(fieldWithPath("balance").description("현재 크레딧 잔액"))));
+
+            var responseBody = response.extract().jsonPath();
+            assertThat(responseBody.getLong("balance")).isEqualTo(123L);
+        }
     }
-  }
 }

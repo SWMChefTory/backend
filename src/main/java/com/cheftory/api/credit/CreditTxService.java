@@ -14,60 +14,55 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CreditTxService {
 
-  private final CreditUserBalanceRepository balanceRepository;
-  private final CreditTransactionRepository transactionRepository;
-  private final Clock clock;
+    private final CreditUserBalanceRepository balanceRepository;
+    private final CreditTransactionRepository transactionRepository;
+    private final Clock clock;
 
-  @Transactional
-  public void grantTx(Credit credit) {
-    CreditUserBalance balance = loadOrCreateBalance(credit.userId());
+    @Transactional
+    public void grantTx(Credit credit) {
+        CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
-    if (alreadyProcessed(
-        () -> transactionRepository.save(CreditTransaction.grant(credit, clock)),
-        credit.idempotencyKey())) {
-      return;
+        if (alreadyProcessed(
+                () -> transactionRepository.save(CreditTransaction.grant(credit, clock)), credit.idempotencyKey())) {
+            return;
+        }
+
+        credit.grantTo(balance);
+        balanceRepository.save(balance);
     }
 
-    credit.grantTo(balance);
-    balanceRepository.save(balance);
-  }
+    @Transactional
+    public void spendTx(Credit credit) {
+        CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
-  @Transactional
-  public void spendTx(Credit credit) {
-    CreditUserBalance balance = loadOrCreateBalance(credit.userId());
+        if (alreadyProcessed(
+                () -> transactionRepository.save(CreditTransaction.spend(credit, clock)), credit.idempotencyKey())) {
+            return;
+        }
 
-    if (alreadyProcessed(
-        () -> transactionRepository.save(CreditTransaction.spend(credit, clock)),
-        credit.idempotencyKey())) {
-      return;
+        credit.spendFrom(balance);
+        balanceRepository.save(balance);
     }
 
-    credit.spendFrom(balance);
-    balanceRepository.save(balance);
-  }
-
-  private boolean alreadyProcessed(Runnable saveTx, String idempotencyKey) {
-    try {
-      saveTx.run();
-      return false;
-    } catch (DataIntegrityViolationException e) {
-      if (transactionRepository.existsByIdempotencyKey(idempotencyKey)) {
-        return true;
-      }
-      throw e;
+    private boolean alreadyProcessed(Runnable saveTx, String idempotencyKey) {
+        try {
+            saveTx.run();
+            return false;
+        } catch (DataIntegrityViolationException e) {
+            if (transactionRepository.existsByIdempotencyKey(idempotencyKey)) {
+                return true;
+            }
+            throw e;
+        }
     }
-  }
 
-  private CreditUserBalance loadOrCreateBalance(UUID userId) {
-    return balanceRepository
-        .findById(userId)
-        .orElseGet(
-            () -> {
-              try {
+    private CreditUserBalance loadOrCreateBalance(UUID userId) {
+        return balanceRepository.findById(userId).orElseGet(() -> {
+            try {
                 return balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
-              } catch (DataIntegrityViolationException e) {
+            } catch (DataIntegrityViolationException e) {
                 return balanceRepository.findById(userId).orElseThrow();
-              }
-            });
-  }
+            }
+        });
+    }
 }

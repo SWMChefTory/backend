@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/recipes/challenge")
 @PocOnly(until = "2025-12-31")
 public class RecipeChallengeController {
-  private final RecipeChallengeService recipeChallengeService;
+    private final RecipeChallengeService recipeChallengeService;
 
-  @GetMapping
-  public ChallengeResponse getChallenge(@UserPrincipal UUID userId) {
-    Challenge challenge = recipeChallengeService.getUser(userId);
-    return ChallengeResponse.of(challenge);
-  }
+    @GetMapping
+    public ChallengeResponse getChallenge(@UserPrincipal UUID userId) {
+        Challenge challenge = recipeChallengeService.getUser(userId);
+        return ChallengeResponse.of(challenge);
+    }
 }

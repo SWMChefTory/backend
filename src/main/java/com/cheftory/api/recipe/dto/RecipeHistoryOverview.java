@@ -19,59 +19,59 @@ import org.springframework.lang.Nullable;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeHistoryOverview {
-  private UUID recipeId;
-  private RecipeStatus recipeStatus;
-  private Integer viewCount;
-  private LocalDateTime recipeCreatedAt;
-  private LocalDateTime recipeUpdatedAt;
+    private UUID recipeId;
+    private RecipeStatus recipeStatus;
+    private Integer viewCount;
+    private LocalDateTime recipeCreatedAt;
+    private LocalDateTime recipeUpdatedAt;
 
-  private LocalDateTime viewedAt;
-  private Integer lastPlaySeconds;
-  private UUID recipeCategoryId;
+    private LocalDateTime viewedAt;
+    private Integer lastPlaySeconds;
+    private UUID recipeCategoryId;
 
-  private String videoTitle;
-  private String channelTitle;
-  private String videoId;
-  private URI videoUri;
-  private URI thumbnailUrl;
-  private Integer videoSeconds;
-  private YoutubeMetaType videoType;
+    private String videoTitle;
+    private String channelTitle;
+    private String videoId;
+    private URI videoUri;
+    private URI thumbnailUrl;
+    private Integer videoSeconds;
+    private YoutubeMetaType videoType;
 
-  private String description;
-  private Integer servings;
-  private Integer cookTime;
+    private String description;
+    private Integer servings;
+    private Integer cookTime;
 
-  private List<String> tags;
+    private List<String> tags;
 
-  private Long creditCost;
+    private Long creditCost;
 
-  public static RecipeHistoryOverview of(
-      RecipeInfo recipe,
-      RecipeHistory recipeHistory,
-      RecipeYoutubeMeta youtubeMeta,
-      @Nullable RecipeDetailMeta detailMeta,
-      @Nullable List<RecipeTag> tags) {
+    public static RecipeHistoryOverview of(
+            RecipeInfo recipe,
+            RecipeHistory recipeHistory,
+            RecipeYoutubeMeta youtubeMeta,
+            @Nullable RecipeDetailMeta detailMeta,
+            @Nullable List<RecipeTag> tags) {
 
-    return new RecipeHistoryOverview(
-        recipe.getId(),
-        recipe.getRecipeStatus(),
-        recipe.getViewCount(),
-        recipe.getCreatedAt(),
-        recipe.getUpdatedAt(),
-        recipeHistory.getViewedAt(),
-        recipeHistory.getLastPlaySeconds(),
-        recipeHistory.getRecipeCategoryId(),
-        youtubeMeta.getTitle(),
-        youtubeMeta.getChannelTitle(),
-        youtubeMeta.getVideoId(),
-        youtubeMeta.getVideoUri(),
-        youtubeMeta.getThumbnailUrl(),
-        youtubeMeta.getVideoSeconds(),
-        youtubeMeta.getType(),
-        detailMeta == null ? null : detailMeta.getDescription(),
-        detailMeta == null ? null : detailMeta.getServings(),
-        detailMeta == null ? null : detailMeta.getCookTime(),
-        tags == null ? List.of() : tags.stream().map(RecipeTag::getTag).toList(),
-        recipe.getCreditCost());
-  }
+        return new RecipeHistoryOverview(
+                recipe.getId(),
+                recipe.getRecipeStatus(),
+                recipe.getViewCount(),
+                recipe.getCreatedAt(),
+                recipe.getUpdatedAt(),
+                recipeHistory.getViewedAt(),
+                recipeHistory.getLastPlaySeconds(),
+                recipeHistory.getRecipeCategoryId(),
+                youtubeMeta.getTitle(),
+                youtubeMeta.getChannelTitle(),
+                youtubeMeta.getVideoId(),
+                youtubeMeta.getVideoUri(),
+                youtubeMeta.getThumbnailUrl(),
+                youtubeMeta.getVideoSeconds(),
+                youtubeMeta.getType(),
+                detailMeta == null ? null : detailMeta.getDescription(),
+                detailMeta == null ? null : detailMeta.getServings(),
+                detailMeta == null ? null : detailMeta.getCookTime(),
+                tags == null ? List.of() : tags.stream().map(RecipeTag::getTag).toList(),
+                recipe.getCreditCost());
+    }
 }

@@ -18,21 +18,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recipes/{recipeId}")
 public class RecipeHistoryController {
-  private final RecipeHistoryService recipeHistoryService;
+    private final RecipeHistoryService recipeHistoryService;
 
-  @PutMapping("/categories")
-  public SuccessOnlyResponse updateHistoryCategory(
-      @RequestBody @Valid RecipeHistoryRequest.UpdateCategory request,
-      @PathVariable("recipeId") @ExistsRecipeId UUID recipeId,
-      @UserPrincipal UUID userId) {
-    recipeHistoryService.updateCategory(userId, recipeId, request.categoryId());
-    return SuccessOnlyResponse.create();
-  }
+    @PutMapping("/categories")
+    public SuccessOnlyResponse updateHistoryCategory(
+            @RequestBody @Valid RecipeHistoryRequest.UpdateCategory request,
+            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId,
+            @UserPrincipal UUID userId) {
+        recipeHistoryService.updateCategory(userId, recipeId, request.categoryId());
+        return SuccessOnlyResponse.create();
+    }
 
-  @DeleteMapping("")
-  public SuccessOnlyResponse deleteHistory(
-      @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
-    recipeHistoryService.delete(userId, recipeId);
-    return SuccessOnlyResponse.create();
-  }
+    @DeleteMapping("")
+    public SuccessOnlyResponse deleteHistory(
+            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
+        recipeHistoryService.delete(userId, recipeId);
+        return SuccessOnlyResponse.create();
+    }
 }

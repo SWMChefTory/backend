@@ -8,13 +8,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
-  @Bean
-  public GroupedOpenApi boardGroupedOpenApi() {
-    return GroupedOpenApi.builder()
-        .group("v1")
-        .pathsToMatch("/**")
-        .addOpenApiCustomizer(
-            openApi -> openApi.setInfo(new Info().title("chieftory api").version("1.0.0")))
-        .build();
-  }
+    @Bean
+    public GroupedOpenApi boardGroupedOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("v1")
+                .pathsToMatch("/**")
+                .addOpenApiCustomizer(openApi ->
+                        openApi.setInfo(new Info().title("chieftory api").version("1.0.0")))
+                .build();
+    }
 }

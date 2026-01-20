@@ -9,27 +9,28 @@ import java.util.UUID;
 @Entity
 @Table(name = "test_region_entity")
 public class TestRegionEntity extends MarketScope {
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Column(nullable = false)
-  private String name;
+    @Column(nullable = false)
+    private String name;
 
-  protected TestRegionEntity() {}
+    protected TestRegionEntity() {}
 
-  private TestRegionEntity(UUID id, String name) {
-    this.id = id;
-    this.name = name;
-  }
+    private TestRegionEntity(UUID id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
-  public static TestRegionEntity of(String name) {
-    return new TestRegionEntity(UUID.randomUUID(), name);
-  }
+    public static TestRegionEntity of(String name) {
+        return new TestRegionEntity(UUID.randomUUID(), name);
+    }
 
-  public UUID getId() {
-    return id;
-  }
+    public UUID getId() {
+        return id;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 }

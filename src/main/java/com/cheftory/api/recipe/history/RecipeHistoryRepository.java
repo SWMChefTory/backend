@@ -16,22 +16,21 @@ import org.springframework.data.repository.query.Param;
 
 public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UUID> {
 
-  @Deprecated(forRemoval = true)
-  Page<RecipeHistory> findByUserIdAndStatus(
-      UUID userId, RecipeHistoryStatus status, Pageable pageable);
+    @Deprecated(forRemoval = true)
+    Page<RecipeHistory> findByUserIdAndStatus(UUID userId, RecipeHistoryStatus status, Pageable pageable);
 
-  @Query(
-      """
+    @Query(
+            """
   select h
   from RecipeHistory h
   where h.userId = :userId
     and h.status = :status
   order by h.viewedAt desc, h.id desc
 """)
-  List<RecipeHistory> findRecentsFirst(UUID userId, RecipeHistoryStatus status, Pageable pageable);
+    List<RecipeHistory> findRecentsFirst(UUID userId, RecipeHistoryStatus status, Pageable pageable);
 
-  @Query(
-      """
+    @Query(
+            """
   select h
   from RecipeHistory h
   where h.userId = :userId
@@ -42,26 +41,20 @@ public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UU
     )
   order by h.viewedAt desc, h.id desc
 """)
-  List<RecipeHistory> findRecentsKeyset(
-      UUID userId,
-      RecipeHistoryStatus status,
-      LocalDateTime lastViewedAt,
-      UUID lastId,
-      Pageable pageable);
+    List<RecipeHistory> findRecentsKeyset(
+            UUID userId, RecipeHistoryStatus status, LocalDateTime lastViewedAt, UUID lastId, Pageable pageable);
 
-  Optional<RecipeHistory> findByRecipeIdAndUserIdAndStatus(
-      UUID recipeId, UUID userId, RecipeHistoryStatus status);
+    Optional<RecipeHistory> findByRecipeIdAndUserIdAndStatus(UUID recipeId, UUID userId, RecipeHistoryStatus status);
 
-  @Deprecated(forRemoval = true)
-  Page<RecipeHistory> findAllByUserIdAndStatus(
-      UUID userId, RecipeHistoryStatus status, Pageable pageable);
+    @Deprecated(forRemoval = true)
+    Page<RecipeHistory> findAllByUserIdAndStatus(UUID userId, RecipeHistoryStatus status, Pageable pageable);
 
-  @Deprecated(forRemoval = true)
-  Page<RecipeHistory> findAllByUserIdAndRecipeCategoryIdAndStatus(
-      UUID userId, UUID recipeCategoryId, RecipeHistoryStatus status, Pageable pageable);
+    @Deprecated(forRemoval = true)
+    Page<RecipeHistory> findAllByUserIdAndRecipeCategoryIdAndStatus(
+            UUID userId, UUID recipeCategoryId, RecipeHistoryStatus status, Pageable pageable);
 
-  @Query(
-      """
+    @Query(
+            """
     select h
     from RecipeHistory h
     where h.userId = :userId
@@ -69,11 +62,11 @@ public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UU
       and h.status = :status
     order by h.viewedAt desc, h.id desc
 """)
-  List<RecipeHistory> findCategorizedFirst(
-      UUID userId, UUID categoryId, RecipeHistoryStatus status, Pageable pageable);
+    List<RecipeHistory> findCategorizedFirst(
+            UUID userId, UUID categoryId, RecipeHistoryStatus status, Pageable pageable);
 
-  @Query(
-      """
+    @Query(
+            """
     select h
     from RecipeHistory h
     where h.userId = :userId
@@ -85,16 +78,16 @@ public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UU
       )
     order by h.viewedAt desc, h.id desc
 """)
-  List<RecipeHistory> findCategorizedKeyset(
-      UUID userId,
-      UUID categoryId,
-      RecipeHistoryStatus status,
-      LocalDateTime lastViewedAt,
-      UUID lastId,
-      Pageable pageable);
+    List<RecipeHistory> findCategorizedKeyset(
+            UUID userId,
+            UUID categoryId,
+            RecipeHistoryStatus status,
+            LocalDateTime lastViewedAt,
+            UUID lastId,
+            Pageable pageable);
 
-  @Query(
-      """
+    @Query(
+            """
   select h
   from RecipeHistory h
   where h.userId = :userId
@@ -102,11 +95,10 @@ public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UU
     and h.status = :status
   order by h.viewedAt desc, h.id desc
 """)
-  List<RecipeHistory> findUncategorizedFirst(
-      UUID userId, RecipeHistoryStatus status, Pageable pageable);
+    List<RecipeHistory> findUncategorizedFirst(UUID userId, RecipeHistoryStatus status, Pageable pageable);
 
-  @Query(
-      """
+    @Query(
+            """
   select h
   from RecipeHistory h
   where h.userId = :userId
@@ -118,44 +110,36 @@ public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UU
     )
   order by h.viewedAt desc, h.id desc
 """)
-  List<RecipeHistory> findUncategorizedKeyset(
-      UUID userId,
-      RecipeHistoryStatus status,
-      LocalDateTime lastViewedAt,
-      UUID lastId,
-      Pageable pageable);
+    List<RecipeHistory> findUncategorizedKeyset(
+            UUID userId, RecipeHistoryStatus status, LocalDateTime lastViewedAt, UUID lastId, Pageable pageable);
 
-  List<RecipeHistory> findByRecipeCategoryIdAndStatus(
-      UUID recipeCategoryId, RecipeHistoryStatus status);
+    List<RecipeHistory> findByRecipeCategoryIdAndStatus(UUID recipeCategoryId, RecipeHistoryStatus status);
 
-  @Query(
-      "SELECT r.recipeCategoryId as categoryId, COUNT(r) as count "
-          + "FROM RecipeHistory r "
-          + "WHERE r.recipeCategoryId IN :categoryIds "
-          + "AND r.status = :status "
-          + "GROUP BY r.recipeCategoryId")
-  List<RecipeHistoryCategorizedCountProjection> countByCategoryIdsAndStatus(
-      @Param("categoryIds") List<UUID> categoryIds, @Param("status") RecipeHistoryStatus status);
+    @Query("SELECT r.recipeCategoryId as categoryId, COUNT(r) as count "
+            + "FROM RecipeHistory r "
+            + "WHERE r.recipeCategoryId IN :categoryIds "
+            + "AND r.status = :status "
+            + "GROUP BY r.recipeCategoryId")
+    List<RecipeHistoryCategorizedCountProjection> countByCategoryIdsAndStatus(
+            @Param("categoryIds") List<UUID> categoryIds, @Param("status") RecipeHistoryStatus status);
 
-  @Query(
-      "SELECT COUNT(r) as count "
-          + "FROM RecipeHistory r "
-          + "WHERE r.userId = :userId "
-          + "AND r.status = :status")
-  RecipeHistoryUnCategorizedCountProjection countByUserIdAndStatus(
-      @Param("userId") UUID userId, @Param("status") RecipeHistoryStatus status);
+    @Query("SELECT COUNT(r) as count "
+            + "FROM RecipeHistory r "
+            + "WHERE r.userId = :userId "
+            + "AND r.status = :status")
+    RecipeHistoryUnCategorizedCountProjection countByUserIdAndStatus(
+            @Param("userId") UUID userId, @Param("status") RecipeHistoryStatus status);
 
-  boolean existsByRecipeIdAndUserIdAndStatus(
-      UUID recipeId, UUID userId, RecipeHistoryStatus status);
+    boolean existsByRecipeIdAndUserIdAndStatus(UUID recipeId, UUID userId, RecipeHistoryStatus status);
 
-  boolean existsByUserIdAndRecipeId(UUID userId, UUID recipeId);
+    boolean existsByUserIdAndRecipeId(UUID userId, UUID recipeId);
 
-  List<RecipeHistory> findByRecipeIdInAndUserIdAndStatus(
-      List<UUID> recipeIds, UUID userId, RecipeHistoryStatus status);
+    List<RecipeHistory> findByRecipeIdInAndUserIdAndStatus(
+            List<UUID> recipeIds, UUID userId, RecipeHistoryStatus status);
 
-  List<RecipeHistory> findAllByRecipeId(UUID recipeId);
+    List<RecipeHistory> findAllByRecipeId(UUID recipeId);
 
-  List<RecipeHistory> findAllByRecipeIdAndStatus(UUID recipeId, RecipeHistoryStatus status);
+    List<RecipeHistory> findAllByRecipeIdAndStatus(UUID recipeId, RecipeHistoryStatus status);
 
-  Optional<RecipeHistory> findByUserIdAndRecipeId(UUID userId, UUID recipeId);
+    Optional<RecipeHistory> findByUserIdAndRecipeId(UUID userId, UUID recipeId);
 }

@@ -19,77 +19,72 @@ import reactor.netty.http.client.HttpClient;
 @Configuration
 public class WebclientConfig {
 
-  @Value("${ai-recipe-summary.url}")
-  private String recipeServerUrl;
+    @Value("${ai-recipe-summary.url}")
+    private String recipeServerUrl;
 
-  private final ObservationRegistry observationRegistry;
+    private final ObservationRegistry observationRegistry;
 
-  public WebclientConfig(ObservationRegistry observationRegistry) {
-    this.observationRegistry = observationRegistry;
-  }
+    public WebclientConfig(ObservationRegistry observationRegistry) {
+        this.observationRegistry = observationRegistry;
+    }
 
-  @Bean
-  public ExchangeFilterFunction marketHeaderPropagator() {
-    return (request, next) -> {
-      var info = MarketContext.currentOrNull();
-      if (info == null) return next.exchange(request);
+    @Bean
+    public ExchangeFilterFunction marketHeaderPropagator() {
+        return (request, next) -> {
+            var info = MarketContext.currentOrNull();
+            if (info == null) return next.exchange(request);
 
-      ClientRequest filtered =
-          ClientRequest.from(request)
-              .header(MarketHeaders.COUNTRY_CODE, info.countryCode())
-              .build();
+            ClientRequest filtered = ClientRequest.from(request)
+                    .header(MarketHeaders.COUNTRY_CODE, info.countryCode())
+                    .build();
 
-      return next.exchange(filtered);
-    };
-  }
+            return next.exchange(filtered);
+        };
+    }
 
-  @Bean
-  @Qualifier("recipeCreateClient")
-  public WebClient webClientForRecipeServer(ExchangeFilterFunction marketHeaderPropagator) {
-    HttpClient httpClient =
-        HttpClient.create()
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-            .responseTimeout(Duration.ofMinutes(3));
+    @Bean
+    @Qualifier("recipeCreateClient")
+    public WebClient webClientForRecipeServer(ExchangeFilterFunction marketHeaderPropagator) {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofMinutes(3));
 
-    return WebClient.builder()
-        .baseUrl(recipeServerUrl)
-        .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .observationRegistry(observationRegistry)
-        .filter(marketHeaderPropagator)
-        .build();
-  }
+        return WebClient.builder()
+                .baseUrl(recipeServerUrl)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .observationRegistry(observationRegistry)
+                .filter(marketHeaderPropagator)
+                .build();
+    }
 
-  @Bean
-  @Qualifier("youtubeClient")
-  public WebClient webClientForGoogle() {
-    HttpClient httpClient =
-        HttpClient.create()
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-            .responseTimeout(Duration.ofSeconds(20));
+    @Bean
+    @Qualifier("youtubeClient")
+    public WebClient webClientForGoogle() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofSeconds(20));
 
-    return WebClient.builder()
-        .baseUrl("https://www.googleapis.com/youtube/v3")
-        .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .observationRegistry(observationRegistry)
-        .build();
-  }
+        return WebClient.builder()
+                .baseUrl("https://www.googleapis.com/youtube/v3")
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .observationRegistry(observationRegistry)
+                .build();
+    }
 
-  @Bean
-  @Qualifier("coupangClient")
-  public WebClient webClientForCoupang() {
-    DefaultUriBuilderFactory factory =
-        new DefaultUriBuilderFactory("https://api-gateway.coupang.com");
-    factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY);
+    @Bean
+    @Qualifier("coupangClient")
+    public WebClient webClientForCoupang() {
+        DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory("https://api-gateway.coupang.com");
+        factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY);
 
-    HttpClient httpClient =
-        HttpClient.create()
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-            .responseTimeout(Duration.ofSeconds(30));
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofSeconds(30));
 
-    return WebClient.builder()
-        .uriBuilderFactory(factory)
-        .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .observationRegistry(observationRegistry)
-        .build();
-  }
+        return WebClient.builder()
+                .uriBuilderFactory(factory)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .observationRegistry(observationRegistry)
+                .build();
+    }
 }

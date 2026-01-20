@@ -12,20 +12,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserIdValidator implements ConstraintValidator<ExistsUserId, UUID> {
 
-  private final UserService userService;
+    private final UserService userService;
 
-  @Override
-  public boolean isValid(UUID userId, ConstraintValidatorContext context) {
-    boolean exists = userService.exists(userId);
+    @Override
+    public boolean isValid(UUID userId, ConstraintValidatorContext context) {
+        boolean exists = userService.exists(userId);
 
-    if (!exists) {
-      context.disableDefaultConstraintViolation();
-      context
-          .buildConstraintViolationWithTemplate(UserErrorCode.USER_NOT_FOUND.name())
-          .addConstraintViolation();
-      return false;
+        if (!exists) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate(UserErrorCode.USER_NOT_FOUND.name())
+                    .addConstraintViolation();
+            return false;
+        }
+
+        return true;
     }
-
-    return true;
-  }
 }

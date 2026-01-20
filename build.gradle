@@ -11,7 +11,7 @@ plugins {
 spotless {
 	java {
 		target '**/*.java'
-		googleJavaFormat('1.22.0')
+		palantirJavaFormat('2.50.0')
 		removeUnusedImports()
 		trimTrailingWhitespace()
 		endWithNewline()
@@ -20,7 +20,7 @@ spotless {
 }
 
 group = 'com.cheftory'
-version = '1.1.11'
+version = '1.1.12'
 
 java {
 	toolchain {

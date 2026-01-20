@@ -4,12 +4,11 @@ import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.exception.GlobalErrorCode;
 
 public enum Market {
-  GLOBAL,
-  KOREA;
+    GLOBAL,
+    KOREA;
 
-  public static Market fromCountryCode(String countryCode) {
-    if (countryCode == null || countryCode.isBlank())
-      throw new CheftoryException(GlobalErrorCode.UNKNOWN_REGION);
-    return "KR".equalsIgnoreCase(countryCode.trim()) ? KOREA : GLOBAL;
-  }
+    public static Market fromCountryCode(String countryCode) {
+        if (countryCode == null || countryCode.isBlank()) throw new CheftoryException(GlobalErrorCode.UNKNOWN_REGION);
+        return "KR".equalsIgnoreCase(countryCode.trim()) ? KOREA : GLOBAL;
+    }
 }

@@ -8,10 +8,10 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class ClientCaptionRequest {
-  @JsonProperty("video_id")
-  private String videoId;
+    @JsonProperty("video_id")
+    private String videoId;
 
-  public static ClientCaptionRequest from(String videoId) {
-    return new ClientCaptionRequest(videoId);
-  }
+    public static ClientCaptionRequest from(String videoId) {
+        return new ClientCaptionRequest(videoId);
+    }
 }

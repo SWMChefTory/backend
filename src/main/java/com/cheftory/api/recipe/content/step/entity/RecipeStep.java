@@ -21,43 +21,38 @@ import org.hibernate.type.SqlTypes;
 @Getter
 public class RecipeStep extends MarketScope {
 
-  @Getter
-  @AllArgsConstructor(access = AccessLevel.PRIVATE)
-  @NoArgsConstructor(access = AccessLevel.PROTECTED)
-  public static class Detail {
-    private String text;
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class Detail {
+        private String text;
+        private Double start;
+
+        public static Detail of(String text, Double start) {
+            return new Detail(text, start);
+        }
+    }
+
+    @Id
+    private UUID id;
+
+    private Integer stepOrder;
+
+    private String subtitle;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json")
+    private List<Detail> details;
+
     private Double start;
 
-    public static Detail of(String text, Double start) {
-      return new Detail(text, start);
+    private UUID recipeId;
+
+    private LocalDateTime createdAt;
+
+    public static RecipeStep create(
+            Integer stepOrder, String subtitle, List<Detail> details, Double start, UUID recipeId, Clock clock) {
+
+        return new RecipeStep(UUID.randomUUID(), stepOrder, subtitle, details, start, recipeId, clock.now());
     }
-  }
-
-  @Id private UUID id;
-
-  private Integer stepOrder;
-
-  private String subtitle;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "json")
-  private List<Detail> details;
-
-  private Double start;
-
-  private UUID recipeId;
-
-  private LocalDateTime createdAt;
-
-  public static RecipeStep create(
-      Integer stepOrder,
-      String subtitle,
-      List<Detail> details,
-      Double start,
-      UUID recipeId,
-      Clock clock) {
-
-    return new RecipeStep(
-        UUID.randomUUID(), stepOrder, subtitle, details, start, recipeId, clock.now());
-  }
 }

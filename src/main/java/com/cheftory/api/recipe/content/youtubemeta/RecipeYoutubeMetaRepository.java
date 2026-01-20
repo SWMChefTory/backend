@@ -11,12 +11,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecipeYoutubeMetaRepository extends JpaRepository<RecipeYoutubeMeta, UUID> {
-  List<RecipeYoutubeMeta> findAllByVideoUri(URI videoUri);
+    List<RecipeYoutubeMeta> findAllByVideoUri(URI videoUri);
 
-  List<RecipeYoutubeMeta> findAllByRecipeIdIn(List<UUID> recipeIds);
+    List<RecipeYoutubeMeta> findAllByRecipeIdIn(List<UUID> recipeIds);
 
-  Optional<RecipeYoutubeMeta> findByRecipeId(UUID recipeId);
+    Optional<RecipeYoutubeMeta> findByRecipeId(UUID recipeId);
 
-  @Deprecated(forRemoval = true)
-  Page<RecipeYoutubeMeta> findByStatus(YoutubeMetaStatus status, Pageable pageable);
+    @Deprecated(forRemoval = true)
+    Page<RecipeYoutubeMeta> findByStatus(YoutubeMetaStatus status, Pageable pageable);
 }

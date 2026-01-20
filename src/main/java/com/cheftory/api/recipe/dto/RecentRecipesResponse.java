@@ -9,71 +9,73 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 
 public record RecentRecipesResponse(
-    @JsonProperty("recent_recipes") List<RecentRecipeResponse> recentRecipes,
-    @JsonProperty("current_page") Integer currentPage,
-    @JsonProperty("total_pages") Integer totalPages,
-    @JsonProperty("total_elements") Long totalElements,
-    @JsonProperty("has_next") boolean hasNext,
-    @JsonProperty("next_cursor") String nextCursor) {
-  @Deprecated(forRemoval = true)
-  public static RecentRecipesResponse from(Page<RecipeHistoryOverview> recentRecipes) {
-    List<RecentRecipeResponse> responses =
-        recentRecipes.stream().map(RecentRecipeResponse::from).toList();
-    return new RecentRecipesResponse(
-        responses,
-        recentRecipes.getNumber(),
-        recentRecipes.getTotalPages(),
-        recentRecipes.getTotalElements(),
-        recentRecipes.hasNext(),
-        null);
-  }
-
-  public static RecentRecipesResponse from(CursorPage<RecipeHistoryOverview> recentRecipes) {
-    List<RecentRecipeResponse> responses =
-        recentRecipes.items().stream().map(RecentRecipeResponse::from).toList();
-    return new RecentRecipesResponse(
-        responses, null, null, null, recentRecipes.hasNext(), recentRecipes.nextCursor());
-  }
-
-  public record RecentRecipeResponse(
-      @JsonProperty("viewed_at") LocalDateTime viewedAt,
-      @JsonProperty("last_play_seconds") Integer lastPlaySeconds,
-      @JsonProperty("recipe_id") UUID recipeId,
-      @JsonProperty("recipe_title") String recipeTitle,
-      @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
-      @JsonProperty("video_id") String videoId,
-      @JsonProperty("channel_title") String channelTitle,
-      @JsonProperty("description") String description,
-      @JsonProperty("cook_time") Integer cookTime,
-      @JsonProperty("servings") Integer servings,
-      @JsonProperty("created_at") LocalDateTime createdAt,
-      @JsonProperty("video_seconds") Integer videoSeconds,
-      @JsonProperty("tags") List<Tag> tags,
-      @JsonProperty("recipe_status") String recipeStatus,
-      @JsonProperty("credit_cost") Long creditCost) {
-    public static RecentRecipeResponse from(RecipeHistoryOverview info) {
-      return new RecentRecipeResponse(
-          info.getViewedAt(),
-          info.getLastPlaySeconds(),
-          info.getRecipeId(),
-          info.getVideoTitle(),
-          info.getThumbnailUrl(),
-          info.getVideoId(),
-          info.getChannelTitle(),
-          info.getDescription(),
-          info.getCookTime(),
-          info.getServings(),
-          info.getRecipeCreatedAt(),
-          info.getVideoSeconds(),
-          info.getTags() != null ? info.getTags().stream().map(Tag::from).toList() : null,
-          info.getRecipeStatus().name(),
-          info.getCreditCost());
+        @JsonProperty("recent_recipes") List<RecentRecipeResponse> recentRecipes,
+        @JsonProperty("current_page") Integer currentPage,
+        @JsonProperty("total_pages") Integer totalPages,
+        @JsonProperty("total_elements") Long totalElements,
+        @JsonProperty("has_next") boolean hasNext,
+        @JsonProperty("next_cursor") String nextCursor) {
+    @Deprecated(forRemoval = true)
+    public static RecentRecipesResponse from(Page<RecipeHistoryOverview> recentRecipes) {
+        List<RecentRecipeResponse> responses =
+                recentRecipes.stream().map(RecentRecipeResponse::from).toList();
+        return new RecentRecipesResponse(
+                responses,
+                recentRecipes.getNumber(),
+                recentRecipes.getTotalPages(),
+                recentRecipes.getTotalElements(),
+                recentRecipes.hasNext(),
+                null);
     }
 
-    private record Tag(@JsonProperty("name") String name) {
-      public static Tag from(String tag) {
-        return new Tag(tag);
-      }
+    public static RecentRecipesResponse from(CursorPage<RecipeHistoryOverview> recentRecipes) {
+        List<RecentRecipeResponse> responses =
+                recentRecipes.items().stream().map(RecentRecipeResponse::from).toList();
+        return new RecentRecipesResponse(
+                responses, null, null, null, recentRecipes.hasNext(), recentRecipes.nextCursor());
     }
-  }
+
+    public record RecentRecipeResponse(
+            @JsonProperty("viewed_at") LocalDateTime viewedAt,
+            @JsonProperty("last_play_seconds") Integer lastPlaySeconds,
+            @JsonProperty("recipe_id") UUID recipeId,
+            @JsonProperty("recipe_title") String recipeTitle,
+            @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
+            @JsonProperty("video_id") String videoId,
+            @JsonProperty("channel_title") String channelTitle,
+            @JsonProperty("description") String description,
+            @JsonProperty("cook_time") Integer cookTime,
+            @JsonProperty("servings") Integer servings,
+            @JsonProperty("created_at") LocalDateTime createdAt,
+            @JsonProperty("video_seconds") Integer videoSeconds,
+            @JsonProperty("tags") List<Tag> tags,
+            @JsonProperty("recipe_status") String recipeStatus,
+            @JsonProperty("credit_cost") Long creditCost) {
+        public static RecentRecipeResponse from(RecipeHistoryOverview info) {
+            return new RecentRecipeResponse(
+                    info.getViewedAt(),
+                    info.getLastPlaySeconds(),
+                    info.getRecipeId(),
+                    info.getVideoTitle(),
+                    info.getThumbnailUrl(),
+                    info.getVideoId(),
+                    info.getChannelTitle(),
+                    info.getDescription(),
+                    info.getCookTime(),
+                    info.getServings(),
+                    info.getRecipeCreatedAt(),
+                    info.getVideoSeconds(),
+                    info.getTags() != null
+                            ? info.getTags().stream().map(Tag::from).toList()
+                            : null,
+                    info.getRecipeStatus().name(),
+                    info.getCreditCost());
+        }
+
+        private record Tag(@JsonProperty("name") String name) {
+            public static Tag from(String tag) {
+                return new Tag(tag);
+            }
+        }
+    }
 }

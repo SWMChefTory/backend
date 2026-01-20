@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.12] - 2026-01-19
+
+### Changed
+
+- 검색/자동완성/히스토리 API를 scope 기반 시그니처로 정비하고 컨트롤러 엔드포인트를 `/api/v1/search/*`로 통합
+- 검색 리포지토리(OpenSearch)에서 scope/market 필터링 및 정렬 조건 정비
+
+### Fixed
+
+- 검색/자동완성/히스토리 관련 테스트가 최신 scope/커서 동작과 일치하도록 수정
+
+---
+
 ## [1.1.11] - 2026-01-19
 
 ### Added

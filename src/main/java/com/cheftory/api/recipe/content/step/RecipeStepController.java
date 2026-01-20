@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class RecipeStepController {
 
-  public final RecipeStepService recipeStepService;
+    public final RecipeStepService recipeStepService;
 
-  @GetMapping("/{recipeId}/steps")
-  public RecipeStepsResponse getRecipeSteps(@PathVariable @ExistsRecipeId UUID recipeId) {
-    List<RecipeStep> recipesStep = recipeStepService.gets(recipeId);
-    return RecipeStepsResponse.from(recipesStep);
-  }
+    @GetMapping("/{recipeId}/steps")
+    public RecipeStepsResponse getRecipeSteps(@PathVariable @ExistsRecipeId UUID recipeId) {
+        List<RecipeStep> recipesStep = recipeStepService.gets(recipeId);
+        return RecipeStepsResponse.from(recipesStep);
+    }
 }

@@ -6,5 +6,5 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecipeIdentifyRepository extends JpaRepository<RecipeIdentify, UUID> {
-  void deleteByUrl(URI uri);
+    void deleteByUrl(URI uri);
 }
