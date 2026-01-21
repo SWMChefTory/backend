@@ -188,6 +188,7 @@ public class RecipeControllerTest extends RestDocsTest {
                             .getThumbnailUrl();
                     doReturn("sample_video_id").when(recentRecipe).getVideoId();
                     doReturn(120).when(recentRecipe).getVideoSeconds();
+                    doReturn(YoutubeMetaType.NORMAL).when(recentRecipe).getVideoType();
                     doReturn(RecipeStatus.IN_PROGRESS).when(recentRecipe).getRecipeStatus();
                     doReturn(List.of("한식")).when(recentRecipe).getTags();
                     doReturn("레시피 설명").when(recentRecipe).getDescription();
@@ -259,6 +260,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                                     .description("태그 이름"),
                                             fieldWithPath("recent_recipes[].credit_cost")
                                                     .description("레시피 조회에 필요한 크레딧 비용"),
+                                            fieldWithPath("recent_recipes[].video_type")
+                                                    .description("비디오 타입 (NORMAL 또는 SHORTS)"),
                                             fieldWithPath("current_page").description("현재 페이지 번호"),
                                             fieldWithPath("total_pages").description("전체 페이지 수"),
                                             fieldWithPath("total_elements").description("전체 요소 수"),
@@ -291,12 +294,24 @@ public class RecipeControllerTest extends RestDocsTest {
                             .isEqualTo(120);
                     assertThat(responseBody.getInt("recent_recipes[0].video_seconds"))
                             .isEqualTo(120);
+                    assertThat(responseBody.getString("recent_recipes[0].video_type"))
+                            .isEqualTo("normal");
+                    assertThat(responseBody.getString("recent_recipes[0].description"))
+                            .isEqualTo("레시피 설명");
+                    assertThat(responseBody.getInt("recent_recipes[0].cook_time")).isEqualTo(30);
+                    assertThat(responseBody.getInt("recent_recipes[0].servings")).isEqualTo(2);
+                    assertThat(responseBody.getString("recent_recipes[0].created_at"))
+                            .isEqualTo("2024-01-14T10:30:00");
+                    assertThat(responseBody.getList("recent_recipes[0].tags")).hasSize(1);
+                    assertThat(responseBody.getString("recent_recipes[0].tags[0].name"))
+                            .isEqualTo("한식");
                     assertThat(responseBody.getLong("recent_recipes[0].credit_cost"))
                             .isEqualTo(4L);
                     assertThat(responseBody.getString("current_page")).isEqualTo("0");
                     assertThat(responseBody.getString("total_pages")).isEqualTo("1");
                     assertThat(responseBody.getString("total_elements")).isEqualTo("1");
                     assertThat(responseBody.getBoolean("has_next")).isEqualTo(false);
+                    assertThat(responseBody.getString("next_cursor")).isNull();
                     assertThat(responseBody.getString("recent_recipes[0].recipe_status"))
                             .isEqualTo(RecipeStatus.IN_PROGRESS.name());
                 }
@@ -427,6 +442,7 @@ public class RecipeControllerTest extends RestDocsTest {
                             .when(youtubeMeta)
                             .getThumbnailUrl();
                     doReturn(120).when(youtubeMeta).getVideoSeconds();
+                    doReturn(YoutubeMetaType.NORMAL).when(youtubeMeta).getType();
 
                     RecipeIngredient ingredient = mock(RecipeIngredient.class);
                     doReturn("토마토").when(ingredient).getName();
@@ -512,6 +528,8 @@ public class RecipeControllerTest extends RestDocsTest {
                                                     .description("레시피 비디오 썸네일 URL"),
                                             fieldWithPath("video_info.video_seconds")
                                                     .description("레시피 비디오 재생 시간"),
+                                            fieldWithPath("video_info.video_type")
+                                                    .description("비디오 타입 (NORMAL 또는 SHORTS)"),
                                             fieldWithPath("recipe_ingredient").description("레시피 재료 목록"),
                                             fieldWithPath("recipe_ingredient[].name")
                                                     .description("재료 이름"),
@@ -583,6 +601,7 @@ public class RecipeControllerTest extends RestDocsTest {
                     assertThat(responseBody.getString("video_info.video_thumbnail_url"))
                             .isEqualTo("https://example.com/thumbnail.jpg");
                     assertThat(responseBody.getInt("video_info.video_seconds")).isEqualTo(120);
+                    assertThat(responseBody.getString("video_info.video_type")).isEqualTo("normal");
 
                     assertThat(responseBody.getUUID("view_status.id")).isEqualTo(viewStatusId);
                     assertThat(responseBody.getString("view_status.viewed_at")).isEqualTo("2024-01-15T10:30:00");
