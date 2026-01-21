@@ -50,7 +50,8 @@ public record RecentRecipesResponse(
             @JsonProperty("video_seconds") Integer videoSeconds,
             @JsonProperty("tags") List<Tag> tags,
             @JsonProperty("recipe_status") String recipeStatus,
-            @JsonProperty("credit_cost") Long creditCost) {
+            @JsonProperty("credit_cost") Long creditCost,
+            @JsonProperty("video_type") String videoType) {
         public static RecentRecipeResponse from(RecipeHistoryOverview info) {
             return new RecentRecipeResponse(
                     info.getViewedAt(),
@@ -69,7 +70,8 @@ public record RecentRecipesResponse(
                             ? info.getTags().stream().map(Tag::from).toList()
                             : null,
                     info.getRecipeStatus().name(),
-                    info.getCreditCost());
+                    info.getCreditCost(),
+                    info.getVideoType().name().toLowerCase());
         }
 
         private record Tag(@JsonProperty("name") String name) {

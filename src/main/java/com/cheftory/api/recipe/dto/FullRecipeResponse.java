@@ -58,14 +58,16 @@ public record FullRecipeResponse(
             @JsonProperty("video_title") String title,
             @JsonProperty("channel_title") String channelTitle,
             @JsonProperty("video_thumbnail_url") URI thumbnailUrl,
-            @JsonProperty("video_seconds") Integer videoSeconds) {
+            @JsonProperty("video_seconds") Integer videoSeconds,
+            @JsonProperty("video_type") String videoType) {
         public static VideoInfo from(RecipeYoutubeMeta youtubeMeta) {
             return new VideoInfo(
                     youtubeMeta.getVideoId(),
                     youtubeMeta.getTitle(),
                     youtubeMeta.getChannelTitle(),
                     youtubeMeta.getThumbnailUrl(),
-                    youtubeMeta.getVideoSeconds());
+                    youtubeMeta.getVideoSeconds(),
+                    youtubeMeta.getType().name().toLowerCase());
         }
     }
 
