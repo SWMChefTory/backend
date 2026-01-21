@@ -4,6 +4,9 @@ import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.CursorPages;
 import com.cheftory.api._common.cursor.RankCursor;
 import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api.ranking.RankingItemType;
+import com.cheftory.api.ranking.RankingSurfaceType;
+import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
@@ -26,6 +29,7 @@ public class RecipeRankService {
     private final RecipeRankRepository recipeRankRepository;
     private final RankingKeyGenerator rankingKeyGenerator;
     private final RankCursorCodec rankCursorCodec;
+    private final RecipeRankingPort recipeRankingPort;
 
     private static final Integer PAGE_SIZE = 10;
     private static final Duration TTL = Duration.ofDays(2);
@@ -88,5 +92,14 @@ public class RecipeRankService {
 
         return CursorPages.of(
                 rows, limit, lastItem -> rankCursorCodec.encode(new RankCursor(rankingKey, startRank + limit - 1)));
+    }
+
+    public CursorPage<UUID> getCuisineRecipes(UUID userId, RecipeCuisineType type, String cursor) {
+        final int limit = PAGE_SIZE;
+        return recipeRankingPort.recommend(userId, toSurface(type), RankingItemType.RECIPE, cursor, limit);
+    }
+
+    private RankingSurfaceType toSurface(RecipeCuisineType type) {
+        return RankingSurfaceType.valueOf("CUISINE_" + type.name());
     }
 }

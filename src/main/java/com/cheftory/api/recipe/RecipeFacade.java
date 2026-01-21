@@ -304,10 +304,11 @@ public class RecipeFacade {
     }
 
     public CursorPage<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, String cursor) {
-        CursorPage<RecipeInfo> recipesPage = recipeInfoService.getCuisines(type, cursor);
+        CursorPage<UUID> recipeIds = recipeRankService.getCuisineRecipes(userId, type, cursor);
+        List<RecipeInfo> recipes = recipeInfoService.gets(recipeIds.items());
 
-        List<RecipeOverview> items = makeOverviews(recipesPage.items(), userId);
-        return CursorPage.of(items, recipesPage.nextCursor());
+        List<RecipeOverview> items = makeOverviews(recipes, userId);
+        return CursorPage.of(items, recipeIds.nextCursor());
     }
 
     @Deprecated(forRemoval = true)
