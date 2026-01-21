@@ -1,6 +1,7 @@
 package com.cheftory.api.search.query.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,8 +19,15 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SearchQuery {
 
-  @Id private String id;
+    @Id
+    private String id;
 
-  @Field(type = FieldType.Text)
-  private String searchText;
+    @Field(type = FieldType.Text)
+    private String searchText;
+
+    @Field(type = FieldType.Text, name = "channel_title")
+    private String channelTitle;
+
+    @Field(type = FieldType.Keyword, name = "keywords")
+    private List<String> keywords;
 }
