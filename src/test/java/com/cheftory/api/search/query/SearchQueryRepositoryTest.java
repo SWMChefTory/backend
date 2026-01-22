@@ -8,7 +8,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import com.cheftory.api._common.I18nTranslator;
 import com.cheftory.api._common.MarketContextTestExtension;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.search.exception.SearchErrorCode;
