@@ -2,6 +2,7 @@ package com.cheftory.api.recipe;
 
 import com.cheftory.api._common.PocOnly;
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
 import com.cheftory.api.recipe.challenge.RecipeChallengeService;
@@ -89,6 +90,7 @@ public class RecipeFacade {
             List<RecipeBriefing> briefings = recipeBriefingService.gets(recipeId);
             RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
             RecipeHistory history = recipeHistoryService.getWithView(userId, recipeId);
+            recipeRankService.logEvent(userId, recipeId, RankingEventType.VIEW);
 
             return FullRecipe.of(
                     steps, ingredients, detailMeta, progresses, tags, youtubeMeta, history, recipe, briefings);
@@ -304,10 +306,11 @@ public class RecipeFacade {
     }
 
     public CursorPage<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, String cursor) {
-        CursorPage<RecipeInfo> recipesPage = recipeInfoService.getCuisines(type, cursor);
+        CursorPage<UUID> recipeIds = recipeRankService.getCuisineRecipes(userId, type, cursor);
+        List<RecipeInfo> recipes = recipeInfoService.gets(recipeIds.items());
 
-        List<RecipeOverview> items = makeOverviews(recipesPage.items(), userId);
-        return CursorPage.of(items, recipesPage.nextCursor());
+        List<RecipeOverview> items = makeOverviews(recipes, userId);
+        return CursorPage.of(items, recipeIds.nextCursor());
     }
 
     @Deprecated(forRemoval = true)

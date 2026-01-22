@@ -11,6 +11,9 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.RankCursor;
 import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api.ranking.RankingItemType;
+import com.cheftory.api.ranking.RankingSurfaceType;
+import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
@@ -30,6 +33,7 @@ public class RecipeRankServiceTest {
     private RecipeRankRepository recipeRankRepository;
     private RankingKeyGenerator rankingKeyGenerator;
     private RankCursorCodec rankCursorCodec;
+    private RecipeRankingPort recipeRankingPort;
     private RecipeRankService recipeRankService;
 
     @BeforeEach
@@ -37,7 +41,9 @@ public class RecipeRankServiceTest {
         recipeRankRepository = mock(RecipeRankRepository.class);
         rankingKeyGenerator = mock(RankingKeyGenerator.class);
         rankCursorCodec = mock(RankCursorCodec.class);
-        recipeRankService = new RecipeRankService(recipeRankRepository, rankingKeyGenerator, rankCursorCodec);
+        recipeRankingPort = mock(RecipeRankingPort.class);
+        recipeRankService =
+                new RecipeRankService(recipeRankRepository, rankingKeyGenerator, rankCursorCodec, recipeRankingPort);
     }
 
     @Nested
@@ -358,5 +364,23 @@ public class RecipeRankServiceTest {
             assertThat(result.nextCursor()).isNull();
             verify(recipeRankRepository).findRecipeIdsByRank(decoded.rankingKey(), 11, 11);
         }
+    }
+
+    @Test
+    @DisplayName("cuisine 추천은 추천 포트를 호출한다")
+    void shouldRecommendCuisineRecipes() {
+        UUID userId = UUID.randomUUID();
+        String cursor = "cursor";
+        CursorPage<UUID> expected = CursorPage.of(List.of(UUID.randomUUID()), "next-cursor");
+
+        doReturn(expected)
+                .when(recipeRankingPort)
+                .recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, cursor, 10);
+
+        CursorPage<UUID> result = recipeRankService.getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
+
+        assertThat(result).isEqualTo(expected);
+        verify(recipeRankingPort)
+                .recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, cursor, 10);
     }
 }

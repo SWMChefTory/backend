@@ -524,9 +524,10 @@ class RecipeFacadeTest {
             UUID recipeId = UUID.randomUUID();
 
             RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
-            CursorPage<RecipeInfo> recipesPage = CursorPage.of(List.of(recipeInfo), nextCursor);
+            CursorPage<UUID> recipeIds = CursorPage.of(List.of(recipeId), nextCursor);
 
-            doReturn(recipesPage).when(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, cursor);
+            doReturn(recipeIds).when(recipeRankService).getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
+            doReturn(List.of(recipeInfo)).when(recipeInfoService).gets(List.of(recipeId));
 
             doReturn(List.of(mockYoutubeMeta(recipeId)))
                     .when(recipeYoutubeMetaService)
@@ -541,7 +542,8 @@ class RecipeFacadeTest {
 
             assertThat(result.items()).hasSize(1);
             assertThat(result.nextCursor()).isEqualTo(nextCursor);
-            verify(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, cursor);
+            verify(recipeRankService).getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
+            verify(recipeInfoService).gets(List.of(recipeId));
         }
     }
 

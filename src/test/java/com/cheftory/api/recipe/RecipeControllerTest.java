@@ -298,8 +298,10 @@ public class RecipeControllerTest extends RestDocsTest {
                             .isEqualTo("normal");
                     assertThat(responseBody.getString("recent_recipes[0].description"))
                             .isEqualTo("레시피 설명");
-                    assertThat(responseBody.getInt("recent_recipes[0].cook_time")).isEqualTo(30);
-                    assertThat(responseBody.getInt("recent_recipes[0].servings")).isEqualTo(2);
+                    assertThat(responseBody.getInt("recent_recipes[0].cook_time"))
+                            .isEqualTo(30);
+                    assertThat(responseBody.getInt("recent_recipes[0].servings"))
+                            .isEqualTo(2);
                     assertThat(responseBody.getString("recent_recipes[0].created_at"))
                             .isEqualTo("2024-01-14T10:30:00");
                     assertThat(responseBody.getList("recent_recipes[0].tags")).hasSize(1);

@@ -4,6 +4,10 @@ import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.CursorPages;
 import com.cheftory.api._common.cursor.RankCursor;
 import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api.ranking.RankingEventType;
+import com.cheftory.api.ranking.RankingItemType;
+import com.cheftory.api.ranking.RankingSurfaceType;
+import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
@@ -26,6 +30,7 @@ public class RecipeRankService {
     private final RecipeRankRepository recipeRankRepository;
     private final RankingKeyGenerator rankingKeyGenerator;
     private final RankCursorCodec rankCursorCodec;
+    private final RecipeRankingPort recipeRankingPort;
 
     private static final Integer PAGE_SIZE = 10;
     private static final Duration TTL = Duration.ofDays(2);
@@ -88,5 +93,28 @@ public class RecipeRankService {
 
         return CursorPages.of(
                 rows, limit, lastItem -> rankCursorCodec.encode(new RankCursor(rankingKey, startRank + limit - 1)));
+    }
+
+    public CursorPage<UUID> getCuisineRecipes(UUID userId, RecipeCuisineType type, String cursor) {
+        final int limit = PAGE_SIZE;
+        return recipeRankingPort.recommend(userId, toSurface(type), RankingItemType.RECIPE, cursor, limit);
+    }
+
+    public void logEvent(UUID userId, UUID recipeId, RankingEventType eventType) {
+        recipeRankingPort.logEvent(userId, RankingItemType.RECIPE, recipeId, eventType, null);
+    }
+
+    private RankingSurfaceType toSurface(RecipeCuisineType type) {
+        return switch (type) {
+            case KOREAN -> RankingSurfaceType.CUISINE_KOREAN;
+            case SNACK -> RankingSurfaceType.CUISINE_SNACK;
+            case CHINESE -> RankingSurfaceType.CUISINE_CHINESE;
+            case JAPANESE -> RankingSurfaceType.CUISINE_JAPANESE;
+            case WESTERN -> RankingSurfaceType.CUISINE_WESTERN;
+            case DESSERT -> RankingSurfaceType.CUISINE_DESSERT;
+            case HEALTHY -> RankingSurfaceType.CUISINE_HEALTHY;
+            case BABY -> RankingSurfaceType.CUISINE_BABY;
+            case SIMPLE -> RankingSurfaceType.CUISINE_SIMPLE;
+        };
     }
 }
