@@ -93,7 +93,7 @@ class RankingSnapshotServiceTest {
         long start = service.allocateImpressionPositions(requestId, 5);
 
         assertThat(start).isEqualTo(10L);
-        verify(snapshotRepository).expire("pos:key", Duration.ofMinutes(3));
+        verify(snapshotRepository).expire("pos:key", Duration.ofMinutes(30));
     }
 
     @Test

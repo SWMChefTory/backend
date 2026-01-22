@@ -105,6 +105,16 @@ public class RecipeRankService {
     }
 
     private RankingSurfaceType toSurface(RecipeCuisineType type) {
-        return RankingSurfaceType.valueOf("CUISINE_" + type.name());
+        return switch (type) {
+            case KOREAN -> RankingSurfaceType.CUISINE_KOREAN;
+            case SNACK -> RankingSurfaceType.CUISINE_SNACK;
+            case CHINESE -> RankingSurfaceType.CUISINE_CHINESE;
+            case JAPANESE -> RankingSurfaceType.CUISINE_JAPANESE;
+            case WESTERN -> RankingSurfaceType.CUISINE_WESTERN;
+            case DESSERT -> RankingSurfaceType.CUISINE_DESSERT;
+            case HEALTHY -> RankingSurfaceType.CUISINE_HEALTHY;
+            case BABY -> RankingSurfaceType.CUISINE_BABY;
+            case SIMPLE -> RankingSurfaceType.CUISINE_SIMPLE;
+        };
     }
 }

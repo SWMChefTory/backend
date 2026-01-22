@@ -44,7 +44,7 @@ public class RankingSnapshotService {
     public long allocateImpressionPositions(UUID requestId, int count) {
         String key = keyGenerator.impressionPosKey(requestId);
         Long end = snapshotRepository.incrementLong(key, count);
-        snapshotRepository.expire(key, PIT_TTL);
+        snapshotRepository.expire(key, POS_TTL);
         return end - count;
     }
 
