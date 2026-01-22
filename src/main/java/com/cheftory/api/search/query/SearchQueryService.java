@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SearchQueryService {
     private final SearchQueryRepository searchQueryRepository;
     private final ScoreIdCursorCodec scoreIdCursorCodec;
@@ -90,6 +92,11 @@ public class SearchQueryService {
         SearchQueryScope scope = toScope(itemType);
 
         String label = i18nTranslator.translate(surfaceType.messageKey());
+
+        log.info("[CAND] surface={} messageKey={} label='{}' itemType={} size={} pitId={} first={} cursor={}",
+            surfaceType, surfaceType.messageKey(), label, itemType, size, pitId, first, cursor);
+        log.info("[CAND] anchorNowIso='{}'", anchorNowIso);
+        log.info("[CAND] profile keywordsTop={} channelsTop={}", profile.keywordsTop(), profile.channelsTop());
 
         List<Hit<SearchQuery>> rows = first
                 ? searchQueryRepository.searchCandidatesCursorFirst(

@@ -47,7 +47,6 @@ public class SearchQueryRepository {
     private static final String FIELD_CREATED_AT = "created_at";
     private static final String DECAY_SCALE = "7d";
     private static final double DECAY_VALUE = 0.5;
-    private final I18nTranslator i18nTranslator;
 
     private final OpenSearchClient openSearchClient;
 

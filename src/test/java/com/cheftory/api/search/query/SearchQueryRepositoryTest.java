@@ -53,9 +53,6 @@ public class SearchQueryRepositoryTest {
     @Mock
     private OpenSearchClient openSearchClient;
 
-    @Mock
-    private I18nTranslator i18nTranslator;
-
     @InjectMocks
     private SearchQueryRepository searchQueryRepository;
 
