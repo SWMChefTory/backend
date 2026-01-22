@@ -526,9 +526,7 @@ class RecipeFacadeTest {
             RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
             CursorPage<UUID> recipeIds = CursorPage.of(List.of(recipeId), nextCursor);
 
-            doReturn(recipeIds)
-                    .when(recipeRankService)
-                    .getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
+            doReturn(recipeIds).when(recipeRankService).getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
             doReturn(List.of(recipeInfo)).when(recipeInfoService).gets(List.of(recipeId));
 
             doReturn(List.of(mockYoutubeMeta(recipeId)))

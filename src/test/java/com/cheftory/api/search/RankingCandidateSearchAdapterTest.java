@@ -54,8 +54,7 @@ class RankingCandidateSearchAdapterTest {
         SearchPage result = adapter.searchWithPit(surfaceType, itemType, 20, profile, "pit-1", "cursor");
 
         assertThat(result).isEqualTo(expected);
-        verify(searchQueryService)
-                .searchCandidatesWithPit(surfaceType, itemType, 20, profile, "pit-1", "cursor");
+        verify(searchQueryService).searchCandidatesWithPit(surfaceType, itemType, 20, profile, "pit-1", "cursor");
     }
 
     @Test

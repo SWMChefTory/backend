@@ -96,7 +96,7 @@ public class SearchQueryService {
                         scope, label, anchorNowIso, pitId, profile, pageable)
                 : searchQueryRepository.searchCandidatesCursorKeyset(
                         scope,
-                    label,
+                        label,
                         anchorNowIso,
                         pitId,
                         profile,

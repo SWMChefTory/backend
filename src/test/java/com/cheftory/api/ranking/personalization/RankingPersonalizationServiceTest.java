@@ -39,10 +39,9 @@ class RankingPersonalizationServiceTest {
                 .build();
 
         List<UUID> seedIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-        List<String> expectedIds = List.of(seedIds.get(0).toString(), seedIds.get(1).toString());
-        doReturn(List.of(query1, query2, query3))
-                .when(searchPort)
-                .mgetSearchQueries(expectedIds);
+        List<String> expectedIds =
+                List.of(seedIds.get(0).toString(), seedIds.get(1).toString());
+        doReturn(List.of(query1, query2, query3)).when(searchPort).mgetSearchQueries(expectedIds);
 
         PersonalizationProfile result = service.aggregateProfile(seedIds);
 
@@ -57,10 +56,12 @@ class RankingPersonalizationServiceTest {
         RankingPersonalizationSearchPort searchPort = mock(RankingPersonalizationSearchPort.class);
         RankingPersonalizationService service = new RankingPersonalizationService(searchPort);
 
-        SearchQuery query = SearchQuery.builder().id("id-1").channelTitle("channel-a").build();
+        SearchQuery query =
+                SearchQuery.builder().id("id-1").channelTitle("channel-a").build();
         doReturn(List.of(query)).when(searchPort).mgetSearchQueries(anyList());
 
-        assertThatThrownBy(() -> service.aggregateProfile(List.of(UUID.fromString("00000000-0000-0000-0000-000000000001"))))
+        assertThatThrownBy(() ->
+                        service.aggregateProfile(List.of(UUID.fromString("00000000-0000-0000-0000-000000000001"))))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("seedDoc.keywords is null");
     }
@@ -71,10 +72,12 @@ class RankingPersonalizationServiceTest {
         RankingPersonalizationSearchPort searchPort = mock(RankingPersonalizationSearchPort.class);
         RankingPersonalizationService service = new RankingPersonalizationService(searchPort);
 
-        SearchQuery query = SearchQuery.builder().id("id-1").keywords(List.of("kimchi")).build();
+        SearchQuery query =
+                SearchQuery.builder().id("id-1").keywords(List.of("kimchi")).build();
         doReturn(List.of(query)).when(searchPort).mgetSearchQueries(anyList());
 
-        assertThatThrownBy(() -> service.aggregateProfile(List.of(UUID.fromString("00000000-0000-0000-0000-000000000001"))))
+        assertThatThrownBy(() ->
+                        service.aggregateProfile(List.of(UUID.fromString("00000000-0000-0000-0000-000000000001"))))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("seedDoc.channelTitle is null");
     }

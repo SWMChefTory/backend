@@ -50,6 +50,7 @@ class RecipeRankingAdapterTest {
                 adapter.recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "cursor", 10);
 
         assertThat(result).isEqualTo(expected);
-        verify(rankingService).recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "cursor", 10);
+        verify(rankingService)
+                .recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "cursor", 10);
     }
 }

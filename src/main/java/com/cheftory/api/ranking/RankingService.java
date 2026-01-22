@@ -64,8 +64,6 @@ public class RankingService {
 
         boolean hasNext = page.nextCursor() != null && !page.nextCursor().isBlank();
 
-        String nextCursor = hasNext ? rankingCursorCodec.encode(new RankingCursor(requestId, page.nextCursor())) : null;
-
         if (!hasNext) {
             try {
                 rankingCandidateService.closePit(pitId);
@@ -77,13 +75,9 @@ public class RankingService {
             rankingSnapshotService.refreshPit(requestId, surfaceType, itemType);
         }
 
-        return
-            CursorPage.of(
+        return CursorPage.of(
                 page.items(),
-                hasNext
-                    ? rankingCursorCodec.encode(new RankingCursor(requestId, page.nextCursor()))
-                    : null
-            );
+                hasNext ? rankingCursorCodec.encode(new RankingCursor(requestId, page.nextCursor())) : null);
     }
 
     public void event(UUID userId, RankingItemType itemType, UUID itemId, RankingEventType eventType, UUID requestId) {

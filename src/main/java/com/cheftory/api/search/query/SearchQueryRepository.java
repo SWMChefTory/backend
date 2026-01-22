@@ -3,7 +3,6 @@ package com.cheftory.api.search.query;
 import com.cheftory.api._common.I18nTranslator;
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
-import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
@@ -140,7 +139,7 @@ public class SearchQueryRepository {
 
     public List<Hit<SearchQuery>> searchCandidatesCursorKeyset(
             SearchQueryScope scope,
-        String label,
+            String label,
             String anchorNowIso,
             String pitId,
             PersonalizationProfile profile,
@@ -201,7 +200,6 @@ public class SearchQueryRepository {
 
         String scopeValue = scope.name().toLowerCase();
         String marketValue = currentMarketKey();
-
 
         Function<String, FieldValue> fieldValueMapper = value -> FieldValue.of(field -> field.stringValue(value));
 

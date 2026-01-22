@@ -32,7 +32,9 @@ class RankingSnapshotServiceTest {
     @DisplayName("savePit saves PIT with ttl")
     void savePitSavesPitWithTtl() {
         UUID requestId = UUID.randomUUID();
-        doReturn("pit:key").when(keyGenerator).pitKey(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
+        doReturn("pit:key")
+                .when(keyGenerator)
+                .pitKey(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
 
         service.savePit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "pit-1");
 
@@ -43,7 +45,9 @@ class RankingSnapshotServiceTest {
     @DisplayName("getPit returns cached PIT")
     void getPitReturnsCachedPit() {
         UUID requestId = UUID.randomUUID();
-        doReturn("pit:key").when(keyGenerator).pitKey(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
+        doReturn("pit:key")
+                .when(keyGenerator)
+                .pitKey(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
         doReturn("pit-1").when(snapshotRepository).getString("pit:key");
 
         String result = service.getPit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
@@ -55,7 +59,9 @@ class RankingSnapshotServiceTest {
     @DisplayName("refreshPit updates ttl for pit and impression keys")
     void refreshPitUpdatesTtl() {
         UUID requestId = UUID.randomUUID();
-        doReturn("pit:key").when(keyGenerator).pitKey(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
+        doReturn("pit:key")
+                .when(keyGenerator)
+                .pitKey(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
         doReturn("pos:key").when(keyGenerator).impressionPosKey(requestId);
 
         service.refreshPit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
@@ -68,7 +74,9 @@ class RankingSnapshotServiceTest {
     @DisplayName("deletePit removes cached PIT")
     void deletePitRemovesCachedPit() {
         UUID requestId = UUID.randomUUID();
-        doReturn("pit:key").when(keyGenerator).pitKey(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
+        doReturn("pit:key")
+                .when(keyGenerator)
+                .pitKey(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
 
         service.deletePit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
 

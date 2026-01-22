@@ -4,6 +4,7 @@ import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.CursorPages;
 import com.cheftory.api._common.cursor.RankCursor;
 import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
@@ -97,6 +98,10 @@ public class RecipeRankService {
     public CursorPage<UUID> getCuisineRecipes(UUID userId, RecipeCuisineType type, String cursor) {
         final int limit = PAGE_SIZE;
         return recipeRankingPort.recommend(userId, toSurface(type), RankingItemType.RECIPE, cursor, limit);
+    }
+
+    public void logEvent(UUID userId, UUID recipeId, RankingEventType eventType) {
+        recipeRankingPort.logEvent(userId, RankingItemType.RECIPE, recipeId, eventType, null);
     }
 
     private RankingSurfaceType toSurface(RecipeCuisineType type) {

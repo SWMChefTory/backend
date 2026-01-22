@@ -2,7 +2,6 @@ package com.cheftory.api.ranking;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -56,11 +55,16 @@ class RankingServiceTest {
         PersonalizationProfile profile = new PersonalizationProfile(List.of("a"), List.of("b"));
 
         doReturn(requestId).when(rankingSnapshotService).issueRequestId();
-        doReturn(null).when(rankingSnapshotService).getPit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
+        doReturn(null)
+                .when(rankingSnapshotService)
+                .getPit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
         doReturn("pit-1").when(rankingCandidateService).openPit();
-        doReturn(List.of(UUID.randomUUID())).when(rankingInteractionService).getRecentSeeds(userId, RankingItemType.RECIPE, 10);
+        doReturn(List.of(UUID.randomUUID()))
+                .when(rankingInteractionService)
+                .getRecentSeeds(userId, RankingItemType.RECIPE, 10);
         doReturn(profile).when(rankingPersonalizationService).aggregateProfile(any());
-        doReturn(new SearchPage(items, "next")).when(rankingCandidateService)
+        doReturn(new SearchPage(items, "next"))
+                .when(rankingCandidateService)
                 .searchWithPit(RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, 2, profile, "pit-1", null);
         doReturn(0L).when(rankingSnapshotService).allocateImpressionPositions(requestId, items.size());
         doReturn("encoded-next").when(rankingCursorCodec).encode(any(RankingCursor.class));
@@ -70,7 +74,8 @@ class RankingServiceTest {
 
         assertThat(result.items()).isEqualTo(items);
         assertThat(result.nextCursor()).isEqualTo("encoded-next");
-        verify(rankingSnapshotService).savePit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "pit-1");
+        verify(rankingSnapshotService)
+                .savePit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "pit-1");
         verify(rankingSnapshotService).refreshPit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
         verify(rankingCandidateService, never()).closePit(any());
         verify(rankingSnapshotService, never()).deletePit(any(), any(), any());
@@ -87,15 +92,20 @@ class RankingServiceTest {
         PersonalizationProfile profile = new PersonalizationProfile(List.of("a"), List.of("b"));
 
         doReturn(decoded).when(rankingCursorCodec).decode("cursor");
-        doReturn("pit-1").when(rankingSnapshotService).getPit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
-        doReturn(List.of(UUID.randomUUID())).when(rankingInteractionService).getRecentSeeds(userId, RankingItemType.RECIPE, 10);
+        doReturn("pit-1")
+                .when(rankingSnapshotService)
+                .getPit(requestId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE);
+        doReturn(List.of(UUID.randomUUID()))
+                .when(rankingInteractionService)
+                .getRecentSeeds(userId, RankingItemType.RECIPE, 10);
         doReturn(profile).when(rankingPersonalizationService).aggregateProfile(any());
-        doReturn(new SearchPage(items, null)).when(rankingCandidateService)
+        doReturn(new SearchPage(items, null))
+                .when(rankingCandidateService)
                 .searchWithPit(RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, 2, profile, "pit-1", "after");
         doReturn(0L).when(rankingSnapshotService).allocateImpressionPositions(requestId, items.size());
 
-        CursorPage<UUID> result =
-                rankingService.recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "cursor", 2);
+        CursorPage<UUID> result = rankingService.recommend(
+                userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "cursor", 2);
 
         assertThat(result.items()).isEqualTo(items);
         assertThat(result.nextCursor()).isNull();
@@ -115,6 +125,7 @@ class RankingServiceTest {
 
         rankingService.event(userId, RankingItemType.RECIPE, itemId, RankingEventType.VIEW, requestId);
 
-        verify(rankingInteractionService).logEvent(userId, RankingItemType.RECIPE, itemId, RankingEventType.VIEW, requestId);
+        verify(rankingInteractionService)
+                .logEvent(userId, RankingItemType.RECIPE, itemId, RankingEventType.VIEW, requestId);
     }
 }

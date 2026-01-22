@@ -151,8 +151,12 @@ class SearchQueryServiceTest {
         doReturn("anchor-now").when(scoreIdCursorCodec).newAnchorNow();
 
         List<Hit<SearchQuery>> rows = List.of(
-                Hit.of(h -> h.id(id1.toString()).score(2.0).source(SearchQuery.builder().id(id1.toString()).build())),
-                Hit.of(h -> h.id(id2.toString()).score(1.0).source(SearchQuery.builder().id(id2.toString()).build())),
+                Hit.of(h -> h.id(id1.toString())
+                        .score(2.0)
+                        .source(SearchQuery.builder().id(id1.toString()).build())),
+                Hit.of(h -> h.id(id2.toString())
+                        .score(1.0)
+                        .source(SearchQuery.builder().id(id2.toString()).build())),
                 Hit.of(h -> h.id(UUID.randomUUID().toString())
                         .score(0.5)
                         .source(SearchQuery.builder().build())));
@@ -196,8 +200,12 @@ class SearchQueryServiceTest {
         doReturn(decoded).when(scoreIdCursorCodec).decode("cursor");
         doReturn("label").when(i18nTranslator).translate(surfaceType.messageKey());
         List<Hit<SearchQuery>> rows = List.of(
-                Hit.of(h -> h.id(id1.toString()).score(1.0).source(SearchQuery.builder().id(id1.toString()).build())),
-                Hit.of(h -> h.id(id2.toString()).score(0.9).source(SearchQuery.builder().id(id2.toString()).build())),
+                Hit.of(h -> h.id(id1.toString())
+                        .score(1.0)
+                        .source(SearchQuery.builder().id(id1.toString()).build())),
+                Hit.of(h -> h.id(id2.toString())
+                        .score(0.9)
+                        .source(SearchQuery.builder().id(id2.toString()).build())),
                 Hit.of(h -> h.id(UUID.randomUUID().toString())
                         .score(0.8)
                         .source(SearchQuery.builder().build())));

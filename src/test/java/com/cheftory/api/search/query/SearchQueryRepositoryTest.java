@@ -8,14 +8,15 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import com.cheftory.api._common.MarketContextTestExtension;
 import com.cheftory.api._common.I18nTranslator;
+import com.cheftory.api._common.MarketContextTestExtension;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,18 +30,17 @@ import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.core.CreatePitRequest;
 import org.opensearch.client.opensearch.core.CreatePitResponse;
 import org.opensearch.client.opensearch.core.DeletePitRequest;
-import org.opensearch.client.opensearch.core.MgetResponse;
-import java.util.function.Function;
 import org.opensearch.client.opensearch.core.MgetRequest;
+import org.opensearch.client.opensearch.core.MgetResponse;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.get.GetResult;
+import org.opensearch.client.opensearch.core.mget.MultiGetResponseItem;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
 import org.opensearch.client.opensearch.core.search.Pit;
 import org.opensearch.client.opensearch.core.search.TotalHits;
 import org.opensearch.client.opensearch.core.search.TotalHitsRelation;
-import org.opensearch.client.opensearch.core.mget.MultiGetResponseItem;
 import org.opensearch.client.util.ObjectBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -283,12 +283,10 @@ public class SearchQueryRepositoryTest {
             SearchQuery query2 =
                     SearchQuery.builder().id("id-2").searchText("ramen").build();
 
-            MultiGetResponseItem<SearchQuery> item1 = MultiGetResponseItem.of(
-                    b -> b.result(GetResult.getResultOf(
-                            r -> r.index("search_query").id("id-1").found(true).source(query1))));
-            MultiGetResponseItem<SearchQuery> item2 = MultiGetResponseItem.of(
-                    b -> b.result(GetResult.getResultOf(
-                            r -> r.index("search_query").id("id-2").found(true).source(query2))));
+            MultiGetResponseItem<SearchQuery> item1 = MultiGetResponseItem.of(b -> b.result(GetResult.getResultOf(
+                    r -> r.index("search_query").id("id-1").found(true).source(query1))));
+            MultiGetResponseItem<SearchQuery> item2 = MultiGetResponseItem.of(b -> b.result(GetResult.getResultOf(
+                    r -> r.index("search_query").id("id-2").found(true).source(query2))));
 
             MgetResponse<SearchQuery> response = MgetResponse.of(b -> b.docs(List.of(item1, item2)));
             doReturn(response)
