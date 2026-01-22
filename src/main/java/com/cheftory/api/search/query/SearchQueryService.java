@@ -93,8 +93,16 @@ public class SearchQueryService {
 
         String label = i18nTranslator.translate(surfaceType.messageKey());
 
-        log.info("[CAND] surface={} messageKey={} label='{}' itemType={} size={} pitId={} first={} cursor={}",
-            surfaceType, surfaceType.messageKey(), label, itemType, size, pitId, first, cursor);
+        log.info(
+                "[CAND] surface={} messageKey={} label='{}' itemType={} size={} pitId={} first={} cursor={}",
+                surfaceType,
+                surfaceType.messageKey(),
+                label,
+                itemType,
+                size,
+                pitId,
+                first,
+                cursor);
         log.info("[CAND] anchorNowIso='{}'", anchorNowIso);
         log.info("[CAND] profile keywordsTop={} channelsTop={}", profile.keywordsTop(), profile.channelsTop());
 
