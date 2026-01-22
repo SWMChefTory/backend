@@ -71,7 +71,7 @@ public record RecentRecipesResponse(
                             : null,
                     info.getRecipeStatus().name(),
                     info.getCreditCost(),
-                    info.getVideoType().name().toLowerCase());
+                    info.getVideoType().name());
         }
 
         private record Tag(@JsonProperty("name") String name) {
