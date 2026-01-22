@@ -13,15 +13,15 @@ import org.hibernate.annotations.TenantId;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class MarketScope {
 
-  @TenantId
-  @Column(nullable = false, updatable = false, length = 20)
-  private String market;
+    @TenantId
+    @Column(nullable = false, updatable = false, length = 20)
+    private String market;
 
-  @Column(nullable = false, updatable = false, length = 2)
-  private String countryCode;
+    @Column(nullable = false, updatable = false, length = 2)
+    private String countryCode;
 
-  @PrePersist
-  protected void onCreate() {
-    this.countryCode = MarketContext.required().countryCode();
-  }
+    @PrePersist
+    protected void onCreate() {
+        this.countryCode = MarketContext.required().countryCode();
+    }
 }

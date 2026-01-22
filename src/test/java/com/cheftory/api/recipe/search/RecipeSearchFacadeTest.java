@@ -35,69 +35,81 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("RecipeSearchFacade Tests")
 class RecipeSearchFacadeTest {
 
-  @Mock private RecipeSearchPort recipeSearchPort;
-  @Mock private RecipeHistoryService recipeHistoryService;
-  @Mock private RecipeYoutubeMetaService recipeYoutubeMetaService;
-  @Mock private RecipeDetailMetaService recipeDetailMetaService;
-  @Mock private RecipeTagService recipeTagService;
-  @Mock private RecipeInfoService recipeInfoService;
+    @Mock
+    private RecipeSearchPort recipeSearchPort;
 
-  @InjectMocks private RecipeSearchFacade recipeSearchFacade;
+    @Mock
+    private RecipeHistoryService recipeHistoryService;
 
-  @Test
-  @DisplayName("커서 기반 검색 결과를 반환한다")
-  void shouldSearchRecipesWithCursor() {
-    UUID userId = UUID.randomUUID();
-    UUID recipeId = UUID.randomUUID();
-    String cursor = "cursor-1";
-    String nextCursor = "cursor-2";
+    @Mock
+    private RecipeYoutubeMetaService recipeYoutubeMetaService;
 
-    doReturn(CursorPage.of(List.of(recipeId), nextCursor))
-        .when(recipeSearchPort)
-        .searchRecipeIds(userId, "김치찌개", cursor);
+    @Mock
+    private RecipeDetailMetaService recipeDetailMetaService;
 
-    RecipeInfo recipeInfo = mock(RecipeInfo.class);
-    doReturn(recipeId).when(recipeInfo).getId();
-    doReturn(RecipeStatus.SUCCESS).when(recipeInfo).getRecipeStatus();
-    doReturn(100).when(recipeInfo).getViewCount();
-    doReturn(LocalDateTime.now()).when(recipeInfo).getCreatedAt();
-    doReturn(LocalDateTime.now()).when(recipeInfo).getUpdatedAt();
-    doReturn(5L).when(recipeInfo).getCreditCost();
-    doReturn(List.of(recipeInfo)).when(recipeInfoService).gets(anyList());
+    @Mock
+    private RecipeTagService recipeTagService;
 
-    RecipeYoutubeMeta youtubeMeta = mock(RecipeYoutubeMeta.class);
-    doReturn(recipeId).when(youtubeMeta).getRecipeId();
-    doReturn("title").when(youtubeMeta).getTitle();
-    doReturn("channel").when(youtubeMeta).getChannelTitle();
-    doReturn("video").when(youtubeMeta).getVideoId();
-    doReturn(URI.create("https://example.com/video")).when(youtubeMeta).getVideoUri();
-    doReturn(URI.create("https://example.com/thumb")).when(youtubeMeta).getThumbnailUrl();
-    doReturn(120).when(youtubeMeta).getVideoSeconds();
-    doReturn(YoutubeMetaType.NORMAL).when(youtubeMeta).getType();
+    @Mock
+    private RecipeInfoService recipeInfoService;
 
-    RecipeDetailMeta detailMeta = mock(RecipeDetailMeta.class);
-    doReturn(recipeId).when(detailMeta).getRecipeId();
-    doReturn("desc").when(detailMeta).getDescription();
-    doReturn(2).when(detailMeta).getServings();
-    doReturn(30).when(detailMeta).getCookTime();
+    @InjectMocks
+    private RecipeSearchFacade recipeSearchFacade;
 
-    RecipeTag tag = mock(RecipeTag.class);
-    doReturn(recipeId).when(tag).getRecipeId();
-    doReturn("한식").when(tag).getTag();
+    @Test
+    @DisplayName("커서 기반 검색 결과를 반환한다")
+    void shouldSearchRecipesWithCursor() {
+        UUID userId = UUID.randomUUID();
+        UUID recipeId = UUID.randomUUID();
+        String cursor = "cursor-1";
+        String nextCursor = "cursor-2";
 
-    RecipeHistory history = mock(RecipeHistory.class);
-    doReturn(recipeId).when(history).getRecipeId();
+        doReturn(CursorPage.of(List.of(recipeId), nextCursor))
+                .when(recipeSearchPort)
+                .searchRecipeIds(userId, "김치찌개", cursor);
 
-    doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
-    doReturn(List.of(detailMeta)).when(recipeDetailMetaService).getIn(List.of(recipeId));
-    doReturn(List.of(tag)).when(recipeTagService).getIn(List.of(recipeId));
-    doReturn(List.of(history)).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+        RecipeInfo recipeInfo = mock(RecipeInfo.class);
+        doReturn(recipeId).when(recipeInfo).getId();
+        doReturn(RecipeStatus.SUCCESS).when(recipeInfo).getRecipeStatus();
+        doReturn(100).when(recipeInfo).getViewCount();
+        doReturn(LocalDateTime.now()).when(recipeInfo).getCreatedAt();
+        doReturn(LocalDateTime.now()).when(recipeInfo).getUpdatedAt();
+        doReturn(5L).when(recipeInfo).getCreditCost();
+        doReturn(List.of(recipeInfo)).when(recipeInfoService).gets(anyList());
 
-    CursorPage<RecipeOverview> result = recipeSearchFacade.searchRecipes("김치찌개", userId, cursor);
+        RecipeYoutubeMeta youtubeMeta = mock(RecipeYoutubeMeta.class);
+        doReturn(recipeId).when(youtubeMeta).getRecipeId();
+        doReturn("title").when(youtubeMeta).getTitle();
+        doReturn("channel").when(youtubeMeta).getChannelTitle();
+        doReturn("video").when(youtubeMeta).getVideoId();
+        doReturn(URI.create("https://example.com/video")).when(youtubeMeta).getVideoUri();
+        doReturn(URI.create("https://example.com/thumb")).when(youtubeMeta).getThumbnailUrl();
+        doReturn(120).when(youtubeMeta).getVideoSeconds();
+        doReturn(YoutubeMetaType.NORMAL).when(youtubeMeta).getType();
 
-    assertThat(result.items()).hasSize(1);
-    assertThat(result.nextCursor()).isEqualTo(nextCursor);
-    verify(recipeSearchPort).searchRecipeIds(userId, "김치찌개", cursor);
-    verify(recipeInfoService).gets(anyList());
-  }
+        RecipeDetailMeta detailMeta = mock(RecipeDetailMeta.class);
+        doReturn(recipeId).when(detailMeta).getRecipeId();
+        doReturn("desc").when(detailMeta).getDescription();
+        doReturn(2).when(detailMeta).getServings();
+        doReturn(30).when(detailMeta).getCookTime();
+
+        RecipeTag tag = mock(RecipeTag.class);
+        doReturn(recipeId).when(tag).getRecipeId();
+        doReturn("한식").when(tag).getTag();
+
+        RecipeHistory history = mock(RecipeHistory.class);
+        doReturn(recipeId).when(history).getRecipeId();
+
+        doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
+        doReturn(List.of(detailMeta)).when(recipeDetailMetaService).getIn(List.of(recipeId));
+        doReturn(List.of(tag)).when(recipeTagService).getIn(List.of(recipeId));
+        doReturn(List.of(history)).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+
+        CursorPage<RecipeOverview> result = recipeSearchFacade.searchRecipes("김치찌개", userId, cursor);
+
+        assertThat(result.items()).hasSize(1);
+        assertThat(result.nextCursor()).isEqualTo(nextCursor);
+        verify(recipeSearchPort).searchRecipeIds(userId, "김치찌개", cursor);
+        verify(recipeInfoService).gets(anyList());
+    }
 }

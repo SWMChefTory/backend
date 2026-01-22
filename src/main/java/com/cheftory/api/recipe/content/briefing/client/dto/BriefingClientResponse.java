@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 public record BriefingClientResponse(@JsonProperty("briefings") @NotNull List<String> briefings) {
-  public List<RecipeBriefing> toRecipeBriefing(UUID recipeId, Clock clock) {
-    return briefings.stream()
-        .map(briefing -> RecipeBriefing.create(recipeId, briefing, clock))
-        .toList();
-  }
+    public List<RecipeBriefing> toRecipeBriefing(UUID recipeId, Clock clock) {
+        return briefings.stream()
+                .map(briefing -> RecipeBriefing.create(recipeId, briefing, clock))
+                .toList();
+    }
 }

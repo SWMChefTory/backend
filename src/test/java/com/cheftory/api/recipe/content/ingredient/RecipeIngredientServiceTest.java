@@ -20,111 +20,110 @@ import org.mockito.ArgumentCaptor;
 @DisplayName("RecipeIngredientServiceTest")
 public class RecipeIngredientServiceTest {
 
-  private RecipeIngredientService recipeIngredientService;
-  private RecipeIngredientRepository recipeIngredientRepository;
-  private Clock clock;
+    private RecipeIngredientService recipeIngredientService;
+    private RecipeIngredientRepository recipeIngredientRepository;
+    private Clock clock;
 
-  @BeforeEach
-  void setUp() {
-    recipeIngredientRepository = mock(RecipeIngredientRepository.class);
-    clock = mock(Clock.class);
-    recipeIngredientService = new RecipeIngredientService(recipeIngredientRepository, clock);
-  }
-
-  @DisplayName("레시피 재료 생성")
-  @Nested
-  class CreateRecipeIngredient {
-
-    @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-    @Nested
-    class GivenValidParameters {
-
-      private List<Ingredient> ingredients;
-      private UUID recipeId;
-
-      @BeforeEach
-      void setUp() {
-        ingredients =
-            List.of(new Ingredient("Sugar", 100, "grams"), new Ingredient("Flour", 200, "grams"));
-        recipeId = UUID.randomUUID();
-      }
-
-      @DisplayName("When - 레시피 재료를 생성하면")
-      @Nested
-      class WhenCreateRecipeIngredient {
-
-        @BeforeEach
-        void setUp() {
-          recipeIngredientService.create(recipeId, ingredients);
-        }
-
-        @DisplayName("Then - 레시피 재료가 생성된다")
-        @Test
-        void thenRecipeIngredientIsCreated() {
-
-          @SuppressWarnings("unchecked")
-          ArgumentCaptor<Iterable<RecipeIngredient>> captor =
-              ArgumentCaptor.forClass(Iterable.class);
-
-          verify(recipeIngredientRepository).saveAll(captor.capture());
-
-          List<RecipeIngredient> recipeIngredients =
-              StreamSupport.stream(captor.getValue().spliterator(), false).toList();
-
-          assertThat(recipeIngredients).hasSize(2);
-
-          recipeIngredients.forEach(ri -> assertThat(ri.getRecipeId()).isEqualTo(recipeId));
-
-          assertThat(recipeIngredients)
-              .extracting(RecipeIngredient::getName)
-              .containsExactlyInAnyOrder("Sugar", "Flour");
-          assertThat(recipeIngredients)
-              .extracting(RecipeIngredient::getAmount)
-              .containsExactlyInAnyOrder(100, 200);
-          assertThat(recipeIngredients)
-              .extracting(RecipeIngredient::getUnit)
-              .containsExactlyInAnyOrder("grams", "grams");
-        }
-      }
+    @BeforeEach
+    void setUp() {
+        recipeIngredientRepository = mock(RecipeIngredientRepository.class);
+        clock = mock(Clock.class);
+        recipeIngredientService = new RecipeIngredientService(recipeIngredientRepository, clock);
     }
-  }
 
-  @Nested
-  @DisplayName("레시피 ID로 재료 조회")
-  class FindByRecipeId {
+    @DisplayName("레시피 재료 생성")
+    @Nested
+    class CreateRecipeIngredient {
+
+        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
+        @Nested
+        class GivenValidParameters {
+
+            private List<Ingredient> ingredients;
+            private UUID recipeId;
+
+            @BeforeEach
+            void setUp() {
+                ingredients = List.of(new Ingredient("Sugar", 100, "grams"), new Ingredient("Flour", 200, "grams"));
+                recipeId = UUID.randomUUID();
+            }
+
+            @DisplayName("When - 레시피 재료를 생성하면")
+            @Nested
+            class WhenCreateRecipeIngredient {
+
+                @BeforeEach
+                void setUp() {
+                    recipeIngredientService.create(recipeId, ingredients);
+                }
+
+                @DisplayName("Then - 레시피 재료가 생성된다")
+                @Test
+                void thenRecipeIngredientIsCreated() {
+
+                    @SuppressWarnings("unchecked")
+                    ArgumentCaptor<Iterable<RecipeIngredient>> captor = ArgumentCaptor.forClass(Iterable.class);
+
+                    verify(recipeIngredientRepository).saveAll(captor.capture());
+
+                    List<RecipeIngredient> recipeIngredients = StreamSupport.stream(
+                                    captor.getValue().spliterator(), false)
+                            .toList();
+
+                    assertThat(recipeIngredients).hasSize(2);
+
+                    recipeIngredients.forEach(ri -> assertThat(ri.getRecipeId()).isEqualTo(recipeId));
+
+                    assertThat(recipeIngredients)
+                            .extracting(RecipeIngredient::getName)
+                            .containsExactlyInAnyOrder("Sugar", "Flour");
+                    assertThat(recipeIngredients)
+                            .extracting(RecipeIngredient::getAmount)
+                            .containsExactlyInAnyOrder(100, 200);
+                    assertThat(recipeIngredients)
+                            .extracting(RecipeIngredient::getUnit)
+                            .containsExactlyInAnyOrder("grams", "grams");
+                }
+            }
+        }
+    }
 
     @Nested
-    @DisplayName("Given - 존재하는 레시피 ID가 주어졌을 때")
-    class GivenExistingRecipeId {
+    @DisplayName("레시피 ID로 재료 조회")
+    class FindByRecipeId {
 
-      UUID recipeId;
+        @Nested
+        @DisplayName("Given - 존재하는 레시피 ID가 주어졌을 때")
+        class GivenExistingRecipeId {
 
-      @BeforeEach
-      void setUp() {
-        recipeId = UUID.randomUUID();
-      }
+            UUID recipeId;
 
-      @Nested
-      @DisplayName("When - 레시피 ID로 재료를 조회하면")
-      class WhenFindByRecipeId {
-        List<RecipeIngredient> expectedIngredients;
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+            }
 
-        @BeforeEach
-        void setUp() {
-          expectedIngredients = List.of(mock(RecipeIngredient.class), mock(RecipeIngredient.class));
-          doReturn(expectedIngredients)
-              .when(recipeIngredientRepository)
-              .findAllByRecipeId(recipeId);
+            @Nested
+            @DisplayName("When - 레시피 ID로 재료를 조회하면")
+            class WhenFindByRecipeId {
+                List<RecipeIngredient> expectedIngredients;
+
+                @BeforeEach
+                void setUp() {
+                    expectedIngredients = List.of(mock(RecipeIngredient.class), mock(RecipeIngredient.class));
+                    doReturn(expectedIngredients)
+                            .when(recipeIngredientRepository)
+                            .findAllByRecipeId(recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 해당 재료들이 반환된다")
+                void thenIngredientsAreReturned() {
+                    List<RecipeIngredient> result = recipeIngredientService.gets(recipeId);
+                    assertThat(result).isEqualTo(expectedIngredients);
+                    verify(recipeIngredientRepository).findAllByRecipeId(recipeId);
+                }
+            }
         }
-
-        @Test
-        @DisplayName("Then - 해당 재료들이 반환된다")
-        void thenIngredientsAreReturned() {
-          List<RecipeIngredient> result = recipeIngredientService.gets(recipeId);
-          assertThat(result).isEqualTo(expectedIngredients);
-          verify(recipeIngredientRepository).findAllByRecipeId(recipeId);
-        }
-      }
     }
-  }
 }

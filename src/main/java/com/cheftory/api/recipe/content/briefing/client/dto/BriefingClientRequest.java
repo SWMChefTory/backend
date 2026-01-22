@@ -8,10 +8,10 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class BriefingClientRequest {
-  @JsonProperty("video_id")
-  private String videoId;
+    @JsonProperty("video_id")
+    private String videoId;
 
-  public static BriefingClientRequest from(String videoId) {
-    return new BriefingClientRequest(videoId);
-  }
+    public static BriefingClientRequest from(String videoId) {
+        return new BriefingClientRequest(videoId);
+    }
 }

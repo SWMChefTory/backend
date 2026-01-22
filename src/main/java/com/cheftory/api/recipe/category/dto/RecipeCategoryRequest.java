@@ -5,5 +5,5 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record RecipeCategoryRequest() {
-  public record Create(@JsonProperty("name") @NotNull @NotBlank String name) {}
+    public record Create(@JsonProperty("name") @NotNull @NotBlank String name) {}
 }

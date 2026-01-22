@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecipeStepRepository extends JpaRepository<RecipeStep, UUID> {
 
-  List<RecipeStep> findAllByRecipeId(UUID recipeId, Sort sort);
+    List<RecipeStep> findAllByRecipeId(UUID recipeId, Sort sort);
 }

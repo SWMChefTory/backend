@@ -5,7 +5,7 @@ import com.cheftory.api.exception.ErrorMessage;
 
 public class RecipeException extends CheftoryException {
 
-  public RecipeException(ErrorMessage errorCode) {
-    super(errorCode);
-  }
+    public RecipeException(ErrorMessage errorCode) {
+        super(errorCode);
+    }
 }

@@ -17,26 +17,26 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RecipeIngredient extends MarketScope {
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Column(nullable = false)
-  private String name;
+    @Column(nullable = false)
+    private String name;
 
-  @Column(nullable = false)
-  private String unit;
+    @Column(nullable = false)
+    private String unit;
 
-  @Column(nullable = false)
-  private Integer amount;
+    @Column(nullable = false)
+    private Integer amount;
 
-  @Column(nullable = false)
-  private UUID recipeId;
+    @Column(nullable = false)
+    private UUID recipeId;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
-  public static RecipeIngredient create(
-      String name, String unit, Integer amount, UUID recipeId, Clock clock) {
+    public static RecipeIngredient create(String name, String unit, Integer amount, UUID recipeId, Clock clock) {
 
-    return new RecipeIngredient(UUID.randomUUID(), name, unit, amount, recipeId, clock.now());
-  }
+        return new RecipeIngredient(UUID.randomUUID(), name, unit, amount, recipeId, clock.now());
+    }
 }

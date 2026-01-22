@@ -14,18 +14,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping
 public class RecipeSearchController {
 
-  private final RecipeSearchFacade recipeSearchFacade;
+    private final RecipeSearchFacade recipeSearchFacade;
 
-  @GetMapping("/api/v1/recipes/search")
-  public SearchedRecipesResponse searchRecipes(
-      @RequestParam("query") String query,
-      @RequestParam(required = false) @Min(0) Integer page,
-      @RequestParam(required = false) String cursor,
-      @UserPrincipal UUID userId) {
-    if (page != null) {
-      return SearchedRecipesResponse.from(recipeSearchFacade.searchRecipes(page, query, userId));
+    @GetMapping("/api/v1/recipes/search")
+    public SearchedRecipesResponse searchRecipes(
+            @RequestParam("query") String query,
+            @RequestParam(required = false) @Min(0) Integer page,
+            @RequestParam(required = false) String cursor,
+            @UserPrincipal UUID userId) {
+        if (page != null) {
+            return SearchedRecipesResponse.from(recipeSearchFacade.searchRecipes(page, query, userId));
+        }
+
+        return SearchedRecipesResponse.from(recipeSearchFacade.searchRecipes(query, userId, cursor));
     }
-
-    return SearchedRecipesResponse.from(recipeSearchFacade.searchRecipes(query, userId, cursor));
-  }
 }

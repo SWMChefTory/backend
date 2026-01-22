@@ -19,24 +19,25 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RecipeProgress extends MarketScope {
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private RecipeProgressStep step;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RecipeProgressStep step;
 
-  @Column(nullable = false)
-  private RecipeProgressDetail detail;
+    @Column(nullable = false)
+    private RecipeProgressDetail detail;
 
-  @Column(nullable = false)
-  private UUID recipeId;
+    @Column(nullable = false)
+    private UUID recipeId;
 
-  public static RecipeProgress create(
-      UUID recipeId, Clock clock, RecipeProgressStep step, RecipeProgressDetail detail) {
+    public static RecipeProgress create(
+            UUID recipeId, Clock clock, RecipeProgressStep step, RecipeProgressDetail detail) {
 
-    return new RecipeProgress(UUID.randomUUID(), clock.now(), step, detail, recipeId);
-  }
+        return new RecipeProgress(UUID.randomUUID(), clock.now(), step, detail, recipeId);
+    }
 }

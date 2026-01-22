@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RecipeHistoryUnCategorizedCount {
-  private Integer count;
+    private Integer count;
 
-  public static RecipeHistoryUnCategorizedCount of(Integer count) {
-    return new RecipeHistoryUnCategorizedCount(count);
-  }
+    public static RecipeHistoryUnCategorizedCount of(Integer count) {
+        return new RecipeHistoryUnCategorizedCount(count);
+    }
 }

@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AffiliateService {
 
-  private final CoupangClient client;
+    private final CoupangClient client;
 
-  @Cacheable(value = "coupangSearchCache", key = "#keyword")
-  public CoupangProducts searchCoupangProducts(String keyword) {
-    return client.searchProducts(keyword);
-  }
+    @Cacheable(value = "coupangSearchCache", key = "#keyword")
+    public CoupangProducts searchCoupangProducts(String keyword) {
+        return client.searchProducts(keyword);
+    }
 }

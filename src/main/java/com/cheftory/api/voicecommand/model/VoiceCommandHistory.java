@@ -19,51 +19,52 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VoiceCommandHistory {
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private STTModel sttModel;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private STTModel sttModel;
 
-  @Column(nullable = false)
-  private String transcribe;
+    @Column(nullable = false)
+    private String transcribe;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private IntentModel intentModel;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private IntentModel intentModel;
 
-  @Column(nullable = false)
-  private String result;
+    @Column(nullable = false)
+    private String result;
 
-  @Column(nullable = false)
-  private UUID userId;
+    @Column(nullable = false)
+    private UUID userId;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
-  @Column(nullable = false, name = "start_time")
-  private Integer start;
+    @Column(nullable = false, name = "start_time")
+    private Integer start;
 
-  @Column(nullable = false, name = "end_time")
-  private Integer end;
+    @Column(nullable = false, name = "end_time")
+    private Integer end;
 
-  public static VoiceCommandHistory create(
-      String sttModel,
-      String transcribe,
-      String intentModel,
-      String result,
-      UUID userId,
-      Integer start,
-      Integer end) {
-    return new VoiceCommandHistory(
-        UUID.randomUUID(),
-        STTModel.fromValue(sttModel),
-        transcribe,
-        IntentModel.fromValue(intentModel),
-        result,
-        userId,
-        LocalDateTime.now(),
-        start,
-        end);
-  }
+    public static VoiceCommandHistory create(
+            String sttModel,
+            String transcribe,
+            String intentModel,
+            String result,
+            UUID userId,
+            Integer start,
+            Integer end) {
+        return new VoiceCommandHistory(
+                UUID.randomUUID(),
+                STTModel.fromValue(sttModel),
+                transcribe,
+                IntentModel.fromValue(intentModel),
+                result,
+                userId,
+                LocalDateTime.now(),
+                start,
+                end);
+    }
 }

@@ -17,18 +17,19 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RecipeTag extends MarketScope {
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Column(nullable = false)
-  private String tag;
+    @Column(nullable = false)
+    private String tag;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
-  @Column(nullable = false)
-  private UUID recipeId;
+    @Column(nullable = false)
+    private UUID recipeId;
 
-  public static RecipeTag create(String tag, UUID recipeId, Clock clock) {
-    return new RecipeTag(UUID.randomUUID(), tag, clock.now(), recipeId);
-  }
+    public static RecipeTag create(String tag, UUID recipeId, Clock clock) {
+        return new RecipeTag(UUID.randomUUID(), tag, clock.now(), recipeId);
+    }
 }

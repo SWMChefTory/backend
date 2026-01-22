@@ -4,7 +4,7 @@ import com.cheftory.api.recipe.exception.RecipeException;
 
 public class RecipeDetailMetaException extends RecipeException {
 
-  public RecipeDetailMetaException(RecipeDetailMetaErrorCode e) {
-    super(e);
-  }
+    public RecipeDetailMetaException(RecipeDetailMetaErrorCode e) {
+        super(e);
+    }
 }

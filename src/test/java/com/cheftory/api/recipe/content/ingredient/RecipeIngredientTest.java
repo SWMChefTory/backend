@@ -16,55 +16,55 @@ import org.junit.jupiter.api.Test;
 @DisplayName("RecipeIngredientTest")
 public class RecipeIngredientTest {
 
-  @Nested
-  @DisplayName("레시피 재료 생성")
-  class CreateRecipeIngredient {
-
     @Nested
-    @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-    class GivenValidParameters {
+    @DisplayName("레시피 재료 생성")
+    class CreateRecipeIngredient {
 
-      private String name;
-      private String unit;
-      private UUID recipeId;
-      private Clock clock;
-      private Integer amount;
-      private LocalDateTime now;
+        @Nested
+        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
+        class GivenValidParameters {
 
-      @BeforeEach
-      void setUp() {
-        name = "Sugar";
-        unit = "grams";
-        amount = 100;
-        recipeId = UUID.randomUUID();
-        clock = mock(Clock.class);
-        now = LocalDateTime.now();
-        doReturn(now).when(clock).now();
-      }
+            private String name;
+            private String unit;
+            private UUID recipeId;
+            private Clock clock;
+            private Integer amount;
+            private LocalDateTime now;
 
-      @Nested
-      @DisplayName("When - 레시피 재료를 생성하면")
-      class WhenCreateRecipeIngredient {
+            @BeforeEach
+            void setUp() {
+                name = "Sugar";
+                unit = "grams";
+                amount = 100;
+                recipeId = UUID.randomUUID();
+                clock = mock(Clock.class);
+                now = LocalDateTime.now();
+                doReturn(now).when(clock).now();
+            }
 
-        private RecipeIngredient recipeIngredient;
+            @Nested
+            @DisplayName("When - 레시피 재료를 생성하면")
+            class WhenCreateRecipeIngredient {
 
-        @BeforeEach
-        void setUp() {
-          recipeIngredient = RecipeIngredient.create(name, unit, amount, recipeId, clock);
+                private RecipeIngredient recipeIngredient;
+
+                @BeforeEach
+                void setUp() {
+                    recipeIngredient = RecipeIngredient.create(name, unit, amount, recipeId, clock);
+                }
+
+                @DisplayName("Then - 레시피 재료가 생성된다")
+                @Test
+                void thenRecipeIngredientIsCreated() {
+                    assertThat(recipeIngredient).isNotNull();
+                    assertThat(recipeIngredient.getId()).isNotNull();
+                    assertThat(recipeIngredient.getName()).isEqualTo(name);
+                    assertThat(recipeIngredient.getUnit()).isEqualTo(unit);
+                    assertThat(recipeIngredient.getAmount()).isEqualTo(amount);
+                    assertThat(recipeIngredient.getRecipeId()).isEqualTo(recipeId);
+                    assertThat(recipeIngredient.getCreatedAt()).isEqualTo(now);
+                }
+            }
         }
-
-        @DisplayName("Then - 레시피 재료가 생성된다")
-        @Test
-        void thenRecipeIngredientIsCreated() {
-          assertThat(recipeIngredient).isNotNull();
-          assertThat(recipeIngredient.getId()).isNotNull();
-          assertThat(recipeIngredient.getName()).isEqualTo(name);
-          assertThat(recipeIngredient.getUnit()).isEqualTo(unit);
-          assertThat(recipeIngredient.getAmount()).isEqualTo(amount);
-          assertThat(recipeIngredient.getRecipeId()).isEqualTo(recipeId);
-          assertThat(recipeIngredient.getCreatedAt()).isEqualTo(now);
-        }
-      }
     }
-  }
 }

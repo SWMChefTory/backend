@@ -20,59 +20,58 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountFacade {
 
-  private final AuthService authService;
-  private final UserService userService;
-  private final CreditService creditService;
+    private final AuthService authService;
+    private final UserService userService;
+    private final CreditService creditService;
 
-  public Account login(String idToken, Provider provider) {
-    String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
-    User user = userService.getByProviderAndProviderSub(provider, providerSub);
+    public Account login(String idToken, Provider provider) {
+        String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
+        User user = userService.getByProviderAndProviderSub(provider, providerSub);
 
-    UUID id = user.getId();
-    AuthTokens authTokens = authService.createAuthToken(id);
-    authService.saveLoginSession(id, authTokens.refreshToken());
+        UUID id = user.getId();
+        AuthTokens authTokens = authService.createAuthToken(id);
+        authService.saveLoginSession(id, authTokens.refreshToken());
 
-    return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
-  }
+        return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
+    }
 
-  public Account signup(
-      String idToken,
-      Provider provider,
-      String nickname,
-      Gender gender,
-      LocalDate dateOfBirth,
-      boolean isTermsOfUseAgreed,
-      boolean isPrivacyPolicyAgreed,
-      boolean isMarketingAgreed) {
-    String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
-    User user =
-        userService.create(
-            nickname,
-            gender,
-            dateOfBirth,
-            provider,
-            providerSub,
-            isTermsOfUseAgreed,
-            isPrivacyPolicyAgreed,
-            isMarketingAgreed);
+    public Account signup(
+            String idToken,
+            Provider provider,
+            String nickname,
+            Gender gender,
+            LocalDate dateOfBirth,
+            boolean isTermsOfUseAgreed,
+            boolean isPrivacyPolicyAgreed,
+            boolean isMarketingAgreed) {
+        String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
+        User user = userService.create(
+                nickname,
+                gender,
+                dateOfBirth,
+                provider,
+                providerSub,
+                isTermsOfUseAgreed,
+                isPrivacyPolicyAgreed,
+                isMarketingAgreed);
 
-    AuthTokens authTokens = authService.createAuthToken(user.getId());
-    authService.saveLoginSession(user.getId(), authTokens.refreshToken());
+        AuthTokens authTokens = authService.createAuthToken(user.getId());
+        authService.saveLoginSession(user.getId(), authTokens.refreshToken());
 
-    Credit credit = Credit.signupBonus(user.getId());
-    creditService.grant(credit);
+        Credit credit = Credit.signupBonus(user.getId());
+        creditService.grant(credit);
 
-    return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
-  }
+        return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
+    }
 
-  public void logout(String refreshToken) {
-    UUID userId = authService.extractUserIdFromToken(refreshToken);
-    authService.deleteRefreshToken(userId, refreshToken);
-  }
+    public void logout(String refreshToken) {
+        UUID userId = authService.extractUserIdFromToken(refreshToken);
+        authService.deleteRefreshToken(userId, refreshToken);
+    }
 
-  public void delete(String refreshToken) {
-    UUID userId = authService.extractUserIdFromToken(refreshToken);
-    authService.deleteRefreshToken(userId, refreshToken);
-    userService.deleteUser(userId);
-  }
+    public void delete(String refreshToken) {
+        UUID userId = authService.extractUserIdFromToken(refreshToken);
+        authService.deleteRefreshToken(userId, refreshToken);
+        userService.deleteUser(userId);
+    }
 }

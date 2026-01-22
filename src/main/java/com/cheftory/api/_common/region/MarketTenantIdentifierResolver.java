@@ -9,25 +9,25 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @Component
 public class MarketTenantIdentifierResolver implements CurrentTenantIdentifierResolver {
 
-  public static final String BOOTSTRAP_TENANT = "BOOTSTRAP";
+    public static final String BOOTSTRAP_TENANT = "BOOTSTRAP";
 
-  @Override
-  public String resolveCurrentTenantIdentifier() {
-    var info = MarketContext.currentOrNull();
-    if (info != null && info.market() != null) {
-      return info.market().name();
+    @Override
+    public String resolveCurrentTenantIdentifier() {
+        var info = MarketContext.currentOrNull();
+        if (info != null && info.market() != null) {
+            return info.market().name();
+        }
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()
+                || TransactionSynchronizationManager.isActualTransactionActive()) {
+            throw new CheftoryException(GlobalErrorCode.UNKNOWN_REGION);
+        }
+
+        return BOOTSTRAP_TENANT;
     }
 
-    if (TransactionSynchronizationManager.isSynchronizationActive()
-        || TransactionSynchronizationManager.isActualTransactionActive()) {
-      throw new CheftoryException(GlobalErrorCode.UNKNOWN_REGION);
+    @Override
+    public boolean validateExistingCurrentSessions() {
+        return true;
     }
-
-    return BOOTSTRAP_TENANT;
-  }
-
-  @Override
-  public boolean validateExistingCurrentSessions() {
-    return true;
-  }
 }

@@ -19,52 +19,45 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
-    log.error(ex.getMessage(), ex);
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of(GlobalErrorCode.UNKNOWN_ERROR));
-  }
-
-  @ExceptionHandler(CheftoryException.class)
-  public ResponseEntity<ErrorResponse> handleCheftoryException(CheftoryException ex) {
-    if (ex instanceof AuthException && ex.getErrorMessage() == AuthErrorCode.INVALID_TOKEN) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(ex));
-    } else {
-      log.error(ex.getErrorMessage().getMessage(), ex);
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(GlobalErrorCode.UNKNOWN_ERROR));
     }
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(ex));
-  }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ErrorResponse> handleValidationException(
-      MethodArgumentNotValidException ex) {
-    log.error(ex.getMessage(), ex);
-    String codeName =
-        Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage();
-    ErrorMessage errorMessage = resolveErrorCode(codeName);
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(errorMessage));
-  }
+    @ExceptionHandler(CheftoryException.class)
+    public ResponseEntity<ErrorResponse> handleCheftoryException(CheftoryException ex) {
+        if (ex instanceof AuthException && ex.getErrorMessage() == AuthErrorCode.INVALID_TOKEN) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(ex));
+        } else {
+            log.error(ex.getErrorMessage().getMessage(), ex);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(ex));
+    }
 
-  @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity<ErrorResponse> handleConstraintViolationException(
-      ConstraintViolationException ex) {
-    log.error(ex.getMessage(), ex);
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of(GlobalErrorCode.FIELD_REQUIRED));
-  }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        log.error(ex.getMessage(), ex);
+        String codeName =
+                Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage();
+        ErrorMessage errorMessage = resolveErrorCode(codeName);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(errorMessage));
+    }
 
-  @ExceptionHandler(MissingRequestHeaderException.class)
-  public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(
-      MissingRequestHeaderException ex) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of(GlobalErrorCode.MISSING_HEADER));
-  }
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(GlobalErrorCode.FIELD_REQUIRED));
+    }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleException(Exception ex) {
-    log.error(ex.getMessage(), ex);
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of(GlobalErrorCode.UNKNOWN_ERROR));
-  }
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(MissingRequestHeaderException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(GlobalErrorCode.MISSING_HEADER));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(GlobalErrorCode.UNKNOWN_ERROR));
+    }
 }

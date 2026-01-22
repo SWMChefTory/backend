@@ -28,54 +28,54 @@ import org.springframework.web.reactive.function.client.WebClient;
 @DisplayName("VideoInfoClient")
 public class VideoInfoClientTest {
 
-  private MockWebServer mockWebServer;
-  private VideoInfoClient videoInfoClient;
-  private static final String YOUTUBE_API_DEFAULT_KEY = "test-api-default-key";
-  private static final String YOUTUBE_API_BLOCK_CHECK_KEY = "test-api-block-check-key";
+    private MockWebServer mockWebServer;
+    private VideoInfoClient videoInfoClient;
+    private static final String YOUTUBE_API_DEFAULT_KEY = "test-api-default-key";
+    private static final String YOUTUBE_API_BLOCK_CHECK_KEY = "test-api-block-check-key";
 
-  @BeforeEach
-  void setUp() throws IOException {
-    mockWebServer = new MockWebServer();
-    mockWebServer.start();
+    @BeforeEach
+    void setUp() throws IOException {
+        mockWebServer = new MockWebServer();
+        mockWebServer.start();
 
-    WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+        WebClient webClient =
+                WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 
-    videoInfoClient = new VideoInfoClient(webClient);
-    ReflectionTestUtils.setField(videoInfoClient, "youtubeDefaultKey", YOUTUBE_API_DEFAULT_KEY);
-    ReflectionTestUtils.setField(
-        videoInfoClient, "youtubeBlockCheckKey", YOUTUBE_API_BLOCK_CHECK_KEY);
-  }
+        videoInfoClient = new VideoInfoClient(webClient);
+        ReflectionTestUtils.setField(videoInfoClient, "youtubeDefaultKey", YOUTUBE_API_DEFAULT_KEY);
+        ReflectionTestUtils.setField(videoInfoClient, "youtubeBlockCheckKey", YOUTUBE_API_BLOCK_CHECK_KEY);
+    }
 
-  @AfterEach
-  void tearDown() throws IOException {
-    mockWebServer.shutdown();
-  }
+    @AfterEach
+    void tearDown() throws IOException {
+        mockWebServer.shutdown();
+    }
 
-  @DisplayName("비디오 정보 조회")
-  @Nested
-  class FetchVideoInfo {
-
+    @DisplayName("비디오 정보 조회")
     @Nested
-    @DisplayName("Given - 유효한 YouTube URL이 주어졌을 때")
-    class GivenValidYoutubeUrl {
+    class FetchVideoInfo {
 
-      private YoutubeUri youtubeUri;
-      private String videoId;
+        @Nested
+        @DisplayName("Given - 유효한 YouTube URL이 주어졌을 때")
+        class GivenValidYoutubeUrl {
 
-      @BeforeEach
-      void setUp() {
-        videoId = "dQw4w9WgXcQ";
-        youtubeUri = mock(YoutubeUri.class);
-      }
+            private YoutubeUri youtubeUri;
+            private String videoId;
 
-      @Nested
-      @DisplayName("When - YouTube API가 성공 응답을 반환하면")
-      class WhenYoutubeApiReturnsSuccess {
+            @BeforeEach
+            void setUp() {
+                videoId = "dQw4w9WgXcQ";
+                youtubeUri = mock(YoutubeUri.class);
+            }
 
-        @BeforeEach
-        void setUp() {
-          String responseBody =
-              """
+            @Nested
+            @DisplayName("When - YouTube API가 성공 응답을 반환하면")
+            class WhenYoutubeApiReturnsSuccess {
+
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
               {
                 "items": [
                   {
@@ -116,83 +116,81 @@ public class VideoInfoClientTest {
               }
               """;
 
-          mockWebServer.enqueue(
-              new MockResponse()
-                  .setResponseCode(200)
-                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody(responseBody));
+                    mockWebServer.enqueue(new MockResponse()
+                            .setResponseCode(200)
+                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .setBody(responseBody));
 
-          doReturn(videoId).when(youtubeUri).getVideoId();
-          doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
-              .when(youtubeUri)
-              .getNormalizedUrl();
-        }
+                    doReturn(videoId).when(youtubeUri).getVideoId();
+                    doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
+                            .when(youtubeUri)
+                            .getNormalizedUrl();
+                }
 
-        @Test
-        @DisplayName("Then - 비디오 정보가 정상적으로 반환되고 channelId가 없으면 NORMAL 타입이다")
-        void thenReturnsYoutubeVideoInfoAsNormal() throws InterruptedException {
-          YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+                @Test
+                @DisplayName("Then - 비디오 정보가 정상적으로 반환되고 channelId가 없으면 NORMAL 타입이다")
+                void thenReturnsYoutubeVideoInfoAsNormal() throws InterruptedException {
+                    YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-          assertThat(result).isNotNull();
-          assertThat(result.getVideoUri()).isEqualTo(youtubeUri.getNormalizedUrl());
-          assertThat(result.getTitle()).isEqualTo("맛있는 김치찌개 만들기");
-          assertThat(result.getChannelTitle()).isEqualTo("맛있는 집밥 채널");
-          assertThat(result.getThumbnailUrl())
-              .isEqualTo(URI.create("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"));
-          assertThat(result.getVideoSeconds()).isEqualTo(630);
-          assertThat(result.getVideoId()).isEqualTo(videoId);
-          assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
+                    assertThat(result).isNotNull();
+                    assertThat(result.getVideoUri()).isEqualTo(youtubeUri.getNormalizedUrl());
+                    assertThat(result.getTitle()).isEqualTo("맛있는 김치찌개 만들기");
+                    assertThat(result.getChannelTitle()).isEqualTo("맛있는 집밥 채널");
+                    assertThat(result.getThumbnailUrl())
+                            .isEqualTo(URI.create("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"));
+                    assertThat(result.getVideoSeconds()).isEqualTo(630);
+                    assertThat(result.getVideoId()).isEqualTo(videoId);
+                    assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
 
-          RecordedRequest recordedRequest = mockWebServer.takeRequest();
-          assertThat(recordedRequest.getMethod()).isEqualTo("GET");
-          assertThat(recordedRequest.getPath())
-              .contains("/videos")
-              .contains("id=" + videoId)
-              .contains("key=" + YOUTUBE_API_DEFAULT_KEY)
-              .contains("part=snippet,contentDetails,status");
-        }
-      }
+                    RecordedRequest recordedRequest = mockWebServer.takeRequest();
+                    assertThat(recordedRequest.getMethod()).isEqualTo("GET");
+                    assertThat(recordedRequest.getPath())
+                            .contains("/videos")
+                            .contains("id=" + videoId)
+                            .contains("key=" + YOUTUBE_API_DEFAULT_KEY)
+                            .contains("part=snippet,contentDetails,status");
+                }
+            }
 
-      @Nested
-      @DisplayName("When - YouTube API가 빈 items를 반환하면")
-      class WhenYoutubeApiReturnsEmptyItems {
+            @Nested
+            @DisplayName("When - YouTube API가 빈 items를 반환하면")
+            class WhenYoutubeApiReturnsEmptyItems {
 
-        @BeforeEach
-        void setUp() {
-          String responseBody =
-              """
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
               {
                 "items": []
               }
               """;
 
-          mockWebServer.enqueue(
-              new MockResponse()
-                  .setResponseCode(200)
-                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody(responseBody));
+                    mockWebServer.enqueue(new MockResponse()
+                            .setResponseCode(200)
+                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .setBody(responseBody));
 
-          doReturn(videoId).when(youtubeUri).getVideoId();
-        }
+                    doReturn(videoId).when(youtubeUri).getVideoId();
+                }
 
-        @Test
-        @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_FOUND)을 던진다")
-        void thenThrowsYoutubeMetaException() {
-          assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
-              .isInstanceOf(YoutubeMetaException.class)
-              .hasFieldOrPropertyWithValue(
-                  "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
-        }
-      }
+                @Test
+                @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_FOUND)을 던진다")
+                void thenThrowsYoutubeMetaException() {
+                    assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
+                            .isInstanceOf(YoutubeMetaException.class)
+                            .hasFieldOrPropertyWithValue(
+                                    "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
+                }
+            }
 
-      @Nested
-      @DisplayName("When - YouTube API가 duration 없이 응답하면")
-      class WhenYoutubeApiReturnsWithoutDuration {
+            @Nested
+            @DisplayName("When - YouTube API가 duration 없이 응답하면")
+            class WhenYoutubeApiReturnsWithoutDuration {
 
-        @BeforeEach
-        void setUp() {
-          String responseBody =
-              """
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
               {
                 "items": [
                   {
@@ -213,33 +211,32 @@ public class VideoInfoClientTest {
               }
               """;
 
-          mockWebServer.enqueue(
-              new MockResponse()
-                  .setResponseCode(200)
-                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody(responseBody));
+                    mockWebServer.enqueue(new MockResponse()
+                            .setResponseCode(200)
+                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .setBody(responseBody));
 
-          doReturn(videoId).when(youtubeUri).getVideoId();
-        }
+                    doReturn(videoId).when(youtubeUri).getVideoId();
+                }
 
-        @Test
-        @DisplayName("Then - YoutubeMetaException(DURATION_NOT_FOUND)을 던진다")
-        void thenThrowsYoutubeMetaException() {
-          assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
-              .isInstanceOf(YoutubeMetaException.class)
-              .hasFieldOrPropertyWithValue(
-                  "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
-        }
-      }
+                @Test
+                @DisplayName("Then - YoutubeMetaException(DURATION_NOT_FOUND)을 던진다")
+                void thenThrowsYoutubeMetaException() {
+                    assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
+                            .isInstanceOf(YoutubeMetaException.class)
+                            .hasFieldOrPropertyWithValue(
+                                    "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
+                }
+            }
 
-      @Nested
-      @DisplayName("When - YouTube API가 embeddable false로 응답하면")
-      class WhenYoutubeApiReturnsNotEmbeddable {
+            @Nested
+            @DisplayName("When - YouTube API가 embeddable false로 응답하면")
+            class WhenYoutubeApiReturnsNotEmbeddable {
 
-        @BeforeEach
-        void setUp() {
-          String responseBody =
-              """
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
               {
                 "items": [
                   {
@@ -262,66 +259,63 @@ public class VideoInfoClientTest {
               }
               """;
 
-          mockWebServer.enqueue(
-              new MockResponse()
-                  .setResponseCode(200)
-                  .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                  .setBody(responseBody));
+                    mockWebServer.enqueue(new MockResponse()
+                            .setResponseCode(200)
+                            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .setBody(responseBody));
 
-          doReturn(videoId).when(youtubeUri).getVideoId();
+                    doReturn(videoId).when(youtubeUri).getVideoId();
+                }
+
+                @Test
+                @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_EMBEDDABLE)을 던진다")
+                void thenThrowsYoutubeMetaException() {
+                    assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
+                            .isInstanceOf(YoutubeMetaException.class)
+                            .hasFieldOrPropertyWithValue(
+                                    "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
+                }
+            }
+        }
+    }
+
+    @DisplayName("비디오 차단 여부 확인")
+    @Nested
+    class IsBlockedVideo {
+
+        private YoutubeUri youtubeUri;
+        private String videoId;
+
+        @BeforeEach
+        void setUp() {
+            videoId = "abcd1234";
+            youtubeUri = mock(YoutubeUri.class);
+            doReturn(videoId).when(youtubeUri).getVideoId();
         }
 
         @Test
-        @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_EMBEDDABLE)을 던진다")
-        void thenThrowsYoutubeMetaException() {
-          assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
-              .isInstanceOf(YoutubeMetaException.class)
-              .hasFieldOrPropertyWithValue(
-                  "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
-        }
-      }
-    }
-  }
-
-  @DisplayName("비디오 차단 여부 확인")
-  @Nested
-  class IsBlockedVideo {
-
-    private YoutubeUri youtubeUri;
-    private String videoId;
-
-    @BeforeEach
-    void setUp() {
-      videoId = "abcd1234";
-      youtubeUri = mock(YoutubeUri.class);
-      doReturn(videoId).when(youtubeUri).getVideoId();
-    }
-
-    @Test
-    @DisplayName("items가 비어있으면 true (차단됨)")
-    void returnsTrueWhenItemsEmpty() {
-      String responseBody =
-          """
+        @DisplayName("items가 비어있으면 true (차단됨)")
+        void returnsTrueWhenItemsEmpty() {
+            String responseBody = """
           {
             "items": []
           }
           """;
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(responseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(responseBody));
 
-      Boolean result = videoInfoClient.isBlockedVideo(youtubeUri);
-      assertThat(result).isTrue();
-    }
+            Boolean result = videoInfoClient.isBlockedVideo(youtubeUri);
+            assertThat(result).isTrue();
+        }
 
-    @Test
-    @DisplayName("items가 존재하면 false (차단 아님)")
-    void returnsFalseWhenItemsPresent() {
-      String responseBody =
-          """
+        @Test
+        @DisplayName("items가 존재하면 false (차단 아님)")
+        void returnsFalseWhenItemsPresent() {
+            String responseBody =
+                    """
           {
             "items": [
               {
@@ -333,41 +327,40 @@ public class VideoInfoClientTest {
           }
           """;
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(responseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(responseBody));
 
-      Boolean result = videoInfoClient.isBlockedVideo(youtubeUri);
-      assertThat(result).isFalse();
-    }
-  }
-
-  @DisplayName("Shorts 비디오 타입 감지")
-  @Nested
-  class DetectShortsVideoType {
-
-    private YoutubeUri youtubeUri;
-    private String videoId;
-    private String channelId;
-
-    @BeforeEach
-    void setUp() {
-      videoId = "shortVideo123";
-      channelId = "UCabcdefg12345";
-      youtubeUri = mock(YoutubeUri.class);
-      doReturn(videoId).when(youtubeUri).getVideoId();
-      doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
-          .when(youtubeUri)
-          .getNormalizedUrl();
+            Boolean result = videoInfoClient.isBlockedVideo(youtubeUri);
+            assertThat(result).isFalse();
+        }
     }
 
-    @Test
-    @DisplayName("Shorts 플레이리스트에 존재하는 비디오는 SHORTS 타입으로 반환한다")
-    void returnsShortsTypeWhenVideoInShortsPlaylist() throws InterruptedException {
-      String videoResponseBody =
-          """
+    @DisplayName("Shorts 비디오 타입 감지")
+    @Nested
+    class DetectShortsVideoType {
+
+        private YoutubeUri youtubeUri;
+        private String videoId;
+        private String channelId;
+
+        @BeforeEach
+        void setUp() {
+            videoId = "shortVideo123";
+            channelId = "UCabcdefg12345";
+            youtubeUri = mock(YoutubeUri.class);
+            doReturn(videoId).when(youtubeUri).getVideoId();
+            doReturn(URI.create("https://www.youtube.com/watch?v=" + videoId))
+                    .when(youtubeUri)
+                    .getNormalizedUrl();
+        }
+
+        @Test
+        @DisplayName("Shorts 플레이리스트에 존재하는 비디오는 SHORTS 타입으로 반환한다")
+        void returnsShortsTypeWhenVideoInShortsPlaylist() throws InterruptedException {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -390,10 +383,10 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(channelId, videoId);
+                            .formatted(channelId, videoId);
 
-      String playlistResponseBody =
-          """
+            String playlistResponseBody =
+                    """
           {
             "items": [
               {
@@ -404,41 +397,39 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(videoId);
+                            .formatted(videoId);
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(playlistResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(playlistResponseBody));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
 
-      // API 호출 검증
-      RecordedRequest videoRequest = mockWebServer.takeRequest();
-      assertThat(videoRequest.getPath()).contains("/videos");
+            // API 호출 검증
+            RecordedRequest videoRequest = mockWebServer.takeRequest();
+            assertThat(videoRequest.getPath()).contains("/videos");
 
-      RecordedRequest playlistRequest = mockWebServer.takeRequest();
-      assertThat(playlistRequest.getPath())
-          .contains("/playlistItems")
-          .contains("playlistId=UUSH" + channelId.substring(2))
-          .contains("videoId=" + videoId);
-    }
+            RecordedRequest playlistRequest = mockWebServer.takeRequest();
+            assertThat(playlistRequest.getPath())
+                    .contains("/playlistItems")
+                    .contains("playlistId=UUSH" + channelId.substring(2))
+                    .contains("videoId=" + videoId);
+        }
 
-    @Test
-    @DisplayName("Shorts 플레이리스트에 없고 60초를 초과하는 비디오는 NORMAL 타입으로 반환한다")
-    void returnsNormalTypeWhenVideoNotInShortsPlaylistAndOverSixtySeconds() {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("Shorts 플레이리스트에 없고 60초를 초과하는 비디오는 NORMAL 타입으로 반환한다")
+        void returnsNormalTypeWhenVideoNotInShortsPlaylistAndOverSixtySeconds() {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -461,38 +452,35 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(channelId, videoId);
+                            .formatted(channelId, videoId);
 
-      String emptyPlaylistResponseBody =
-          """
+            String emptyPlaylistResponseBody = """
           {
             "items": []
           }
           """;
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(emptyPlaylistResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(emptyPlaylistResponseBody));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
-    }
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
+        }
 
-    @Test
-    @DisplayName("channelId가 UC로 시작하지 않으면 NORMAL 타입으로 반환한다")
-    void returnsNormalTypeWhenChannelIdNotStartsWithUC() {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("channelId가 UC로 시작하지 않으면 NORMAL 타입으로 반환한다")
+        void returnsNormalTypeWhenChannelIdNotStartsWithUC() {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -515,25 +503,24 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(videoId);
+                            .formatted(videoId);
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
-    }
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
+        }
 
-    @Test
-    @DisplayName("플레이리스트 조회 실패 시 예외를 로그하고 NORMAL 타입으로 반환한다 (5분 영상)")
-    void returnsNormalTypeWhenPlaylistCheckFailsAndOverSixtySeconds() throws InterruptedException {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("플레이리스트 조회 실패 시 예외를 로그하고 NORMAL 타입으로 반환한다 (5분 영상)")
+        void returnsNormalTypeWhenPlaylistCheckFailsAndOverSixtySeconds() throws InterruptedException {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -556,32 +543,31 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(channelId, videoId);
+                            .formatted(channelId, videoId);
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      mockWebServer.enqueue(new MockResponse().setResponseCode(500));
+            mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
 
-      // 플레이리스트 조회도 시도했는지 확인
-      mockWebServer.takeRequest(); // video request
-      RecordedRequest playlistRequest = mockWebServer.takeRequest();
-      assertThat(playlistRequest.getPath()).contains("/playlistItems");
-    }
+            // 플레이리스트 조회도 시도했는지 확인
+            mockWebServer.takeRequest(); // video request
+            RecordedRequest playlistRequest = mockWebServer.takeRequest();
+            assertThat(playlistRequest.getPath()).contains("/playlistItems");
+        }
 
-    @Test
-    @DisplayName("channelId가 null이고 60초를 초과하면 NORMAL 타입으로 반환한다")
-    void returnsNormalTypeWhenChannelIdIsNullAndOverSixtySeconds() {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("channelId가 null이고 60초를 초과하면 NORMAL 타입으로 반환한다")
+        void returnsNormalTypeWhenChannelIdIsNullAndOverSixtySeconds() {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -603,25 +589,24 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(videoId);
+                            .formatted(videoId);
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
-    }
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
+        }
 
-    @Test
-    @DisplayName("Shorts 플레이리스트에 없지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-    void returnsShortsTypeWhenNotInPlaylistButUnderSixtySeconds() {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("Shorts 플레이리스트에 없지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
+        void returnsShortsTypeWhenNotInPlaylistButUnderSixtySeconds() {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -644,38 +629,35 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(channelId, videoId);
+                            .formatted(channelId, videoId);
 
-      String emptyPlaylistResponseBody =
-          """
+            String emptyPlaylistResponseBody = """
           {
             "items": []
           }
           """;
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(emptyPlaylistResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(emptyPlaylistResponseBody));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
-    }
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+        }
 
-    @Test
-    @DisplayName("플레이리스트 조회 실패했지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-    void returnsShortsTypeWhenPlaylistCheckFailsButUnderSixtySeconds() throws InterruptedException {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("플레이리스트 조회 실패했지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
+        void returnsShortsTypeWhenPlaylistCheckFailsButUnderSixtySeconds() throws InterruptedException {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -698,32 +680,31 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(channelId, videoId);
+                            .formatted(channelId, videoId);
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      mockWebServer.enqueue(new MockResponse().setResponseCode(500));
+            mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
 
-      // 플레이리스트 조회도 시도했는지 확인
-      mockWebServer.takeRequest(); // video request
-      RecordedRequest playlistRequest = mockWebServer.takeRequest();
-      assertThat(playlistRequest.getPath()).contains("/playlistItems");
-    }
+            // 플레이리스트 조회도 시도했는지 확인
+            mockWebServer.takeRequest(); // video request
+            RecordedRequest playlistRequest = mockWebServer.takeRequest();
+            assertThat(playlistRequest.getPath()).contains("/playlistItems");
+        }
 
-    @Test
-    @DisplayName("60초 정확히인 경우 SHORTS 타입으로 반환한다 (경계값)")
-    void returnsShortsTypeWhenExactlySixtySeconds() {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("60초 정확히인 경우 SHORTS 타입으로 반환한다 (경계값)")
+        void returnsShortsTypeWhenExactlySixtySeconds() {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -746,38 +727,35 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(channelId, videoId);
+                            .formatted(channelId, videoId);
 
-      String emptyPlaylistResponseBody =
-          """
+            String emptyPlaylistResponseBody = """
           {
             "items": []
           }
           """;
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(emptyPlaylistResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(emptyPlaylistResponseBody));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
-    }
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+        }
 
-    @Test
-    @DisplayName("channelId가 null이고 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-    void returnsShortsTypeWhenChannelIdIsNullButUnderSixtySeconds() {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("channelId가 null이고 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
+        void returnsShortsTypeWhenChannelIdIsNullButUnderSixtySeconds() {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -799,25 +777,24 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(videoId);
+                            .formatted(videoId);
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
-    }
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+        }
 
-    @Test
-    @DisplayName("channelId가 UC로 시작하지 않지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-    void returnsShortsTypeWhenChannelIdNotStartsWithUCButUnderSixtySeconds() {
-      String videoResponseBody =
-          """
+        @Test
+        @DisplayName("channelId가 UC로 시작하지 않지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
+        void returnsShortsTypeWhenChannelIdNotStartsWithUCButUnderSixtySeconds() {
+            String videoResponseBody =
+                    """
           {
             "items": [
               {
@@ -840,18 +817,17 @@ public class VideoInfoClientTest {
             ]
           }
           """
-              .formatted(videoId);
+                            .formatted(videoId);
 
-      mockWebServer.enqueue(
-          new MockResponse()
-              .setResponseCode(200)
-              .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .setBody(videoResponseBody));
+            mockWebServer.enqueue(new MockResponse()
+                    .setResponseCode(200)
+                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .setBody(videoResponseBody));
 
-      YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
+            YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
-      assertThat(result).isNotNull();
-      assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+            assertThat(result).isNotNull();
+            assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+        }
     }
-  }
 }

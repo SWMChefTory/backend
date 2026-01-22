@@ -11,10 +11,10 @@ import lombok.Getter;
 @PocOnly(until = "2025-12-31")
 public class RecipeCompleteChallenge {
 
-  private UUID recipeId;
-  private boolean isFinished;
+    private UUID recipeId;
+    private boolean isFinished;
 
-  public static RecipeCompleteChallenge of(UUID recipeId, boolean isFinished) {
-    return new RecipeCompleteChallenge(recipeId, isFinished);
-  }
+    public static RecipeCompleteChallenge of(UUID recipeId, boolean isFinished) {
+        return new RecipeCompleteChallenge(recipeId, isFinished);
+    }
 }

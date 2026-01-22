@@ -4,7 +4,7 @@ import com.cheftory.api.recipe.exception.RecipeException;
 
 public class CoupangException extends RecipeException {
 
-  public CoupangException(CoupangErrorCode e) {
-    super(e);
-  }
+    public CoupangException(CoupangErrorCode e) {
+        super(e);
+    }
 }

@@ -6,48 +6,51 @@ import java.util.List;
 
 public record YoutubeVideoResponse(List<Item> items) {
 
-  public String getThumbnailUri() {
-    return items.getFirst().snippet().thumbnails().maxres().url();
-  }
-
-  public String getTitle() {
-    return items.getFirst().snippet().title();
-  }
-
-  public Long getSecondsDuration() {
-    String duration = items.getFirst().contentDetails().duration();
-    if (duration == null) {
-      return null;
+    public String getThumbnailUri() {
+        return items.getFirst().snippet().thumbnails().maxres().url();
     }
-    return Iso8601DurationToSecondConverter.convert(duration);
-  }
 
-  public String getChannelId() {
-    return items.getFirst().snippet().channelId();
-  }
+    public String getTitle() {
+        return items.getFirst().snippet().title();
+    }
 
-  public String getChannelTitle() {
-    return items.getFirst().snippet().channelTitle();
-  }
+    public Long getSecondsDuration() {
+        String duration = items.getFirst().contentDetails().duration();
+        if (duration == null) {
+            return null;
+        }
+        return Iso8601DurationToSecondConverter.convert(duration);
+    }
 
-  public Boolean getEmbeddable() {
-    return items.stream().findFirst().map(Item::status).map(Status::embeddable).orElse(null);
-  }
+    public String getChannelId() {
+        return items.getFirst().snippet().channelId();
+    }
 
-  public record Item(Snippet snippet, ContentDetails contentDetails, Status status) {}
+    public String getChannelTitle() {
+        return items.getFirst().snippet().channelTitle();
+    }
 
-  public record Snippet(
-      String title, String channelId, String channelTitle, Thumbnails thumbnails) {}
+    public Boolean getEmbeddable() {
+        return items.stream()
+                .findFirst()
+                .map(Item::status)
+                .map(Status::embeddable)
+                .orElse(null);
+    }
 
-  public record Thumbnails(
-      @JsonProperty("default") ThumbnailInfo defaultThumbnail,
-      ThumbnailInfo medium,
-      ThumbnailInfo high,
-      ThumbnailInfo maxres) {}
+    public record Item(Snippet snippet, ContentDetails contentDetails, Status status) {}
 
-  public record ThumbnailInfo(String url, int width, int height) {}
+    public record Snippet(String title, String channelId, String channelTitle, Thumbnails thumbnails) {}
 
-  public record ContentDetails(String duration) {}
+    public record Thumbnails(
+            @JsonProperty("default") ThumbnailInfo defaultThumbnail,
+            ThumbnailInfo medium,
+            ThumbnailInfo high,
+            ThumbnailInfo maxres) {}
 
-  public record Status(Boolean embeddable) {}
+    public record ThumbnailInfo(String url, int width, int height) {}
+
+    public record ContentDetails(String duration) {}
+
+    public record Status(Boolean embeddable) {}
 }

@@ -17,54 +17,54 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeOverview {
-  private UUID recipeId;
-  private RecipeStatus recipeStatus;
-  private Integer viewCount;
-  private LocalDateTime recipeCreatedAt;
-  private LocalDateTime recipeUpdatedAt;
+    private UUID recipeId;
+    private RecipeStatus recipeStatus;
+    private Integer viewCount;
+    private LocalDateTime recipeCreatedAt;
+    private LocalDateTime recipeUpdatedAt;
 
-  private String videoTitle;
-  private String channelTitle;
-  private String videoId;
-  private URI videoUri;
-  private URI thumbnailUrl;
-  private Integer videoSeconds;
-  private YoutubeMetaType videoType;
+    private String videoTitle;
+    private String channelTitle;
+    private String videoId;
+    private URI videoUri;
+    private URI thumbnailUrl;
+    private Integer videoSeconds;
+    private YoutubeMetaType videoType;
 
-  private String description;
-  private Integer servings;
-  private Integer cookTime;
+    private String description;
+    private Integer servings;
+    private Integer cookTime;
 
-  private List<String> tags;
+    private List<String> tags;
 
-  private Boolean isViewed;
-  private Long creditCost;
+    private Boolean isViewed;
+    private Long creditCost;
 
-  public static RecipeOverview of(
-      RecipeInfo recipe,
-      RecipeYoutubeMeta youtubeMeta,
-      RecipeDetailMeta detailMeta,
-      List<RecipeTag> tags,
-      Boolean isViewed) {
+    public static RecipeOverview of(
+            RecipeInfo recipe,
+            RecipeYoutubeMeta youtubeMeta,
+            RecipeDetailMeta detailMeta,
+            List<RecipeTag> tags,
+            Boolean isViewed) {
 
-    return new RecipeOverview(
-        recipe.getId(),
-        recipe.getRecipeStatus(),
-        recipe.getViewCount(),
-        recipe.getCreatedAt(),
-        recipe.getUpdatedAt(),
-        youtubeMeta.getTitle(),
-        youtubeMeta.getChannelTitle(),
-        youtubeMeta.getVideoId(),
-        youtubeMeta.getVideoUri(),
-        youtubeMeta.getThumbnailUrl(),
-        youtubeMeta.getVideoSeconds(),
-        youtubeMeta.getType(),
-        detailMeta == null ? null : detailMeta.getDescription(),
-        detailMeta == null ? null : detailMeta.getServings(),
-        detailMeta == null ? null : detailMeta.getCookTime(),
-        tags.stream().map(RecipeTag::getTag).toList(),
-        isViewed,
-        recipe.getCreditCost());
-  }
+        return new RecipeOverview(
+                recipe.getId(),
+                recipe.getRecipeStatus(),
+                recipe.getViewCount(),
+                recipe.getCreatedAt(),
+                recipe.getUpdatedAt(),
+                youtubeMeta.getTitle(),
+                youtubeMeta.getChannelTitle(),
+                youtubeMeta.getVideoId(),
+                youtubeMeta.getVideoUri(),
+                youtubeMeta.getThumbnailUrl(),
+                youtubeMeta.getVideoSeconds(),
+                youtubeMeta.getType(),
+                detailMeta == null ? null : detailMeta.getDescription(),
+                detailMeta == null ? null : detailMeta.getServings(),
+                detailMeta == null ? null : detailMeta.getCookTime(),
+                tags.stream().map(RecipeTag::getTag).toList(),
+                isViewed,
+                recipe.getCreditCost());
+    }
 }

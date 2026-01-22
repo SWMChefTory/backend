@@ -18,76 +18,72 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
-  private final UserRepository userRepository;
-  private final Clock clock;
+    private final UserRepository userRepository;
+    private final Clock clock;
 
-  public User getByProviderAndProviderSub(Provider provider, String providerSub) {
-    return userRepository
-        .findByProviderAndProviderSubAndUserStatus(provider, providerSub, UserStatus.ACTIVE)
-        .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-  }
-
-  public User create(
-      String nickname,
-      Gender gender,
-      LocalDate dateOfBirth,
-      Provider provider,
-      String providerSub,
-      boolean isTermsOfUseAgreed,
-      boolean isPrivacyPolicyAgreed,
-      boolean isMarketingAgreed) {
-    Optional<User> existUser =
-        userRepository.findByProviderAndProviderSubAndUserStatus(
-            provider, providerSub, UserStatus.ACTIVE);
-    if (existUser.isPresent()) {
-      throw new UserException(UserErrorCode.USER_ALREADY_EXIST);
+    public User getByProviderAndProviderSub(Provider provider, String providerSub) {
+        return userRepository
+                .findByProviderAndProviderSubAndUserStatus(provider, providerSub, UserStatus.ACTIVE)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
     }
 
-    if (!isTermsOfUseAgreed) {
-      throw new UserException(UserErrorCode.TERMS_OF_USE_NOT_AGREED);
+    public User create(
+            String nickname,
+            Gender gender,
+            LocalDate dateOfBirth,
+            Provider provider,
+            String providerSub,
+            boolean isTermsOfUseAgreed,
+            boolean isPrivacyPolicyAgreed,
+            boolean isMarketingAgreed) {
+        Optional<User> existUser =
+                userRepository.findByProviderAndProviderSubAndUserStatus(provider, providerSub, UserStatus.ACTIVE);
+        if (existUser.isPresent()) {
+            throw new UserException(UserErrorCode.USER_ALREADY_EXIST);
+        }
+
+        if (!isTermsOfUseAgreed) {
+            throw new UserException(UserErrorCode.TERMS_OF_USE_NOT_AGREED);
+        }
+
+        if (!isPrivacyPolicyAgreed) {
+            throw new UserException(UserErrorCode.PRIVACY_POLICY_NOT_AGREED);
+        }
+
+        User user = User.create(nickname, gender, dateOfBirth, provider, providerSub, isMarketingAgreed, clock);
+        return userRepository.save(user);
     }
 
-    if (!isPrivacyPolicyAgreed) {
-      throw new UserException(UserErrorCode.PRIVACY_POLICY_NOT_AGREED);
+    public User get(UUID id) {
+        return userRepository
+                .findByIdAndUserStatus(id, UserStatus.ACTIVE)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
     }
 
-    User user =
-        User.create(nickname, gender, dateOfBirth, provider, providerSub, isMarketingAgreed, clock);
-    return userRepository.save(user);
-  }
+    public User update(UUID id, String nickname, Gender gender, LocalDate dateOfBirth) {
+        User user = userRepository
+                .findByIdAndUserStatus(id, UserStatus.ACTIVE)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-  public User get(UUID id) {
-    return userRepository
-        .findByIdAndUserStatus(id, UserStatus.ACTIVE)
-        .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-  }
+        user.change(nickname, gender, dateOfBirth, clock);
+        userRepository.save(user);
 
-  public User update(UUID id, String nickname, Gender gender, LocalDate dateOfBirth) {
-    User user =
-        userRepository
-            .findByIdAndUserStatus(id, UserStatus.ACTIVE)
-            .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        return userRepository
+                .findByIdAndUserStatus(id, UserStatus.ACTIVE)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    }
 
-    user.change(nickname, gender, dateOfBirth, clock);
-    userRepository.save(user);
+    @Transactional
+    public void deleteUser(UUID id) {
+        User user = userRepository
+                .findByIdAndUserStatus(id, UserStatus.ACTIVE)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-    return userRepository
-        .findByIdAndUserStatus(id, UserStatus.ACTIVE)
-        .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-  }
+        user.changeStatus(UserStatus.DELETED, clock);
+        userRepository.save(user);
+    }
 
-  @Transactional
-  public void deleteUser(UUID id) {
-    User user =
-        userRepository
-            .findByIdAndUserStatus(id, UserStatus.ACTIVE)
-            .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-    user.changeStatus(UserStatus.DELETED, clock);
-    userRepository.save(user);
-  }
-
-  public boolean exists(UUID id) {
-    return userRepository.existsById(id);
-  }
+    public boolean exists(UUID id) {
+        return userRepository.existsById(id);
+    }
 }

@@ -12,29 +12,29 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Embeddable
 public class YoutubeVideoInfo {
-  private URI videoUri;
-  private String videoId;
-  private String title;
-  private String channelTitle;
-  private URI thumbnailUrl;
-  private Integer videoSeconds;
-  private YoutubeMetaType videoType;
+    private URI videoUri;
+    private String videoId;
+    private String title;
+    private String channelTitle;
+    private URI thumbnailUrl;
+    private Integer videoSeconds;
+    private YoutubeMetaType videoType;
 
-  public static YoutubeVideoInfo from(
-      YoutubeUri youtubeUri,
-      String title,
-      String channelTitle,
-      URI thumbnailUrl,
-      Integer videoSeconds,
-      YoutubeMetaType videoType) {
+    public static YoutubeVideoInfo from(
+            YoutubeUri youtubeUri,
+            String title,
+            String channelTitle,
+            URI thumbnailUrl,
+            Integer videoSeconds,
+            YoutubeMetaType videoType) {
 
-    return new YoutubeVideoInfo(
-        youtubeUri.getNormalizedUrl(),
-        youtubeUri.getVideoId(),
-        title,
-        channelTitle,
-        thumbnailUrl,
-        videoSeconds,
-        videoType);
-  }
+        return new YoutubeVideoInfo(
+                youtubeUri.getNormalizedUrl(),
+                youtubeUri.getVideoId(),
+                title,
+                channelTitle,
+                thumbnailUrl,
+                videoSeconds,
+                videoType);
+    }
 }

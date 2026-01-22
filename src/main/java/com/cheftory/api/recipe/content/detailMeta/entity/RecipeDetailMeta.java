@@ -17,27 +17,27 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RecipeDetailMeta extends MarketScope {
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Column(nullable = false)
-  private Integer cookTime;
+    @Column(nullable = false)
+    private Integer cookTime;
 
-  @Column(nullable = false)
-  private Integer servings;
+    @Column(nullable = false)
+    private Integer servings;
 
-  @Column(nullable = false)
-  private String description;
+    @Column(nullable = false)
+    private String description;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
-  @Column(nullable = false)
-  private UUID recipeId;
+    @Column(nullable = false)
+    private UUID recipeId;
 
-  public static RecipeDetailMeta create(
-      Integer cookTime, Integer servings, String description, Clock clock, UUID recipeId) {
+    public static RecipeDetailMeta create(
+            Integer cookTime, Integer servings, String description, Clock clock, UUID recipeId) {
 
-    return new RecipeDetailMeta(
-        UUID.randomUUID(), cookTime, servings, description, clock.now(), recipeId);
-  }
+        return new RecipeDetailMeta(UUID.randomUUID(), cookTime, servings, description, clock.now(), recipeId);
+    }
 }

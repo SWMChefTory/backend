@@ -20,6 +20,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.13] - 2026-01-22
+
+### Added
+
+- 랭킹/추천 시스템 도입 및 개인화 프로필 집계 로직 추가
+- 추천 후보 검색을 위한 PIT 기반 커서 페이지네이션
+- 랭킹 스냅샷 및 요청 상태 관리용 Redis 저장소
+
+### Changed
+
+- 요리 종류 추천 흐름을 랭킹 서비스 기반으로 전환
+- 추천 결과 커서 관리(요청 ID + searchAfter)로 통일
+
+### Fixed
+
+- 추천 노출 포지션 TTL 일관성 보장
+- 요리 종류 매핑 로직을 명시적 매핑으로 개선
+
+---
+
 ## [1.1.12] - 2026-01-19
 
 ### Changed

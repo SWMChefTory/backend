@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class RecipeDetailService {
 
-  private final RecipeDetailClient recipeDetailClient;
+    private final RecipeDetailClient recipeDetailClient;
 
-  public RecipeDetail getRecipeDetails(String videoId, RecipeCaption recipeCaption) {
-    return recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption).toRecipeDetail();
-  }
+    public RecipeDetail getRecipeDetails(String videoId, RecipeCaption recipeCaption) {
+        return recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption).toRecipeDetail();
+    }
 }

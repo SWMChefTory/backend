@@ -22,31 +22,31 @@ import org.hibernate.type.SqlTypes;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class RecipeCaption extends MarketScope {
-  @Id private UUID id;
+    @Id
+    private UUID id;
 
-  @Getter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  public static class Segment {
-    private String text;
-    private Double start;
-    private Double end;
-  }
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Segment {
+        private String text;
+        private Double start;
+        private Double end;
+    }
 
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "json")
-  private List<Segment> segments;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json")
+    private List<Segment> segments;
 
-  @Enumerated(EnumType.STRING)
-  private LangCodeType langCode;
+    @Enumerated(EnumType.STRING)
+    private LangCodeType langCode;
 
-  private UUID recipeId;
+    private UUID recipeId;
 
-  private LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
-  public static RecipeCaption from(
-      List<Segment> segments, LangCodeType langCodeType, UUID recipeId, Clock clock) {
+    public static RecipeCaption from(List<Segment> segments, LangCodeType langCodeType, UUID recipeId, Clock clock) {
 
-    return new RecipeCaption(UUID.randomUUID(), segments, langCodeType, recipeId, clock.now());
-  }
+        return new RecipeCaption(UUID.randomUUID(), segments, langCodeType, recipeId, clock.now());
+    }
 }

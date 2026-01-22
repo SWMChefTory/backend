@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecipeDetailMetaRepository extends JpaRepository<RecipeDetailMeta, UUID> {
-  Optional<RecipeDetailMeta> findByRecipeId(UUID recipeId);
+    Optional<RecipeDetailMeta> findByRecipeId(UUID recipeId);
 
-  List<RecipeDetailMeta> findAllByRecipeIdIn(List<UUID> recipeIds);
+    List<RecipeDetailMeta> findAllByRecipeIdIn(List<UUID> recipeIds);
 }

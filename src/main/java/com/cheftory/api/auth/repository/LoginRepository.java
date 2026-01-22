@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LoginRepository extends JpaRepository<Login, UUID> {
 
-  Optional<Login> findByUserIdAndRefreshToken(UUID userId, String refreshToken);
+    Optional<Login> findByUserIdAndRefreshToken(UUID userId, String refreshToken);
 
-  void deleteByUserIdAndRefreshToken(UUID userId, String refreshToken);
+    void deleteByUserIdAndRefreshToken(UUID userId, String refreshToken);
 }

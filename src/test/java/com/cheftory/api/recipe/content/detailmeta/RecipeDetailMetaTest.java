@@ -16,56 +16,55 @@ import org.junit.jupiter.api.Test;
 @DisplayName("RecipeDetailMetaTest")
 public class RecipeDetailMetaTest {
 
-  @Nested
-  @DisplayName("레시피 상세 메타 생성")
-  class CreateRecipeDetailMeta {
-
     @Nested
-    @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-    class GivenValidParameters {
+    @DisplayName("레시피 상세 메타 생성")
+    class CreateRecipeDetailMeta {
 
-      private Integer cookingTime;
-      private Integer servings;
-      private String description;
-      private Clock clock;
-      private UUID recipeId;
-      private LocalDateTime now;
+        @Nested
+        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
+        class GivenValidParameters {
 
-      @BeforeEach
-      void setUp() {
-        cookingTime = 30; // in minutes
-        servings = 4;
-        description = "A delicious recipe for testing.";
-        recipeId = UUID.randomUUID();
-        clock = mock(Clock.class);
-        now = LocalDateTime.now();
-        doReturn(now).when(clock).now();
-      }
+            private Integer cookingTime;
+            private Integer servings;
+            private String description;
+            private Clock clock;
+            private UUID recipeId;
+            private LocalDateTime now;
 
-      @Nested
-      @DisplayName("When - 레시피 상세 메타를 생성하면")
-      class WhenCreateRecipeDetailMeta {
+            @BeforeEach
+            void setUp() {
+                cookingTime = 30; // in minutes
+                servings = 4;
+                description = "A delicious recipe for testing.";
+                recipeId = UUID.randomUUID();
+                clock = mock(Clock.class);
+                now = LocalDateTime.now();
+                doReturn(now).when(clock).now();
+            }
 
-        private RecipeDetailMeta recipeDetailMeta;
+            @Nested
+            @DisplayName("When - 레시피 상세 메타를 생성하면")
+            class WhenCreateRecipeDetailMeta {
 
-        @BeforeEach
-        void setUp() {
-          recipeDetailMeta =
-              RecipeDetailMeta.create(cookingTime, servings, description, clock, recipeId);
+                private RecipeDetailMeta recipeDetailMeta;
+
+                @BeforeEach
+                void setUp() {
+                    recipeDetailMeta = RecipeDetailMeta.create(cookingTime, servings, description, clock, recipeId);
+                }
+
+                @DisplayName("Then - 레시피 상세 메타가 생성된다")
+                @Test
+                void thenRecipeDetailMetaIsCreated() {
+                    assertThat(recipeDetailMeta).isNotNull();
+                    assertThat(recipeDetailMeta.getId()).isNotNull();
+                    assertThat(recipeDetailMeta.getCookTime()).isEqualTo(cookingTime);
+                    assertThat(recipeDetailMeta.getServings()).isEqualTo(servings);
+                    assertThat(recipeDetailMeta.getDescription()).isEqualTo(description);
+                    assertThat(recipeDetailMeta.getRecipeId()).isEqualTo(recipeId);
+                    assertThat(recipeDetailMeta.getCreatedAt()).isEqualTo(now);
+                }
+            }
         }
-
-        @DisplayName("Then - 레시피 상세 메타가 생성된다")
-        @Test
-        void thenRecipeDetailMetaIsCreated() {
-          assertThat(recipeDetailMeta).isNotNull();
-          assertThat(recipeDetailMeta.getId()).isNotNull();
-          assertThat(recipeDetailMeta.getCookTime()).isEqualTo(cookingTime);
-          assertThat(recipeDetailMeta.getServings()).isEqualTo(servings);
-          assertThat(recipeDetailMeta.getDescription()).isEqualTo(description);
-          assertThat(recipeDetailMeta.getRecipeId()).isEqualTo(recipeId);
-          assertThat(recipeDetailMeta.getCreatedAt()).isEqualTo(now);
-        }
-      }
     }
-  }
 }

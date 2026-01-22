@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/market")
 public class MarketController {
 
-  @GetMapping
-  public MarketResponse getMarket() {
-    MarketContext.Info info = MarketContext.required();
-    return MarketResponse.of(info.market(), info.countryCode());
-  }
+    @GetMapping
+    public MarketResponse getMarket() {
+        MarketContext.Info info = MarketContext.required();
+        return MarketResponse.of(info.market(), info.countryCode());
+    }
 }
