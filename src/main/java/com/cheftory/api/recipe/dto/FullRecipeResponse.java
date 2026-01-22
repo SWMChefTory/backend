@@ -67,7 +67,7 @@ public record FullRecipeResponse(
                     youtubeMeta.getChannelTitle(),
                     youtubeMeta.getThumbnailUrl(),
                     youtubeMeta.getVideoSeconds(),
-                    youtubeMeta.getType().name().toLowerCase());
+                    youtubeMeta.getType().name());
         }
     }
 
