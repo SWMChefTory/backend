@@ -50,12 +50,39 @@ public class RankingService {
             rankingSnapshotService.savePit(requestId, surfaceType, itemType, pitId);
         }
 
+        log.info(
+                "[REC] userId={} surface={} itemType={} first={} requestId={} pitId={} searchAfter={}",
+                userId,
+                surfaceType,
+                itemType,
+                first,
+                requestId,
+                pitId,
+                searchAfter);
+
         List<UUID> seeds = rankingInteractionService.getRecentSeeds(userId, itemType, 10);
+
+        log.info("[REC] seeds(size={}): {}", seeds.size(), seeds);
 
         PersonalizationProfile profile = rankingPersonalizationService.aggregateProfile(seeds);
 
+        log.info(
+                "[REC] profile keywordsTop(size={}): {}",
+                profile.keywordsTop() != null ? profile.keywordsTop().size() : -1,
+                profile.keywordsTop());
+        log.info(
+                "[REC] profile channelsTop(size={}): {}",
+                profile.channelsTop() != null ? profile.channelsTop().size() : -1,
+                profile.channelsTop());
+
         SearchPage page =
                 rankingCandidateService.searchWithPit(surfaceType, itemType, pageSize, profile, pitId, searchAfter);
+
+        log.info(
+                "[REC] page items(size={}) nextCursorBlank?={}",
+                page.items().size(),
+                (page.nextCursor() == null || page.nextCursor().isBlank()));
+        log.info("[REC] top5 ids: {}", page.items().stream().limit(5).toList());
 
         long positionStart = rankingSnapshotService.allocateImpressionPositions(
                 requestId, page.items().size());

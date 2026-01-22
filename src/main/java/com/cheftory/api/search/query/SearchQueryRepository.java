@@ -16,10 +16,7 @@ import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.SortOrder;
 import org.opensearch.client.opensearch._types.Time;
-import org.opensearch.client.opensearch._types.query_dsl.FunctionBoostMode;
-import org.opensearch.client.opensearch._types.query_dsl.FunctionScore;
-import org.opensearch.client.opensearch._types.query_dsl.FunctionScoreMode;
-import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch._types.query_dsl.*;
 import org.opensearch.client.opensearch.core.CreatePitRequest;
 import org.opensearch.client.opensearch.core.DeletePitRequest;
 import org.opensearch.client.opensearch.core.SearchRequest;
@@ -47,7 +44,6 @@ public class SearchQueryRepository {
     private static final String FIELD_CREATED_AT = "created_at";
     private static final String DECAY_SCALE = "7d";
     private static final double DECAY_VALUE = 0.5;
-    private final I18nTranslator i18nTranslator;
 
     private final OpenSearchClient openSearchClient;
 
@@ -188,47 +184,64 @@ public class SearchQueryRepository {
             return boolQuery;
         }));
 
+        List<FunctionScore> functions = List.of(FunctionScore.of(functionScore ->
+            functionScore.gauss(gauss -> gauss.field(FIELD_CREATED_AT).placement(placement -> placement
+                .origin(JsonData.of(targetTime))
+                .scale(JsonData.of("7d"))
+                .decay(0.5)))));
+
         return Query.of(queryBuilder -> queryBuilder.functionScore(functionScore -> functionScore
                 .query(baseQuery)
-                .functions(buildGaussDecayFunction(targetTime))
-                .boostMode(FunctionBoostMode.Multiply)
+                .functions(functions)
+                .boostMode(FunctionBoostMode.Sum)
                 .scoreMode(FunctionScoreMode.Sum)));
     }
 
     private Query buildCandidatesFunctionScoreQuery(
-            SearchQueryScope scope, String label, String targetTime, PersonalizationProfile profile) {
+        SearchQueryScope scope, String label, String targetTime, PersonalizationProfile profile) {
 
         String scopeValue = scope.name().toLowerCase();
         String marketValue = currentMarketKey();
 
-        Function<String, FieldValue> fieldValueMapper = value -> FieldValue.of(field -> field.stringValue(value));
-
-        List<FieldValue> keywordValues =
-                profile.keywordsTop().stream().map(fieldValueMapper).toList();
-
-        Query baseQuery = Query.of(queryBuilder -> queryBuilder.bool(boolQuery -> {
-            boolQuery.filter(
-                    filter -> filter.term(term -> term.field(FIELD_MARKET).value(FieldValue.of(marketValue))));
-            boolQuery.filter(
-                    filter -> filter.term(term -> term.field(FIELD_SCOPE).value(FieldValue.of(scopeValue))));
-            boolQuery.filter(
-                    filter -> filter.term(term -> term.field(FIELD_KEYWORDS).value(FieldValue.of(label))));
-
-            boolQuery.should(should -> should.terms(
-                    terms -> terms.field(FIELD_KEYWORDS).terms(termsValues -> termsValues.value(keywordValues))));
-
-            profile.channelsTop()
-                    .forEach(channel -> boolQuery.should(should -> should.match(
-                            match -> match.field(FIELD_CHANNEL_TITLE).query(FieldValue.of(channel)))));
-
-            return boolQuery;
+        Query filterOnly = Query.of(qb -> qb.bool(b -> {
+            b.filter(f -> f.term(t -> t.field(FIELD_MARKET).value(FieldValue.of(marketValue))));
+            b.filter(f -> f.term(t -> t.field(FIELD_SCOPE).value(FieldValue.of(scopeValue))));
+            b.filter(f -> f.term(t -> t.field(FIELD_KEYWORDS).value(FieldValue.of(label))));
+            return b;
         }));
 
-        return Query.of(queryBuilder -> queryBuilder.functionScore(functionScore -> functionScore
-                .query(baseQuery)
-                .functions(buildGaussDecayFunction(targetTime))
-                .boostMode(FunctionBoostMode.Multiply)
-                .scoreMode(FunctionScoreMode.Sum)));
+        List<FunctionScore> functions = new java.util.ArrayList<>();
+
+        functions.add(FunctionScore.of(fs -> fs
+            .filter(fq -> fq.terms(t -> t.field(FIELD_KEYWORDS)
+                .terms(tv -> tv.value(profile.keywordsTop().stream().map(FieldValue::of).toList()))))
+            .weight(0.3f)
+        ));
+
+        for (String channel : profile.channelsTop()) {
+            functions.add(FunctionScore.of(fs -> fs
+                .filter(fq -> fq.match(m -> m.field(FIELD_CHANNEL_TITLE)
+                    .query(FieldValue.of(channel))
+                    .operator(Operator.And)))
+                .weight(0.7f)
+            ));
+        }
+
+        functions.add(FunctionScore.of(fs -> fs
+            .gauss(g -> g.field(FIELD_CREATED_AT).placement(p -> p
+                .origin(JsonData.of(targetTime))
+                .scale(JsonData.of("60d"))
+                .decay(0.95)
+            ))
+            .weight(0.1f)
+        ));
+
+        return Query.of(qb -> qb.functionScore(fs -> fs
+            .query(filterOnly)
+            .functions(functions)
+            .scoreMode(FunctionScoreMode.Sum)
+            .boostMode(FunctionBoostMode.Sum)
+        ));
     }
 
     private void applySearchAfter(SearchRequest.Builder s, Double afterScore, String afterId) {
@@ -251,11 +264,11 @@ public class SearchQueryRepository {
         return market.name().toLowerCase();
     }
 
-    private List<FunctionScore> buildGaussDecayFunction(String targetTime) {
+    private List<FunctionScore> buildGaussDecayFunction(String targetTime, String scale, Double decay) {
         return List.of(FunctionScore.of(functionScore ->
                 functionScore.gauss(gauss -> gauss.field(FIELD_CREATED_AT).placement(placement -> placement
                         .origin(JsonData.of(targetTime))
-                        .scale(JsonData.of(DECAY_SCALE))
-                        .decay(DECAY_VALUE)))));
+                        .scale(JsonData.of(scale))
+                        .decay(decay)))));
     }
 }

@@ -295,7 +295,7 @@ public class RecipeControllerTest extends RestDocsTest {
                     assertThat(responseBody.getInt("recent_recipes[0].video_seconds"))
                             .isEqualTo(120);
                     assertThat(responseBody.getString("recent_recipes[0].video_type"))
-                            .isEqualTo("normal");
+                            .isEqualTo("NORMAL");
                     assertThat(responseBody.getString("recent_recipes[0].description"))
                             .isEqualTo("레시피 설명");
                     assertThat(responseBody.getInt("recent_recipes[0].cook_time"))
@@ -603,7 +603,7 @@ public class RecipeControllerTest extends RestDocsTest {
                     assertThat(responseBody.getString("video_info.video_thumbnail_url"))
                             .isEqualTo("https://example.com/thumbnail.jpg");
                     assertThat(responseBody.getInt("video_info.video_seconds")).isEqualTo(120);
-                    assertThat(responseBody.getString("video_info.video_type")).isEqualTo("normal");
+                    assertThat(responseBody.getString("video_info.video_type")).isEqualTo("NORMAL");
 
                     assertThat(responseBody.getUUID("view_status.id")).isEqualTo(viewStatusId);
                     assertThat(responseBody.getString("view_status.viewed_at")).isEqualTo("2024-01-15T10:30:00");
