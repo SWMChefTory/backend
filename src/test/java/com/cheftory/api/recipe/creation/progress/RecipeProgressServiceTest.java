@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
+import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressState;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.creation.progress.utils.RecipeProgressSort;
 import java.util.List;
@@ -55,9 +56,9 @@ public class RecipeProgressServiceTest {
                 void setUp() {
                     recipeProgress = List.of(
                             RecipeProgress.create(
-                                    recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY),
+                                    recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY, RecipeProgressState.SUCCESS),
                             RecipeProgress.create(
-                                    recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.CAPTION));
+                                    recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.CAPTION, RecipeProgressState.SUCCESS));
                     doReturn(recipeProgress)
                             .when(recipeProgressRepository)
                             .findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
@@ -99,12 +100,12 @@ public class RecipeProgressServiceTest {
 
                 // 시간 순서대로 정렬된 RecipeProgress 목록 생성
                 sortedRecipeProgress = List.of(
-                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY),
+                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY, RecipeProgressState.SUCCESS),
                         RecipeProgress.create(
-                                recipeId, clock, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION),
-                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP),
+                                recipeId, clock, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION, RecipeProgressState.SUCCESS),
+                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, RecipeProgressState.SUCCESS),
                         RecipeProgress.create(
-                                recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED));
+                                recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, RecipeProgressState.SUCCESS));
 
                 doReturn(sortedRecipeProgress)
                         .when(recipeProgressRepository)
@@ -134,8 +135,8 @@ public class RecipeProgressServiceTest {
     }
 
     @Nested
-    @DisplayName("레시피 진행 상황 생성")
-    class CreateRecipeProgress {
+    @DisplayName("레시피 진행 상황 시작")
+    class StartRecipeProgress {
 
         @Nested
         @DisplayName("Given - 유효한 입력 값이 주어졌을 때")
@@ -153,20 +154,100 @@ public class RecipeProgressServiceTest {
             }
 
             @Nested
-            @DisplayName("When - 레시피 진행 상황을 생성하면")
-            class WhenCreateRecipeProgress {
+            @DisplayName("When - 레시피 진행 상황을 시작하면")
+            class WhenStartRecipeProgress {
 
                 @BeforeEach
                 void setUp() {
-                    doReturn(RecipeProgress.create(recipeId, clock, step, detail))
+                    doReturn(RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.RUNNING))
                             .when(recipeProgressRepository)
                             .save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
                 }
 
-                @DisplayName("Then - 레시피 진행 상황이 성공적으로 생성된다")
+                @DisplayName("Then - 레시피 진행 상황이 RUNNING 상태로 생성된다")
                 @Test
-                void shouldCreateRecipeProgress() {
-                    recipeProgressService.create(recipeId, step, detail);
+                void shouldStartRecipeProgress() {
+                    recipeProgressService.start(recipeId, step, detail);
+                    verify(recipeProgressRepository).save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
+                }
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("레시피 진행 상황 성공")
+    class SuccessRecipeProgress {
+
+        @Nested
+        @DisplayName("Given - 유효한 입력 값이 주어졌을 때")
+        class GivenValidInputs {
+
+            private UUID recipeId;
+            private RecipeProgressStep step;
+            private RecipeProgressDetail detail;
+
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                step = RecipeProgressStep.STEP;
+                detail = RecipeProgressDetail.STEP;
+            }
+
+            @Nested
+            @DisplayName("When - 레시피 진행 상황을 성공으로 표시하면")
+            class WhenSuccessRecipeProgress {
+
+                @BeforeEach
+                void setUp() {
+                    doReturn(RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.SUCCESS))
+                            .when(recipeProgressRepository)
+                            .save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
+                }
+
+                @DisplayName("Then - 레시피 진행 상황이 SUCCESS 상태로 생성된다")
+                @Test
+                void shouldSuccessRecipeProgress() {
+                    recipeProgressService.success(recipeId, step, detail);
+                    verify(recipeProgressRepository).save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
+                }
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("레시피 진행 상황 실패")
+    class FailedRecipeProgress {
+
+        @Nested
+        @DisplayName("Given - 유효한 입력 값이 주어졌을 때")
+        class GivenValidInputs {
+
+            private UUID recipeId;
+            private RecipeProgressStep step;
+            private RecipeProgressDetail detail;
+
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                step = RecipeProgressStep.STEP;
+                detail = RecipeProgressDetail.STEP;
+            }
+
+            @Nested
+            @DisplayName("When - 레시피 진행 상황을 실패로 표시하면")
+            class WhenFailedRecipeProgress {
+
+                @BeforeEach
+                void setUp() {
+                    doReturn(RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.FAILED))
+                            .when(recipeProgressRepository)
+                            .save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
+                }
+
+                @DisplayName("Then - 레시피 진행 상황이 FAILED 상태로 생성된다")
+                @Test
+                void shouldFailedRecipeProgress() {
+                    recipeProgressService.failed(recipeId, step, detail);
                     verify(recipeProgressRepository).save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
                 }
             }

@@ -31,6 +31,7 @@ public class RecipeCreationFacade {
     private final RecipeIdentifyService recipeIdentifyService;
     private final RecipeInfoService recipeInfoService;
     private final RecipeCreditPort creditPort;
+    private final RecipeCreationTxService recipeCreationTxService;
 
     public UUID create(RecipeCreationTarget target) {
         try {
@@ -57,22 +58,34 @@ public class RecipeCreationFacade {
 
     private UUID createNewRecipe(RecipeCreationTarget target) {
         try {
-            YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(target.uri());
-            recipeIdentifyService.create(target.uri());
-            RecipeInfo recipeInfo = recipeInfoService.create();
-            recipeYoutubeMetaService.create(videoInfo, recipeInfo.getId());
-            create(target, recipeInfo);
-            asyncRecipeCreationService.create(
-                    recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri());
-            return recipeInfo.getId();
+            RecipeInfo recipeInfo = recipeCreationTxService.createWithIdentify(target.uri());
+            try {
+                YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(target.uri());
+                recipeYoutubeMetaService.create(videoInfo, recipeInfo.getId());
+                create(target, recipeInfo);
+                asyncRecipeCreationService.create(
+                        recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri());
+                return recipeInfo.getId();
+            } catch (Exception e) {
+                recipeIdentifyService.delete(target.uri(), recipeInfo.getId());
+                recipeInfoService.delete(recipeInfo.getId());
+                throw e;
+            }
         } catch (RecipeException e) {
             if (e.getErrorMessage() == RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING) {
+                UUID identifyRecipeId =
+                        recipeIdentifyService.getRecipeId(target.uri()).orElse(null);
+                if (identifyRecipeId != null) {
+                    RecipeInfo identified = recipeInfoService.getNotFailed(List.of(identifyRecipeId));
+                    create(target, identified);
+                    return identified.getId();
+                }
                 List<UUID> recipeIds = recipeYoutubeMetaService.getByUrl(target.uri()).stream()
                         .map(RecipeYoutubeMeta::getRecipeId)
                         .toList();
-                RecipeInfo recipeInfo = recipeInfoService.getNotFailed(recipeIds);
-                create(target, recipeInfo);
-                return recipeInfo.getId();
+                RecipeInfo identified = recipeInfoService.getNotFailed(recipeIds);
+                create(target, identified);
+                return identified.getId();
             }
             throw e;
         }

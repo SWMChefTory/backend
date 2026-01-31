@@ -6,6 +6,8 @@ import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCo
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
 import jakarta.transaction.Transactional;
 import java.net.URI;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,17 +21,21 @@ public class RecipeIdentifyService {
     private final RecipeIdentifyRepository recipeIdentifyRepository;
     private final Clock clock;
 
-    public RecipeIdentify create(URI url) {
+    public RecipeIdentify create(URI url, UUID recipeId) {
         try {
-            RecipeIdentify recipeIdentify = RecipeIdentify.create(url, clock);
+            RecipeIdentify recipeIdentify = RecipeIdentify.create(url, recipeId, clock);
             return recipeIdentifyRepository.save(recipeIdentify);
         } catch (DataIntegrityViolationException e) {
             throw new RecipeIdentifyException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING);
         }
     }
 
+    public Optional<UUID> getRecipeId(URI url) {
+        return recipeIdentifyRepository.findByUrl(url).map(RecipeIdentify::getRecipeId);
+    }
+
     @Transactional
-    public void delete(URI url) {
-        recipeIdentifyRepository.deleteByUrl(url);
+    public void delete(URI url, UUID recipeId) {
+        recipeIdentifyRepository.deleteByUrlAndRecipeId(url, recipeId);
     }
 }

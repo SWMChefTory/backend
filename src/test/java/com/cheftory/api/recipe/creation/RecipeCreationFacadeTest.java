@@ -29,6 +29,7 @@ import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.recipe.history.RecipeHistoryService;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,6 +46,7 @@ class RecipeCreationFacadeTest {
     private RecipeIdentifyService recipeIdentifyService;
     private RecipeInfoService recipeInfoService;
     private RecipeCreditPort creditPort;
+    private RecipeCreationTxService recipeCreationTxService;
 
     private RecipeCreationFacade sut;
 
@@ -56,6 +58,7 @@ class RecipeCreationFacadeTest {
         recipeIdentifyService = mock(RecipeIdentifyService.class);
         recipeInfoService = mock(RecipeInfoService.class);
         creditPort = mock(RecipeCreditPort.class);
+        recipeCreationTxService = mock(RecipeCreationTxService.class);
 
         sut = new RecipeCreationFacade(
                 asyncRecipeCreationService,
@@ -63,7 +66,8 @@ class RecipeCreationFacadeTest {
                 recipeYoutubeMetaService,
                 recipeIdentifyService,
                 recipeInfoService,
-                creditPort);
+                creditPort,
+                recipeCreationTxService);
     }
 
     @Nested
@@ -195,13 +199,13 @@ class RecipeCreationFacadeTest {
                     .getNotFailed(anyList());
 
             doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
-            doReturn(recipeInfo).when(recipeInfoService).create();
+            doReturn(recipeInfo).when(recipeCreationTxService).createWithIdentify(uri);
             doReturn(true).when(recipeHistoryService).create(userId, recipeId);
 
             UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
 
             assertThat(result).isEqualTo(recipeId);
-            verify(recipeIdentifyService).create(uri);
+            verify(recipeCreationTxService).createWithIdentify(uri);
             verify(recipeYoutubeMetaService).create(videoInfo, recipeId);
             verify(recipeHistoryService).create(userId, recipeId);
             verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
@@ -227,10 +231,45 @@ class RecipeCreationFacadeTest {
                     .when(recipeInfoService)
                     .getNotFailed(anyList());
 
-            doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
             doThrow(new RecipeException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING))
-                    .when(recipeIdentifyService)
-                    .create(uri);
+                    .when(recipeCreationTxService)
+                    .createWithIdentify(uri);
+            doReturn(Optional.of(recipeId)).when(recipeIdentifyService).getRecipeId(uri);
+
+            doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
+            doReturn(recipeInfo).when(recipeInfoService).getNotFailed(List.of(recipeId));
+            doReturn(true).when(recipeHistoryService).create(userId, recipeId);
+
+            UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
+
+            assertThat(result).isEqualTo(recipeId);
+            verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+            verify(recipeHistoryService).create(userId, recipeId);
+            verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+        }
+
+        @Test
+        @DisplayName("동시성으로 identify가 progressing이면 identify에서 recipeId를 조회하지 못하면 다시 조회해서 사용한다")
+        void shouldUseExistingRecipeWhenIdentifyProgressingWithoutRecipeId() {
+            URI uri = URI.create("https://youtube.com/watch?v=concurrent2");
+            UUID userId = UUID.randomUUID();
+
+            YoutubeVideoInfo videoInfo = mockVideoInfo("test_video_id");
+            UUID recipeId = UUID.randomUUID();
+            long creditCost = 50L;
+
+            RecipeYoutubeMeta meta = mockYoutubeMeta(recipeId);
+            RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
+
+            doReturn(List.of()).when(recipeYoutubeMetaService).getByUrl(uri);
+            doThrow(new RecipeException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND))
+                    .when(recipeInfoService)
+                    .getNotFailed(anyList());
+
+            doThrow(new RecipeException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING))
+                    .when(recipeCreationTxService)
+                    .createWithIdentify(uri);
+            doReturn(Optional.empty()).when(recipeIdentifyService).getRecipeId(uri);
 
             doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
             doReturn(recipeInfo).when(recipeInfoService).getNotFailed(List.of(recipeId));

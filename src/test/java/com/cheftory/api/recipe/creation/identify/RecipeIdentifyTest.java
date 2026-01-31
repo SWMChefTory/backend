@@ -15,16 +15,17 @@ import org.junit.jupiter.api.*;
 class RecipeIdentifyTest {
 
     @Nested
-    @DisplayName("create(url, clock)")
+    @DisplayName("create(url, recipeId, clock)")
     class Create {
 
         @Nested
-        @DisplayName("Given - 유효한 URL이 주어졌을 때")
-        class GivenValidUrl {
+        @DisplayName("Given - 유효한 URL과 recipeId가 주어졌을 때")
+        class GivenValidUrlAndRecipeId {
 
             private Clock clock;
             private LocalDateTime now;
             private URI url;
+            private UUID recipeId;
 
             @BeforeEach
             void setUp() {
@@ -32,6 +33,7 @@ class RecipeIdentifyTest {
                 now = LocalDateTime.now();
                 doReturn(now).when(clock).now();
                 url = URI.create("https://www.youtube.com/watch?v=test_" + UUID.randomUUID());
+                recipeId = UUID.randomUUID();
             }
 
             @Nested
@@ -42,25 +44,27 @@ class RecipeIdentifyTest {
 
                 @BeforeEach
                 void createEntity() {
-                    recipeIdentify = RecipeIdentify.create(url, clock);
+                    recipeIdentify = RecipeIdentify.create(url, recipeId, clock);
                 }
 
                 @Test
-                @DisplayName("Then - UUID가 자동 생성되고 URL/createdAt이 설정된다")
+                @DisplayName("Then - UUID가 자동 생성되고 URL/recipeId/createdAt이 설정된다")
                 void thenEntityFieldsArePopulated() {
                     assertThat(recipeIdentify).isNotNull();
                     assertThat(recipeIdentify.getId()).isNotNull();
                     assertThat(recipeIdentify.getUrl()).isEqualTo(url);
+                    assertThat(recipeIdentify.getRecipeId()).isEqualTo(recipeId);
                     assertThat(recipeIdentify.getCreatedAt()).isEqualTo(now);
                 }
 
                 @Test
-                @DisplayName("Then - 동일한 URL로 다른 create()를 호출하면 ID는 달라진다")
+                @DisplayName("Then - 동일한 URL과 recipeId로 다른 create()를 호출하면 ID는 달라진다")
                 void thenDifferentIdsForDifferentInstances() {
-                    RecipeIdentify another = RecipeIdentify.create(url, clock);
+                    RecipeIdentify another = RecipeIdentify.create(url, recipeId, clock);
 
                     assertThat(another.getId()).isNotEqualTo(recipeIdentify.getId());
                     assertThat(another.getUrl()).isEqualTo(url);
+                    assertThat(another.getRecipeId()).isEqualTo(recipeId);
                     assertThat(another.getCreatedAt()).isEqualTo(now);
                 }
             }
