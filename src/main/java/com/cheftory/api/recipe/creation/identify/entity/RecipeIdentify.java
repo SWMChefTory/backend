@@ -29,12 +29,9 @@ public class RecipeIdentify extends MarketScope {
     private URI url;
 
     @Column(nullable = false)
-    private UUID recipeId;
-
-    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    public static RecipeIdentify create(URI url, UUID recipeId, Clock clock) {
-        return new RecipeIdentify(UUID.randomUUID(), url, recipeId, clock.now());
+    public static RecipeIdentify create(URI url, Clock clock) {
+        return new RecipeIdentify(UUID.randomUUID(), url, clock.now());
     }
 }

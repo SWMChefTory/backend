@@ -11,7 +11,7 @@ public record UnCategorizedRecipesResponse(
         @JsonProperty("unCategorized_recipes") List<UnCategorizedRecipe> categorizedRecipes,
         @JsonProperty("has_next") boolean hasNext,
         @JsonProperty("next_cursor") String nextCursor) {
-    public static UnCategorizedRecipesResponse from(CursorPage<RecipeHistoryOverview> categorizedRecipes) {
+    public static UnCategorizedRecipesResponse from(CursorPage<RecipeBookmarkOverview> categorizedRecipes) {
         List<UnCategorizedRecipe> responses = categorizedRecipes.items().stream()
                 .map(UnCategorizedRecipe::from)
                 .toList();
@@ -34,7 +34,7 @@ public record UnCategorizedRecipesResponse(
             @JsonProperty("created_at") LocalDateTime createdAt,
             @JsonProperty("tags") List<Tag> tags,
             @JsonProperty("credit_cost") Long creditCost) {
-        public static UnCategorizedRecipe from(RecipeHistoryOverview info) {
+        public static UnCategorizedRecipe from(RecipeBookmarkOverview info) {
             return new UnCategorizedRecipe(
                     info.getViewedAt(),
                     info.getLastPlaySeconds(),

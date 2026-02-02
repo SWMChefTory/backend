@@ -2,7 +2,6 @@ package com.cheftory.api.recipe.content.info;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.springframework.test.util.ReflectionTestUtils.getField;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
@@ -196,7 +195,8 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                 @DisplayName("Then - 조회수가 1 증가한다")
                 @Test
                 void thenViewCountIsIncreased() {
-                    Optional<RecipeInfo> updatedRecipe = recipeInfoRepository.findById((UUID) getField(savedRecipeInfo, "id"));
+                    Optional<RecipeInfo> updatedRecipe =
+                            recipeInfoRepository.findById((UUID) getField(savedRecipeInfo, "id"));
 
                     assertThat(updatedRecipe).isPresent();
                     assertThat(getField(updatedRecipe.get(), "viewCount")).isEqualTo(1);
@@ -217,7 +217,8 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                 @DisplayName("Then - 조회수가 3 증가한다")
                 @Test
                 void thenViewCountIsIncreasedByThree() {
-                    Optional<RecipeInfo> updatedRecipe = recipeInfoRepository.findById((UUID) getField(savedRecipeInfo, "id"));
+                    Optional<RecipeInfo> updatedRecipe =
+                            recipeInfoRepository.findById((UUID) getField(savedRecipeInfo, "id"));
 
                     assertThat(updatedRecipe).isPresent();
                     assertThat(getField(updatedRecipe.get(), "viewCount")).isEqualTo(3);
@@ -276,10 +277,9 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
             savedRecipeInfos = recipeInfoRepository.saveAll(
                     List.of(successRecipeInfo1, successRecipeInfo2, inProgressRecipeInfo, failedRecipeInfo));
 
-            recipeIds =
-                    savedRecipeInfos.stream()
-                            .map(recipeInfo -> (UUID) getField(recipeInfo, "id"))
-                            .toList();
+            recipeIds = savedRecipeInfos.stream()
+                    .map(recipeInfo -> (UUID) getField(recipeInfo, "id"))
+                    .toList();
         }
 
         @Nested
@@ -304,7 +304,8 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                     assertThat(notFailedRecipeInfos).hasSize(3);
 
                     notFailedRecipeInfos.forEach(recipe -> {
-                        assertThat((RecipeStatus) getField(recipe, "recipeStatus")).isNotEqualTo(RecipeStatus.FAILED);
+                        assertThat((RecipeStatus) getField(recipe, "recipeStatus"))
+                                .isNotEqualTo(RecipeStatus.FAILED);
                         assertThat(recipe.isFailed()).isFalse();
                     });
 
@@ -313,7 +314,8 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                             .filter(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS)
                             .count();
                     long inProgressCount = notFailedRecipeInfos.stream()
-                            .filter(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS)
+                            .filter(recipe ->
+                                    (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS)
                             .count();
 
                     assertThat(successCount).isEqualTo(2);
@@ -339,7 +341,8 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                     assertThat(notInProgressRecipeInfos).hasSize(3);
 
                     notInProgressRecipeInfos.forEach(recipe -> {
-                        assertThat((RecipeStatus) getField(recipe, "recipeStatus")).isNotEqualTo(RecipeStatus.IN_PROGRESS);
+                        assertThat((RecipeStatus) getField(recipe, "recipeStatus"))
+                                .isNotEqualTo(RecipeStatus.IN_PROGRESS);
                     });
 
                     // 성공 상태와 실패 상태만 포함되어야 함
@@ -398,7 +401,8 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
             recipeInfo3.failed(clock);
 
             savedRecipeInfos = recipeInfoRepository.saveAll(List.of(recipeInfo1, recipeInfo2, recipeInfo3));
-                    savedRecipeIds = savedRecipeInfos.stream().map(r -> (UUID) getField(r, "id")).toList();
+            savedRecipeIds =
+                    savedRecipeInfos.stream().map(r -> (UUID) getField(r, "id")).toList();
         }
 
         @Nested
@@ -421,15 +425,18 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                 void thenReturnsAllRecipesWithGivenIds() {
                     assertThat(foundRecipeInfos).hasSize(3);
 
-                    List<UUID> foundRecipeIds =
-                            foundRecipeInfos.stream().map(r -> (UUID) getField(r, "id")).toList();
+                    List<UUID> foundRecipeIds = foundRecipeInfos.stream()
+                            .map(r -> (UUID) getField(r, "id"))
+                            .toList();
                     assertThat(foundRecipeIds).containsExactlyInAnyOrderElementsOf(savedRecipeIds);
 
                     // 각 상태가 모두 포함되는지 확인
                     boolean hasInProgress = foundRecipeInfos.stream()
-                            .anyMatch(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS);
+                            .anyMatch(recipe ->
+                                    (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS);
                     boolean hasSuccess = foundRecipeInfos.stream()
-                            .anyMatch(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS);
+                            .anyMatch(
+                                    recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS);
                     boolean hasFailed = foundRecipeInfos.stream()
                             .anyMatch(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.FAILED);
 
@@ -468,8 +475,9 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                 void thenReturnsOnlyExistingRecipes() {
                     assertThat(foundRecipeInfos).hasSize(2);
 
-                    List<UUID> foundRecipeIds =
-                            foundRecipeInfos.stream().map(r -> (UUID) getField(r, "id")).toList();
+                    List<UUID> foundRecipeIds = foundRecipeInfos.stream()
+                            .map(r -> (UUID) getField(r, "id"))
+                            .toList();
                     assertThat(foundRecipeIds).containsExactlyInAnyOrder(savedRecipeIds.get(0), savedRecipeIds.get(1));
                 }
             }
@@ -523,8 +531,7 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                 @Test
                 @DisplayName("Then - true가 반환된다")
                 void thenReturnTrue() {
-                boolean exists =
-                        recipeInfoRepository.existsById((UUID) getField(savedRecipeInfo, "id"));
+                    boolean exists = recipeInfoRepository.existsById((UUID) getField(savedRecipeInfo, "id"));
 
                     assertThat(exists).isTrue();
                 }
@@ -611,7 +618,6 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                 }
                 recipeInfoRepository.saveAll(recipeInfos);
             }
-
         }
     }
 
@@ -664,8 +670,9 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
             recipeInfoRepository.increaseCount((UUID) getField(recipe1, "id"));
             recipeInfoRepository.increaseCount((UUID) getField(recipe2, "id"));
 
-            RecipeInfo latest =
-                    recipeInfoRepository.findById((UUID) getField(recipe2, "id")).orElseThrow();
+            RecipeInfo latest = recipeInfoRepository
+                    .findById((UUID) getField(recipe2, "id"))
+                    .orElseThrow();
 
             Pageable pageable = PageRequest.of(0, 2);
             List<RecipeInfo> result = recipeInfoRepository.findPopularKeyset(

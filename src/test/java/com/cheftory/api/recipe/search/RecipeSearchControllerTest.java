@@ -17,8 +17,8 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
-import com.cheftory.api.recipe.dto.RecipeOverview;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
+import com.cheftory.api.recipe.dto.RecipeOverview;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.net.URI;
@@ -105,22 +105,18 @@ public class RecipeSearchControllerTest extends RestDocsTest {
                                             .description("레시피 ID"),
                                     fieldWithPath("searched_recipes[].recipe_title")
                                             .description("레시피 제목"),
-                                    fieldWithPath("searched_recipes[].tags")
-                                            .description("레시피 태그 목록"),
+                                    fieldWithPath("searched_recipes[].tags").description("레시피 태그 목록"),
                                     fieldWithPath("searched_recipes[].tags[].name")
                                             .description("태그 이름"),
                                     fieldWithPath("searched_recipes[].description")
                                             .description("레시피 설명"),
-                                    fieldWithPath("searched_recipes[].servings")
-                                            .description("인분"),
+                                    fieldWithPath("searched_recipes[].servings").description("인분"),
                                     fieldWithPath("searched_recipes[].cooking_time")
                                             .description("조리 시간(분)"),
-                                    fieldWithPath("searched_recipes[].video_id")
-                                            .description("레시피 비디오 ID"),
+                                    fieldWithPath("searched_recipes[].video_id").description("레시피 비디오 ID"),
                                     fieldWithPath("searched_recipes[].channel_title")
                                             .description("레시피 채널명"),
-                                    fieldWithPath("searched_recipes[].count")
-                                            .description("레시피 조회 수"),
+                                    fieldWithPath("searched_recipes[].count").description("레시피 조회 수"),
                                     fieldWithPath("searched_recipes[].video_url")
                                             .description("레시피 비디오 URL"),
                                     fieldWithPath("searched_recipes[].video_type")

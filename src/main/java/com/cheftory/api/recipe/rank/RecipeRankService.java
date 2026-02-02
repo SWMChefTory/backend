@@ -12,7 +12,6 @@ import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;

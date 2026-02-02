@@ -11,7 +11,7 @@ public record RecentRecipesResponse(
         @JsonProperty("recent_recipes") List<RecentRecipeResponse> recentRecipes,
         @JsonProperty("has_next") boolean hasNext,
         @JsonProperty("next_cursor") String nextCursor) {
-    public static RecentRecipesResponse from(CursorPage<RecipeHistoryOverview> recentRecipes) {
+    public static RecentRecipesResponse from(CursorPage<RecipeBookmarkOverview> recentRecipes) {
         List<RecentRecipeResponse> responses =
                 recentRecipes.items().stream().map(RecentRecipeResponse::from).toList();
         return new RecentRecipesResponse(responses, recentRecipes.hasNext(), recentRecipes.nextCursor());
@@ -34,7 +34,7 @@ public record RecentRecipesResponse(
             @JsonProperty("recipe_status") String recipeStatus,
             @JsonProperty("credit_cost") Long creditCost,
             @JsonProperty("video_type") String videoType) {
-        public static RecentRecipeResponse from(RecipeHistoryOverview info) {
+        public static RecentRecipeResponse from(RecipeBookmarkOverview info) {
             return new RecentRecipeResponse(
                     info.getViewedAt(),
                     info.getLastPlaySeconds(),

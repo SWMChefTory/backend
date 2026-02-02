@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.dto;
 
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.briefing.entity.RecipeBriefing;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
@@ -10,7 +11,6 @@ import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -36,7 +36,7 @@ public record FullRecipeResponse(
                 fullRecipe.getRecipeIngredients().stream().map(Ingredient::from).toList(),
                 fullRecipe.getRecipeProgresses().stream().map(Progress::from).toList(),
                 fullRecipe.getRecipeSteps().stream().map(Step::from).toList(),
-                ViewStatus.from(fullRecipe.getRecipeHistory()),
+                fullRecipe.getRecipeBookmark() != null ? ViewStatus.from(fullRecipe.getRecipeBookmark()) : null,
                 fullRecipe.getRecipeDetailMeta() != null ? DetailMeta.from(fullRecipe.getRecipeDetailMeta()) : null,
                 fullRecipe.getRecipeTags().stream().map(Tag::from).toList(),
                 fullRecipe.getRecipeBriefings().stream().map(Briefing::from).toList(),
@@ -114,12 +114,9 @@ public record FullRecipeResponse(
             @JsonProperty("viewed_at") LocalDateTime viewedAt,
             @JsonProperty("last_play_seconds") Integer lastPlaySeconds,
             @JsonProperty("created_at") LocalDateTime createdAt) {
-        public static ViewStatus from(RecipeHistory viewStatus) {
+        public static ViewStatus from(RecipeBookmark bookmark) {
             return new ViewStatus(
-                    viewStatus.getId(),
-                    viewStatus.getViewedAt(),
-                    viewStatus.getLastPlaySeconds(),
-                    viewStatus.getCreatedAt());
+                    bookmark.getId(), bookmark.getViewedAt(), bookmark.getLastPlaySeconds(), bookmark.getCreatedAt());
         }
     }
 

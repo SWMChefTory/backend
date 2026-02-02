@@ -11,6 +11,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkUnCategorizedCount;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
 import com.cheftory.api.recipe.challenge.RecipeChallengeService;
@@ -34,18 +38,14 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.dto.FullRecipe;
+import com.cheftory.api.recipe.dto.RecipeBookmarkOverview;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
-import com.cheftory.api.recipe.dto.RecipeHistoryOverview;
 import com.cheftory.api.recipe.dto.RecipeInfoRecommendType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeOverview;
 import com.cheftory.api.recipe.dto.RecipeProgressStatus;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.history.RecipeHistoryService;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
-import com.cheftory.api.recipe.history.entity.RecipeHistoryCategorizedCount;
-import com.cheftory.api.recipe.history.entity.RecipeHistoryUnCategorizedCount;
 import com.cheftory.api.recipe.rank.RankingType;
 import com.cheftory.api.recipe.rank.RecipeRankService;
 import java.time.LocalDateTime;
@@ -56,14 +56,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 
 @DisplayName("RecipeFacade 테스트")
 class RecipeFacadeTest {
 
     private RecipeInfoService recipeInfoService;
-    private RecipeHistoryService recipeHistoryService;
+    private RecipeBookmarkService recipeBookmarkService;
     private RecipeCategoryService recipeCategoryService;
     private RecipeYoutubeMetaService recipeYoutubeMetaService;
     private RecipeStepService recipeStepService;
@@ -80,7 +78,7 @@ class RecipeFacadeTest {
     @BeforeEach
     void setUp() {
         recipeInfoService = mock(RecipeInfoService.class);
-        recipeHistoryService = mock(RecipeHistoryService.class);
+        recipeBookmarkService = mock(RecipeBookmarkService.class);
         recipeCategoryService = mock(RecipeCategoryService.class);
         recipeYoutubeMetaService = mock(RecipeYoutubeMetaService.class);
         recipeStepService = mock(RecipeStepService.class);
@@ -94,7 +92,7 @@ class RecipeFacadeTest {
 
         sut = new RecipeFacade(
                 recipeStepService,
-                recipeHistoryService,
+                recipeBookmarkService,
                 recipeCategoryService,
                 recipeYoutubeMetaService,
                 recipeIngredientService,
@@ -120,7 +118,7 @@ class RecipeFacadeTest {
 
             verify(recipeYoutubeMetaService).block(recipeId);
             verify(recipeInfoService).block(recipeId);
-            verify(recipeHistoryService).blockByRecipe(recipeId);
+            verify(recipeBookmarkService).blockByRecipe(recipeId);
         }
 
         @Test
@@ -138,7 +136,7 @@ class RecipeFacadeTest {
 
             verify(recipeYoutubeMetaService).block(recipeId);
             verify(recipeInfoService, never()).block(any());
-            verify(recipeHistoryService, never()).blockByRecipe(any());
+            verify(recipeBookmarkService, never()).blockByRecipe(any());
         }
     }
 
@@ -162,9 +160,9 @@ class RecipeFacadeTest {
             doReturn(Collections.emptyList()).when(recipeTagService).gets(recipeId);
             doReturn(Collections.emptyList()).when(recipeBriefingService).gets(recipeId);
             doReturn(mockYoutubeMeta(recipeId)).when(recipeYoutubeMetaService).get(recipeId);
-            doReturn(mockHistory(recipeId, userId)).when(recipeHistoryService).getWithView(userId, recipeId);
+            doReturn(mockBookmark(recipeId, userId)).when(recipeBookmarkService).getWithView(userId, recipeId);
 
-            FullRecipe result = sut.viewFullRecipe(recipeId, userId);
+            FullRecipe result = sut.getFullRecipe(recipeId, userId);
 
             assertThat(result).isNotNull();
             verify(recipeInfoService).getSuccess(recipeId);
@@ -180,7 +178,7 @@ class RecipeFacadeTest {
                     .when(recipeInfoService)
                     .getSuccess(recipeId);
 
-            assertThatThrownBy(() -> sut.viewFullRecipe(recipeId, userId))
+            assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_FOUND);
         }
@@ -200,7 +198,7 @@ class RecipeFacadeTest {
                     .when(recipeDetailMetaService)
                     .get(recipeId);
 
-            assertThatThrownBy(() -> sut.viewFullRecipe(recipeId, userId))
+            assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_FOUND);
         }
@@ -215,7 +213,7 @@ class RecipeFacadeTest {
                     .when(recipeInfoService)
                     .getSuccess(recipeId);
 
-            assertThatThrownBy(() -> sut.viewFullRecipe(recipeId, userId))
+            assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_FAILED);
         }
@@ -230,7 +228,7 @@ class RecipeFacadeTest {
                     .when(recipeInfoService)
                     .getSuccess(recipeId);
 
-            assertThatThrownBy(() -> sut.viewFullRecipe(recipeId, userId))
+            assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
@@ -252,7 +250,7 @@ class RecipeFacadeTest {
             doReturn(mockYoutubeMeta(recipeId)).when(recipeYoutubeMetaService).get(recipeId);
             doReturn(null).when(recipeDetailMetaService).get(recipeId);
             doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).gets(recipeId);
-            doReturn(false).when(recipeHistoryService).exist(userId, recipeId);
+            doReturn(false).when(recipeBookmarkService).exist(userId, recipeId);
 
             RecipeOverview result = sut.getRecipeOverview(recipeId, userId);
 
@@ -263,20 +261,20 @@ class RecipeFacadeTest {
     }
 
     @Nested
-    @DisplayName("최근/카테고리/미분류 히스토리 조회")
-    class HistoryOverviews {
+    @DisplayName("최근/카테고리/미분류 북마크 조회")
+    class BookmarkOverviews {
 
         @Test
-        @DisplayName("커서 기반 최근 히스토리를 반환한다")
-        void shouldReturnRecentsWithCursor() {
+        @DisplayName("커서 기반 최근 북마크를 반환한다")
+        void shouldReturnRecentBookmarksWithCursor() {
             UUID userId = UUID.randomUUID();
             String cursor = "cursor-1";
             UUID recipeId = UUID.randomUUID();
             String nextCursor = "cursor-2";
 
-            CursorPage<RecipeHistory> histories = CursorPage.of(List.of(mockHistory(recipeId, userId)), nextCursor);
+            CursorPage<RecipeBookmark> bookmarks = CursorPage.of(List.of(mockBookmark(recipeId, userId)), nextCursor);
 
-            doReturn(histories).when(recipeHistoryService).getRecents(userId, cursor);
+            doReturn(bookmarks).when(recipeBookmarkService).getRecents(userId, cursor);
             doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
                     .when(recipeInfoService)
                     .getValidRecipes(anyList());
@@ -288,25 +286,25 @@ class RecipeFacadeTest {
                     .getIn(anyList());
             doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
 
-            CursorPage<RecipeHistoryOverview> result = sut.getRecents(userId, cursor);
+            CursorPage<RecipeBookmarkOverview> result = sut.getRecents(userId, cursor);
 
             assertThat(result.items()).hasSize(1);
             assertThat(result.nextCursor()).isEqualTo(nextCursor);
-            verify(recipeHistoryService).getRecents(userId, cursor);
+            verify(recipeBookmarkService).getRecents(userId, cursor);
         }
 
         @Test
-        @DisplayName("커서 기반 카테고리 히스토리를 반환한다")
-        void shouldReturnCategorizedWithCursor() {
+        @DisplayName("커서 기반 카테고리 북마크를 반환한다")
+        void shouldReturnCategorizedBookmarksWithCursor() {
             UUID userId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
             String cursor = "cursor-1";
             UUID recipeId = UUID.randomUUID();
             String nextCursor = "cursor-2";
 
-            CursorPage<RecipeHistory> histories = CursorPage.of(List.of(mockHistory(recipeId, userId)), nextCursor);
+            CursorPage<RecipeBookmark> bookmarks = CursorPage.of(List.of(mockBookmark(recipeId, userId)), nextCursor);
 
-            doReturn(histories).when(recipeHistoryService).getCategorized(userId, categoryId, cursor);
+            doReturn(bookmarks).when(recipeBookmarkService).getCategorized(userId, categoryId, cursor);
             doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
                     .when(recipeInfoService)
                     .getValidRecipes(anyList());
@@ -318,24 +316,24 @@ class RecipeFacadeTest {
                     .getIn(anyList());
             doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
 
-            CursorPage<RecipeHistoryOverview> result = sut.getCategorized(userId, categoryId, cursor);
+            CursorPage<RecipeBookmarkOverview> result = sut.getCategorized(userId, categoryId, cursor);
 
             assertThat(result.items()).hasSize(1);
             assertThat(result.nextCursor()).isEqualTo(nextCursor);
-            verify(recipeHistoryService).getCategorized(userId, categoryId, cursor);
+            verify(recipeBookmarkService).getCategorized(userId, categoryId, cursor);
         }
 
         @Test
-        @DisplayName("커서 기반 미분류 히스토리를 반환한다")
-        void shouldReturnUncategorizedWithCursor() {
+        @DisplayName("커서 기반 미분류 북마크를 반환한다")
+        void shouldReturnUncategorizedBookmarksWithCursor() {
             UUID userId = UUID.randomUUID();
             String cursor = "cursor-1";
             UUID recipeId = UUID.randomUUID();
             String nextCursor = "cursor-2";
 
-            CursorPage<RecipeHistory> histories = CursorPage.of(List.of(mockHistory(recipeId, userId)), nextCursor);
+            CursorPage<RecipeBookmark> bookmarks = CursorPage.of(List.of(mockBookmark(recipeId, userId)), nextCursor);
 
-            doReturn(histories).when(recipeHistoryService).getUnCategorized(userId, cursor);
+            doReturn(bookmarks).when(recipeBookmarkService).getUnCategorized(userId, cursor);
             doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
                     .when(recipeInfoService)
                     .getValidRecipes(anyList());
@@ -347,11 +345,11 @@ class RecipeFacadeTest {
                     .getIn(anyList());
             doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
 
-            CursorPage<RecipeHistoryOverview> result = sut.getUnCategorized(userId, cursor);
+            CursorPage<RecipeBookmarkOverview> result = sut.getUnCategorized(userId, cursor);
 
             assertThat(result.items()).hasSize(1);
             assertThat(result.nextCursor()).isEqualTo(nextCursor);
-            verify(recipeHistoryService).getUnCategorized(userId, cursor);
+            verify(recipeBookmarkService).getUnCategorized(userId, cursor);
         }
     }
 
@@ -369,13 +367,15 @@ class RecipeFacadeTest {
             RecipeCategory c1 = mockCategory(categoryId1, "한식");
             RecipeCategory c2 = mockCategory(categoryId2, "양식");
 
-            RecipeHistoryCategorizedCount cc1 = mockCategorizedCount(categoryId1, 5);
-            RecipeHistoryCategorizedCount cc2 = mockCategorizedCount(categoryId2, 3);
+            RecipeBookmarkCategorizedCount cc1 = mockCategorizedCount(categoryId1, 5);
+            RecipeBookmarkCategorizedCount cc2 = mockCategorizedCount(categoryId2, 3);
 
             doReturn(List.of(c1, c2)).when(recipeCategoryService).getUsers(userId);
-            doReturn(List.of(cc1, cc2)).when(recipeHistoryService).countByCategories(List.of(categoryId1, categoryId2));
-            doReturn(RecipeHistoryUnCategorizedCount.of(2))
-                    .when(recipeHistoryService)
+            doReturn(List.of(cc1, cc2))
+                    .when(recipeBookmarkService)
+                    .countByCategories(List.of(categoryId1, categoryId2));
+            doReturn(RecipeBookmarkUnCategorizedCount.of(2))
+                    .when(recipeBookmarkService)
                     .countUncategorized(userId);
 
             com.cheftory.api.recipe.dto.RecipeCategoryCounts result = sut.getUserCategoryCounts(userId);
@@ -397,7 +397,7 @@ class RecipeFacadeTest {
 
             sut.deleteCategory(categoryId);
 
-            verify(recipeHistoryService).unCategorize(categoryId);
+            verify(recipeBookmarkService).unCategorize(categoryId);
             verify(recipeCategoryService).delete(categoryId);
         }
     }
@@ -452,7 +452,7 @@ class RecipeFacadeTest {
                     .when(recipeDetailMetaService)
                     .getIn(List.of(recipeId));
             doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+            doReturn(List.of()).when(recipeBookmarkService).getByRecipes(List.of(recipeId), userId);
 
             CursorPage<RecipeOverview> result = sut.getCuisineRecipes(RecipeCuisineType.KOREAN, userId, cursor);
 
@@ -487,7 +487,7 @@ class RecipeFacadeTest {
                     .when(recipeDetailMetaService)
                     .getIn(List.of(recipeId));
             doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+            doReturn(List.of()).when(recipeBookmarkService).getByRecipes(List.of(recipeId), userId);
 
             CursorPage<RecipeOverview> result =
                     sut.getRecommendRecipes(RecipeInfoRecommendType.POPULAR, userId, cursor, RecipeInfoVideoQuery.ALL);
@@ -519,7 +519,7 @@ class RecipeFacadeTest {
                     .when(recipeDetailMetaService)
                     .getIn(List.of(recipeId));
             doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+            doReturn(List.of()).when(recipeBookmarkService).getByRecipes(List.of(recipeId), userId);
 
             CursorPage<RecipeOverview> result =
                     sut.getRecommendRecipes(RecipeInfoRecommendType.CHEF, userId, cursor, RecipeInfoVideoQuery.ALL);
@@ -530,12 +530,12 @@ class RecipeFacadeTest {
         }
     }
 
-    private RecipeHistory mockHistory(UUID recipeId, UUID userId) {
-        RecipeHistory history = mock(RecipeHistory.class);
-        doReturn(recipeId).when(history).getRecipeId();
-        doReturn(userId).when(history).getUserId();
-        doReturn(LocalDateTime.now()).when(history).getViewedAt();
-        return history;
+    private RecipeBookmark mockBookmark(UUID recipeId, UUID userId) {
+        RecipeBookmark bookmark = mock(RecipeBookmark.class);
+        doReturn(recipeId).when(bookmark).getRecipeId();
+        doReturn(userId).when(bookmark).getUserId();
+        doReturn(LocalDateTime.now()).when(bookmark).getViewedAt();
+        return bookmark;
     }
 
     private RecipeInfo mockRecipe(UUID recipeId, RecipeStatus status) {
@@ -580,8 +580,8 @@ class RecipeFacadeTest {
         return c;
     }
 
-    private RecipeHistoryCategorizedCount mockCategorizedCount(UUID categoryId, int count) {
-        RecipeHistoryCategorizedCount cc = mock(RecipeHistoryCategorizedCount.class);
+    private RecipeBookmarkCategorizedCount mockCategorizedCount(UUID categoryId, int count) {
+        RecipeBookmarkCategorizedCount cc = mock(RecipeBookmarkCategorizedCount.class);
         doReturn(categoryId).when(cc).getCategoryId();
         doReturn(count).when(cc).getCount();
         return cc;

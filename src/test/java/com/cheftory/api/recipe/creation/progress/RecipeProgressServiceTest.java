@@ -56,9 +56,17 @@ public class RecipeProgressServiceTest {
                 void setUp() {
                     recipeProgress = List.of(
                             RecipeProgress.create(
-                                    recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY, RecipeProgressState.SUCCESS),
+                                    recipeId,
+                                    clock,
+                                    RecipeProgressStep.READY,
+                                    RecipeProgressDetail.READY,
+                                    RecipeProgressState.SUCCESS),
                             RecipeProgress.create(
-                                    recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.CAPTION, RecipeProgressState.SUCCESS));
+                                    recipeId,
+                                    clock,
+                                    RecipeProgressStep.STEP,
+                                    RecipeProgressDetail.CAPTION,
+                                    RecipeProgressState.SUCCESS));
                     doReturn(recipeProgress)
                             .when(recipeProgressRepository)
                             .findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
@@ -100,12 +108,30 @@ public class RecipeProgressServiceTest {
 
                 // 시간 순서대로 정렬된 RecipeProgress 목록 생성
                 sortedRecipeProgress = List.of(
-                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY, RecipeProgressState.SUCCESS),
                         RecipeProgress.create(
-                                recipeId, clock, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION, RecipeProgressState.SUCCESS),
-                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, RecipeProgressState.SUCCESS),
+                                recipeId,
+                                clock,
+                                RecipeProgressStep.READY,
+                                RecipeProgressDetail.READY,
+                                RecipeProgressState.SUCCESS),
                         RecipeProgress.create(
-                                recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, RecipeProgressState.SUCCESS));
+                                recipeId,
+                                clock,
+                                RecipeProgressStep.CAPTION,
+                                RecipeProgressDetail.CAPTION,
+                                RecipeProgressState.SUCCESS),
+                        RecipeProgress.create(
+                                recipeId,
+                                clock,
+                                RecipeProgressStep.STEP,
+                                RecipeProgressDetail.STEP,
+                                RecipeProgressState.SUCCESS),
+                        RecipeProgress.create(
+                                recipeId,
+                                clock,
+                                RecipeProgressStep.FINISHED,
+                                RecipeProgressDetail.FINISHED,
+                                RecipeProgressState.SUCCESS));
 
                 doReturn(sortedRecipeProgress)
                         .when(recipeProgressRepository)

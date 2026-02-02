@@ -44,7 +44,7 @@ class RecipeIdentifyTest {
 
                 @BeforeEach
                 void createEntity() {
-                    recipeIdentify = RecipeIdentify.create(url, recipeId, clock);
+                    recipeIdentify = RecipeIdentify.create(url, clock);
                 }
 
                 @Test
@@ -53,18 +53,16 @@ class RecipeIdentifyTest {
                     assertThat(recipeIdentify).isNotNull();
                     assertThat(recipeIdentify.getId()).isNotNull();
                     assertThat(recipeIdentify.getUrl()).isEqualTo(url);
-                    assertThat(recipeIdentify.getRecipeId()).isEqualTo(recipeId);
                     assertThat(recipeIdentify.getCreatedAt()).isEqualTo(now);
                 }
 
                 @Test
                 @DisplayName("Then - 동일한 URL과 recipeId로 다른 create()를 호출하면 ID는 달라진다")
                 void thenDifferentIdsForDifferentInstances() {
-                    RecipeIdentify another = RecipeIdentify.create(url, recipeId, clock);
+                    RecipeIdentify another = RecipeIdentify.create(url, clock);
 
                     assertThat(another.getId()).isNotEqualTo(recipeIdentify.getId());
                     assertThat(another.getUrl()).isEqualTo(url);
-                    assertThat(another.getRecipeId()).isEqualTo(recipeId);
                     assertThat(another.getCreatedAt()).isEqualTo(now);
                 }
             }

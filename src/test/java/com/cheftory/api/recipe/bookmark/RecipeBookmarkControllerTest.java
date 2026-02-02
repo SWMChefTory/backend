@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.history;
+package com.cheftory.api.recipe.bookmark;
 
 import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;
 import static com.cheftory.api.utils.RestDocsUtils.requestAccessTokenFields;
@@ -9,6 +9,7 @@ import static com.cheftory.api.utils.RestDocsUtils.responseSuccessFields;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -22,6 +23,8 @@ import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.exception.RecipeCategoryErrorCode;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
+import com.cheftory.api.recipe.exception.RecipeErrorCode;
+import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Map;
@@ -35,10 +38,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @DisplayName("RecipeViewStatusController Tests")
-public class RecipeHistoryControllerTest extends RestDocsTest {
+public class RecipeBookmarkControllerTest extends RestDocsTest {
 
-    private RecipeHistoryController controller;
-    private RecipeHistoryService recipeHistoryService;
+    private RecipeBookmarkController controller;
+    private RecipeBookmarkService recipeBookmarkService;
+    private RecipeBookmarkFacade recipeBookmarkFacade;
     private RecipeInfoService recipeInfoService;
     private RecipeCategoryService recipeCategoryService;
     private GlobalExceptionHandler exceptionHandler;
@@ -46,12 +50,13 @@ public class RecipeHistoryControllerTest extends RestDocsTest {
 
     @BeforeEach
     void setUp() {
-        recipeHistoryService = mock(RecipeHistoryService.class);
+        recipeBookmarkService = mock(RecipeBookmarkService.class);
+        recipeBookmarkFacade = mock(RecipeBookmarkFacade.class);
         recipeCategoryService = mock(RecipeCategoryService.class);
         recipeInfoService = mock(RecipeInfoService.class);
         exceptionHandler = new GlobalExceptionHandler();
         userArgumentResolver = new UserArgumentResolver();
-        controller = new RecipeHistoryController(recipeHistoryService);
+        controller = new RecipeBookmarkController(recipeBookmarkService, recipeBookmarkFacade);
 
         mockMvc = mockMvcBuilder(controller)
                 .withValidator(RecipeCategoryService.class, recipeCategoryService)
@@ -62,11 +67,11 @@ public class RecipeHistoryControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("레시피 조회 상태 카테고리 업데이트")
-    class UpdateRecipeHistoryRecipeCategory {
+    @DisplayName("레시피 북마크 카테고리 업데이트")
+    class UpdateRecipeBookmarkRecipeCategory {
 
         @Nested
-        @DisplayName("Given - 레시피 조회 상태 카테고리 업데이트 요청이 주어졌을 때")
+        @DisplayName("Given - 레시피 북마크 카테고리 업데이트 요청이 주어졌을 때")
         class GivenValidParametersForUpdate {
 
             private UUID categoryId;
@@ -87,20 +92,20 @@ public class RecipeHistoryControllerTest extends RestDocsTest {
             }
 
             @Nested
-            @DisplayName("When - 레시피 조회 상태 카테고리를 업데이트한다면")
-            class WhenUpdatingRecipeHistoryRecipeCategory {
+            @DisplayName("When - 레시피 북마크 카테고리를 업데이트한다면")
+            class WhenUpdatingRecipeBookmarkRecipeCategory {
 
                 @BeforeEach
                 void setUp() {
                     doReturn(true).when(recipeCategoryService).exists(any(UUID.class));
                     doNothing()
-                            .when(recipeHistoryService)
+                            .when(recipeBookmarkService)
                             .updateCategory(any(UUID.class), any(UUID.class), any(UUID.class));
                     doReturn(true).when(recipeInfoService).exists(any(UUID.class));
                 }
 
                 @Test
-                @DisplayName("Then - 레시피 조회 상태 카테고리를 업데이트한다 - 성공")
+                @DisplayName("Then - 레시피 북마크 카테고리를 업데이트한다 - 성공")
                 void thenShouldUpdateRecipeViewStatusCategory() {
                     var response = given().contentType(ContentType.JSON)
                             .attribute("userId", userId)
@@ -116,18 +121,18 @@ public class RecipeHistoryControllerTest extends RestDocsTest {
                                     responsePreprocessor(),
                                     requestAccessTokenFields(),
                                     pathParameters(parameterWithName("recipeId").description("레시피 ID")),
-                                    requestFields(fieldWithPath("category_id").description("레시피 조회 상태 카테고리 ID")),
+                                    requestFields(fieldWithPath("category_id").description("레시피 북마크 카테고리 ID")),
                                     responseSuccessFields()));
                     assertSuccessResponse(response);
-                    verify(recipeHistoryService).updateCategory(userId, recipeId, categoryId);
+                    verify(recipeBookmarkService).updateCategory(userId, recipeId, categoryId);
                 }
             }
         }
     }
 
     @Nested
-    @DisplayName("레시피 조회 상태 카테고리 업데이트 - 예외 처리")
-    class UpdateRecipeHistoryRecipeRecipeCategoryException {
+    @DisplayName("레시피 북마크 카테고리 업데이트 - 예외 처리")
+    class UpdateRecipeBookmarkRecipeRecipeCategoryException {
 
         @Nested
         @DisplayName("Given - 존재하지 않는 카테고리 ID가 주어졌을 때")
@@ -166,17 +171,17 @@ public class RecipeHistoryControllerTest extends RestDocsTest {
                                 responsePreprocessor(),
                                 requestAccessTokenFields(),
                                 pathParameters(parameterWithName("recipeId").description("레시피 ID")),
-                                requestFields(fieldWithPath("category_id").description("레시피 조회 상태 카테고리 ID")),
+                                requestFields(fieldWithPath("category_id").description("레시피 북마크 카테고리 ID")),
                                 responseErrorFields(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND)));
             }
         }
     }
 
     @Nested
-    @DisplayName("레시피 조회 상태 삭제")
-    class DeleteRecipeHistory {
+    @DisplayName("레시피 북마크 삭제")
+    class DeleteRecipeBookmark {
         @Nested
-        @DisplayName("Given - 레시피 조회 상태 삭제 요청이 주어졌을 때")
+        @DisplayName("Given - 레시피 북마크 삭제 요청이 주어졌을 때")
         class GivenValidParametersForDelete {
 
             private UUID recipeId;
@@ -190,22 +195,22 @@ public class RecipeHistoryControllerTest extends RestDocsTest {
                 var authentication = new UsernamePasswordAuthenticationToken(userId, null);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                doNothing().when(recipeHistoryService).delete(any(UUID.class), any(UUID.class));
+                doNothing().when(recipeBookmarkService).delete(any(UUID.class), any(UUID.class));
                 doReturn(true).when(recipeInfoService).exists(any(UUID.class));
             }
 
             @Nested
-            @DisplayName("When - 레시피 조회 상태를 삭제한다면")
-            class WhenDeletingRecipeHistory {
+            @DisplayName("When - 레시피 북마크를 삭제한다면")
+            class WhenDeletingRecipeBookmark {
 
                 @Test
-                @DisplayName("Then - 레시피 조회 상태를 삭제한다 - 성공")
+                @DisplayName("Then - 레시피 북마크를 삭제한다 - 성공")
                 void thenShouldDeleteRecipeViewStatus() {
                     given().contentType(ContentType.JSON)
                             .attribute("userId", userId)
                             .header("Authorization", "Bearer accessToken")
                             .when()
-                            .delete("/api/v1/recipes/{recipeId}", recipeId)
+                            .delete("/api/v1/recipes/{recipeId}/bookmark", recipeId)
                             .then()
                             .status(HttpStatus.OK)
                             .apply(document(
@@ -215,8 +220,99 @@ public class RecipeHistoryControllerTest extends RestDocsTest {
                                     requestAccessTokenFields(),
                                     pathParameters(parameterWithName("recipeId").description("레시피 ID")),
                                     responseSuccessFields()));
-                    verify(recipeHistoryService).delete(userId, recipeId);
+                    verify(recipeBookmarkService).delete(userId, recipeId);
                 }
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("레시피 북마크 생성")
+    class CreateRecipeBookmark {
+
+        @Nested
+        @DisplayName("Given - 레시피 북마크 생성 요청이 주어졌을 때")
+        class GivenValidParametersForCreate {
+
+            private UUID recipeId;
+            private UUID userId;
+
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                userId = UUID.randomUUID();
+
+                var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                doReturn(true).when(recipeInfoService).exists(any(UUID.class));
+            }
+
+            @Nested
+            @DisplayName("When - 레시피 북마크를 생성한다면")
+            class WhenCreatingRecipeBookmark {
+
+                @Test
+                @DisplayName("Then - 레시피 북마크를 생성한다 - 성공")
+                void thenShouldCreateRecipeBookmark() {
+                    var response = given().contentType(ContentType.JSON)
+                            .attribute("userId", userId)
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .post("/api/v1/recipes/{recipeId}/bookmark", recipeId)
+                            .then()
+                            .status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    requestAccessTokenFields(),
+                                    pathParameters(parameterWithName("recipeId").description("레시피 ID")),
+                                    responseSuccessFields()));
+                    assertSuccessResponse(response);
+                    verify(recipeBookmarkFacade).createAndCharge(userId, recipeId);
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
+        class GivenNonExistentRecipeId {
+
+            private UUID recipeId;
+            private UUID userId;
+
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                userId = UUID.randomUUID();
+
+                var authentication = new UsernamePasswordAuthenticationToken(userId, null);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                doReturn(true).when(recipeInfoService).exists(any(UUID.class));
+                doThrow(new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND))
+                        .when(recipeBookmarkFacade)
+                        .createAndCharge(any(UUID.class), any(UUID.class));
+            }
+
+            @Test
+            @DisplayName("Then - 예외가 발생해야 한다")
+            void thenShouldThrowException() {
+                given().contentType(ContentType.JSON)
+                        .attribute("userId", userId)
+                        .header("Authorization", "Bearer accessToken")
+                        .when()
+                        .post("/api/v1/recipes/{recipeId}/bookmark", recipeId)
+                        .then()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .apply(document(
+                                getNestedClassPath(this.getClass()) + "/{method-name}",
+                                requestPreprocessor(),
+                                responsePreprocessor(),
+                                requestAccessTokenFields(),
+                                pathParameters(parameterWithName("recipeId").description("레시피 ID")),
+                                responseErrorFields(RecipeErrorCode.RECIPE_NOT_FOUND)));
             }
         }
     }

@@ -1,12 +1,12 @@
-package com.cheftory.api.recipe.history;
+package com.cheftory.api.recipe.bookmark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
-import com.cheftory.api.recipe.history.entity.RecipeHistoryStatus;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -19,11 +19,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@DisplayName("RecipeHistoryRepository Tests")
-public class RecipeHistoryRepositoryTest extends DbContextTest {
+@DisplayName("RecipeBookmarkRepository Tests")
+public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
     @Autowired
-    private RecipeHistoryRepository repository;
+    private RecipeBookmarkRepository repository;
 
     @MockitoBean
     private Clock clock;
@@ -32,20 +32,20 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
     void setUp() {}
 
     @Nested
-    @DisplayName("레시피 조회 상태 저장")
-    class SaveRecipeHistory {
+    @DisplayName("레시피 북마크 저장")
+    class SaveRecipeBookmark {
 
         @Test
-        @DisplayName("레시피 조회 상태가 저장된다")
-        void shouldSaveRecipeHistory() {
+        @DisplayName("레시피 북마크가 저장된다")
+        void shouldSaveRecipeBookmark() {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
             when(clock.now()).thenReturn(LocalDateTime.now());
 
-            RecipeHistory history = RecipeHistory.create(clock, userId, recipeId);
-            repository.save(history);
+            RecipeBookmark bookmark = RecipeBookmark.create(clock, userId, recipeId);
+            repository.save(bookmark);
 
-            RecipeHistory saved = repository.findById(history.getId()).orElseThrow();
+            RecipeBookmark saved = repository.findById(bookmark.getId()).orElseThrow();
             assertThat(saved.getRecipeId()).isEqualTo(recipeId);
             assertThat(saved.getUserId()).isEqualTo(userId);
         }
@@ -56,7 +56,7 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
     class CursorQueries {
 
         @Test
-        @DisplayName("최근 기록 첫 페이지를 조회한다")
+        @DisplayName("최근 북마크 첫 페이지를 조회한다")
         void shouldFindRecentsFirst() {
             UUID userId = UUID.randomUUID();
             when(clock.now())
@@ -65,12 +65,12 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
                             LocalDateTime.of(2024, 1, 1, 11, 0),
                             LocalDateTime.of(2024, 1, 1, 12, 0));
 
-            RecipeHistory h1 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
-            RecipeHistory h2 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
-            RecipeHistory h3 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+            RecipeBookmark h1 = repository.save(RecipeBookmark.create(clock, userId, UUID.randomUUID()));
+            RecipeBookmark h2 = repository.save(RecipeBookmark.create(clock, userId, UUID.randomUUID()));
+            RecipeBookmark h3 = repository.save(RecipeBookmark.create(clock, userId, UUID.randomUUID()));
 
             Pageable pageable = PageRequest.of(0, 2);
-            List<RecipeHistory> result = repository.findRecentsFirst(userId, RecipeHistoryStatus.ACTIVE, pageable);
+            List<RecipeBookmark> result = repository.findRecentsFirst(userId, RecipeBookmarkStatus.ACTIVE, pageable);
 
             assertThat(result).hasSize(2);
             assertThat(result.getFirst().getViewedAt()).isEqualTo(h3.getViewedAt());
@@ -78,22 +78,25 @@ public class RecipeHistoryRepositoryTest extends DbContextTest {
         }
 
         @Test
-        @DisplayName("최근 기록 keyset을 조회한다")
+        @DisplayName("최근 북마크 keyset을 조회한다")
         void shouldFindRecentsKeyset() {
             UUID userId = UUID.randomUUID();
             when(clock.now())
                     .thenReturn(
                             LocalDateTime.of(2024, 1, 1, 10, 0),
+                            LocalDateTime.of(2024, 1, 1, 10, 0),
                             LocalDateTime.of(2024, 1, 1, 11, 0),
+                            LocalDateTime.of(2024, 1, 1, 11, 0),
+                            LocalDateTime.of(2024, 1, 1, 12, 0),
                             LocalDateTime.of(2024, 1, 1, 12, 0));
 
-            RecipeHistory h1 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
-            RecipeHistory h2 = repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
-            repository.save(RecipeHistory.create(clock, userId, UUID.randomUUID()));
+            RecipeBookmark h1 = repository.save(RecipeBookmark.create(clock, userId, UUID.randomUUID()));
+            RecipeBookmark h2 = repository.save(RecipeBookmark.create(clock, userId, UUID.randomUUID()));
+            repository.save(RecipeBookmark.create(clock, userId, UUID.randomUUID()));
 
             Pageable pageable = PageRequest.of(0, 2);
-            List<RecipeHistory> result = repository.findRecentsKeyset(
-                    userId, RecipeHistoryStatus.ACTIVE, h2.getViewedAt(), h2.getId(), pageable);
+            List<RecipeBookmark> result = repository.findRecentsKeyset(
+                    userId, RecipeBookmarkStatus.ACTIVE, h2.getViewedAt(), h2.getId(), pageable);
 
             assertThat(result).hasSize(1);
             assertThat(result.getFirst().getId()).isEqualTo(h1.getId());

@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.history.entity;
+package com.cheftory.api.recipe.bookmark.entity;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class RecipeHistoryUnCategorizedCount {
+public class RecipeBookmarkUnCategorizedCount {
     private Integer count;
 
-    public static RecipeHistoryUnCategorizedCount of(Integer count) {
-        return new RecipeHistoryUnCategorizedCount(count);
+    public static RecipeBookmarkUnCategorizedCount of(Integer count) {
+        return new RecipeBookmarkUnCategorizedCount(count);
     }
 }

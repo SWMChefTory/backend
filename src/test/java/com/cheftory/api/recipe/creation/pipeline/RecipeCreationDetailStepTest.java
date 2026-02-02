@@ -26,8 +26,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
 
 @DisplayName("RecipeCreationDetailStep")
 class RecipeCreationDetailStepTest {
@@ -85,7 +85,8 @@ class RecipeCreationDetailStepTest {
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
-            verify(recipeProgressService, never()).start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            verify(recipeProgressService, never())
+                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
         }
 
         @Test
@@ -95,27 +96,20 @@ class RecipeCreationDetailStepTest {
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
             RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context =
-                    RecipeCreationExecutionContext.from(
-                            RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
 
             RecipeDetail detail = RecipeDetail.of(
-                    "desc",
-                    List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")),
-                    List.of("tag1"),
-                    2,
-                    10);
+                    "desc", List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")), List.of("tag1"), 2, 10);
             when(recipeDetailService.getRecipeDetails(videoId, caption)).thenReturn(detail);
 
             sut.run(context);
 
             InOrder order = inOrder(recipeProgressService);
-            order.verify(recipeProgressService)
-                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
             order.verify(recipeProgressService)
                     .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
-            order.verify(recipeProgressService)
-                    .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
+            order.verify(recipeProgressService).success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
             order.verify(recipeProgressService)
                     .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
             order.verify(recipeProgressService)
@@ -123,7 +117,8 @@ class RecipeCreationDetailStepTest {
 
             verify(recipeIngredientService).create(recipeId, detail.ingredients());
             verify(recipeTagService).create(recipeId, detail.tags());
-            verify(recipeDetailMetaService).create(recipeId, detail.cookTime(), detail.servings(), detail.description());
+            verify(recipeDetailMetaService)
+                    .create(recipeId, detail.cookTime(), detail.servings(), detail.description());
         }
 
         @Test
@@ -133,9 +128,8 @@ class RecipeCreationDetailStepTest {
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");
             RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context =
-                    RecipeCreationExecutionContext.from(
-                            RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
 
             when(recipeDetailService.getRecipeDetails(videoId, caption))
                     .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
@@ -144,10 +138,8 @@ class RecipeCreationDetailStepTest {
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
-            verify(recipeProgressService)
-                    .failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
-            verify(recipeIngredientService, never())
-                    .create(ArgumentMatchers.any(), ArgumentMatchers.anyList());
+            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            verify(recipeIngredientService, never()).create(ArgumentMatchers.any(), ArgumentMatchers.anyList());
         }
     }
 }

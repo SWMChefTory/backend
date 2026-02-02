@@ -17,14 +17,11 @@ import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
-import com.cheftory.api.recipe.dto.RecipeSort;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 @DisplayName("RecipeInfoService")
@@ -205,105 +202,6 @@ class RecipeInfoServiceTest {
                             .isEqualTo(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.getErrorCode());
                     verify(recipeInfoRepository).findById(recipeId);
                     verify(recipeInfoRepository, never()).increaseCount(any());
-                }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("findNotFailed(recipeIds)")
-    class FindNotFailed {
-
-        private List<UUID> recipeIds;
-
-        @BeforeEach
-        void init() {
-            recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-        }
-
-        @Nested
-        @DisplayName("Given - 유효한 레시피가 하나 존재할 때")
-        class GivenValidRecipeInfoExists {
-
-            private RecipeInfo validRecipeInfo;
-            private RecipeInfo failedRecipeInfo;
-
-            @BeforeEach
-            void setUp() {
-                validRecipeInfo = mock(RecipeInfo.class);
-                failedRecipeInfo = mock(RecipeInfo.class);
-                when(validRecipeInfo.isFailed()).thenReturn(false);
-                when(failedRecipeInfo.isFailed()).thenReturn(true);
-                when(recipeInfoRepository.findAllByIdIn(recipeIds))
-                        .thenReturn(List.of(validRecipeInfo, failedRecipeInfo));
-            }
-
-            @Nested
-            @DisplayName("When - 레시피 조회 요청을 하면")
-            class WhenFindingRecipeInfo {
-
-                @Test
-                @DisplayName("Then - 유효한 레시피가 반환된다")
-                void thenReturnValidRecipe() {
-                    RecipeInfo result = service.getNotFailed(recipeIds);
-
-                    assertThat(result).isEqualTo(validRecipeInfo);
-                    verify(recipeInfoRepository).findAllByIdIn(recipeIds);
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 모든 레시피가 실패 상태일 때")
-        class GivenAllRecipesFailed {
-
-            @BeforeEach
-            void setUp() {
-                RecipeInfo failedRecipeInfo1 = mock(RecipeInfo.class);
-                RecipeInfo failedRecipeInfo2 = mock(RecipeInfo.class);
-                when(failedRecipeInfo1.isFailed()).thenReturn(true);
-                when(failedRecipeInfo2.isFailed()).thenReturn(true);
-                when(recipeInfoRepository.findAllByIdIn(recipeIds))
-                        .thenReturn(List.of(failedRecipeInfo1, failedRecipeInfo2));
-            }
-
-            @Nested
-            @DisplayName("When - 레시피 조회 요청을 하면")
-            class WhenFindingRecipeInfo {
-
-                @Test
-                @DisplayName("Then - RECIPE_FAILED 예외가 발생한다")
-                void thenThrowsRecipeFailedException() {
-                    RecipeInfoException ex =
-                            assertThrows(RecipeInfoException.class, () -> service.getNotFailed(recipeIds));
-
-                    assertThat(ex.getErrorMessage().getErrorCode())
-                            .isEqualTo(RecipeInfoErrorCode.RECIPE_FAILED.getErrorCode());
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 레시피가 존재하지 않을 때")
-        class GivenNoRecipeInfoExists {
-
-            @BeforeEach
-            void setUp() {
-                when(recipeInfoRepository.findAllByIdIn(recipeIds)).thenReturn(List.of());
-            }
-
-            @Nested
-            @DisplayName("When - 레시피 조회 요청을 하면")
-            class WhenFindingRecipeInfo {
-
-                @Test
-                @DisplayName("Then - RECIPE_NOT_FOUND 예외가 발생한다")
-                void thenThrowsRecipeNotFoundException() {
-                    RecipeInfoException ex =
-                            assertThrows(RecipeInfoException.class, () -> service.getNotFailed(recipeIds));
-
-                    assertThat(ex.getErrorMessage().getErrorCode())
-                            .isEqualTo(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.getErrorCode());
                 }
             }
         }
@@ -600,46 +498,6 @@ class RecipeInfoServiceTest {
 
                     assertThat(result).isFalse();
                     verify(recipeInfoRepository).existsById(recipeId);
-                }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("Edge Cases and Error Scenarios")
-    class EdgeCasesAndErrorScenarios {
-
-        @Nested
-        @DisplayName("Given - findNotFailed에서 multiple valid recipes warning 상황")
-        class GivenMultipleValidRecipesWarning {
-
-            private List<UUID> recipeIds;
-            private RecipeInfo validRecipeInfo1;
-            private RecipeInfo validRecipeInfo2;
-
-            @BeforeEach
-            void setUp() {
-                recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-                validRecipeInfo1 = mock(RecipeInfo.class);
-                validRecipeInfo2 = mock(RecipeInfo.class);
-
-                when(validRecipeInfo1.isFailed()).thenReturn(false);
-                when(validRecipeInfo2.isFailed()).thenReturn(false);
-                when(recipeInfoRepository.findAllByIdIn(recipeIds))
-                        .thenReturn(List.of(validRecipeInfo1, validRecipeInfo2));
-            }
-
-            @Nested
-            @DisplayName("When - 여러 유효한 레시피가 조회될 때")
-            class WhenMultipleValidRecipesFound {
-
-                @Test
-                @DisplayName("Then - 첫 번째 레시피가 반환되고 경고 로그가 출력된다")
-                void thenReturnFirstRecipeAndLogWarning() {
-                    RecipeInfo result = service.getNotFailed(recipeIds);
-
-                    assertThat(result).isEqualTo(validRecipeInfo1);
-                    verify(recipeInfoRepository).findAllByIdIn(recipeIds);
                 }
             }
         }

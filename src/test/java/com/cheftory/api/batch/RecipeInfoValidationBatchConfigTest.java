@@ -15,6 +15,9 @@ import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.MarketContext;
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkRepository;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkStatus;
 import com.cheftory.api.recipe.content.info.RecipeInfoRepository;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
@@ -25,9 +28,6 @@ import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaStatus;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
-import com.cheftory.api.recipe.history.RecipeHistoryRepository;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
-import com.cheftory.api.recipe.history.entity.RecipeHistoryStatus;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.UUID;
@@ -60,7 +60,7 @@ class RecipeInfoValidationBatchConfigTest {
     private RecipeInfoRepository recipeInfoRepository;
 
     @Autowired
-    private RecipeHistoryRepository recipeHistoryRepository;
+    private RecipeBookmarkRepository recipeBookmarkRepository;
 
     @Autowired
     private Clock clock;
@@ -77,13 +77,13 @@ class RecipeInfoValidationBatchConfigTest {
     @BeforeEach
     void setUp() {
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-            recipeHistoryRepository.deleteAll();
+            recipeBookmarkRepository.deleteAll();
             youtubeMetaRepository.deleteAll();
             recipeInfoRepository.deleteAll();
         }
 
         try (var ignored = MarketContext.with(new MarketContext.Info(GLOBAL, "US"))) {
-            recipeHistoryRepository.deleteAll();
+            recipeBookmarkRepository.deleteAll();
             youtubeMetaRepository.deleteAll();
             recipeInfoRepository.deleteAll();
         }
@@ -97,13 +97,13 @@ class RecipeInfoValidationBatchConfigTest {
 
         UUID invalidRecipeId;
         UUID invalidYoutubeMetaId;
-        UUID invalidHistoryId;
+        UUID invalidBookmarkId;
 
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             invalidRecipeId = createRecipe(creditCost, KOREA.name());
             invalidYoutubeMetaId = createYoutubeMeta(
                     invalidRecipeId, "invalid_video_id1", "https://www.youtube.com/watch?v=invalid_video_id1");
-            invalidHistoryId = createRecipeHistory(userId, invalidRecipeId);
+            invalidBookmarkId = createRecipeBookmark(userId, invalidRecipeId);
         }
 
         when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
@@ -114,7 +114,7 @@ class RecipeInfoValidationBatchConfigTest {
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             assertYoutubeMetaStatus(invalidYoutubeMetaId, YoutubeMetaStatus.BLOCKED);
             assertRecipeStatus(invalidRecipeId, RecipeStatus.BLOCKED);
-            assertHistoryStatus(invalidHistoryId, RecipeHistoryStatus.BLOCKED);
+            assertBookmarkStatus(invalidBookmarkId, RecipeBookmarkStatus.BLOCKED);
         }
 
         verify(recipeCreditPort, times(1)).refundRecipeCreate(eq(userId), eq(invalidRecipeId), eq(creditCost));
@@ -128,13 +128,13 @@ class RecipeInfoValidationBatchConfigTest {
 
         UUID validRecipeId;
         UUID validYoutubeMetaId;
-        UUID validHistoryId;
+        UUID validBookmarkId;
 
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             validRecipeId = createRecipe(creditCost, KOREA.name());
             validYoutubeMetaId = createYoutubeMeta(
                     validRecipeId, "valid_video_id2", "https://www.youtube.com/watch?v=valid_video_id2");
-            validHistoryId = createRecipeHistory(userId, validRecipeId);
+            validBookmarkId = createRecipeBookmark(userId, validRecipeId);
         }
 
         when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
@@ -145,7 +145,7 @@ class RecipeInfoValidationBatchConfigTest {
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             assertYoutubeMetaStatus(validYoutubeMetaId, YoutubeMetaStatus.ACTIVE);
             assertRecipeStatus(validRecipeId, RecipeStatus.IN_PROGRESS);
-            assertHistoryStatus(validHistoryId, RecipeHistoryStatus.ACTIVE);
+            assertBookmarkStatus(validBookmarkId, RecipeBookmarkStatus.ACTIVE);
         }
 
         verify(recipeCreditPort, never()).refundRecipeCreate(any(), any(), anyLong());
@@ -164,7 +164,7 @@ class RecipeInfoValidationBatchConfigTest {
             recipeId = createRecipe(creditCost, KOREA.name());
             youtubeMetaId =
                     createYoutubeMeta(recipeId, "test_video_id4", "https://www.youtube.com/watch?v=test_video_id4");
-            createRecipeHistory(userId, recipeId);
+            createRecipeBookmark(userId, recipeId);
         }
 
         when(videoInfoClient.isBlockedVideo(any())).thenThrow(new RuntimeException("API Error"));
@@ -222,24 +222,24 @@ class RecipeInfoValidationBatchConfigTest {
 
         UUID koreaRecipeId;
         UUID koreaMetaId;
-        UUID koreaHistoryId;
+        UUID koreaBookmarkId;
 
         UUID globalRecipeId;
         UUID globalMetaId;
-        UUID globalHistoryId;
+        UUID globalBookmarkId;
 
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             koreaRecipeId = createRecipe(koreaCreditCost, KOREA.name());
             koreaMetaId =
                     createYoutubeMeta(koreaRecipeId, "korea_invalid", "https://www.youtube.com/watch?v=korea_invalid");
-            koreaHistoryId = createRecipeHistory(koreaUserId, koreaRecipeId);
+            koreaBookmarkId = createRecipeBookmark(koreaUserId, koreaRecipeId);
         }
 
         try (var ignored = MarketContext.with(new MarketContext.Info(GLOBAL, "US"))) {
             globalRecipeId = createRecipe(globalCreditCost, GLOBAL.name());
             globalMetaId = createYoutubeMeta(
                     globalRecipeId, "global_invalid", "https://www.youtube.com/watch?v=global_invalid");
-            globalHistoryId = createRecipeHistory(globalUserId, globalRecipeId);
+            globalBookmarkId = createRecipeBookmark(globalUserId, globalRecipeId);
         }
 
         when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
@@ -251,13 +251,13 @@ class RecipeInfoValidationBatchConfigTest {
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             assertYoutubeMetaStatus(koreaMetaId, YoutubeMetaStatus.BLOCKED);
             assertRecipeStatus(koreaRecipeId, RecipeStatus.BLOCKED);
-            assertHistoryStatus(koreaHistoryId, RecipeHistoryStatus.BLOCKED);
+            assertBookmarkStatus(koreaBookmarkId, RecipeBookmarkStatus.BLOCKED);
         }
 
         try (var ignored = MarketContext.with(new MarketContext.Info(GLOBAL, "US"))) {
             assertYoutubeMetaStatus(globalMetaId, YoutubeMetaStatus.ACTIVE);
             assertRecipeStatus(globalRecipeId, RecipeStatus.IN_PROGRESS);
-            assertHistoryStatus(globalHistoryId, RecipeHistoryStatus.ACTIVE);
+            assertBookmarkStatus(globalBookmarkId, RecipeBookmarkStatus.ACTIVE);
         }
 
         verify(recipeCreditPort, times(1)).refundRecipeCreate(eq(koreaUserId), eq(koreaRecipeId), eq(koreaCreditCost));
@@ -277,7 +277,7 @@ class RecipeInfoValidationBatchConfigTest {
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             recipeId = createRecipe(creditCost, KOREA.name());
             metaId = createYoutubeMeta(recipeId, "no_v_param", "https://www.youtube.com/watch");
-            createRecipeHistory(userId, recipeId);
+            createRecipeBookmark(userId, recipeId);
         }
 
         JobExecution jobExecution = runBatchJob(KOREA.name());
@@ -302,7 +302,7 @@ class RecipeInfoValidationBatchConfigTest {
             for (int i = 0; i < 51; i++) {
                 UUID recipeId = createRecipe(creditCost, KOREA.name());
                 createYoutubeMeta(recipeId, "bulk_" + i, "https://www.youtube.com/watch?v=bulk_" + i);
-                createRecipeHistory(userId, recipeId);
+                createRecipeBookmark(userId, recipeId);
             }
         }
 
@@ -318,13 +318,13 @@ class RecipeInfoValidationBatchConfigTest {
             long blockedRecipe = recipeInfoRepository.findAll().stream()
                     .filter(r -> r.getRecipeStatus() == RecipeStatus.BLOCKED)
                     .count();
-            long blockedHistory = recipeHistoryRepository.findAll().stream()
-                    .filter(h -> h.getStatus() == RecipeHistoryStatus.BLOCKED)
+            long blockedBookmark = recipeBookmarkRepository.findAll().stream()
+                    .filter(h -> h.getStatus() == RecipeBookmarkStatus.BLOCKED)
                     .count();
 
             assertThat(blockedMeta).isEqualTo(51);
             assertThat(blockedRecipe).isEqualTo(51);
-            assertThat(blockedHistory).isEqualTo(51);
+            assertThat(blockedBookmark).isEqualTo(51);
         }
 
         verify(recipeCreditPort, times(51)).refundRecipeCreate(eq(userId), any(), eq(creditCost));
@@ -349,9 +349,9 @@ class RecipeInfoValidationBatchConfigTest {
         assertThat(recipe.getRecipeStatus()).isEqualTo(expectedStatus);
     }
 
-    private void assertHistoryStatus(UUID historyId, RecipeHistoryStatus expectedStatus) {
-        var history = recipeHistoryRepository.findById(historyId).orElseThrow();
-        assertThat(history.getStatus()).isEqualTo(expectedStatus);
+    private void assertBookmarkStatus(UUID bookmarkId, RecipeBookmarkStatus expectedStatus) {
+        var bookmark = recipeBookmarkRepository.findById(bookmarkId).orElseThrow();
+        assertThat(bookmark.getStatus()).isEqualTo(expectedStatus);
     }
 
     /**
@@ -410,9 +410,9 @@ class RecipeInfoValidationBatchConfigTest {
         return youtubeMetaRepository.save(youtubeMeta).getId();
     }
 
-    private UUID createRecipeHistory(UUID userId, UUID recipeId) {
-        RecipeHistory history = RecipeHistory.create(clock, userId, recipeId);
-        return recipeHistoryRepository.save(history).getId();
+    private UUID createRecipeBookmark(UUID userId, UUID recipeId) {
+        RecipeBookmark bookmark = RecipeBookmark.create(clock, userId, recipeId);
+        return recipeBookmarkRepository.save(bookmark).getId();
     }
 
     private byte[] uuidToBytes(UUID uuid) {

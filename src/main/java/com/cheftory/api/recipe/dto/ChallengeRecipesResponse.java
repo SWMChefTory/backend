@@ -22,9 +22,6 @@ public record ChallengeRecipesResponse(
                 .map(RecipeCompleteChallengeResponse::of)
                 .toList();
         return new ChallengeRecipesResponse(
-                recipeCompleteChallengeResponses,
-                recipeOverviewResponses,
-                recipes.hasNext(),
-                recipes.nextCursor());
+                recipeCompleteChallengeResponses, recipeOverviewResponses, recipes.hasNext(), recipes.nextCursor());
     }
 }

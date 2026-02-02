@@ -17,7 +17,6 @@ import com.cheftory.api.recipe.dto.RecipeCategoryCountsResponse;
 import com.cheftory.api.recipe.dto.RecipeCreateRequest;
 import com.cheftory.api.recipe.dto.RecipeCreateResponse;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
-import com.cheftory.api.recipe.dto.RecipeHistoryOverview;
 import com.cheftory.api.recipe.dto.RecipeInfoRecommendType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeOverview;
@@ -53,14 +52,13 @@ public class RecipeController {
     }
 
     @GetMapping("/api/v1/recipes/{recipeId}")
-    public FullRecipeResponse getFullRecipeResponse(
-            @PathVariable("recipeId") UUID recipeId, @UserPrincipal UUID userId) {
-        FullRecipe info = recipeFacade.viewFullRecipe(recipeId, userId);
+    public FullRecipeResponse getFullRecipe(@PathVariable("recipeId") UUID recipeId, @UserPrincipal UUID userId) {
+        FullRecipe info = recipeFacade.getFullRecipe(recipeId, userId);
         return FullRecipeResponse.of(info);
     }
 
     @GetMapping("/api/v1/recipes/overview/{recipeId}")
-    public RecipeOverviewResponse getOverviewRecipeResponse(
+    public RecipeOverviewResponse getOverviewRecipe(
             @PathVariable("recipeId") UUID recipeId, @UserPrincipal UUID userId) {
         RecipeOverview overview = recipeFacade.getRecipeOverview(recipeId, userId);
         return RecipeOverviewResponse.of(overview);
@@ -68,8 +66,7 @@ public class RecipeController {
 
     @GetMapping("/api/v1/recipes/recent")
     public RecentRecipesResponse getRecentInfos(
-            @UserPrincipal UUID userId,
-            @RequestParam(required = false) String cursor) {
+            @UserPrincipal UUID userId, @RequestParam(required = false) String cursor) {
         return RecentRecipesResponse.from(recipeFacade.getRecents(userId, cursor));
     }
 
@@ -103,8 +100,7 @@ public class RecipeController {
 
     @GetMapping("/api/v1/recipes/uncategorized")
     public UnCategorizedRecipesResponse getUnCategorizedRecipes(
-            @UserPrincipal UUID userId,
-            @RequestParam(required = false) String cursor) {
+            @UserPrincipal UUID userId, @RequestParam(required = false) String cursor) {
         return UnCategorizedRecipesResponse.from(recipeFacade.getUnCategorized(userId, cursor));
     }
 
@@ -146,9 +142,7 @@ public class RecipeController {
 
     @GetMapping("/api/v1/recipes/cuisine/{type}")
     public CuisineRecipesResponse getBrowseRecipes(
-            @PathVariable String type,
-            @RequestParam(required = false) String cursor,
-            @UserPrincipal UUID userId) {
+            @PathVariable String type, @RequestParam(required = false) String cursor, @UserPrincipal UUID userId) {
         RecipeCuisineType cuisineType = RecipeCuisineType.fromString(type);
         CursorPage<RecipeOverview> recipes = recipeFacade.getCuisineRecipes(cuisineType, userId, cursor);
         return CuisineRecipesResponse.from(recipes);
@@ -157,9 +151,7 @@ public class RecipeController {
     @PocOnly(until = "2025-12-31")
     @GetMapping("/api/v1/recipes/challenge/{challengeId}")
     public ChallengeRecipesResponse getChallengeRecipes(
-            @PathVariable UUID challengeId,
-            @RequestParam(required = false) String cursor,
-            @UserPrincipal UUID userId) {
+            @PathVariable UUID challengeId, @RequestParam(required = false) String cursor, @UserPrincipal UUID userId) {
         Pair<List<RecipeCompleteChallenge>, CursorPage<RecipeOverview>> result =
                 recipeFacade.getChallengeRecipes(challengeId, userId, cursor);
         return ChallengeRecipesResponse.from(result.getFirst(), result.getSecond());
