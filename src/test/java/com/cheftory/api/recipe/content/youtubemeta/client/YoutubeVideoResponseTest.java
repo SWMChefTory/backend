@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.content.youtubemeta.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +50,38 @@ class YoutubeVideoResponseTest {
         String thumbnailUri = response.getThumbnailUri();
 
         assertThat(thumbnailUri).isEqualTo("https://i.ytimg.com/vi/test/maxresdefault.jpg");
+    }
+
+    @Test
+    @DisplayName("getThumbnailUri()는 maxres가 없으면 high 썸네일 URL을 반환한다")
+    void getThumbnailUriReturnsHighUrlWhenMaxresMissing() {
+        YoutubeVideoResponse.ThumbnailInfo high =
+                new YoutubeVideoResponse.ThumbnailInfo("https://i.ytimg.com/vi/test/hqdefault.jpg", 480, 360);
+        YoutubeVideoResponse.Thumbnails thumbnails = new YoutubeVideoResponse.Thumbnails(null, null, high, null);
+        YoutubeVideoResponse.Snippet snippet = new YoutubeVideoResponse.Snippet("영상", "UCabc", "채널", thumbnails);
+        YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
+        YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null, status);
+        YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
+
+        String thumbnailUri = response.getThumbnailUri();
+
+        assertThat(thumbnailUri).isEqualTo("https://i.ytimg.com/vi/test/hqdefault.jpg");
+    }
+
+    @Test
+    @DisplayName("getThumbnailUri()는 썸네일 정보가 없으면 예외를 던진다")
+    void getThumbnailUriThrowsWhenThumbnailMissing() {
+        YoutubeVideoResponse.Snippet snippet = new YoutubeVideoResponse.Snippet("영상", "UCabc", "채널", null);
+        YoutubeVideoResponse.Status status = new YoutubeVideoResponse.Status(true);
+        YoutubeVideoResponse.Item item = new YoutubeVideoResponse.Item(snippet, null, status);
+        YoutubeVideoResponse response = new YoutubeVideoResponse(List.of(item));
+
+        com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException exception =
+                assertThrows(
+                        com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException.class,
+                        response::getThumbnailUri);
+
+        assertThat(exception.getErrorMessage().getMessage()).isEqualTo("썸네일 정보를 찾을 수 없습니다.");
     }
 
     @Test

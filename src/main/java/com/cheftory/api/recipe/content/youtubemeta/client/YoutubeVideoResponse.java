@@ -1,5 +1,7 @@
 package com.cheftory.api.recipe.content.youtubemeta.client;
 
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.util.Iso8601DurationToSecondConverter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
@@ -7,7 +9,30 @@ import java.util.List;
 public record YoutubeVideoResponse(List<Item> items) {
 
     public String getThumbnailUri() {
-        return items.getFirst().snippet().thumbnails().maxres().url();
+        Thumbnails thumbnails = items.getFirst().snippet().thumbnails();
+        if (thumbnails == null) {
+            throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_THUMBNAIL_NOT_FOUND);
+        }
+
+        ThumbnailInfo thumbnail = firstAvailableThumbnail(thumbnails);
+        if (thumbnail == null) {
+            throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_THUMBNAIL_NOT_FOUND);
+        }
+
+        return thumbnail.url();
+    }
+
+    private ThumbnailInfo firstAvailableThumbnail(Thumbnails thumbnails) {
+        if (thumbnails.maxres() != null) {
+            return thumbnails.maxres();
+        }
+        if (thumbnails.high() != null) {
+            return thumbnails.high();
+        }
+        if (thumbnails.medium() != null) {
+            return thumbnails.medium();
+        }
+        return thumbnails.defaultThumbnail();
     }
 
     public String getTitle() {
