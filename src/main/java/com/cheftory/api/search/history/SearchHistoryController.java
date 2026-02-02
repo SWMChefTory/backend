@@ -2,7 +2,6 @@ package com.cheftory.api.search.history;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,28 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1")
 public class SearchHistoryController {
     private final SearchHistoryService searchHistoryService;
-
-    @GetMapping("/recipes/search/history")
-    @Deprecated(forRemoval = true, since = "v1")
-    public SearchHistoriesResponse getRecipeSearchHistories(@UserPrincipal UUID userId) {
-        List<String> histories = searchHistoryService.get(userId);
-        return SearchHistoriesResponse.from(histories);
-    }
-
-    @Deprecated(forRemoval = true, since = "v1")
-    @DeleteMapping(value = "/recipes/search/history", params = "searchText")
-    public SuccessOnlyResponse deleteRecipeSearchHistory(
-            @UserPrincipal UUID userId, @RequestParam("searchText") String searchText) {
-        searchHistoryService.delete(userId, searchText);
-        return SuccessOnlyResponse.create();
-    }
-
-    @Deprecated(forRemoval = true, since = "v1")
-    @DeleteMapping("/recipes/search/history/all")
-    public SuccessOnlyResponse deleteAllRecipeSearchHistories(@UserPrincipal UUID userId) {
-        searchHistoryService.deleteAll(userId);
-        return SuccessOnlyResponse.create();
-    }
 
     @GetMapping("/search/histories")
     public SearchHistoriesResponse getSearchHistories(

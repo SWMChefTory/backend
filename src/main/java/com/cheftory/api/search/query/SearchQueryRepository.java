@@ -1,6 +1,5 @@
 package com.cheftory.api.search.query;
 
-import com.cheftory.api._common.I18nTranslator;
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
@@ -8,7 +7,6 @@ import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
-import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.json.JsonData;
@@ -20,11 +18,8 @@ import org.opensearch.client.opensearch._types.query_dsl.*;
 import org.opensearch.client.opensearch.core.CreatePitRequest;
 import org.opensearch.client.opensearch.core.DeletePitRequest;
 import org.opensearch.client.opensearch.core.SearchRequest;
-import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.Pit;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -46,25 +41,6 @@ public class SearchQueryRepository {
     private static final double DECAY_VALUE = 0.5;
 
     private final OpenSearchClient openSearchClient;
-
-    @Deprecated(forRemoval = true)
-    public Page<SearchQuery> searchByKeyword(SearchQueryScope scope, String keyword, Pageable pageable) {
-
-        try {
-            SearchResponse<SearchQuery> response =
-                    openSearchClient.search(pageRequest(scope, keyword, pageable), SearchQuery.class);
-
-            List<SearchQuery> content =
-                    response.hits().hits().stream().map(Hit::source).toList();
-            long total =
-                    response.hits().total() != null ? response.hits().total().value() : 0;
-            return new PageImpl<>(content, pageable, total);
-
-        } catch (Exception e) {
-            log.error(SearchErrorCode.SEARCH_FAILED.getMessage(), keyword, e);
-            throw new SearchException(SearchErrorCode.SEARCH_FAILED);
-        }
-    }
 
     public String createPitId() {
         try {
@@ -146,13 +122,6 @@ public class SearchQueryRepository {
         return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId), "candidates");
     }
 
-    private SearchRequest pageRequest(SearchQueryScope scope, String keyword, Pageable pageable) {
-        return SearchRequest.of(s -> s.index(INDEX)
-                .query(buildFunctionScoreQuery(scope, keyword, "now"))
-                .from((int) pageable.getOffset())
-                .size(pageable.getPageSize()));
-    }
-
     private SearchRequest cursorTemplateRequest(
             String pitId, Pageable pageable, Query query, Double afterScore, String afterId) {
         return SearchRequest.of(s -> {
@@ -185,10 +154,10 @@ public class SearchQueryRepository {
         }));
 
         List<FunctionScore> functions = List.of(FunctionScore.of(functionScore ->
-            functionScore.gauss(gauss -> gauss.field(FIELD_CREATED_AT).placement(placement -> placement
-                .origin(JsonData.of(targetTime))
-                .scale(JsonData.of("7d"))
-                .decay(0.5)))));
+                functionScore.gauss(gauss -> gauss.field(FIELD_CREATED_AT).placement(placement -> placement
+                        .origin(JsonData.of(targetTime))
+                        .scale(JsonData.of("7d"))
+                        .decay(0.5)))));
 
         return Query.of(queryBuilder -> queryBuilder.functionScore(functionScore -> functionScore
                 .query(baseQuery)
@@ -198,7 +167,7 @@ public class SearchQueryRepository {
     }
 
     private Query buildCandidatesFunctionScoreQuery(
-        SearchQueryScope scope, String label, String targetTime, PersonalizationProfile profile) {
+            SearchQueryScope scope, String label, String targetTime, PersonalizationProfile profile) {
 
         String scopeValue = scope.name().toLowerCase();
         String marketValue = currentMarketKey();
@@ -212,36 +181,29 @@ public class SearchQueryRepository {
 
         List<FunctionScore> functions = new java.util.ArrayList<>();
 
-        functions.add(FunctionScore.of(fs -> fs
-            .filter(fq -> fq.terms(t -> t.field(FIELD_KEYWORDS)
-                .terms(tv -> tv.value(profile.keywordsTop().stream().map(FieldValue::of).toList()))))
-            .weight(0.3f)
-        ));
+        functions.add(FunctionScore.of(fs -> fs.filter(fq -> fq.terms(t -> t.field(FIELD_KEYWORDS)
+                        .terms(tv -> tv.value(profile.keywordsTop().stream()
+                                .map(FieldValue::of)
+                                .toList()))))
+                .weight(0.3f)));
 
         for (String channel : profile.channelsTop()) {
-            functions.add(FunctionScore.of(fs -> fs
-                .filter(fq -> fq.match(m -> m.field(FIELD_CHANNEL_TITLE)
-                    .query(FieldValue.of(channel))
-                    .operator(Operator.And)))
-                .weight(0.7f)
-            ));
+            functions.add(FunctionScore.of(fs -> fs.filter(fq -> fq.match(m -> m.field(FIELD_CHANNEL_TITLE)
+                            .query(FieldValue.of(channel))
+                            .operator(Operator.And)))
+                    .weight(0.7f)));
         }
 
-        functions.add(FunctionScore.of(fs -> fs
-            .gauss(g -> g.field(FIELD_CREATED_AT).placement(p -> p
-                .origin(JsonData.of(targetTime))
-                .scale(JsonData.of("60d"))
-                .decay(0.95)
-            ))
-            .weight(0.1f)
-        ));
+        functions.add(FunctionScore.of(
+                fs -> fs.gauss(g -> g.field(FIELD_CREATED_AT).placement(p -> p.origin(JsonData.of(targetTime))
+                                .scale(JsonData.of("60d"))
+                                .decay(0.95)))
+                        .weight(0.1f)));
 
-        return Query.of(qb -> qb.functionScore(fs -> fs
-            .query(filterOnly)
-            .functions(functions)
-            .scoreMode(FunctionScoreMode.Sum)
-            .boostMode(FunctionBoostMode.Sum)
-        ));
+        return Query.of(qb -> qb.functionScore(fs -> fs.query(filterOnly)
+                .functions(functions)
+                .scoreMode(FunctionScoreMode.Sum)
+                .boostMode(FunctionBoostMode.Sum)));
     }
 
     private void applySearchAfter(SearchRequest.Builder s, Double afterScore, String afterId) {

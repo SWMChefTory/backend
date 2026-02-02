@@ -11,6 +11,8 @@ import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCo
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -43,8 +45,8 @@ class RecipeIdentifyServiceTest {
         }
 
         @Nested
-        @DisplayName("Given - 유효한 URI가 주어졌을 때")
-        class GivenValidUri {
+        @DisplayName("Given - 유효한 URI 주어졌을 때")
+        class GivenValidUriAndRecipeId {
 
             @Nested
             @DisplayName("When - 저장 요청을 하면")
@@ -74,7 +76,8 @@ class RecipeIdentifyServiceTest {
                     when(repository.save(any(RecipeIdentify.class)))
                             .thenThrow(new DataIntegrityViolationException("duplicate key"));
 
-                    RecipeIdentifyException ex = assertThrows(RecipeIdentifyException.class, () -> service.create(url));
+                    RecipeIdentifyException ex =
+                            assertThrows(RecipeIdentifyException.class, () -> service.create(url));
 
                     assertThat(ex.getErrorMessage().getErrorCode())
                             .isEqualTo(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING.getErrorCode());
@@ -89,8 +92,8 @@ class RecipeIdentifyServiceTest {
     class Delete {
 
         @Nested
-        @DisplayName("Given - 식별 URL이 저장되어 있을 때")
-        class GivenExistingUrl {
+        @DisplayName("Given - 식별 URL 저장되어 있을 때")
+        class GivenExistingUrlAndRecipeId {
 
             private URI url;
 
@@ -99,16 +102,11 @@ class RecipeIdentifyServiceTest {
                 url = URI.create("https://example.com/lock");
             }
 
-            @Nested
-            @DisplayName("When - 삭제 요청을 하면")
-            class WhenDeleting {
-
-                @Test
-                @DisplayName("Then - repository.deleteByUrl()이 호출된다")
-                void thenRepositoryCalled() {
-                    service.delete(url);
-                    verify(repository).deleteByUrl(url);
-                }
+            @Test
+            @DisplayName("When - 삭제 요청을 하면 Then - repository.deleteByUrlAndRecipeId()이 호출된다")
+            void thenRepositoryCalled() {
+                service.delete(url);
+                verify(repository).deleteByUrl(url);
             }
         }
     }

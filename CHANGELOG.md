@@ -20,6 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.15] - 2026-01-22
+
+### Changed
+
+- **레시피 히스토리 리팩토링**: `RecipeHistory`를 `RecipeBookmark`로 변경하여 북마크 기능으로 전환
+- **레시피 생성 로직 개선**: 레시피 생성 시 북마크 자동 추가 및 크레딧 차감 로직 통합
+- **레시피 조회 로직 개선**: 레시피 조회 시 북마크 여부 확인 로직 추가
+
+---
+
 ## [1.1.14] - 2026-01-22
 
 ### Changed

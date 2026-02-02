@@ -14,13 +14,6 @@ public class AutocompleteController {
 
     private final AutocompleteService autocompleteService;
 
-    @Deprecated(forRemoval = true, since = "v1")
-    @GetMapping("/recipes/search/autocomplete")
-    public AutocompletesResponse getRecipeAutocomplete(@RequestParam("query") String query) {
-        List<Autocomplete> autocompletes = autocompleteService.autocomplete(query);
-        return AutocompletesResponse.from(autocompletes);
-    }
-
     @GetMapping("/search/autocomplete")
     public AutocompletesResponse getAutocomplete(
             @RequestParam("query") String query,

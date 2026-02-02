@@ -1,5 +1,8 @@
 package com.cheftory.api.recipe.creation;
 
+import com.cheftory.api.credit.exception.CreditErrorCode;
+import com.cheftory.api.credit.exception.CreditException;
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
@@ -10,10 +13,12 @@ import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCod
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCode;
+import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
+import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
+import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.history.RecipeHistoryService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -26,23 +31,23 @@ import org.springframework.stereotype.Service;
 public class RecipeCreationFacade {
 
     private final AsyncRecipeCreationService asyncRecipeCreationService;
-    private final RecipeHistoryService recipeHistoryService;
+    private final RecipeBookmarkService recipeBookmarkService;
     private final RecipeYoutubeMetaService recipeYoutubeMetaService;
+    private final RecipeProgressService recipeProgressService;
     private final RecipeIdentifyService recipeIdentifyService;
     private final RecipeInfoService recipeInfoService;
     private final RecipeCreditPort creditPort;
+    private final RecipeCreationTxService recipeCreationTxService;
 
     public UUID create(RecipeCreationTarget target) {
         try {
-            List<UUID> recipeIds = recipeYoutubeMetaService.getByUrl(target.uri()).stream()
-                    .map(RecipeYoutubeMeta::getRecipeId)
-                    .toList();
-            RecipeInfo recipeInfo = recipeInfoService.getNotFailed(recipeIds);
+            UUID recipeId = recipeYoutubeMetaService.getByUrl(target.uri()).getRecipeId();
+            RecipeInfo recipeInfo = recipeInfoService.getSuccess(recipeId);
 
             create(target, recipeInfo);
             return recipeInfo.getId();
         } catch (RecipeException e) {
-            if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND) {
+            if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND) {
                 return createNewRecipe(target);
             }
             if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_FAILED) {
@@ -58,21 +63,24 @@ public class RecipeCreationFacade {
     private UUID createNewRecipe(RecipeCreationTarget target) {
         try {
             YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(target.uri());
-            recipeIdentifyService.create(target.uri());
-            RecipeInfo recipeInfo = recipeInfoService.create();
-            recipeYoutubeMetaService.create(videoInfo, recipeInfo.getId());
-            create(target, recipeInfo);
-            asyncRecipeCreationService.create(
+            RecipeInfo recipeInfo = recipeCreationTxService.createWithIdentifyWithVideoInfo(videoInfo);
+            try {
+                create(target, recipeInfo);
+                asyncRecipeCreationService.create(
                     recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri());
-            return recipeInfo.getId();
+                return recipeInfo.getId();
+            } catch (Exception e) {
+                recipeIdentifyService.delete(target.uri());
+                recipeInfoService.failed(recipeInfo.getId());
+                recipeProgressService.failed(recipeInfo.getId(), RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                throw e;
+            }
         } catch (RecipeException e) {
             if (e.getErrorMessage() == RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING) {
-                List<UUID> recipeIds = recipeYoutubeMetaService.getByUrl(target.uri()).stream()
-                        .map(RecipeYoutubeMeta::getRecipeId)
-                        .toList();
-                RecipeInfo recipeInfo = recipeInfoService.getNotFailed(recipeIds);
-                create(target, recipeInfo);
-                return recipeInfo.getId();
+                UUID recipeId = recipeYoutubeMetaService.getByUrl(target.uri()).getRecipeId();
+                RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
+                create(target, recipe);
+                return recipe.getId();
             }
             throw e;
         }
@@ -82,12 +90,26 @@ public class RecipeCreationFacade {
         switch (target) {
             case RecipeCreationTarget.User user -> {
                 UUID userId = user.userId();
-                boolean created = recipeHistoryService.create(userId, recipeInfo.getId());
+
+                boolean created = recipeBookmarkService.create(userId, recipeInfo.getId());
                 if (!created) return;
 
-                creditPort.spendRecipeCreate(userId, recipeInfo.getId(), recipeInfo.getCreditCost());
+                try {
+                    creditPort.spendRecipeCreate(userId, recipeInfo.getId(), recipeInfo.getCreditCost());
+                } catch (CreditException e) {
+                    recipeBookmarkService.delete(userId, recipeInfo.getId());
+
+                    if (e.getErrorMessage() == CreditErrorCode.CREDIT_INSUFFICIENT) {
+                        throw new RecipeException(CreditErrorCode.CREDIT_INSUFFICIENT);
+                    }
+                    if (e.getErrorMessage() == CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT) {
+                        throw new RecipeException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
+                    }
+                    throw e;
+                }
             }
-            case RecipeCreationTarget.Crawler crawler -> {}
+            case RecipeCreationTarget.Crawler crawler -> {
+            }
         }
     }
 }

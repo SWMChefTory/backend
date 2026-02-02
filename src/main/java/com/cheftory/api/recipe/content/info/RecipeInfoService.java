@@ -13,13 +13,10 @@ import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
-import com.cheftory.api.recipe.dto.RecipeSort;
-import com.cheftory.api.recipe.util.RecipePageRequest;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -42,32 +39,16 @@ public class RecipeInfoService {
             throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_FAILED);
         }
 
+        if (recipeInfo.isBlocked()) {
+            throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_BANNED);
+        }
+
         recipeInfoRepository.increaseCount(recipeId);
         return recipeInfo;
     }
 
-    public RecipeInfo getNotFailed(List<UUID> recipeIds) {
-        List<RecipeInfo> recipeInfos = recipeInfoRepository.findAllByIdIn(recipeIds);
-
-        if (recipeInfos.isEmpty()) {
-            throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
-        }
-
-        if (recipeInfos.stream().allMatch(RecipeInfo::isFailed)) {
-            throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_FAILED);
-        }
-
-        List<RecipeInfo> validRecipeInfos =
-                recipeInfos.stream().filter(r -> !r.isFailed()).toList();
-
-        if (validRecipeInfos.size() > 1) {
-            log.warn(
-                    "여러 개의 progress 및 success 상태 Recipe가 조회되었습니다. recipeIds={}, count={}",
-                    recipeIds,
-                    validRecipeInfos.size());
-        }
-
-        return validRecipeInfos.getFirst();
+    public void increaseCount(UUID recipeId) {
+        recipeInfoRepository.increaseCount(recipeId);
     }
 
     public RecipeInfo create() {
@@ -85,16 +66,6 @@ public class RecipeInfoService {
 
     public List<RecipeInfo> gets(List<UUID> recipeIds) {
         return recipeInfoRepository.findAllByIdIn(recipeIds);
-    }
-
-    @Deprecated(forRemoval = true)
-    public Page<RecipeInfo> getPopulars(int page, RecipeInfoVideoQuery videoQuery) {
-        Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-
-        return switch (videoQuery) {
-            case ALL -> recipeInfoRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
-            case NORMAL, SHORTS -> recipeInfoRepository.findRecipes(RecipeStatus.SUCCESS, pageable, videoQuery.name());
-        };
     }
 
     public CursorPage<RecipeInfo> getPopulars(String cursor, RecipeInfoVideoQuery videoQuery) {
@@ -160,13 +131,6 @@ public class RecipeInfoService {
         return recipeInfoRepository
                 .findById(recipeId)
                 .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
-    }
-
-    @Deprecated(forRemoval = true)
-    public Page<RecipeInfo> getCuisines(RecipeCuisineType type, int page) {
-        Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-        String cuisine = i18nTranslator.translate(type.messageKey());
-        return recipeInfoRepository.findCuisineRecipes(cuisine, RecipeStatus.SUCCESS, pageable);
     }
 
     public CursorPage<RecipeInfo> getCuisines(RecipeCuisineType type, String cursor) {

@@ -27,8 +27,6 @@ import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 @ExtendWith({MockitoExtension.class, MarketContextTestExtension.class})
 @DisplayName("RecipeAutocompleteRepository Tests")
@@ -49,13 +47,13 @@ public class AutocompleteRepositoryTest {
         class GivenValidKeyword {
 
             private String keyword;
-            private Pageable pageable;
+            private int limit;
             private SearchResponse<Autocomplete> mockResponse;
 
             @BeforeEach
             void setUp() throws IOException {
                 keyword = "김치";
-                pageable = PageRequest.of(0, 5);
+                limit = 5;
 
                 Autocomplete auto1 =
                         Autocomplete.builder().id("1").text("김치찌개").count(100).build();
@@ -79,7 +77,7 @@ public class AutocompleteRepositoryTest {
             @DisplayName("When - 자동완성을 검색하면 Then - 자동완성 목록이 반환된다")
             void whenSearchingAutocomplete_thenReturnsAutocompleteList() throws IOException {
                 List<Autocomplete> result =
-                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit);
 
                 assertThat(result).hasSize(3);
                 assertThat(result.get(0).getText()).isEqualTo("김치찌개");
@@ -93,7 +91,7 @@ public class AutocompleteRepositoryTest {
                 SearchRequest capturedRequest = requestCaptor.getValue();
                 assertThat(capturedRequest.index()).contains("autocomplete");
                 assertThat(capturedRequest.from()).isEqualTo(0);
-                assertThat(capturedRequest.size()).isEqualTo(5);
+                assertThat(capturedRequest.size()).isEqualTo(limit);
             }
         }
 
@@ -102,12 +100,12 @@ public class AutocompleteRepositoryTest {
         class GivenNoResults {
 
             private String keyword;
-            private Pageable pageable;
+            private int limit;
 
             @BeforeEach
             void setUp() throws IOException {
                 keyword = "존재하지않는검색어";
-                pageable = PageRequest.of(0, 5);
+                limit = 5;
 
                 HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(List.of()));
                 SearchResponse<Autocomplete> mockResponse = SearchResponse.searchResponseOf(
@@ -122,7 +120,7 @@ public class AutocompleteRepositoryTest {
             @DisplayName("When - 자동완성을 검색하면 Then - 빈 목록이 반환된다")
             void whenSearchingAutocomplete_thenReturnsEmptyList() {
                 List<Autocomplete> result =
-                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit);
 
                 assertThat(result).isEmpty();
             }
@@ -133,13 +131,13 @@ public class AutocompleteRepositoryTest {
         class GivenNullKeyword {
 
             private String keyword;
-            private Pageable pageable;
+            private int limit;
             private SearchResponse<Autocomplete> mockResponse;
 
             @BeforeEach
             void setUp() throws IOException {
                 keyword = null;
-                pageable = PageRequest.of(0, 5);
+                limit = 5;
 
                 Autocomplete auto1 =
                         Autocomplete.builder().id("1").text("인기검색어1").count(200).build();
@@ -163,7 +161,7 @@ public class AutocompleteRepositoryTest {
             @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
             void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException {
                 List<Autocomplete> result =
-                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit);
 
                 assertThat(result).hasSize(3);
                 assertThat(result.get(0).getText()).isEqualTo("인기검색어1");
@@ -177,7 +175,7 @@ public class AutocompleteRepositoryTest {
                 SearchRequest capturedRequest = requestCaptor.getValue();
                 assertThat(capturedRequest.index()).contains("autocomplete");
                 assertThat(capturedRequest.from()).isEqualTo(0);
-                assertThat(capturedRequest.size()).isEqualTo(5);
+                assertThat(capturedRequest.size()).isEqualTo(limit);
             }
         }
 
@@ -186,13 +184,13 @@ public class AutocompleteRepositoryTest {
         class GivenBlankKeyword {
 
             private String keyword;
-            private Pageable pageable;
+            private int limit;
             private SearchResponse<Autocomplete> mockResponse;
 
             @BeforeEach
             void setUp() throws IOException {
                 keyword = "   ";
-                pageable = PageRequest.of(0, 5);
+                limit = 5;
 
                 Autocomplete auto1 = Autocomplete.builder()
                         .id("1")
@@ -220,7 +218,7 @@ public class AutocompleteRepositoryTest {
             @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
             void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException {
                 List<Autocomplete> result =
-                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
+                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit);
 
                 assertThat(result).hasSize(2);
                 assertThat(result.get(0).getText()).isEqualTo("빈문자열검색어1");
@@ -230,64 +228,16 @@ public class AutocompleteRepositoryTest {
         }
 
         @Nested
-        @DisplayName("Given - 페이징이 적용된 경우")
-        class GivenPagination {
-
-            private String keyword;
-            private Pageable pageable;
-            private SearchResponse<Autocomplete> mockResponse;
-
-            @BeforeEach
-            void setUp() throws IOException {
-                keyword = "테스트";
-                pageable = PageRequest.of(1, 2); // 두 번째 페이지, 페이지당 2개
-
-                Autocomplete auto1 =
-                        Autocomplete.builder().id("1").text("테스트1").count(100).build();
-                Autocomplete auto2 =
-                        Autocomplete.builder().id("2").text("테스트2").count(90).build();
-
-                List<Hit<Autocomplete>> hits = List.of(createHit(auto1), createHit(auto2));
-
-                HitsMetadata<Autocomplete> hitsMetadata = HitsMetadata.of(h -> h.hits(hits));
-                mockResponse = SearchResponse.searchResponseOf(
-                        r -> r.hits(hitsMetadata).took(1L).timedOut(false).shards(s -> s.total(1)
-                                .successful(1)
-                                .failed(0)));
-
-                doReturn(mockResponse).when(openSearchClient).search(any(SearchRequest.class), eq(Autocomplete.class));
-            }
-
-            @Test
-            @DisplayName("When - 자동완성을 검색하면 Then - 페이징이 적용된 결과가 반환된다")
-            void whenSearchingAutocomplete_thenReturnsPagedResults() throws IOException {
-                List<Autocomplete> result =
-                        autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable);
-
-                assertThat(result).hasSize(2);
-                assertThat(result.get(0).getText()).isEqualTo("테스트1");
-                assertThat(result.get(1).getText()).isEqualTo("테스트2");
-
-                ArgumentCaptor<SearchRequest> requestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
-                verify(openSearchClient).search(requestCaptor.capture(), eq(Autocomplete.class));
-
-                SearchRequest capturedRequest = requestCaptor.getValue();
-                assertThat(capturedRequest.from()).isEqualTo(2); // page 1 * size 2 = offset 2
-                assertThat(capturedRequest.size()).isEqualTo(2);
-            }
-        }
-
-        @Nested
         @DisplayName("Given - OpenSearch에서 IOException이 발생한 경우")
         class GivenIOException {
 
             private String keyword;
-            private Pageable pageable;
+            private int limit;
 
             @BeforeEach
             void setUp() throws IOException {
                 keyword = "test";
-                pageable = PageRequest.of(0, 5);
+                limit = 5;
 
                 doThrow(new IOException("OpenSearch connection failed"))
                         .when(openSearchClient)
@@ -298,7 +248,7 @@ public class AutocompleteRepositoryTest {
             @DisplayName("When - 자동완성을 검색하면 Then - RuntimeException이 발생한다")
             void whenSearchingAutocomplete_thenThrowsRuntimeException() {
                 assertThatThrownBy(() ->
-                                autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable))
+                                autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit))
                         .isInstanceOf(SearchException.class)
                         .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
             }
@@ -309,12 +259,12 @@ public class AutocompleteRepositoryTest {
         class GivenRuntimeException {
 
             private String keyword;
-            private Pageable pageable;
+            private int limit;
 
             @BeforeEach
             void setUp() throws IOException {
                 keyword = "test";
-                pageable = PageRequest.of(0, 5);
+                limit = 5;
 
                 doThrow(new RuntimeException("OpenSearch internal error"))
                         .when(openSearchClient)
@@ -325,7 +275,7 @@ public class AutocompleteRepositoryTest {
             @DisplayName("When - 자동완성을 검색하면 Then - RecipeSearchException이 발생한다")
             void whenSearchingAutocomplete_thenThrowsRecipeSearchException() {
                 assertThatThrownBy(() ->
-                                autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, pageable))
+                                autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit))
                         .isInstanceOf(SearchException.class)
                         .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
             }

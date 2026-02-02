@@ -9,14 +9,12 @@ import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.search.query.entity.SearchQuery;
-import com.cheftory.api.search.utils.SearchPageRequest;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.core.search.Hit;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,12 +27,6 @@ public class SearchQueryService {
     private final ScoreIdCursorCodec scoreIdCursorCodec;
     private final I18nTranslator i18nTranslator;
     private static final int CURSOR_PAGE_SIZE = 20;
-
-    @Deprecated(forRemoval = true)
-    public Page<SearchQuery> searchByKeyword(SearchQueryScope scope, String text, int page) {
-        Pageable pageable = SearchPageRequest.create(page);
-        return searchQueryRepository.searchByKeyword(scope, text, pageable);
-    }
 
     public CursorPage<SearchQuery> searchByKeyword(SearchQueryScope scope, String text, String cursor) {
         boolean first = (cursor == null || cursor.isBlank());

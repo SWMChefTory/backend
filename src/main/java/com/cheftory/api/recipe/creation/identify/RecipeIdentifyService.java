@@ -6,6 +6,8 @@ import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCo
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
 import jakarta.transaction.Transactional;
 import java.net.URI;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

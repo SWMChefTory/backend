@@ -5,7 +5,6 @@ import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,32 +20,7 @@ public interface RecipeInfoRepository extends JpaRepository<RecipeInfo, UUID> {
 
     List<RecipeInfo> findRecipesByIdInAndRecipeStatusIn(List<UUID> recipeIds, List<RecipeStatus> statuses);
 
-    @Deprecated(forRemoval = true)
-    Page<RecipeInfo> findByRecipeStatus(RecipeStatus status, Pageable pageable);
-
     List<RecipeInfo> findAllByIdIn(List<UUID> ids);
-
-    @Query("SELECT r FROM RecipeInfo r "
-            + "WHERE r.recipeStatus = :recipeStatus "
-            + "AND EXISTS ("
-            + "  SELECT 1 FROM RecipeYoutubeMeta m "
-            + "  WHERE m.recipeId = r.id "
-            + "  AND CAST(m.type AS string) = :videoType"
-            + ")")
-    @Deprecated(forRemoval = true)
-    Page<RecipeInfo> findRecipes(
-            @Param("recipeStatus") RecipeStatus recipeStatus, Pageable pageable, @Param("videoType") String videoType);
-
-    @Query("SELECT r FROM RecipeInfo r "
-            + "WHERE r.recipeStatus = :recipeStatus "
-            + "AND EXISTS ("
-            + "  SELECT 1 FROM RecipeTag t "
-            + "  WHERE t.recipeId = r.id "
-            + "  AND t.tag = :query"
-            + ")")
-    @Deprecated(forRemoval = true)
-    Page<RecipeInfo> findCuisineRecipes(
-            @Param("query") String query, @Param("recipeStatus") RecipeStatus recipeStatus, Pageable pageable);
 
     @Query(
             """

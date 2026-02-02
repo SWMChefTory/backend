@@ -153,12 +153,12 @@ public class RecipeValidationBatchConfig {
 
     @Bean
     @StepScope
-    public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter(
+    public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeBookmarkJdbcWriter(
             @Value("#{jobParameters['market']}") String marketParam) {
         return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
                 .sql(
                         """
-          UPDATE recipe_history
+          UPDATE recipe_bookmark
           SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
           WHERE recipe_id = ? AND market = ?
           """)
@@ -184,7 +184,7 @@ public class RecipeValidationBatchConfig {
         r.id      AS recipe_id,
         r.credit_cost AS credit_cost
       FROM recipe r
-      JOIN recipe_history rh
+      JOIN recipe_bookmark rh
         ON rh.recipe_id = r.id
       WHERE r.market = :market
         AND r.id IN (:recipeIds)
@@ -239,11 +239,11 @@ public class RecipeValidationBatchConfig {
     public CompositeItemWriter<RecipeYoutubeMeta> compositeWriter(
             JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter,
             JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter,
-            JdbcBatchItemWriter<RecipeYoutubeMeta> recipeHistoryJdbcWriter,
+            JdbcBatchItemWriter<RecipeYoutubeMeta> recipeBookmarkJdbcWriter,
             ItemWriter<RecipeYoutubeMeta> recipeCreateRefundWriter) {
         var writer = new CompositeItemWriter<RecipeYoutubeMeta>();
         writer.setDelegates(List.of(
-                youtubeMetaJdbcWriter, recipeStatusJdbcWriter, recipeCreateRefundWriter, recipeHistoryJdbcWriter));
+                youtubeMetaJdbcWriter, recipeStatusJdbcWriter, recipeCreateRefundWriter, recipeBookmarkJdbcWriter));
         return writer;
     }
 

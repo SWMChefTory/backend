@@ -1,6 +1,8 @@
 package com.cheftory.api.recipe.search;
 
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
@@ -10,8 +12,6 @@ import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.dto.RecipeOverview;
-import com.cheftory.api.recipe.history.RecipeHistoryService;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,21 +28,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class RecipeSearchFacade {
     private final RecipeSearchPort recipeSearchPort;
-    private final RecipeHistoryService recipeHistoryService;
+    private final RecipeBookmarkService recipeBookmarkService;
     private final RecipeYoutubeMetaService recipeYoutubeMetaService;
     private final RecipeDetailMetaService recipeDetailMetaService;
     private final RecipeTagService recipeTagService;
     private final RecipeInfoService recipeInfoService;
-
-    @Deprecated(forRemoval = true)
-    public Page<RecipeOverview> searchRecipes(int page, String query, UUID userId) {
-        Page<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, page);
-
-        List<RecipeInfo> recipes = recipeInfoService.gets(recipeIdsPage.getContent());
-
-        List<RecipeOverview> content = makeOverviews(recipes, userId);
-        return new PageImpl<>(content, recipeIdsPage.getPageable(), recipeIdsPage.getTotalElements());
-    }
 
     public CursorPage<RecipeOverview> searchRecipes(String query, UUID userId, String cursor) {
         CursorPage<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, cursor);
@@ -67,8 +55,8 @@ public class RecipeSearchFacade {
         Map<UUID, List<RecipeTag>> tagsMap =
                 recipeTagService.getIn(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
-        Map<UUID, RecipeHistory> recipeViewStatusMap = recipeHistoryService.getByRecipes(recipeIds, userId).stream()
-                .collect(Collectors.toMap(RecipeHistory::getRecipeId, Function.identity()));
+        Map<UUID, RecipeBookmark> recipeViewStatusMap = recipeBookmarkService.getByRecipes(recipeIds, userId).stream()
+                .collect(Collectors.toMap(RecipeBookmark::getRecipeId, Function.identity()));
 
         return recipes.stream()
                 .map(recipe -> {
@@ -89,8 +77,8 @@ public class RecipeSearchFacade {
                         log.error("레시피의 태그 누락: recipeId={}", recipeId);
                     }
 
-                    RecipeHistory history = recipeViewStatusMap.get(recipeId);
-                    Boolean isViewed = history != null;
+                    RecipeBookmark bookmark = recipeViewStatusMap.get(recipeId);
+                    Boolean isViewed = bookmark != null;
 
                     return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
                 })

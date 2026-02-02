@@ -2,17 +2,17 @@ package com.cheftory.api.search.autocomplete;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.cheftory.api.search.utils.SearchPageRequest;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Pageable;
 
 @DisplayName("RecipeAutocompleteService Tests")
 public class AutocompleteServiceTest {
@@ -66,7 +66,7 @@ public class AutocompleteServiceTest {
 
                 doReturn(autocompletes)
                         .when(autocompleteRepository)
-                        .searchAutocomplete(any(AutocompleteScope.class), any(String.class), any(Pageable.class));
+                        .searchAutocomplete(any(AutocompleteScope.class), any(String.class), anyInt());
             }
 
             @Nested
@@ -77,14 +77,14 @@ public class AutocompleteServiceTest {
                 @DisplayName("Then - 자동완성 목록을 반환해야 한다")
                 void thenShouldReturnAutocompleteList() {
                     List<com.cheftory.api.search.autocomplete.Autocomplete> result =
-                            autocompleteService.autocomplete(keyword);
+                            autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 
                     assertThat(result).hasSize(3);
                     assertThat(result.get(0).getText()).isEqualTo("김치찌개");
                     assertThat(result.get(1).getText()).isEqualTo("김치전");
                     assertThat(result.get(2).getText()).isEqualTo("김치볶음밥");
                     verify(autocompleteRepository)
-                            .searchAutocomplete(AutocompleteScope.RECIPE, keyword, SearchPageRequest.create(0));
+                            .searchAutocomplete(eq(AutocompleteScope.RECIPE), eq(keyword), eq(10));
                 }
             }
         }
@@ -101,7 +101,7 @@ public class AutocompleteServiceTest {
 
                 doReturn(List.of())
                         .when(autocompleteRepository)
-                        .searchAutocomplete(any(AutocompleteScope.class), any(String.class), any(Pageable.class));
+                        .searchAutocomplete(any(AutocompleteScope.class), any(String.class), anyInt());
             }
 
             @Nested
@@ -112,11 +112,11 @@ public class AutocompleteServiceTest {
                 @DisplayName("Then - 빈 목록을 반환해야 한다")
                 void thenShouldReturnEmptyList() {
                     List<com.cheftory.api.search.autocomplete.Autocomplete> result =
-                            autocompleteService.autocomplete(keyword);
+                            autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 
                     assertThat(result).isEmpty();
                     verify(autocompleteRepository)
-                            .searchAutocomplete(AutocompleteScope.RECIPE, keyword, SearchPageRequest.create(0));
+                            .searchAutocomplete(eq(AutocompleteScope.RECIPE), eq(keyword), eq(10));
                 }
             }
         }
@@ -150,7 +150,7 @@ public class AutocompleteServiceTest {
 
                 doReturn(autocompletes)
                         .when(autocompleteRepository)
-                        .searchAutocomplete(any(AutocompleteScope.class), any(String.class), any(Pageable.class));
+                        .searchAutocomplete(any(AutocompleteScope.class), any(String.class), anyInt());
             }
 
             @Nested
@@ -161,13 +161,13 @@ public class AutocompleteServiceTest {
                 @DisplayName("Then - 일치하는 자동완성 목록을 반환해야 한다")
                 void thenShouldReturnMatchingAutocompleteList() {
                     List<com.cheftory.api.search.autocomplete.Autocomplete> result =
-                            autocompleteService.autocomplete(keyword);
+                            autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 
                     assertThat(result).hasSize(2);
                     assertThat(result.get(0).getText()).isEqualTo("파스타");
                     assertThat(result.get(1).getText()).isEqualTo("파김치");
                     verify(autocompleteRepository)
-                            .searchAutocomplete(AutocompleteScope.RECIPE, keyword, SearchPageRequest.create(0));
+                            .searchAutocomplete(eq(AutocompleteScope.RECIPE), eq(keyword), eq(10));
                 }
             }
         }
@@ -183,7 +183,7 @@ public class AutocompleteServiceTest {
             void setUp() {
                 keyword = "찌개";
 
-                // 페이지 크기만큼의 결과만 반환
+                // 기본 제한만큼의 결과만 반환
                 autocompletes = List.of(
                         com.cheftory.api.search.autocomplete.Autocomplete.builder()
                                 .id("1")
@@ -213,7 +213,7 @@ public class AutocompleteServiceTest {
 
                 doReturn(autocompletes)
                         .when(autocompleteRepository)
-                        .searchAutocomplete(any(AutocompleteScope.class), any(String.class), any(Pageable.class));
+                        .searchAutocomplete(any(AutocompleteScope.class), any(String.class), anyInt());
             }
 
             @Nested
@@ -221,15 +221,15 @@ public class AutocompleteServiceTest {
             class WhenRequestingAutocomplete {
 
                 @Test
-                @DisplayName("Then - 페이지 크기만큼의 결과를 반환해야 한다")
+                @DisplayName("Then - 제한된 결과를 반환해야 한다")
                 void thenShouldReturnLimitedResults() {
                     List<com.cheftory.api.search.autocomplete.Autocomplete> result =
-                            autocompleteService.autocomplete(keyword);
+                            autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 
                     assertThat(result).hasSize(5);
                     assertThat(result.get(0).getText()).isEqualTo("김치찌개");
                     verify(autocompleteRepository)
-                            .searchAutocomplete(AutocompleteScope.RECIPE, keyword, SearchPageRequest.create(0));
+                            .searchAutocomplete(eq(AutocompleteScope.RECIPE), eq(keyword), eq(10));
                 }
             }
         }
