@@ -8,6 +8,5 @@ public enum RecipeProgressDetail {
     INGREDIENT,
     BRIEFING,
     STEP,
-    FINISHED,
-    DETAIL,
+    FINISHED
 }

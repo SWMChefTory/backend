@@ -86,7 +86,7 @@ class RecipeCreationDetailStepTest {
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
             verify(recipeProgressService, never())
-                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
         }
 
         @Test
@@ -106,14 +106,16 @@ class RecipeCreationDetailStepTest {
             sut.run(context);
 
             InOrder order = inOrder(recipeProgressService);
-            order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
             order.verify(recipeProgressService)
                     .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
             order.verify(recipeProgressService).success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
             order.verify(recipeProgressService)
                     .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
-            order.verify(recipeProgressService)
-                    .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            
+            // DETAIL 성공 기록은 제거됨
+            // order.verify(recipeProgressService)
+            //        .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
 
             verify(recipeIngredientService).create(recipeId, detail.ingredients());
             verify(recipeTagService).create(recipeId, detail.tags());
@@ -138,7 +140,7 @@ class RecipeCreationDetailStepTest {
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
-            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
             verify(recipeIngredientService, never()).create(ArgumentMatchers.any(), ArgumentMatchers.anyList());
         }
     }

@@ -122,7 +122,7 @@ class RecipeProgressTest {
             case STEP -> RecipeProgressStep.STEP;
             case FINISHED -> RecipeProgressStep.FINISHED;
             case BRIEFING -> RecipeProgressStep.BRIEFING;
-            case TAG, DETAIL_META, INGREDIENT, DETAIL -> RecipeProgressStep.DETAIL;
+            case TAG, DETAIL_META, INGREDIENT -> RecipeProgressStep.DETAIL;
         };
     }
 
@@ -130,7 +130,7 @@ class RecipeProgressTest {
         return switch (step) {
             case READY -> RecipeProgressDetail.READY;
             case CAPTION -> RecipeProgressDetail.CAPTION;
-            case DETAIL -> RecipeProgressDetail.DETAIL;
+            case DETAIL -> RecipeProgressDetail.INGREDIENT;
             case STEP -> RecipeProgressDetail.STEP;
             case FINISHED -> RecipeProgressDetail.FINISHED;
             case BRIEFING -> RecipeProgressDetail.BRIEFING;
