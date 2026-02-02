@@ -18,7 +18,6 @@ import org.opensearch.client.opensearch._types.query_dsl.TextQueryType;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -33,9 +32,9 @@ public class AutocompleteRepository {
     private static final String FIELD_MARKET = "market";
     private static final String FIELD_COUNT = "count";
 
-    public List<Autocomplete> searchAutocomplete(AutocompleteScope scope, String keyword, Pageable pageable) {
+    public List<Autocomplete> searchAutocomplete(AutocompleteScope scope, String keyword, int limit) {
         try {
-            SearchRequest request = buildRequest(scope, keyword, pageable);
+            SearchRequest request = buildRequest(scope, keyword, limit);
             SearchResponse<Autocomplete> response = openSearchClient.search(request, Autocomplete.class);
 
             return response.hits().hits().stream().map(Hit::source).toList();
@@ -45,26 +44,26 @@ public class AutocompleteRepository {
         }
     }
 
-    private SearchRequest buildRequest(AutocompleteScope scope, String keyword, Pageable pageable) {
+    private SearchRequest buildRequest(AutocompleteScope scope, String keyword, int limit) {
         if (keyword == null || keyword.isBlank()) {
-            return buildCountSortedRequest(scope, pageable);
+            return buildCountSortedRequest(scope, limit);
         }
-        return buildAutocompleteRequest(scope, keyword, pageable);
+        return buildAutocompleteRequest(scope, keyword, limit);
     }
 
-    private SearchRequest buildAutocompleteRequest(AutocompleteScope scope, String keyword, Pageable pageable) {
+    private SearchRequest buildAutocompleteRequest(AutocompleteScope scope, String keyword, int limit) {
         return SearchRequest.of(s -> s.index(INDEX)
                 .query(buildFunctionScoreQuery(scope, keyword))
-                .from((int) pageable.getOffset())
-                .size(pageable.getPageSize()));
+                .from(0)
+                .size(limit));
     }
 
-    private SearchRequest buildCountSortedRequest(AutocompleteScope scope, Pageable pageable) {
+    private SearchRequest buildCountSortedRequest(AutocompleteScope scope, int limit) {
         return SearchRequest.of(s -> s.index(INDEX)
                 .query(buildFilteredMatchAll(scope))
                 .sort(sort -> sort.field(f -> f.field(FIELD_COUNT).order(SortOrder.Desc)))
-                .from((int) pageable.getOffset())
-                .size(pageable.getPageSize()));
+                .from(0)
+                .size(limit));
     }
 
     private Query buildFunctionScoreQuery(AutocompleteScope scope, String keyword) {

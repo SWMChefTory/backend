@@ -7,20 +7,12 @@ import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class RecipeSearchAdapter implements RecipeSearchPort {
     private final SearchFacade searchFacade;
-
-    @Override
-    @Deprecated(forRemoval = true)
-    public Page<UUID> searchRecipeIds(UUID userId, String query, int page) {
-        Page<SearchQuery> results = searchFacade.search(SearchQueryScope.RECIPE, userId, query, page);
-        return results.map(s -> UUID.fromString(s.getId()));
-    }
 
     @Override
     public CursorPage<UUID> searchRecipeIds(UUID userId, String query, String cursor) {

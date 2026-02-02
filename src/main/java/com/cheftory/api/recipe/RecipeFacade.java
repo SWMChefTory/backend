@@ -52,8 +52,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,14 +114,6 @@ public class RecipeFacade {
         return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
     }
 
-    @Deprecated(forRemoval = true)
-    public Page<RecipeHistoryOverview> getCategorized(UUID userId, UUID recipeCategoryId, int page) {
-        Page<RecipeHistory> histories = recipeHistoryService.getCategorized(userId, recipeCategoryId, page);
-
-        List<RecipeHistoryOverview> content = makeHistoryOverviews(histories.getContent());
-        return new PageImpl<>(content, histories.getPageable(), histories.getTotalElements());
-    }
-
     public CursorPage<RecipeHistoryOverview> getCategorized(UUID userId, UUID recipeCategoryId, String cursor) {
         CursorPage<RecipeHistory> histories = recipeHistoryService.getCategorized(userId, recipeCategoryId, cursor);
 
@@ -131,27 +121,11 @@ public class RecipeFacade {
         return CursorPage.of(items, histories.nextCursor());
     }
 
-    @Deprecated(forRemoval = true)
-    public Page<RecipeHistoryOverview> getUnCategorized(UUID userId, int page) {
-        Page<RecipeHistory> histories = recipeHistoryService.getUnCategorized(userId, page);
-
-        List<RecipeHistoryOverview> content = makeHistoryOverviews(histories.getContent());
-        return new PageImpl<>(content, histories.getPageable(), histories.getTotalElements());
-    }
-
     public CursorPage<RecipeHistoryOverview> getUnCategorized(UUID userId, String cursor) {
         CursorPage<RecipeHistory> histories = recipeHistoryService.getUnCategorized(userId, cursor);
 
         List<RecipeHistoryOverview> items = makeHistoryOverviews(histories.items());
         return CursorPage.of(items, histories.nextCursor());
-    }
-
-    @Deprecated(forRemoval = true)
-    public Page<RecipeHistoryOverview> getRecents(UUID userId, int page) {
-        Page<RecipeHistory> histories = recipeHistoryService.getRecents(userId, page);
-
-        List<RecipeHistoryOverview> content = makeHistoryOverviews(histories.getContent());
-        return new PageImpl<>(content, histories.getPageable(), histories.getTotalElements());
     }
 
     public CursorPage<RecipeHistoryOverview> getRecents(UUID userId, String cursor) {
@@ -297,35 +271,12 @@ public class RecipeFacade {
         }
     }
 
-    @Deprecated(forRemoval = true)
-    public Page<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, int page) {
-        Page<RecipeInfo> recipesPage = recipeInfoService.getCuisines(type, page);
-
-        List<RecipeOverview> content = makeOverviews(recipesPage.getContent(), userId);
-        return new PageImpl<>(content, recipesPage.getPageable(), recipesPage.getTotalElements());
-    }
-
     public CursorPage<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, String cursor) {
         CursorPage<UUID> recipeIds = recipeRankService.getCuisineRecipes(userId, type, cursor);
         List<RecipeInfo> recipes = recipeInfoService.gets(recipeIds.items());
 
         List<RecipeOverview> items = makeOverviews(recipes, userId);
         return CursorPage.of(items, recipeIds.nextCursor());
-    }
-
-    @Deprecated(forRemoval = true)
-    public Page<RecipeOverview> getRecommendRecipes(
-            RecipeInfoRecommendType type, UUID userId, int page, RecipeInfoVideoQuery query) {
-
-        Page<RecipeInfo> recipesPage =
-                switch (type) {
-                    case POPULAR -> recipeInfoService.getPopulars(page, query);
-                    case CHEF -> getRankingRecipes(RankingType.CHEF, page);
-                    case TRENDING -> getRankingRecipes(RankingType.TRENDING, page);
-                };
-
-        List<RecipeOverview> content = makeOverviews(recipesPage.getContent(), userId);
-        return new PageImpl<>(content, recipesPage.getPageable(), recipesPage.getTotalElements());
     }
 
     public CursorPage<RecipeOverview> getRecommendRecipes(
@@ -339,23 +290,6 @@ public class RecipeFacade {
 
         List<RecipeOverview> items = makeOverviews(recipesPage.items(), userId);
         return CursorPage.of(items, recipesPage.nextCursor());
-    }
-
-    @PocOnly(until = "2025-12-31")
-    public Pair<List<RecipeCompleteChallenge>, Page<RecipeOverview>> getChallengeRecipes(
-            UUID challengeId, UUID userId, int page) {
-        Page<RecipeCompleteChallenge> overviews = recipeChallengeService.getChallengeRecipes(userId, challengeId, page);
-
-        List<RecipeCompleteChallenge> challengeOverviews = overviews.getContent();
-        List<UUID> recipeIds = challengeOverviews.stream()
-                .map(RecipeCompleteChallenge::getRecipeId)
-                .toList();
-
-        List<RecipeOverview> recipeOverviews = makeOverviews(recipeInfoService.getValidRecipes(recipeIds), userId);
-
-        return Pair.of(
-                challengeOverviews,
-                new PageImpl<>(recipeOverviews, overviews.getPageable(), overviews.getTotalElements()));
     }
 
     @PocOnly(until = "2025-12-31")
@@ -378,15 +312,6 @@ public class RecipeFacade {
                 recipeIds.stream().map(map::get).filter(Objects::nonNull).toList();
 
         return Pair.of(challengeOverviews, CursorPage.of(ordered, overviews.nextCursor()));
-    }
-
-    @Deprecated(forRemoval = true)
-    private Page<RecipeInfo> getRankingRecipes(RankingType rankingType, int page) {
-        Page<UUID> recipeIds = recipeRankService.getRecipeIds(rankingType, page);
-        List<RecipeInfo> recipes =
-                recipeInfoService.getValidRecipes(recipeIds.stream().toList());
-
-        return new PageImpl<>(recipes, recipeIds.getPageable(), recipeIds.getTotalElements());
     }
 
     private CursorPage<RecipeInfo> getRankingRecipes(RankingType rankingType, String cursor) {

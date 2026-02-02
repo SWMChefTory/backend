@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.I18nTranslator;
@@ -17,7 +18,6 @@ import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeSort;
-import com.cheftory.api.recipe.util.RecipePageRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +42,11 @@ class RecipeInfoServiceTest {
         clock = mock(Clock.class);
         i18nTranslator = mock(I18nTranslator.class);
         countIdCursorCodec = mock(CountIdCursorCodec.class);
-        service = new RecipeInfoService(recipeInfoRepository, clock, i18nTranslator, countIdCursorCodec);
+        service = mock(RecipeInfoService.class, CALLS_REAL_METHODS);
+        setField(service, "recipeInfoRepository", recipeInfoRepository);
+        setField(service, "clock", clock);
+        setField(service, "i18nTranslator", i18nTranslator);
+        setField(service, "countIdCursorCodec", countIdCursorCodec);
     }
 
     @Nested
@@ -321,8 +325,8 @@ class RecipeInfoServiceTest {
                 @DisplayName("Then - 레시피가 생성되고 ID가 반환된다")
                 void thenCreateRecipeAndReturnId() {
                     UUID expectedId = UUID.randomUUID();
-                    RecipeInfo recipeInfo = mock(RecipeInfo.class);
-                    when(recipeInfo.getId()).thenReturn(expectedId);
+                    RecipeInfo recipeInfo = RecipeInfo.create(clock);
+                    setField(recipeInfo, "id", expectedId);
 
                     when(recipeInfoRepository.save(any(RecipeInfo.class))).thenReturn(recipeInfo);
 
@@ -402,116 +406,6 @@ class RecipeInfoServiceTest {
                     verify(recipeInfoRepository)
                             .findRecipesByIdInAndRecipeStatusIn(
                                     recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS));
-                }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("getPopulars(page, query)")
-    class GetPopulars {
-
-        private Integer page;
-
-        @BeforeEach
-        void init() {
-            page = 0;
-        }
-
-        @Nested
-        @DisplayName("Given - Query가 ALL일 때")
-        class GivenQueryIsAll {
-
-            private Page<RecipeInfo> expectedPage;
-            private Pageable pageable;
-
-            @BeforeEach
-            void setUp() {
-                List<RecipeInfo> recipeInfos = List.of(mock(RecipeInfo.class), mock(RecipeInfo.class));
-                expectedPage = new PageImpl<>(recipeInfos);
-                pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-
-                when(recipeInfoRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable))
-                        .thenReturn(expectedPage);
-            }
-
-            @Nested
-            @DisplayName("When - 인기 레시피 페이지 조회 요청을 하면")
-            class WhenFindingPopularRecipes {
-
-                @Test
-                @DisplayName("Then - 모든 레시피 페이지가 반환된다")
-                void thenReturnAllRecipePage() {
-                    Page<RecipeInfo> result = service.getPopulars(page, RecipeInfoVideoQuery.ALL);
-
-                    assertThat(result).isEqualTo(expectedPage);
-                    verify(recipeInfoRepository).findByRecipeStatus(eq(RecipeStatus.SUCCESS), any(Pageable.class));
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - Query가 NORMAL일 때")
-        class GivenQueryIsNormal {
-
-            private Page<RecipeInfo> expectedPage;
-            private Pageable pageable;
-
-            @BeforeEach
-            void setUp() {
-                List<RecipeInfo> recipeInfos = List.of(mock(RecipeInfo.class), mock(RecipeInfo.class));
-                expectedPage = new PageImpl<>(recipeInfos);
-                pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-
-                when(recipeInfoRepository.findRecipes(RecipeStatus.SUCCESS, pageable, "NORMAL"))
-                        .thenReturn(expectedPage);
-            }
-
-            @Nested
-            @DisplayName("When - 인기 레시피 페이지 조회 요청을 하면")
-            class WhenFindingPopularRecipes {
-
-                @Test
-                @DisplayName("Then - NORMAL 레시피 페이지가 반환된다")
-                void thenReturnNormalRecipePage() {
-                    Page<RecipeInfo> result = service.getPopulars(page, RecipeInfoVideoQuery.NORMAL);
-
-                    assertThat(result).isEqualTo(expectedPage);
-                    verify(recipeInfoRepository)
-                            .findRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class), eq("NORMAL"));
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - Query가 SHORTS일 때")
-        class GivenQueryIsShorts {
-
-            private Page<RecipeInfo> expectedPage;
-            private Pageable pageable;
-
-            @BeforeEach
-            void setUp() {
-                List<RecipeInfo> recipeInfos = List.of(mock(RecipeInfo.class), mock(RecipeInfo.class));
-                expectedPage = new PageImpl<>(recipeInfos);
-                pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-
-                when(recipeInfoRepository.findRecipes(RecipeStatus.SUCCESS, pageable, "SHORTS"))
-                        .thenReturn(expectedPage);
-            }
-
-            @Nested
-            @DisplayName("When - 인기 레시피 페이지 조회 요청을 하면")
-            class WhenFindingPopularRecipes {
-
-                @Test
-                @DisplayName("Then - SHORTS 레시피 페이지가 반환된다")
-                void thenReturnShortsRecipePage() {
-                    Page<RecipeInfo> result = service.getPopulars(page, RecipeInfoVideoQuery.SHORTS);
-
-                    assertThat(result).isEqualTo(expectedPage);
-                    verify(recipeInfoRepository)
-                            .findRecipes(eq(RecipeStatus.SUCCESS), any(Pageable.class), eq("SHORTS"));
                 }
             }
         }
@@ -752,104 +646,16 @@ class RecipeInfoServiceTest {
     }
 
     @Nested
-    @DisplayName("getCuisines(type, page)")
-    class GetCuisines {
-
-        private Integer page;
-        private RecipeCuisineType cuisineType;
-        private String cuisineName;
-
-        @BeforeEach
-        void init() {
-            page = 0;
-            cuisineType = RecipeCuisineType.KOREAN;
-            cuisineName = "Korean";
-        }
-
-        @Nested
-        @DisplayName("Given - 성공한 특정 음식 종류 레시피들이 존재할 때")
-        class GivenCuisineRecipesExist {
-
-            private Page<RecipeInfo> expectedPage;
-            private Pageable pageable;
-
-            @BeforeEach
-            void setUp() {
-                List<RecipeInfo> recipeInfos = List.of(mock(RecipeInfo.class), mock(RecipeInfo.class));
-                expectedPage = new PageImpl<>(recipeInfos);
-                pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-
-                when(i18nTranslator.translate(cuisineType.messageKey())).thenReturn(cuisineName);
-                when(recipeInfoRepository.findCuisineRecipes(cuisineName, RecipeStatus.SUCCESS, pageable))
-                        .thenReturn(expectedPage);
-            }
-
-            @Nested
-            @DisplayName("When - 특정 음식 종류 레시피 페이지 조회 요청을 하면")
-            class WhenFindingCuisineRecipes {
-
-                @Test
-                @DisplayName("Then - 해당 음식 종류 레시피 페이지가 반환된다")
-                void thenReturnCuisineRecipePage() {
-                    Page<RecipeInfo> result = service.getCuisines(cuisineType, page);
-
-                    assertThat(result).isEqualTo(expectedPage);
-                    verify(recipeInfoRepository)
-                            .findCuisineRecipes(eq(cuisineName), eq(RecipeStatus.SUCCESS), any(Pageable.class));
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 중식 레시피가 존재할 때")
-        class GivenChineseRecipesExist {
-
-            private Page<RecipeInfo> expectedPage;
-            private Pageable pageable;
-
-            @BeforeEach
-            void setUp() {
-                cuisineType = RecipeCuisineType.CHINESE;
-                cuisineName = "Chinese";
-                List<RecipeInfo> recipeInfos = List.of(mock(RecipeInfo.class));
-                expectedPage = new PageImpl<>(recipeInfos);
-                pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-
-                when(i18nTranslator.translate(cuisineType.messageKey())).thenReturn(cuisineName);
-                when(recipeInfoRepository.findCuisineRecipes(cuisineName, RecipeStatus.SUCCESS, pageable))
-                        .thenReturn(expectedPage);
-            }
-
-            @Nested
-            @DisplayName("When - 중식 레시피 페이지 조회 요청을 하면")
-            class WhenFindingChineseRecipes {
-
-                @Test
-                @DisplayName("Then - 중식 레시피 페이지가 반환된다")
-                void thenReturnChineseRecipePage() {
-                    Page<RecipeInfo> result = service.getCuisines(cuisineType, page);
-
-                    assertThat(result).isEqualTo(expectedPage);
-                    assertThat(result.getContent()).hasSize(1);
-                    verify(recipeInfoRepository)
-                            .findCuisineRecipes(eq(cuisineName), eq(RecipeStatus.SUCCESS), any(Pageable.class));
-                }
-            }
-        }
-    }
-
-    @Nested
     @DisplayName("커서 기반 조회")
     class CursorQueries {
 
         @Test
         @DisplayName("커서가 없으면 인기 레시피 첫 페이지를 조회한다")
         void shouldGetPopularsFirstPageWithCursor() {
-            RecipeInfo recipeInfo = mock(RecipeInfo.class);
+            RecipeInfo recipeInfo = RecipeInfo.create(clock);
             UUID recipeId = UUID.randomUUID();
-
-            doReturn(recipeId).when(recipeInfo).getId();
-            doReturn(10).when(recipeInfo).getViewCount();
+            setField(recipeInfo, "id", recipeId);
+            setField(recipeInfo, "viewCount", 10);
 
             List<RecipeInfo> rows = Collections.nCopies(21, recipeInfo);
 

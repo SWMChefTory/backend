@@ -18,7 +18,6 @@ import com.cheftory.api.recipe.history.entity.RecipeHistoryUnCategorizedCountPro
 import com.cheftory.api.recipe.history.exception.RecipeHistoryErrorCode;
 import com.cheftory.api.recipe.history.exception.RecipeHistoryException;
 import com.cheftory.api.recipe.history.utils.RecipeHistorySort;
-import com.cheftory.api.recipe.util.RecipePageRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -533,110 +532,6 @@ public class RecipeHistoryServiceTest {
 
                     verify(repository).findByRecipeCategoryIdAndStatus(categoryId, RecipeHistoryStatus.ACTIVE);
                     verify(repository).saveAll(List.of());
-                }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("카테고리별 레시피 조회 상태 조회")
-    class FindCategorizedRecipeHistoryes {
-
-        @Test
-        @DisplayName("특정 카테고리의 레시피 조회 상태들을 조회한다")
-        void shouldFindRecipeHistoryesByCategory() {
-            UUID userId = UUID.randomUUID();
-            UUID categoryId = UUID.randomUUID();
-            int page = 0;
-            Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
-
-            Page<RecipeHistory> expectedStatuses =
-                    new PageImpl<>(List.of(RecipeHistory.create(clock, userId, UUID.randomUUID())));
-
-            doReturn(expectedStatuses)
-                    .when(repository)
-                    .findAllByUserIdAndRecipeCategoryIdAndStatus(
-                            any(UUID.class), any(UUID.class), any(RecipeHistoryStatus.class), any(Pageable.class));
-
-            Page<RecipeHistory> result = service.getCategorized(userId, categoryId, page);
-
-            assertThat(result).isEqualTo(expectedStatuses);
-            verify(repository)
-                    .findAllByUserIdAndRecipeCategoryIdAndStatus(
-                            userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable);
-        }
-    }
-
-    @Nested
-    @DisplayName("미분류 레시피 조회 상태 조회")
-    class FindUncategorizedRecipeHistoryes {
-
-        @Test
-        @DisplayName("카테고리가 없는 레시피 조회 상태들을 조회한다")
-        void shouldFindUncategorizedRecipeHistoryes() {
-            UUID userId = UUID.randomUUID();
-            int page = 0;
-            Pageable pageable = PageRequest.of(page, 10, RecipeHistorySort.VIEWED_AT_DESC);
-
-            List<RecipeHistory> expectedStatuses = List.of(RecipeHistory.create(clock, userId, UUID.randomUUID()));
-            Page<RecipeHistory> expectedPage = new PageImpl<>(expectedStatuses, pageable, expectedStatuses.size());
-
-            doReturn(expectedPage)
-                    .when(repository)
-                    .findAllByUserIdAndRecipeCategoryIdAndStatus(
-                            any(UUID.class), isNull(), any(RecipeHistoryStatus.class), any(Pageable.class));
-
-            Page<RecipeHistory> result = service.getUnCategorized(userId, page);
-
-            assertThat(result.getContent()).isEqualTo(expectedStatuses);
-            verify(repository)
-                    .findAllByUserIdAndRecipeCategoryIdAndStatus(userId, null, RecipeHistoryStatus.ACTIVE, pageable);
-        }
-    }
-
-    @Nested
-    @DisplayName("최근 조회한 레시피 상태 조회")
-    class FindRecentRecipeHistoryes {
-
-        @Nested
-        @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
-        class GivenValidUserId {
-
-            private UUID userId;
-            private Integer page;
-            private Pageable pageable;
-
-            @BeforeEach
-            void setUp() {
-                userId = UUID.randomUUID();
-                page = 0;
-                pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
-            }
-
-            @Nested
-            @DisplayName("When - 사용자의 최근 조회한 레시피 상태들을 조회한다면")
-            class WhenFindingRecentRecipeHistoryes {
-
-                private Page<RecipeHistory> expectedStatuses;
-
-                @BeforeEach
-                void beforeEach() {
-                    expectedStatuses = new PageImpl<>(List.of(
-                            RecipeHistory.create(clock, userId, UUID.randomUUID()),
-                            RecipeHistory.create(clock, userId, UUID.randomUUID())));
-                    doReturn(expectedStatuses)
-                            .when(repository)
-                            .findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
-                }
-
-                @Test
-                @DisplayName("Then - 최근 조회 순서로 정렬된 레시피 상태들이 반환되어야 한다")
-                void thenShouldReturnRecentRecipeHistoryes() {
-                    List<RecipeHistory> result =
-                            service.getRecents(userId, page).getContent();
-
-                    assertThat(result).isEqualTo(expectedStatuses.getContent());
-                    verify(repository).findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
                 }
             }
         }

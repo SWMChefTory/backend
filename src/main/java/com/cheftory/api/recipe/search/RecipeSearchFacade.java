@@ -21,8 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,16 +33,6 @@ public class RecipeSearchFacade {
     private final RecipeDetailMetaService recipeDetailMetaService;
     private final RecipeTagService recipeTagService;
     private final RecipeInfoService recipeInfoService;
-
-    @Deprecated(forRemoval = true)
-    public Page<RecipeOverview> searchRecipes(int page, String query, UUID userId) {
-        Page<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, page);
-
-        List<RecipeInfo> recipes = recipeInfoService.gets(recipeIdsPage.getContent());
-
-        List<RecipeOverview> content = makeOverviews(recipes, userId);
-        return new PageImpl<>(content, recipeIdsPage.getPageable(), recipeIdsPage.getTotalElements());
-    }
 
     public CursorPage<RecipeOverview> searchRecipes(String query, UUID userId, String cursor) {
         CursorPage<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, cursor);
