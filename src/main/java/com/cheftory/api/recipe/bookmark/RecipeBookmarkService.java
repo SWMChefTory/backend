@@ -117,7 +117,7 @@ public class RecipeBookmarkService {
     @Transactional
     public void blockByRecipe(UUID recipeId) {
         List<RecipeBookmark> bookmarks = recipeBookmarkRepository.findAllByRecipeId(recipeId);
-        bookmarks.forEach(recipeHistory -> recipeHistory.block(clock));
+        bookmarks.forEach(bookmark -> bookmark.block(clock));
         recipeBookmarkRepository.saveAll(bookmarks);
     }
 
