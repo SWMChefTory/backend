@@ -3,6 +3,7 @@ package com.cheftory.api.recipe.content.youtubemeta;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.youtubemeta.client.VideoInfoClient;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
+import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaStatus;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
@@ -41,11 +42,15 @@ public class RecipeYoutubeMetaService {
         List<RecipeYoutubeMeta> metas =
             recipeYoutubeMetaRepository.findAllByVideoUri(youtubeUri.getNormalizedUrl());
 
-        if (metas.isEmpty()) {
+        validateAllActive(metas);
+
+        List<RecipeYoutubeMeta> actives = metas.stream()
+            .filter(m -> m.getStatus() == YoutubeMetaStatus.ACTIVE)
+            .toList();
+
+        if (actives.isEmpty()) {
             throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
         }
-
-        validateAllActive(metas);
 
         if (metas.size() > 1) {
             log.warn("Multiple RecipeYoutubeMeta detected. count={}, recipeIds={}",
