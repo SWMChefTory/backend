@@ -76,6 +76,10 @@ public class RecipeInfoService {
         return recipeInfo;
     }
 
+    public void delete(UUID recipeId) {
+        recipeInfoRepository.deleteById(recipeId);
+    }
+
     public List<RecipeInfo> getValidRecipes(List<UUID> recipeIds) {
         return recipeInfoRepository
                 .findRecipesByIdInAndRecipeStatusIn(recipeIds, List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS))

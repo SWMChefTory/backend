@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.14] - 2026-01-22
+
+### Changed
+
+- 추천 후보 검색 쿼리 스코어링을 가중치 합산 방식으로 조정
+- 키워드/채널/신선도 함수 점수 구성 및 감쇠 파라미터 정비
+
+---
+
 ## [1.1.13] - 2026-01-22
 
 ### Added

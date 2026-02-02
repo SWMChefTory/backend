@@ -32,12 +32,20 @@ public class RecipeProgress extends MarketScope {
     @Column(nullable = false)
     private RecipeProgressDetail detail;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private RecipeProgressState state;
+
     @Column(nullable = false)
     private UUID recipeId;
 
     public static RecipeProgress create(
-            UUID recipeId, Clock clock, RecipeProgressStep step, RecipeProgressDetail detail) {
+            UUID recipeId,
+            Clock clock,
+            RecipeProgressStep step,
+            RecipeProgressDetail detail,
+            RecipeProgressState state) {
 
-        return new RecipeProgress(UUID.randomUUID(), clock.now(), step, detail, recipeId);
+        return new RecipeProgress(UUID.randomUUID(), clock.now(), step, detail, state, recipeId);
     }
 }

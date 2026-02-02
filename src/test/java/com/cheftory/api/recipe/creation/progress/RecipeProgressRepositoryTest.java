@@ -7,6 +7,7 @@ import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
+import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressState;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.creation.progress.utils.RecipeProgressSort;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DisplayName("RecipeProgressRepository 테스트")
 public class RecipeProgressRepositoryTest extends DbContextTest {
@@ -54,7 +56,8 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
                 step = RecipeProgressStep.READY;
                 detail = RecipeProgressDetail.READY;
 
-                RecipeProgress recipeProgress = RecipeProgress.create(recipeId, clock, step, detail);
+                RecipeProgress recipeProgress =
+                        RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.SUCCESS);
                 recipeProgressRepository.save(recipeProgress);
             }
 
@@ -73,10 +76,12 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
                 void shouldReturnRecipeProgress() {
 
                     assertThat(results).hasSize(1);
-                    assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
-                    assertThat(results.getFirst().getStep()).isEqualTo(step);
-                    assertThat(results.getFirst().getDetail()).isEqualTo(detail);
-                    assertThat(results.getFirst().getCreatedAt()).isEqualTo(FIXED_TIME);
+                    RecipeProgress result = results.getFirst();
+                    assertThat(ReflectionTestUtils.getField(result, "recipeId")).isEqualTo(recipeId);
+                    assertThat(ReflectionTestUtils.getField(result, "step")).isEqualTo(step);
+                    assertThat(ReflectionTestUtils.getField(result, "detail")).isEqualTo(detail);
+                    assertThat(ReflectionTestUtils.getField(result, "createdAt")).isEqualTo(FIXED_TIME);
+                    assertThat(ReflectionTestUtils.getField(result, "state")).isEqualTo(RecipeProgressState.SUCCESS);
                 }
             }
         }
@@ -105,19 +110,19 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
                 // 세 번째로 생성된 것 먼저 저장
                 doReturn(thirdTime).when(clock).now();
                 RecipeProgress thirdProgress = RecipeProgress.create(
-                        recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                        recipeId, clock, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, RecipeProgressState.SUCCESS);
                 recipeProgressRepository.save(thirdProgress);
 
                 // 첫 번째로 생성된 것 저장
                 doReturn(firstTime).when(clock).now();
-                RecipeProgress firstProgress =
-                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY);
+                RecipeProgress firstProgress = RecipeProgress.create(
+                        recipeId, clock, RecipeProgressStep.READY, RecipeProgressDetail.READY, RecipeProgressState.SUCCESS);
                 recipeProgressRepository.save(firstProgress);
 
                 // 두 번째로 생성된 것 저장
                 doReturn(secondTime).when(clock).now();
-                RecipeProgress secondProgress =
-                        RecipeProgress.create(recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+                RecipeProgress secondProgress = RecipeProgress.create(
+                        recipeId, clock, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, RecipeProgressState.SUCCESS);
                 recipeProgressRepository.save(secondProgress);
             }
 
@@ -137,16 +142,19 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
                     assertThat(results).hasSize(3);
 
                     // 첫 번째: 가장 이른 시간
-                    assertThat(results.get(0).getCreatedAt()).isEqualTo(firstTime);
-                    assertThat(results.get(0).getStep()).isEqualTo(RecipeProgressStep.READY);
+                    assertThat(ReflectionTestUtils.getField(results.get(0), "createdAt")).isEqualTo(firstTime);
+                    assertThat(ReflectionTestUtils.getField(results.get(0), "step")).isEqualTo(RecipeProgressStep.READY);
+                    assertThat(ReflectionTestUtils.getField(results.get(0), "state")).isEqualTo(RecipeProgressState.SUCCESS);
 
                     // 두 번째: 중간 시간
-                    assertThat(results.get(1).getCreatedAt()).isEqualTo(secondTime);
-                    assertThat(results.get(1).getStep()).isEqualTo(RecipeProgressStep.STEP);
+                    assertThat(ReflectionTestUtils.getField(results.get(1), "createdAt")).isEqualTo(secondTime);
+                    assertThat(ReflectionTestUtils.getField(results.get(1), "step")).isEqualTo(RecipeProgressStep.STEP);
+                    assertThat(ReflectionTestUtils.getField(results.get(1), "state")).isEqualTo(RecipeProgressState.SUCCESS);
 
                     // 세 번째: 가장 늦은 시간
-                    assertThat(results.get(2).getCreatedAt()).isEqualTo(thirdTime);
-                    assertThat(results.get(2).getStep()).isEqualTo(RecipeProgressStep.FINISHED);
+                    assertThat(ReflectionTestUtils.getField(results.get(2), "createdAt")).isEqualTo(thirdTime);
+                    assertThat(ReflectionTestUtils.getField(results.get(2), "step")).isEqualTo(RecipeProgressStep.FINISHED);
+                    assertThat(ReflectionTestUtils.getField(results.get(2), "state")).isEqualTo(RecipeProgressState.SUCCESS);
                 }
             }
         }
@@ -177,7 +185,8 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
 
                 @BeforeEach
                 void setUp() {
-                    RecipeProgress recipeProgress = RecipeProgress.create(recipeId, clock, step, detail);
+                    RecipeProgress recipeProgress =
+                            RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.SUCCESS);
                     recipeProgressRepository.save(recipeProgress);
                 }
 
@@ -188,10 +197,12 @@ public class RecipeProgressRepositoryTest extends DbContextTest {
                             recipeProgressRepository.findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
 
                     assertThat(results).hasSize(1);
-                    assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
-                    assertThat(results.getFirst().getStep()).isEqualTo(step);
-                    assertThat(results.getFirst().getDetail()).isEqualTo(detail);
-                    assertThat(results.getFirst().getCreatedAt()).isEqualTo(FIXED_TIME);
+                    RecipeProgress result = results.getFirst();
+                    assertThat(ReflectionTestUtils.getField(result, "recipeId")).isEqualTo(recipeId);
+                    assertThat(ReflectionTestUtils.getField(result, "step")).isEqualTo(step);
+                    assertThat(ReflectionTestUtils.getField(result, "detail")).isEqualTo(detail);
+                    assertThat(ReflectionTestUtils.getField(result, "createdAt")).isEqualTo(FIXED_TIME);
+                    assertThat(ReflectionTestUtils.getField(result, "state")).isEqualTo(RecipeProgressState.SUCCESS);
                 }
             }
         }

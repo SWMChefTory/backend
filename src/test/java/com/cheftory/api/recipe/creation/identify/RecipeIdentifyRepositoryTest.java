@@ -10,6 +10,7 @@ import com.cheftory.api.recipe.creation.identify.entity.RecipeIdentify;
 import jakarta.transaction.Transactional;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,14 +41,16 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
     class SaveIdentifyUrl {
 
         @Nested
-        @DisplayName("Given - 유효한 URI가 주어졌을 때")
-        class GivenValidUri {
+        @DisplayName("Given - 유효한 URI와 recipeId가 주어졌을 때")
+        class GivenValidUriAndRecipeId {
 
             private URI url;
+            private UUID recipeId;
 
             @BeforeEach
             void init() {
                 url = URI.create("https://www.youtube.com/watch?v=LOCK_" + UUID.randomUUID());
+                recipeId = UUID.randomUUID();
             }
 
             @Nested
@@ -58,7 +61,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
                 @BeforeEach
                 void beforeEach() {
-                    identifyUrl = RecipeIdentify.create(url, clock);
+                    identifyUrl = RecipeIdentify.create(url, recipeId, clock);
                     repository.save(identifyUrl);
                 }
 
@@ -68,19 +71,20 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
                     RecipeIdentify found =
                             repository.findById(identifyUrl.getId()).orElseThrow();
                     assertThat(found.getUrl()).isEqualTo(url);
+                    assertThat(found.getRecipeId()).isEqualTo(recipeId);
                     assertThat(found.getCreatedAt()).isEqualTo(FIXED_TIME);
                 }
             }
 
             @Nested
-            @DisplayName("When - 같은 URI를 중복 저장하면")
+            @DisplayName("When - 같은 URI와 recipeId를 중복 저장하면")
             class WhenSavingDuplicate {
 
                 private RecipeIdentify identifyUrl;
 
                 @BeforeEach
                 void beforeEach() {
-                    identifyUrl = RecipeIdentify.create(url, clock);
+                    identifyUrl = RecipeIdentify.create(url, recipeId, clock);
                     repository.save(identifyUrl);
                 }
 
@@ -88,9 +92,61 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
                 @DisplayName("Then - 유니크 제약 위반(DataIntegrityViolationException)")
                 void thenUniqueViolation() {
                     assertThrows(DataIntegrityViolationException.class, () -> {
-                        repository.save(RecipeIdentify.create(url, clock));
+                        repository.save(RecipeIdentify.create(url, recipeId, clock));
                     });
                 }
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Identify URL 조회")
+    class FindIdentifyUrl {
+
+        @Nested
+        @DisplayName("Given - 저장된 URL이 있을 때")
+        class GivenSavedUrl {
+
+            private URI url;
+            private UUID recipeId;
+            private RecipeIdentify identifyUrl;
+
+            @BeforeEach
+            void init() {
+                url = URI.create("https://example.com/video/LOCK_" + UUID.randomUUID());
+                recipeId = UUID.randomUUID();
+                identifyUrl = RecipeIdentify.create(url, recipeId, clock);
+                repository.save(identifyUrl);
+            }
+
+            @Test
+            @DisplayName("findByUrl 호출 시 해당 레코드가 반환된다")
+            void findByUrlReturnsRecord() {
+                Optional<RecipeIdentify> found = repository.findByUrl(url);
+
+                assertThat(found).isPresent();
+                assertThat(found.get().getUrl()).isEqualTo(url);
+                assertThat(found.get().getRecipeId()).isEqualTo(recipeId);
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 저장되지 않은 URL일 때")
+        class GivenNonSavedUrl {
+
+            private URI url;
+
+            @BeforeEach
+            void init() {
+                url = URI.create("https://example.com/video/NOT_SAVED");
+            }
+
+            @Test
+            @DisplayName("findByUrl 호출 시 빈 Optional이 반환된다")
+            void findByUrlReturnsEmpty() {
+                Optional<RecipeIdentify> found = repository.findByUrl(url);
+
+                assertThat(found).isEmpty();
             }
         }
     }
@@ -101,20 +157,26 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
     class DeleteIdentifyUrl {
 
         @Nested
-        @DisplayName("Given - 저장된 URL이 있을 때")
-        class GivenSavedUrl {
+        @DisplayName("Given - 저장된 URL과 recipeId가 있을 때")
+        class GivenSavedUrlAndRecipeId {
+
             private URI url;
+            private UUID recipeId;
 
             @BeforeEach
             void init() {
                 url = URI.create("https://example.com/video/LOCK_" + UUID.randomUUID());
-                repository.save(RecipeIdentify.create(url, clock));
+                recipeId = UUID.randomUUID();
+                repository.save(RecipeIdentify.create(url, recipeId, clock));
             }
 
             @Test
-            @DisplayName("deleteByUrl 호출 시 해당 레코드가 삭제된다")
-            void deleteByUrlRemovesRow() {
-                repository.deleteByUrl(url);
+            @DisplayName("deleteByUrlAndRecipeId 호출 시 해당 레코드가 삭제된다")
+            void deleteByUrlAndRecipeIdRemovesRow() {
+                repository.deleteByUrlAndRecipeId(url, recipeId);
+
+                Optional<RecipeIdentify> found = repository.findByUrl(url);
+                assertThat(found).isEmpty();
             }
         }
     }
