@@ -52,13 +52,13 @@ public class RecipeYoutubeMetaService {
             throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
         }
 
-        if (metas.size() > 1) {
+        if (actives.size() > 1) {
             log.warn("Multiple RecipeYoutubeMeta detected. count={}, recipeIds={}",
                 metas.size(),
                 metas.stream().map(RecipeYoutubeMeta::getRecipeId).toList());
         }
 
-        return metas.getFirst();
+        return actives.getFirst();
     }
 
     public YoutubeVideoInfo getVideoInfo(URI uri) {
