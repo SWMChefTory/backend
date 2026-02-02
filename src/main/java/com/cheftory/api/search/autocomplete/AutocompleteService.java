@@ -12,7 +12,6 @@ public class AutocompleteService {
     private static final int DEFAULT_LIMIT = 10;
     private final AutocompleteRepository autocompleteRepository;
 
-
     public List<Autocomplete> autocomplete(AutocompleteScope scope, String keyword) {
         return autocompleteRepository.searchAutocomplete(scope, keyword, DEFAULT_LIMIT);
     }

@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.dto;
 
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.briefing.entity.RecipeBriefing;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
@@ -8,7 +9,6 @@ import com.cheftory.api.recipe.content.step.entity.RecipeStep;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import lombok.AccessLevel;
@@ -26,7 +26,10 @@ public class FullRecipe {
 
     private List<RecipeStep> recipeSteps;
     private List<RecipeProgress> recipeProgresses;
-    private RecipeHistory recipeHistory;
+
+    @Nullable
+    private RecipeBookmark recipeBookmark;
+
     private RecipeYoutubeMeta recipeYoutubeMeta;
     private RecipeInfo recipe;
     private List<RecipeBriefing> recipeBriefings;
@@ -38,7 +41,7 @@ public class FullRecipe {
             List<RecipeProgress> recipeProgresses,
             List<RecipeTag> recipeTags,
             RecipeYoutubeMeta recipeYoutubeMeta,
-            RecipeHistory recipeHistory,
+            @Nullable RecipeBookmark recipeBookmark,
             RecipeInfo recipe,
             List<RecipeBriefing> recipeBriefings) {
 
@@ -48,7 +51,7 @@ public class FullRecipe {
                 recipeDetailMeta,
                 recipeSteps,
                 recipeProgresses,
-                recipeHistory,
+                recipeBookmark,
                 recipeYoutubeMeta,
                 recipe,
                 recipeBriefings);

@@ -79,7 +79,8 @@ class RecipeIdentifyServiceTest {
                     when(repository.save(any(RecipeIdentify.class)))
                             .thenThrow(new DataIntegrityViolationException("duplicate key"));
 
-                    RecipeIdentifyException ex = assertThrows(RecipeIdentifyException.class, () -> service.create(url, recipeId));
+                    RecipeIdentifyException ex =
+                            assertThrows(RecipeIdentifyException.class, () -> service.create(url, recipeId));
 
                     assertThat(ex.getErrorMessage().getErrorCode())
                             .isEqualTo(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING.getErrorCode());

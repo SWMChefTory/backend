@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
@@ -26,7 +27,6 @@ import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCo
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.history.RecipeHistoryService;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +41,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 class RecipeCreationFacadeTest {
 
     private AsyncRecipeCreationService asyncRecipeCreationService;
-    private RecipeHistoryService recipeHistoryService;
+    private RecipeBookmarkService recipeBookmarkService;
     private RecipeYoutubeMetaService recipeYoutubeMetaService;
     private RecipeIdentifyService recipeIdentifyService;
     private RecipeInfoService recipeInfoService;
@@ -53,7 +53,7 @@ class RecipeCreationFacadeTest {
     @BeforeEach
     void setUp() {
         asyncRecipeCreationService = mock(AsyncRecipeCreationService.class);
-        recipeHistoryService = mock(RecipeHistoryService.class);
+        recipeBookmarkService = mock(RecipeBookmarkService.class);
         recipeYoutubeMetaService = mock(RecipeYoutubeMetaService.class);
         recipeIdentifyService = mock(RecipeIdentifyService.class);
         recipeInfoService = mock(RecipeInfoService.class);
@@ -62,7 +62,7 @@ class RecipeCreationFacadeTest {
 
         sut = new RecipeCreationFacade(
                 asyncRecipeCreationService,
-                recipeHistoryService,
+                recipeBookmarkService,
                 recipeYoutubeMetaService,
                 recipeIdentifyService,
                 recipeInfoService,
@@ -75,7 +75,7 @@ class RecipeCreationFacadeTest {
     class UseExistingRecipe {
 
         @Test
-        @DisplayName("기존 레시피가 있고 User 요청이며 히스토리가 생성되면 credit을 차감한다")
+        @DisplayName("기존 레시피가 있고 User 요청이며 북마크가 생성되면 credit을 차감한다")
         void shouldUseExistingRecipeAndSpendCredit() {
             URI uri = URI.create("https://youtube.com/watch?v=test");
             UUID userId = UUID.randomUUID();
@@ -87,19 +87,19 @@ class RecipeCreationFacadeTest {
 
             doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
             doReturn(recipeInfo).when(recipeInfoService).getNotFailed(List.of(recipeId));
-            doReturn(true).when(recipeHistoryService).create(userId, recipeId);
+            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
             UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
 
             assertThat(result).isEqualTo(recipeId);
-            verify(recipeHistoryService).create(userId, recipeId);
+            verify(recipeBookmarkService).create(userId, recipeId);
             verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
 
             verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
         }
 
         @Test
-        @DisplayName("기존 레시피가 있고 User 요청이지만 히스토리 생성이 실패하면 credit을 차감하지 않는다")
+        @DisplayName("기존 레시피가 있고 User 요청이지만 북마크 생성이 실패하면 credit을 차감하지 않는다")
         void shouldNotSpendWhenHistoryNotCreated() {
             URI uri = URI.create("https://youtube.com/watch?v=test");
             UUID userId = UUID.randomUUID();
@@ -111,19 +111,19 @@ class RecipeCreationFacadeTest {
 
             doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
             doReturn(recipeInfo).when(recipeInfoService).getNotFailed(List.of(recipeId));
-            doReturn(false).when(recipeHistoryService).create(userId, recipeId);
+            doReturn(false).when(recipeBookmarkService).create(userId, recipeId);
 
             UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
 
             assertThat(result).isEqualTo(recipeId);
-            verify(recipeHistoryService).create(userId, recipeId);
+            verify(recipeBookmarkService).create(userId, recipeId);
             verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
 
             verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
         }
 
         @Test
-        @DisplayName("기존 레시피가 있고 Crawler 요청이면 히스토리/credit 없이 기존 레시피를 반환한다")
+        @DisplayName("기존 레시피가 있고 Crawler 요청이면 북마크/credit 없이 기존 레시피를 반환한다")
         void shouldUseExistingRecipeWithoutHistoryForCrawler() {
             URI uri = URI.create("https://youtube.com/watch?v=test");
             UUID recipeId = UUID.randomUUID();
@@ -138,7 +138,7 @@ class RecipeCreationFacadeTest {
             UUID result = sut.create(new RecipeCreationTarget.Crawler(uri));
 
             assertThat(result).isEqualTo(recipeId);
-            verify(recipeHistoryService, never()).create(any(), any());
+            verify(recipeBookmarkService, never()).create(any(), any());
             verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
             verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
         }
@@ -200,14 +200,14 @@ class RecipeCreationFacadeTest {
 
             doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
             doReturn(recipeInfo).when(recipeCreationTxService).createWithIdentify(uri);
-            doReturn(true).when(recipeHistoryService).create(userId, recipeId);
+            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
             UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
 
             assertThat(result).isEqualTo(recipeId);
             verify(recipeCreationTxService).createWithIdentify(uri);
             verify(recipeYoutubeMetaService).create(videoInfo, recipeId);
-            verify(recipeHistoryService).create(userId, recipeId);
+            verify(recipeBookmarkService).create(userId, recipeId);
             verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
 
             verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri);
@@ -238,13 +238,13 @@ class RecipeCreationFacadeTest {
 
             doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
             doReturn(recipeInfo).when(recipeInfoService).getNotFailed(List.of(recipeId));
-            doReturn(true).when(recipeHistoryService).create(userId, recipeId);
+            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
             UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
 
             assertThat(result).isEqualTo(recipeId);
             verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
-            verify(recipeHistoryService).create(userId, recipeId);
+            verify(recipeBookmarkService).create(userId, recipeId);
             verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
         }
 
@@ -273,13 +273,13 @@ class RecipeCreationFacadeTest {
 
             doReturn(List.of(meta)).when(recipeYoutubeMetaService).getByUrl(uri);
             doReturn(recipeInfo).when(recipeInfoService).getNotFailed(List.of(recipeId));
-            doReturn(true).when(recipeHistoryService).create(userId, recipeId);
+            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
             UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
 
             assertThat(result).isEqualTo(recipeId);
             verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
-            verify(recipeHistoryService).create(userId, recipeId);
+            verify(recipeBookmarkService).create(userId, recipeId);
             verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
         }
     }

@@ -227,7 +227,6 @@ public class AutocompleteRepositoryTest {
             }
         }
 
-
         @Nested
         @DisplayName("Given - OpenSearch에서 IOException이 발생한 경우")
         class GivenIOException {

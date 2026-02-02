@@ -7,6 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
@@ -18,8 +20,6 @@ import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.dto.RecipeOverview;
-import com.cheftory.api.recipe.history.RecipeHistoryService;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,7 +39,7 @@ class RecipeSearchFacadeTest {
     private RecipeSearchPort recipeSearchPort;
 
     @Mock
-    private RecipeHistoryService recipeHistoryService;
+    private RecipeBookmarkService recipeBookmarkService;
 
     @Mock
     private RecipeYoutubeMetaService recipeYoutubeMetaService;
@@ -97,13 +97,13 @@ class RecipeSearchFacadeTest {
         doReturn(recipeId).when(tag).getRecipeId();
         doReturn("한식").when(tag).getTag();
 
-        RecipeHistory history = mock(RecipeHistory.class);
-        doReturn(recipeId).when(history).getRecipeId();
+        RecipeBookmark bookmark = mock(RecipeBookmark.class);
+        doReturn(recipeId).when(bookmark).getRecipeId();
 
         doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
         doReturn(List.of(detailMeta)).when(recipeDetailMetaService).getIn(List.of(recipeId));
         doReturn(List.of(tag)).when(recipeTagService).getIn(List.of(recipeId));
-        doReturn(List.of(history)).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
+        doReturn(List.of(bookmark)).when(recipeBookmarkService).getByRecipes(List.of(recipeId), userId);
 
         CursorPage<RecipeOverview> result = recipeSearchFacade.searchRecipes("김치찌개", userId, cursor);
 

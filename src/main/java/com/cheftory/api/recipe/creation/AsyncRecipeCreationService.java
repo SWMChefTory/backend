@@ -1,5 +1,7 @@
 package com.cheftory.api.recipe.creation;
 
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.caption.exception.RecipeCaptionErrorCode;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
@@ -11,8 +13,6 @@ import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.history.RecipeHistoryService;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class AsyncRecipeCreationService {
     private final RecipeInfoService recipeInfoService;
     private final RecipeYoutubeMetaService recipeYoutubeMetaService;
     private final RecipeIdentifyService recipeIdentifyService;
-    private final RecipeHistoryService recipeHistoryService;
+    private final RecipeBookmarkService recipeBookmarkService;
     private final RecipeCreditPort creditPort;
     private final RecipeCreationPipeline recipeCreationPipeline;
 
@@ -65,7 +65,7 @@ public class AsyncRecipeCreationService {
         recipeInfoService.failed(recipeId);
         recipeProgressService.failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
 
-        List<RecipeHistory> histories = recipeHistoryService.deleteByRecipe(recipeId);
+        List<RecipeBookmark> histories = recipeBookmarkService.deleteByRecipe(recipeId);
 
         histories.forEach(h -> creditPort.refundRecipeCreate(h.getUserId(), recipeId, creditCost));
     }

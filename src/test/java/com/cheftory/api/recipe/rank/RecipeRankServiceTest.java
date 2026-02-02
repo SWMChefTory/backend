@@ -1,11 +1,9 @@
 package com.cheftory.api.recipe.rank;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.cursor.CursorPage;
@@ -14,18 +12,14 @@ import com.cheftory.api._common.cursor.RankCursorCodec;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
-import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
-import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Page;
 
 @DisplayName("RecipeRankService Tests")
 public class RecipeRankServiceTest {

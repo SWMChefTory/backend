@@ -2,7 +2,6 @@ package com.cheftory.api.recipe.creation.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -96,8 +95,7 @@ class RecipeCreationCaptionStepTest {
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
-            verify(recipeProgressService)
-                    .failed(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
+            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
             verify(recipeCaptionService).create(videoId, recipeId);
         }
     }

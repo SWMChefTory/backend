@@ -1,12 +1,12 @@
 package com.cheftory.api.recipe.dto;
 
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +18,7 @@ import org.springframework.lang.Nullable;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class RecipeHistoryOverview {
+public class RecipeBookmarkOverview {
     private UUID recipeId;
     private RecipeStatus recipeStatus;
     private Integer viewCount;
@@ -45,22 +45,22 @@ public class RecipeHistoryOverview {
 
     private Long creditCost;
 
-    public static RecipeHistoryOverview of(
+    public static RecipeBookmarkOverview of(
             RecipeInfo recipe,
-            RecipeHistory recipeHistory,
+            RecipeBookmark recipeBookmark,
             RecipeYoutubeMeta youtubeMeta,
             @Nullable RecipeDetailMeta detailMeta,
             @Nullable List<RecipeTag> tags) {
 
-        return new RecipeHistoryOverview(
+        return new RecipeBookmarkOverview(
                 recipe.getId(),
                 recipe.getRecipeStatus(),
                 recipe.getViewCount(),
                 recipe.getCreatedAt(),
                 recipe.getUpdatedAt(),
-                recipeHistory.getViewedAt(),
-                recipeHistory.getLastPlaySeconds(),
-                recipeHistory.getRecipeCategoryId(),
+                recipeBookmark.getViewedAt(),
+                recipeBookmark.getLastPlaySeconds(),
+                recipeBookmark.getRecipeCategoryId(),
                 youtubeMeta.getTitle(),
                 youtubeMeta.getChannelTitle(),
                 youtubeMeta.getVideoId(),

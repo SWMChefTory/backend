@@ -9,8 +9,8 @@ import static org.mockito.Mockito.when;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
-import java.net.URI;
 import java.lang.reflect.Constructor;
+import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,10 +44,12 @@ class RecipeCreationPipelineTest {
         recipeCreateExecutor = mock(AsyncTaskExecutor.class);
 
         doAnswer(invocation -> {
-            Runnable task = invocation.getArgument(0);
-            task.run();
-            return null;
-        }).when(recipeCreateExecutor).execute(ArgumentMatchers.any(Runnable.class));
+                    Runnable task = invocation.getArgument(0);
+                    task.run();
+                    return null;
+                })
+                .when(recipeCreateExecutor)
+                .execute(ArgumentMatchers.any(Runnable.class));
 
         sut = createPipeline();
     }
@@ -86,23 +88,17 @@ class RecipeCreationPipelineTest {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
-            RecipeCreationExecutionContext context =
-                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
-            RecipeCreationExecutionContext updatedContext =
-                    RecipeCreationExecutionContext.from(
-                            context, mock(com.cheftory.api.recipe.content.caption.entity.RecipeCaption.class));
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
+            RecipeCreationExecutionContext updatedContext = RecipeCreationExecutionContext.from(
+                    context, mock(com.cheftory.api.recipe.content.caption.entity.RecipeCaption.class));
 
             when(recipeCreationCaptionStep.run(context)).thenReturn(updatedContext);
 
             sut.run(context);
 
-            InOrder order = inOrder(
-                    recipeProgressService,
-                    recipeCreationCaptionStep,
-                    recipeCreationFinalizeStep);
+            InOrder order = inOrder(recipeProgressService, recipeCreationCaptionStep, recipeCreationFinalizeStep);
 
-            order.verify(recipeProgressService)
-                    .start(recipeId, RecipeProgressStep.READY, RecipeProgressDetail.READY);
+            order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.READY, RecipeProgressDetail.READY);
             order.verify(recipeCreationCaptionStep).run(context);
 
             verify(recipeCreationFinalizeStep).run(updatedContext);
@@ -114,11 +110,9 @@ class RecipeCreationPipelineTest {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
-            RecipeCreationExecutionContext context =
-                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
-            RecipeCreationExecutionContext updatedContext =
-                    RecipeCreationExecutionContext.from(
-                            context, mock(com.cheftory.api.recipe.content.caption.entity.RecipeCaption.class));
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
+            RecipeCreationExecutionContext updatedContext = RecipeCreationExecutionContext.from(
+                    context, mock(com.cheftory.api.recipe.content.caption.entity.RecipeCaption.class));
 
             when(recipeCreationCaptionStep.run(context)).thenReturn(updatedContext);
 

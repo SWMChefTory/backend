@@ -18,7 +18,6 @@ import org.opensearch.client.opensearch._types.query_dsl.*;
 import org.opensearch.client.opensearch.core.CreatePitRequest;
 import org.opensearch.client.opensearch.core.DeletePitRequest;
 import org.opensearch.client.opensearch.core.SearchRequest;
-import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.Pit;
 import org.springframework.data.domain.Pageable;

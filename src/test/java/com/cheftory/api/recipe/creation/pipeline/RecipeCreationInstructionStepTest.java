@@ -39,8 +39,9 @@ class RecipeCreationInstructionStepTest {
 
     private RecipeCreationInstructionStep createStep() {
         try {
-            Constructor<RecipeCreationInstructionStep> ctor = RecipeCreationInstructionStep.class.getDeclaredConstructor(
-                    RecipeStepService.class, RecipeProgressService.class);
+            Constructor<RecipeCreationInstructionStep> ctor =
+                    RecipeCreationInstructionStep.class.getDeclaredConstructor(
+                            RecipeStepService.class, RecipeProgressService.class);
             ctor.setAccessible(true);
             return ctor.newInstance(recipeStepService, recipeProgressService);
         } catch (Exception ex) {
@@ -74,17 +75,14 @@ class RecipeCreationInstructionStepTest {
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
             RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context =
-                    RecipeCreationExecutionContext.from(
-                            RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
 
             sut.run(context);
 
             InOrder order = inOrder(recipeProgressService);
-            order.verify(recipeProgressService)
-                    .start(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
-            order.verify(recipeProgressService)
-                    .success(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+            order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+            order.verify(recipeProgressService).success(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
 
             verify(recipeStepService).create(recipeId, caption);
         }
@@ -96,9 +94,8 @@ class RecipeCreationInstructionStepTest {
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");
             RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context =
-                    RecipeCreationExecutionContext.from(
-                            RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
 
             when(recipeStepService.create(recipeId, caption))
                     .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
@@ -107,8 +104,7 @@ class RecipeCreationInstructionStepTest {
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
-            verify(recipeProgressService)
-                    .failed(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.history.entity;
+package com.cheftory.api.recipe.bookmark.entity;
 
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class RecipeHistoryCategorizedCount {
+public class RecipeBookmarkCategorizedCount {
     private UUID categoryId;
     private Integer count;
 
-    public static RecipeHistoryCategorizedCount of(UUID categoryId, Integer count) {
-        return new RecipeHistoryCategorizedCount(categoryId, count);
+    public static RecipeBookmarkCategorizedCount of(UUID categoryId, Integer count) {
+        return new RecipeBookmarkCategorizedCount(categoryId, count);
     }
 }

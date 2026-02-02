@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.creation;
 
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
@@ -13,7 +14,6 @@ import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCo
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.history.RecipeHistoryService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 public class RecipeCreationFacade {
 
     private final AsyncRecipeCreationService asyncRecipeCreationService;
-    private final RecipeHistoryService recipeHistoryService;
+    private final RecipeBookmarkService recipeBookmarkService;
     private final RecipeYoutubeMetaService recipeYoutubeMetaService;
     private final RecipeIdentifyService recipeIdentifyService;
     private final RecipeInfoService recipeInfoService;
@@ -95,7 +95,7 @@ public class RecipeCreationFacade {
         switch (target) {
             case RecipeCreationTarget.User user -> {
                 UUID userId = user.userId();
-                boolean created = recipeHistoryService.create(userId, recipeInfo.getId());
+                boolean created = recipeBookmarkService.create(userId, recipeInfo.getId());
                 if (!created) return;
 
                 creditPort.spendRecipeCreate(userId, recipeInfo.getId(), recipeInfo.getCreditCost());

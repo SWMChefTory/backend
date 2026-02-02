@@ -13,7 +13,6 @@ import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
-import com.cheftory.api.recipe.dto.RecipeSort;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

@@ -12,7 +12,7 @@ public record CategorizedRecipesResponse(
         @JsonProperty("has_next") boolean hasNext,
         @JsonProperty("next_cursor") String nextCursor) {
 
-    public static CategorizedRecipesResponse from(CursorPage<RecipeHistoryOverview> slice) {
+    public static CategorizedRecipesResponse from(CursorPage<RecipeBookmarkOverview> slice) {
         List<CategorizedRecipe> responses =
                 slice.items().stream().map(CategorizedRecipe::from).toList();
         return new CategorizedRecipesResponse(responses, slice.hasNext(), slice.nextCursor());
@@ -34,7 +34,7 @@ public record CategorizedRecipesResponse(
             @JsonProperty("created_at") LocalDateTime createdAt,
             @JsonProperty("tags") List<Tag> tags,
             @JsonProperty("credit_cost") Long creditCost) {
-        public static CategorizedRecipe from(RecipeHistoryOverview info) {
+        public static CategorizedRecipe from(RecipeBookmarkOverview info) {
             return new CategorizedRecipe(
                     info.getViewedAt(),
                     info.getLastPlaySeconds(),

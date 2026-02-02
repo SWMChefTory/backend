@@ -1,10 +1,10 @@
 package com.cheftory.api.recipe.creation.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api.recipe.content.briefing.RecipeBriefingService;
@@ -75,9 +75,8 @@ class RecipeCreationBriefingStepTest {
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
             RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context =
-                    RecipeCreationExecutionContext.from(
-                            RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
 
             sut.run(context);
 
@@ -97,9 +96,8 @@ class RecipeCreationBriefingStepTest {
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");
             RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context =
-                    RecipeCreationExecutionContext.from(
-                            RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
 
             doThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL))
                     .when(recipeBriefingService)
@@ -109,8 +107,7 @@ class RecipeCreationBriefingStepTest {
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
-            verify(recipeProgressService)
-                    .failed(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
+            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
         }
     }
 }

@@ -22,13 +22,10 @@ class RecipeCreationParallelStepsTest {
         RecipeCreationPipelineStep step2 = mock(RecipeCreationPipelineStep.class);
         RecipeCreationPipelineStep step3 = mock(RecipeCreationPipelineStep.class);
 
-        RecipeCreationParallelSteps sut =
-                new RecipeCreationParallelSteps(directExecutor, List.of(step1, step2, step3));
+        RecipeCreationParallelSteps sut = new RecipeCreationParallelSteps(directExecutor, List.of(step1, step2, step3));
 
         RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(
-                UUID.randomUUID(),
-                "video-123",
-                URI.create("https://youtu.be/video-123"));
+                UUID.randomUUID(), "video-123", URI.create("https://youtu.be/video-123"));
 
         RecipeCreationExecutionContext result = sut.run(context);
 

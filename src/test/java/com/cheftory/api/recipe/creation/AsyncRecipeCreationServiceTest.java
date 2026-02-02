@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.creation;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -8,8 +9,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.ArgumentMatchers.anyLong;
 
+import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
+import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.caption.exception.RecipeCaptionErrorCode;
 import com.cheftory.api.recipe.content.caption.exception.RecipeCaptionException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
@@ -21,9 +23,6 @@ import com.cheftory.api.recipe.creation.pipeline.RecipeCreationPipeline;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
-import com.cheftory.api.recipe.exception.RecipeException;
-import com.cheftory.api.recipe.history.RecipeHistoryService;
-import com.cheftory.api.recipe.history.entity.RecipeHistory;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +38,7 @@ class AsyncRecipeCreationServiceTest {
     private RecipeInfoService recipeInfoService;
     private RecipeYoutubeMetaService recipeYoutubeMetaService;
     private RecipeIdentifyService recipeIdentifyService;
-    private RecipeHistoryService recipeHistoryService;
+    private RecipeBookmarkService recipeBookmarkService;
     private RecipeCreditPort creditPort;
     private RecipeCreationPipeline recipeCreationPipeline;
 
@@ -51,7 +50,7 @@ class AsyncRecipeCreationServiceTest {
         recipeInfoService = mock(RecipeInfoService.class);
         recipeYoutubeMetaService = mock(RecipeYoutubeMetaService.class);
         recipeIdentifyService = mock(RecipeIdentifyService.class);
-        recipeHistoryService = mock(RecipeHistoryService.class);
+        recipeBookmarkService = mock(RecipeBookmarkService.class);
         creditPort = mock(RecipeCreditPort.class);
         recipeCreationPipeline = mock(RecipeCreationPipeline.class);
 
@@ -60,7 +59,7 @@ class AsyncRecipeCreationServiceTest {
                 recipeInfoService,
                 recipeYoutubeMetaService,
                 recipeIdentifyService,
-                recipeHistoryService,
+                recipeBookmarkService,
                 creditPort,
                 recipeCreationPipeline);
     }
@@ -100,7 +99,7 @@ class AsyncRecipeCreationServiceTest {
 
                     verify(recipeInfoService, never()).failed(any());
                     verify(recipeProgressService, never()).failed(any(), any(), any());
-                    verify(recipeHistoryService, never()).deleteByRecipe(any());
+                    verify(recipeBookmarkService, never()).deleteByRecipe(any());
                     verifyNoInteractions(creditPort);
                 }
             }
@@ -135,7 +134,7 @@ class AsyncRecipeCreationServiceTest {
                             .when(recipeCreationPipeline)
                             .run(any(RecipeCreationExecutionContext.class));
 
-                    doReturn(List.of()).when(recipeHistoryService).deleteByRecipe(recipeId);
+                    doReturn(List.of()).when(recipeBookmarkService).deleteByRecipe(recipeId);
                 }
 
                 @Nested
@@ -150,7 +149,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeInfoService).failed(recipeId);
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeHistoryService).deleteByRecipe(recipeId);
+                        verify(recipeBookmarkService).deleteByRecipe(recipeId);
                         verify(recipeYoutubeMetaService).ban(recipeId);
                         verify(recipeIdentifyService).delete(videoUrl, recipeId);
 
@@ -184,7 +183,7 @@ class AsyncRecipeCreationServiceTest {
                             .when(recipeCreationPipeline)
                             .run(any(RecipeCreationExecutionContext.class));
 
-                    doReturn(List.of()).when(recipeHistoryService).deleteByRecipe(recipeId);
+                    doReturn(List.of()).when(recipeBookmarkService).deleteByRecipe(recipeId);
                 }
 
                 @Nested
@@ -199,7 +198,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeInfoService).failed(recipeId);
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeHistoryService).deleteByRecipe(recipeId);
+                        verify(recipeBookmarkService).deleteByRecipe(recipeId);
                         verify(recipeIdentifyService).delete(videoUrl, recipeId);
 
                         verify(recipeYoutubeMetaService, never()).ban(any());
@@ -233,7 +232,7 @@ class AsyncRecipeCreationServiceTest {
                             .when(recipeCreationPipeline)
                             .run(any(RecipeCreationExecutionContext.class));
 
-                    doReturn(List.of()).when(recipeHistoryService).deleteByRecipe(recipeId);
+                    doReturn(List.of()).when(recipeBookmarkService).deleteByRecipe(recipeId);
                 }
 
                 @Nested
@@ -248,7 +247,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeInfoService).failed(recipeId);
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeHistoryService).deleteByRecipe(recipeId);
+                        verify(recipeBookmarkService).deleteByRecipe(recipeId);
                         verify(recipeIdentifyService).delete(videoUrl, recipeId);
 
                         verify(recipeYoutubeMetaService, never()).ban(any());
@@ -264,8 +263,8 @@ class AsyncRecipeCreationServiceTest {
     class RefundFlow {
 
         @Nested
-        @DisplayName("Given - 실패 시 히스토리가 존재할 때")
-        class GivenHistoriesOnFailure {
+        @DisplayName("Given - 실패 시 북마크가 존재할 때")
+        class GivenBookmarksOnFailure {
 
             private UUID recipeId;
             private long creditCost;
@@ -274,8 +273,8 @@ class AsyncRecipeCreationServiceTest {
 
             private UUID userId1;
             private UUID userId2;
-            private RecipeHistory h1;
-            private RecipeHistory h2;
+            private RecipeBookmark bookmark1;
+            private RecipeBookmark bookmark2;
 
             @BeforeEach
             void setUp() {
@@ -291,21 +290,23 @@ class AsyncRecipeCreationServiceTest {
                 userId1 = UUID.randomUUID();
                 userId2 = UUID.randomUUID();
 
-                h1 = mock(RecipeHistory.class);
-                h2 = mock(RecipeHistory.class);
-                doReturn(userId1).when(h1).getUserId();
-                doReturn(userId2).when(h2).getUserId();
+                bookmark1 = mock(RecipeBookmark.class);
+                bookmark2 = mock(RecipeBookmark.class);
+                doReturn(userId1).when(bookmark1).getUserId();
+                doReturn(userId2).when(bookmark2).getUserId();
 
-                doReturn(List.of(h1, h2)).when(recipeHistoryService).deleteByRecipe(recipeId);
+                doReturn(List.of(bookmark1, bookmark2))
+                        .when(recipeBookmarkService)
+                        .deleteByRecipe(recipeId);
             }
 
             @Test
-            @DisplayName("Then - 삭제된 히스토리 수만큼 환불이 지급된다")
-            void thenRefundGrantedForEachHistory() {
+            @DisplayName("Then - 삭제된 북마크 수만큼 환불이 지급된다")
+            void thenRefundGrantedForEachBookmark() {
                 sut.create(recipeId, creditCost, videoId, videoUrl);
 
                 verify(recipeInfoService).failed(recipeId);
-                verify(recipeHistoryService).deleteByRecipe(recipeId);
+                verify(recipeBookmarkService).deleteByRecipe(recipeId);
 
                 verify(creditPort).refundRecipeCreate(userId1, recipeId, creditCost);
                 verify(creditPort).refundRecipeCreate(userId2, recipeId, creditCost);

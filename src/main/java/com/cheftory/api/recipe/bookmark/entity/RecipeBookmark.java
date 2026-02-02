@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.history.entity;
+package com.cheftory.api.recipe.bookmark.entity;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.MarketScope;
@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -23,10 +24,10 @@ import lombok.NoArgsConstructor;
 @Table(
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uq_recipe_history_user_recipe",
+                    name = "uq_recipe_bookmark_user_recipe",
                     columnNames = {"user_id", "recipe_id"})
         })
-public class RecipeHistory extends MarketScope {
+public class RecipeBookmark extends MarketScope {
     @Id
     private UUID id;
 
@@ -52,13 +53,24 @@ public class RecipeHistory extends MarketScope {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private RecipeHistoryStatus status;
+    private RecipeBookmarkStatus status;
 
-    public static RecipeHistory create(Clock clock, UUID userId, UUID recipeId) {
-        LocalDateTime now = clock.now();
+    @Version
+    @Column(nullable = false)
+    private long version;
 
-        return new RecipeHistory(
-                UUID.randomUUID(), now, 0, now, now, userId, recipeId, null, RecipeHistoryStatus.ACTIVE);
+    public static RecipeBookmark create(Clock clock, UUID userId, UUID recipeId) {
+        return new RecipeBookmark(
+                UUID.randomUUID(),
+                clock.now(),
+                0,
+                clock.now(),
+                clock.now(),
+                userId,
+                recipeId,
+                null,
+                RecipeBookmarkStatus.ACTIVE,
+                0L);
     }
 
     public void updateRecipeCategoryId(UUID recipeCategoryId) {
@@ -74,17 +86,17 @@ public class RecipeHistory extends MarketScope {
     }
 
     public void block(Clock clock) {
-        this.status = RecipeHistoryStatus.BLOCKED;
+        this.status = RecipeBookmarkStatus.BLOCKED;
         this.updatedAt = clock.now();
     }
 
     public void delete(Clock clock) {
-        this.status = RecipeHistoryStatus.DELETED;
+        this.status = RecipeBookmarkStatus.DELETED;
         this.updatedAt = clock.now();
     }
 
     public void active(Clock clock) {
-        this.status = RecipeHistoryStatus.ACTIVE;
+        this.status = RecipeBookmarkStatus.ACTIVE;
         this.updatedAt = clock.now();
     }
 }

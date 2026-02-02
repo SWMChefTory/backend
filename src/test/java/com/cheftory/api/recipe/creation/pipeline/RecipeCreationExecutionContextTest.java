@@ -7,7 +7,6 @@ import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
-import javax.annotation.Nullable;
 
 @DisplayName("RecipeCreationExecutionContext 테스트")
 class RecipeCreationExecutionContextTest {
@@ -115,8 +114,7 @@ class RecipeCreationExecutionContextTest {
             @DisplayName("Then - caption이 설정되면 getCaption()은 캡션을 반환한다")
             void thenGetCaptionReturnsCaptionWhenSet() {
                 RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
-                        RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl),
-                        caption);
+                        RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
 
                 assertThat(context.getCaption()).isEqualTo(caption);
             }
