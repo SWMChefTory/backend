@@ -76,6 +76,7 @@ public class RecipeFacade {
     public FullRecipe getFullRecipe(UUID recipeId, UUID userId) {
         try {
             RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
+            recipeInfoService.increaseCount(recipeId);
             List<RecipeStep> steps = recipeStepService.gets(recipeId);
             List<RecipeIngredient> ingredients = recipeIngredientService.gets(recipeId);
             RecipeDetailMeta detailMeta = recipeDetailMetaService.get(recipeId);
@@ -102,6 +103,7 @@ public class RecipeFacade {
 
     public RecipeOverview getRecipeOverview(UUID recipeId, UUID userId) {
         RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
+        recipeInfoService.increaseCount(recipeId);
         RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
         RecipeDetailMeta detailMeta = recipeDetailMetaService.get(recipeId);
         List<RecipeTag> tags = recipeTagService.gets(recipeId);

@@ -1,5 +1,7 @@
 package com.cheftory.api.recipe.bookmark;
 
+import com.cheftory.api.credit.exception.CreditErrorCode;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
@@ -18,18 +20,20 @@ public class RecipeBookmarkFacade {
     private final RecipeInfoService recipeInfoService;
     private final RecipeCreditPort creditPort;
 
-    public boolean createAndCharge(UUID userId, UUID recipeId) {
+    public void createAndCharge(UUID userId, UUID recipeId) {
+        RecipeInfo recipeInfo = recipeInfoService.get(recipeId);
         try {
-            RecipeInfo recipeInfo = recipeInfoService.get(recipeId);
-            boolean created = recipeBookmarkService.create(userId, recipeId);
-            if (created) {
-                creditPort.spendRecipeCreate(userId, recipeId, recipeInfo.getCreditCost());
+            creditPort.spendRecipeCreate(userId, recipeId, recipeInfo.getCreditCost());
+        } catch (CreditException e) {
+            if (e.getErrorMessage() == CreditErrorCode.CREDIT_INSUFFICIENT) {
+                recipeBookmarkService.delete(userId, recipeId);
+                throw new RecipeException(CreditErrorCode.CREDIT_INSUFFICIENT);
             }
-            return created;
-        } catch (RecipeException e) {
-            if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND) {
-                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND);
+            if (e.getErrorMessage() == CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT) {
+                recipeBookmarkService.delete(userId, recipeId);
+                throw new RecipeException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
             }
+            recipeBookmarkService.delete(userId, recipeId);
             throw e;
         }
     }

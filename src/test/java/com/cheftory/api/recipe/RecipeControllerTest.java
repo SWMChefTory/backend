@@ -131,7 +131,7 @@ public class RecipeControllerTest extends RestDocsTest {
         UUID userId = UUID.randomUUID();
         String cursor = "cursor-1";
         String nextCursor = "cursor-2";
-        RecipeBookmarkOverview overview = stubHistoryOverview();
+        RecipeBookmarkOverview overview = stubBookmarkOverview();
 
         setUser(userId);
 
@@ -187,7 +187,7 @@ public class RecipeControllerTest extends RestDocsTest {
         UUID categoryId = UUID.randomUUID();
         String cursor = "cursor-1";
         String nextCursor = "cursor-2";
-        RecipeBookmarkOverview overview = stubHistoryOverview();
+        RecipeBookmarkOverview overview = stubBookmarkOverview();
 
         setUser(userId);
 
@@ -214,7 +214,7 @@ public class RecipeControllerTest extends RestDocsTest {
         UUID userId = UUID.randomUUID();
         String cursor = "cursor-1";
         String nextCursor = "cursor-2";
-        RecipeBookmarkOverview overview = stubHistoryOverview();
+        RecipeBookmarkOverview overview = stubBookmarkOverview();
 
         setUser(userId);
 

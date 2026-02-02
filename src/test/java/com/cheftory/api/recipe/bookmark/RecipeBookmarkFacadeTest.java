@@ -1,8 +1,6 @@
 package com.cheftory.api.recipe.bookmark;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -10,11 +8,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.credit.exception.CreditErrorCode;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
-import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,8 +44,8 @@ class RecipeBookmarkFacadeTest {
     class CreateAndCharge {
 
         @Test
-        @DisplayName("북마크 생성 성공 시 credit을 차감한다")
-        void shouldChargeWhenCreated() {
+        @DisplayName("레시피가 존재하면 credit 차감을 시도한다")
+        void shouldSpendCredit() {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             long creditCost = 100L;
@@ -54,43 +53,56 @@ class RecipeBookmarkFacadeTest {
             RecipeInfo recipeInfo = mock(RecipeInfo.class);
             doReturn(creditCost).when(recipeInfo).getCreditCost();
             doReturn(recipeInfo).when(recipeInfoService).get(recipeId);
-            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
-            boolean result = sut.createAndCharge(userId, recipeId);
+            sut.createAndCharge(userId, recipeId);
 
-            assertThat(result).isTrue();
             verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+            verify(recipeBookmarkService, never()).delete(userId, recipeId);
         }
 
         @Test
-        @DisplayName("북마크 생성 실패 시 credit을 차감하지 않는다")
-        void shouldNotChargeWhenNotCreated() {
+        @DisplayName("credit 부족이면 북마크 삭제 후 CREDIT_INSUFFICIENT로 변환해 던진다")
+        void shouldDeleteBookmarkAndThrowCreditInsufficient() {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
+            long creditCost = 100L;
 
             RecipeInfo recipeInfo = mock(RecipeInfo.class);
+            doReturn(creditCost).when(recipeInfo).getCreditCost();
             doReturn(recipeInfo).when(recipeInfoService).get(recipeId);
-            doReturn(false).when(recipeBookmarkService).create(userId, recipeId);
 
-            boolean result = sut.createAndCharge(userId, recipeId);
+            doThrow(new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
+                .when(creditPort)
+                .spendRecipeCreate(userId, recipeId, creditCost);
 
-            assertThat(result).isFalse();
-            verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
+            assertThatThrownBy(() -> sut.createAndCharge(userId, recipeId))
+                .isInstanceOf(RecipeException.class)
+                .hasFieldOrPropertyWithValue("errorMessage", CreditErrorCode.CREDIT_INSUFFICIENT);
+
+            verify(recipeBookmarkService).delete(userId, recipeId);
         }
 
         @Test
-        @DisplayName("레시피가 없으면 RECIPE_NOT_FOUND로 변환한다")
-        void shouldMapRecipeNotFound() {
+        @DisplayName("credit 동시성 충돌이면 북마크 삭제 후 CREDIT_CONCURRENCY_CONFLICT로 변환해 던진다")
+        void shouldDeleteBookmarkAndThrowConcurrencyConflict() {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
+            long creditCost = 100L;
 
-            doThrow(new RecipeException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND))
-                    .when(recipeInfoService)
-                    .get(recipeId);
+            RecipeInfo recipeInfo = mock(RecipeInfo.class);
+            doReturn(creditCost).when(recipeInfo).getCreditCost();
+            doReturn(recipeInfo).when(recipeInfoService).get(recipeId);
+
+            doThrow(new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT))
+                .when(creditPort)
+                .spendRecipeCreate(userId, recipeId, creditCost);
 
             assertThatThrownBy(() -> sut.createAndCharge(userId, recipeId))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_FOUND);
+                .isInstanceOf(RecipeException.class)
+                .hasFieldOrPropertyWithValue("errorMessage", CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
+
+            verify(recipeBookmarkService).delete(userId, recipeId);
         }
+
     }
 }

@@ -54,7 +54,7 @@ public class AsyncRecipeCreationService {
 
         } finally {
             try {
-                recipeIdentifyService.delete(videoUrl, recipeId);
+                recipeIdentifyService.delete(videoUrl);
             } catch (Exception identifyEx) {
                 log.warn("identify delete 실패: recipeId={}", recipeId, identifyEx);
             }

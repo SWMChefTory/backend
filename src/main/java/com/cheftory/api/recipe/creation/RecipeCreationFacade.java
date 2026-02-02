@@ -1,5 +1,7 @@
 package com.cheftory.api.recipe.creation;
 
+import com.cheftory.api.credit.exception.CreditErrorCode;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
@@ -11,6 +13,9 @@ import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCod
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCode;
+import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
+import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
+import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
@@ -28,6 +33,7 @@ public class RecipeCreationFacade {
     private final AsyncRecipeCreationService asyncRecipeCreationService;
     private final RecipeBookmarkService recipeBookmarkService;
     private final RecipeYoutubeMetaService recipeYoutubeMetaService;
+    private final RecipeProgressService recipeProgressService;
     private final RecipeIdentifyService recipeIdentifyService;
     private final RecipeInfoService recipeInfoService;
     private final RecipeCreditPort creditPort;
@@ -35,15 +41,13 @@ public class RecipeCreationFacade {
 
     public UUID create(RecipeCreationTarget target) {
         try {
-            List<UUID> recipeIds = recipeYoutubeMetaService.getByUrl(target.uri()).stream()
-                    .map(RecipeYoutubeMeta::getRecipeId)
-                    .toList();
-            RecipeInfo recipeInfo = recipeInfoService.getNotFailed(recipeIds);
+            UUID recipeId = recipeYoutubeMetaService.getByUrl(target.uri()).getRecipeId();
+            RecipeInfo recipeInfo = recipeInfoService.getSuccess(recipeId);
 
             create(target, recipeInfo);
             return recipeInfo.getId();
         } catch (RecipeException e) {
-            if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND) {
+            if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND) {
                 return createNewRecipe(target);
             }
             if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_FAILED) {
@@ -58,34 +62,25 @@ public class RecipeCreationFacade {
 
     private UUID createNewRecipe(RecipeCreationTarget target) {
         try {
-            RecipeInfo recipeInfo = recipeCreationTxService.createWithIdentify(target.uri());
+            YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(target.uri());
+            RecipeInfo recipeInfo = recipeCreationTxService.createWithIdentifyWithVideoInfo(videoInfo);
             try {
-                YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(target.uri());
-                recipeYoutubeMetaService.create(videoInfo, recipeInfo.getId());
                 create(target, recipeInfo);
                 asyncRecipeCreationService.create(
-                        recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri());
+                    recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri());
                 return recipeInfo.getId();
             } catch (Exception e) {
-                recipeIdentifyService.delete(target.uri(), recipeInfo.getId());
-                recipeInfoService.delete(recipeInfo.getId());
+                recipeIdentifyService.delete(target.uri());
+                recipeInfoService.failed(recipeInfo.getId());
+                recipeProgressService.failed(recipeInfo.getId(), RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
                 throw e;
             }
         } catch (RecipeException e) {
             if (e.getErrorMessage() == RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING) {
-                UUID identifyRecipeId =
-                        recipeIdentifyService.getRecipeId(target.uri()).orElse(null);
-                if (identifyRecipeId != null) {
-                    RecipeInfo identified = recipeInfoService.getNotFailed(List.of(identifyRecipeId));
-                    create(target, identified);
-                    return identified.getId();
-                }
-                List<UUID> recipeIds = recipeYoutubeMetaService.getByUrl(target.uri()).stream()
-                        .map(RecipeYoutubeMeta::getRecipeId)
-                        .toList();
-                RecipeInfo identified = recipeInfoService.getNotFailed(recipeIds);
-                create(target, identified);
-                return identified.getId();
+                UUID recipeId = recipeYoutubeMetaService.getByUrl(target.uri()).getRecipeId();
+                RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
+                create(target, recipe);
+                return recipe.getId();
             }
             throw e;
         }
@@ -95,12 +90,26 @@ public class RecipeCreationFacade {
         switch (target) {
             case RecipeCreationTarget.User user -> {
                 UUID userId = user.userId();
+
                 boolean created = recipeBookmarkService.create(userId, recipeInfo.getId());
                 if (!created) return;
 
-                creditPort.spendRecipeCreate(userId, recipeInfo.getId(), recipeInfo.getCreditCost());
+                try {
+                    creditPort.spendRecipeCreate(userId, recipeInfo.getId(), recipeInfo.getCreditCost());
+                } catch (CreditException e) {
+                    recipeBookmarkService.delete(userId, recipeInfo.getId());
+
+                    if (e.getErrorMessage() == CreditErrorCode.CREDIT_INSUFFICIENT) {
+                        throw new RecipeException(CreditErrorCode.CREDIT_INSUFFICIENT);
+                    }
+                    if (e.getErrorMessage() == CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT) {
+                        throw new RecipeException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
+                    }
+                    throw e;
+                }
             }
-            case RecipeCreationTarget.Crawler crawler -> {}
+            case RecipeCreationTarget.Crawler crawler -> {
+            }
         }
     }
 }

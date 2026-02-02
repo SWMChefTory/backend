@@ -41,16 +41,14 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
     class SaveIdentifyUrl {
 
         @Nested
-        @DisplayName("Given - 유효한 URI와 recipeId가 주어졌을 때")
+        @DisplayName("Given - 유효한 URI 주어졌을 때")
         class GivenValidUriAndRecipeId {
 
             private URI url;
-            private UUID recipeId;
 
             @BeforeEach
             void init() {
                 url = URI.create("https://www.youtube.com/watch?v=LOCK_" + UUID.randomUUID());
-                recipeId = UUID.randomUUID();
             }
 
             @Nested
@@ -61,7 +59,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
                 @BeforeEach
                 void beforeEach() {
-                    identifyUrl = RecipeIdentify.create(url, recipeId, clock);
+                    identifyUrl = RecipeIdentify.create(url, clock);
                     repository.save(identifyUrl);
                 }
 
@@ -71,7 +69,6 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
                     RecipeIdentify found =
                             repository.findById(identifyUrl.getId()).orElseThrow();
                     assertThat(found.getUrl()).isEqualTo(url);
-                    assertThat(found.getRecipeId()).isEqualTo(recipeId);
                     assertThat(found.getCreatedAt()).isEqualTo(FIXED_TIME);
                 }
             }
@@ -84,7 +81,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
                 @BeforeEach
                 void beforeEach() {
-                    identifyUrl = RecipeIdentify.create(url, recipeId, clock);
+                    identifyUrl = RecipeIdentify.create(url, clock);
                     repository.save(identifyUrl);
                 }
 
@@ -92,7 +89,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
                 @DisplayName("Then - 유니크 제약 위반(DataIntegrityViolationException)")
                 void thenUniqueViolation() {
                     assertThrows(DataIntegrityViolationException.class, () -> {
-                        repository.save(RecipeIdentify.create(url, recipeId, clock));
+                        repository.save(RecipeIdentify.create(url, clock));
                     });
                 }
             }
@@ -108,14 +105,12 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
         class GivenSavedUrl {
 
             private URI url;
-            private UUID recipeId;
             private RecipeIdentify identifyUrl;
 
             @BeforeEach
             void init() {
                 url = URI.create("https://example.com/video/LOCK_" + UUID.randomUUID());
-                recipeId = UUID.randomUUID();
-                identifyUrl = RecipeIdentify.create(url, recipeId, clock);
+                identifyUrl = RecipeIdentify.create(url, clock);
                 repository.save(identifyUrl);
             }
 
@@ -126,7 +121,6 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
                 assertThat(found).isPresent();
                 assertThat(found.get().getUrl()).isEqualTo(url);
-                assertThat(found.get().getRecipeId()).isEqualTo(recipeId);
             }
         }
 
@@ -158,22 +152,20 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("Given - 저장된 URL과 recipeId가 있을 때")
-        class GivenSavedUrlAndRecipeId {
+        class GivenSavedUrl {
 
             private URI url;
-            private UUID recipeId;
 
             @BeforeEach
             void init() {
                 url = URI.create("https://example.com/video/LOCK_" + UUID.randomUUID());
-                recipeId = UUID.randomUUID();
-                repository.save(RecipeIdentify.create(url, recipeId, clock));
+                repository.save(RecipeIdentify.create(url, clock));
             }
 
             @Test
-            @DisplayName("deleteByUrlAndRecipeId 호출 시 해당 레코드가 삭제된다")
-            void deleteByUrlAndRecipeIdRemovesRow() {
-                repository.deleteByUrlAndRecipeId(url, recipeId);
+            @DisplayName("deleteByUrl 호출 시 해당 레코드가 삭제된다")
+            void deleteByUrlRemovesRow() {
+                repository.deleteByUrl(url);
 
                 Optional<RecipeIdentify> found = repository.findByUrl(url);
                 assertThat(found).isEmpty();

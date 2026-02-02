@@ -246,7 +246,6 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 doReturn(true).when(recipeInfoService).exists(any(UUID.class));
-                doReturn(true).when(recipeBookmarkFacade).createAndCharge(any(UUID.class), any(UUID.class));
             }
 
             @Nested

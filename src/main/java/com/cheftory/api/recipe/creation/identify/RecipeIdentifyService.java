@@ -21,21 +21,17 @@ public class RecipeIdentifyService {
     private final RecipeIdentifyRepository recipeIdentifyRepository;
     private final Clock clock;
 
-    public RecipeIdentify create(URI url, UUID recipeId) {
+    public RecipeIdentify create(URI url) {
         try {
-            RecipeIdentify recipeIdentify = RecipeIdentify.create(url, recipeId, clock);
+            RecipeIdentify recipeIdentify = RecipeIdentify.create(url, clock);
             return recipeIdentifyRepository.save(recipeIdentify);
         } catch (DataIntegrityViolationException e) {
             throw new RecipeIdentifyException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING);
         }
     }
 
-    public Optional<UUID> getRecipeId(URI url) {
-        return recipeIdentifyRepository.findByUrl(url).map(RecipeIdentify::getRecipeId);
-    }
-
     @Transactional
-    public void delete(URI url, UUID recipeId) {
-        recipeIdentifyRepository.deleteByUrlAndRecipeId(url, recipeId);
+    public void delete(URI url) {
+        recipeIdentifyRepository.deleteByUrl(url);
     }
 }

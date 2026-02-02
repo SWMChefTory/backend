@@ -39,42 +39,22 @@ public class RecipeInfoService {
             throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_FAILED);
         }
 
+        if (recipeInfo.isBlocked()) {
+            throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_BANNED);
+        }
+
         recipeInfoRepository.increaseCount(recipeId);
         return recipeInfo;
     }
 
-    public RecipeInfo getNotFailed(List<UUID> recipeIds) {
-        List<RecipeInfo> recipeInfos = recipeInfoRepository.findAllByIdIn(recipeIds);
-
-        if (recipeInfos.isEmpty()) {
-            throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
-        }
-
-        if (recipeInfos.stream().allMatch(RecipeInfo::isFailed)) {
-            throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_FAILED);
-        }
-
-        List<RecipeInfo> validRecipeInfos =
-                recipeInfos.stream().filter(r -> !r.isFailed()).toList();
-
-        if (validRecipeInfos.size() > 1) {
-            log.warn(
-                    "여러 개의 progress 및 success 상태 Recipe가 조회되었습니다. recipeIds={}, count={}",
-                    recipeIds,
-                    validRecipeInfos.size());
-        }
-
-        return validRecipeInfos.getFirst();
+    public void increaseCount(UUID recipeId) {
+        recipeInfoRepository.increaseCount(recipeId);
     }
 
     public RecipeInfo create() {
         RecipeInfo recipeInfo = RecipeInfo.create(clock);
         recipeInfoRepository.save(recipeInfo);
         return recipeInfo;
-    }
-
-    public void delete(UUID recipeId) {
-        recipeInfoRepository.deleteById(recipeId);
     }
 
     public List<RecipeInfo> getValidRecipes(List<UUID> recipeIds) {

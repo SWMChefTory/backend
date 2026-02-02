@@ -95,7 +95,7 @@ class AsyncRecipeCreationServiceTest {
                     sut.create(recipeId, creditCost, videoId, videoUrl);
 
                     verify(recipeCreationPipeline).run(any(RecipeCreationExecutionContext.class));
-                    verify(recipeIdentifyService).delete(videoUrl, recipeId);
+                    verify(recipeIdentifyService).delete(videoUrl);
 
                     verify(recipeInfoService, never()).failed(any());
                     verify(recipeProgressService, never()).failed(any(), any(), any());
@@ -151,7 +151,7 @@ class AsyncRecipeCreationServiceTest {
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
                         verify(recipeBookmarkService).deleteByRecipe(recipeId);
                         verify(recipeYoutubeMetaService).ban(recipeId);
-                        verify(recipeIdentifyService).delete(videoUrl, recipeId);
+                        verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
                     }
@@ -199,7 +199,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
                         verify(recipeBookmarkService).deleteByRecipe(recipeId);
-                        verify(recipeIdentifyService).delete(videoUrl, recipeId);
+                        verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(recipeYoutubeMetaService, never()).ban(any());
                         verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
@@ -248,7 +248,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
                         verify(recipeBookmarkService).deleteByRecipe(recipeId);
-                        verify(recipeIdentifyService).delete(videoUrl, recipeId);
+                        verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(recipeYoutubeMetaService, never()).ban(any());
                         verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());

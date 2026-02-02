@@ -36,11 +36,24 @@ public class RecipeYoutubeMetaService {
         recipeYoutubeMetaRepository.save(youtubeMeta);
     }
 
-    public List<RecipeYoutubeMeta> getByUrl(URI uri) {
+    public RecipeYoutubeMeta getByUrl(URI uri) {
         YoutubeUri youtubeUri = YoutubeUri.from(uri);
-        List<RecipeYoutubeMeta> metas = recipeYoutubeMetaRepository.findAllByVideoUri(youtubeUri.getNormalizedUrl());
+        List<RecipeYoutubeMeta> metas =
+            recipeYoutubeMetaRepository.findAllByVideoUri(youtubeUri.getNormalizedUrl());
+
+        if (metas.isEmpty()) {
+            throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
+        }
+
         validateAllActive(metas);
-        return metas;
+
+        if (metas.size() > 1) {
+            log.warn("Multiple RecipeYoutubeMeta detected. count={}, recipeIds={}",
+                metas.size(),
+                metas.stream().map(RecipeYoutubeMeta::getRecipeId).toList());
+        }
+
+        return metas.getFirst();
     }
 
     public YoutubeVideoInfo getVideoInfo(URI uri) {
