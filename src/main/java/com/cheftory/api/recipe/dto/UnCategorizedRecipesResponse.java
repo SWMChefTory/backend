@@ -6,34 +6,17 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
 
 public record UnCategorizedRecipesResponse(
         @JsonProperty("unCategorized_recipes") List<UnCategorizedRecipe> categorizedRecipes,
-        @JsonProperty("current_page") Integer currentPage,
-        @JsonProperty("total_pages") Integer totalPages,
-        @JsonProperty("total_elements") Long totalElements,
         @JsonProperty("has_next") boolean hasNext,
         @JsonProperty("next_cursor") String nextCursor) {
-    @Deprecated(forRemoval = true)
-    public static UnCategorizedRecipesResponse from(Page<RecipeHistoryOverview> categorizedRecipes) {
-        List<UnCategorizedRecipe> responses =
-                categorizedRecipes.stream().map(UnCategorizedRecipe::from).toList();
-        return new UnCategorizedRecipesResponse(
-                responses,
-                categorizedRecipes.getNumber(),
-                categorizedRecipes.getTotalPages(),
-                categorizedRecipes.getTotalElements(),
-                categorizedRecipes.hasNext(),
-                null);
-    }
-
     public static UnCategorizedRecipesResponse from(CursorPage<RecipeHistoryOverview> categorizedRecipes) {
         List<UnCategorizedRecipe> responses = categorizedRecipes.items().stream()
                 .map(UnCategorizedRecipe::from)
                 .toList();
         return new UnCategorizedRecipesResponse(
-                responses, null, null, null, categorizedRecipes.hasNext(), categorizedRecipes.nextCursor());
+                responses, categorizedRecipes.hasNext(), categorizedRecipes.nextCursor());
     }
 
     private record UnCategorizedRecipe(

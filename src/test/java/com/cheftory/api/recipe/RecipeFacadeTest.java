@@ -267,63 +267,6 @@ class RecipeFacadeTest {
     class HistoryOverviews {
 
         @Test
-        @DisplayName("유효 레시피 + 유튜브 메타가 있으면 히스토리 오버뷰를 만든다")
-        void shouldMakeHistoryOverviews() {
-            UUID userId = UUID.randomUUID();
-            Integer page = 0;
-            UUID recipeId1 = UUID.randomUUID();
-            UUID recipeId2 = UUID.randomUUID();
-
-            Page<RecipeHistory> histories =
-                    new PageImpl<>(List.of(mockHistory(recipeId1, userId), mockHistory(recipeId2, userId)));
-
-            doReturn(histories).when(recipeHistoryService).getRecents(userId, page);
-            doReturn(List.of(
-                            mockRecipe(recipeId1, RecipeStatus.SUCCESS),
-                            mockRecipe(recipeId2, RecipeStatus.IN_PROGRESS)))
-                    .when(recipeInfoService)
-                    .getValidRecipes(anyList());
-            doReturn(List.of(mockYoutubeMeta(recipeId1), mockYoutubeMeta(recipeId2)))
-                    .when(recipeYoutubeMetaService)
-                    .getByRecipes(anyList());
-            doReturn(List.of(mockDetailMeta(recipeId1), mockDetailMeta(recipeId2)))
-                    .when(recipeDetailMetaService)
-                    .getIn(anyList());
-            doReturn(List.of(mockTag(recipeId1, "한식"), mockTag(recipeId2, "한식")))
-                    .when(recipeTagService)
-                    .getIn(anyList());
-
-            Page<RecipeHistoryOverview> result = sut.getRecents(userId, page);
-
-            assertThat(result.getContent()).hasSize(2);
-            verify(recipeHistoryService).getRecents(userId, page);
-        }
-
-        @Test
-        @DisplayName("유튜브 메타가 누락되면 해당 히스토리는 제외된다")
-        void shouldSkipHistoryWhenYoutubeMetaMissing() {
-            UUID userId = UUID.randomUUID();
-            Integer page = 0;
-            UUID recipeId = UUID.randomUUID();
-
-            Page<RecipeHistory> histories = new PageImpl<>(List.of(mockHistory(recipeId, userId)));
-
-            doReturn(histories).when(recipeHistoryService).getRecents(userId, page);
-            doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
-                    .when(recipeInfoService)
-                    .getValidRecipes(anyList());
-            doReturn(List.of()).when(recipeYoutubeMetaService).getByRecipes(anyList());
-            doReturn(List.of(mockDetailMeta(recipeId)))
-                    .when(recipeDetailMetaService)
-                    .getIn(anyList());
-            doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
-
-            Page<RecipeHistoryOverview> result = sut.getRecents(userId, page);
-
-            assertThat(result.getContent()).isEmpty();
-        }
-
-        @Test
         @DisplayName("커서 기반 최근 히스토리를 반환한다")
         void shouldReturnRecentsWithCursor() {
             UUID userId = UUID.randomUUID();
@@ -489,33 +432,6 @@ class RecipeFacadeTest {
     class GetCuisineRecipes {
 
         @Test
-        @DisplayName("cuisine 조회 시 overview를 만들어 반환한다")
-        void shouldReturnCuisineRecipes() {
-            Integer page = 0;
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-
-            RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
-            Page<RecipeInfo> recipesPage = new PageImpl<>(List.of(recipeInfo));
-
-            doReturn(recipesPage).when(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, page);
-
-            doReturn(List.of(mockYoutubeMeta(recipeId)))
-                    .when(recipeYoutubeMetaService)
-                    .getByRecipes(List.of(recipeId));
-            doReturn(List.of(mockDetailMeta(recipeId)))
-                    .when(recipeDetailMetaService)
-                    .getIn(List.of(recipeId));
-            doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
-
-            Page<RecipeOverview> result = sut.getCuisineRecipes(RecipeCuisineType.KOREAN, userId, page);
-
-            assertThat(result.getContent()).hasSize(1);
-            verify(recipeInfoService).getCuisines(RecipeCuisineType.KOREAN, page);
-        }
-
-        @Test
         @DisplayName("커서 기반 cuisine 조회 시 overview를 만들어 반환한다")
         void shouldReturnCuisineRecipesWithCursor() {
             String cursor = "cursor-1";
@@ -552,34 +468,6 @@ class RecipeFacadeTest {
     class GetRecommendRecipes {
 
         @Test
-        @DisplayName("POPULAR 타입은 getPopulars를 호출한다")
-        void shouldReturnPopularRecipes() {
-            Integer page = 0;
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-
-            RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
-            Page<RecipeInfo> recipesPage = new PageImpl<>(List.of(recipeInfo));
-
-            doReturn(recipesPage).when(recipeInfoService).getPopulars(page, RecipeInfoVideoQuery.ALL);
-
-            doReturn(List.of(mockYoutubeMeta(recipeId)))
-                    .when(recipeYoutubeMetaService)
-                    .getByRecipes(List.of(recipeId));
-            doReturn(List.of(mockDetailMeta(recipeId)))
-                    .when(recipeDetailMetaService)
-                    .getIn(List.of(recipeId));
-            doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId), userId);
-
-            Page<RecipeOverview> result =
-                    sut.getRecommendRecipes(RecipeInfoRecommendType.POPULAR, userId, page, RecipeInfoVideoQuery.ALL);
-
-            assertThat(result.getContent()).hasSize(1);
-            verify(recipeInfoService).getPopulars(page, RecipeInfoVideoQuery.ALL);
-        }
-
-        @Test
         @DisplayName("커서 기반 POPULAR 타입은 getPopulars를 호출한다")
         void shouldReturnPopularRecipesWithCursor() {
             String cursor = "cursor-1";
@@ -607,40 +495,6 @@ class RecipeFacadeTest {
             assertThat(result.items()).hasSize(1);
             assertThat(result.nextCursor()).isEqualTo(nextCursor);
             verify(recipeInfoService).getPopulars(cursor, RecipeInfoVideoQuery.ALL);
-        }
-
-        @Test
-        @DisplayName("TRENDING 타입은 랭킹 기반으로 조회한다")
-        void shouldReturnTrendingRecipes() {
-            Integer page = 0;
-            UUID userId = UUID.randomUUID();
-            UUID recipeId1 = UUID.randomUUID();
-            UUID recipeId2 = UUID.randomUUID();
-
-            Page<UUID> recipeIdsPage = new PageImpl<>(List.of(recipeId1, recipeId2));
-            doReturn(recipeIdsPage).when(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
-
-            List<RecipeInfo> recipes =
-                    List.of(mockRecipe(recipeId1, RecipeStatus.SUCCESS), mockRecipe(recipeId2, RecipeStatus.SUCCESS));
-            doReturn(recipes).when(recipeInfoService).getValidRecipes(List.of(recipeId1, recipeId2));
-
-            doReturn(List.of(mockYoutubeMeta(recipeId1), mockYoutubeMeta(recipeId2)))
-                    .when(recipeYoutubeMetaService)
-                    .getByRecipes(List.of(recipeId1, recipeId2));
-            doReturn(List.of(mockDetailMeta(recipeId1), mockDetailMeta(recipeId2)))
-                    .when(recipeDetailMetaService)
-                    .getIn(List.of(recipeId1, recipeId2));
-            doReturn(List.of(mockTag(recipeId1, "태그1"), mockTag(recipeId2, "태그1")))
-                    .when(recipeTagService)
-                    .getIn(List.of(recipeId1, recipeId2));
-            doReturn(List.of()).when(recipeHistoryService).getByRecipes(List.of(recipeId1, recipeId2), userId);
-
-            Page<RecipeOverview> result =
-                    sut.getRecommendRecipes(RecipeInfoRecommendType.TRENDING, userId, page, RecipeInfoVideoQuery.ALL);
-
-            assertThat(result.getContent()).hasSize(2);
-            verify(recipeRankService).getRecipeIds(RankingType.TRENDING, page);
-            verify(recipeInfoService).getValidRecipes(List.of(recipeId1, recipeId2));
         }
 
         @Test

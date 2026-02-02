@@ -8,16 +8,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UUID> {
-
-    @Deprecated(forRemoval = true)
-    Page<RecipeHistory> findByUserIdAndStatus(UUID userId, RecipeHistoryStatus status, Pageable pageable);
 
     @Query(
             """
@@ -45,13 +41,6 @@ public interface RecipeHistoryRepository extends JpaRepository<RecipeHistory, UU
             UUID userId, RecipeHistoryStatus status, LocalDateTime lastViewedAt, UUID lastId, Pageable pageable);
 
     Optional<RecipeHistory> findByRecipeIdAndUserIdAndStatus(UUID recipeId, UUID userId, RecipeHistoryStatus status);
-
-    @Deprecated(forRemoval = true)
-    Page<RecipeHistory> findAllByUserIdAndStatus(UUID userId, RecipeHistoryStatus status, Pageable pageable);
-
-    @Deprecated(forRemoval = true)
-    Page<RecipeHistory> findAllByUserIdAndRecipeCategoryIdAndStatus(
-            UUID userId, UUID recipeCategoryId, RecipeHistoryStatus status, Pageable pageable);
 
     @Query(
             """

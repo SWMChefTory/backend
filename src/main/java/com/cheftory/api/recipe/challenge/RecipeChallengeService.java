@@ -14,7 +14,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -61,36 +60,6 @@ public class RecipeChallengeService {
         UUID challengeId = recipeUserChallenges.getFirst().getChallengeId();
 
         return challengeMap.get(challengeId);
-    }
-
-    public Page<RecipeCompleteChallenge> getChallengeRecipes(UUID userId, UUID challengeId, int page) {
-        Pageable pageable = PageRequest.of(page, CHALLENGE_PAGE_SIZE, CHALLENGE_SORT);
-
-        RecipeUserChallenge recipeUserChallenge =
-                recipeUserChallengeRepository.findRecipeUserChallengeByUserIdAndChallengeId(userId, challengeId);
-
-        if (recipeUserChallenge == null) {
-            throw new RecipeChallengeException(RecipeChallengeErrorCode.RECIPE_CHALLENGE_NOT_FOUND);
-        }
-
-        Page<RecipeChallenge> recipeChallenges = recipeChallengeRepository.findAllByChallengeId(challengeId, pageable);
-
-        List<RecipeChallenge> recipeChallengeList = recipeChallenges.getContent();
-
-        List<UUID> recipeChallengeIds =
-                recipeChallengeList.stream().map(RecipeChallenge::getId).toList();
-
-        List<RecipeUserChallengeCompletion> completions = recipeChallengeIds.isEmpty()
-                ? List.of()
-                : recipeUserChallengeCompletionRepository.findByRecipeChallengeIdInAndRecipeUserChallengeId(
-                        recipeChallengeIds, recipeUserChallenge.getId());
-
-        Set<UUID> finishedRecipeChallengeIds = completions.stream()
-                .map(RecipeUserChallengeCompletion::getRecipeChallengeId)
-                .collect(Collectors.toSet());
-
-        return recipeChallenges.map(recipeChallenge -> RecipeCompleteChallenge.of(
-                recipeChallenge.getRecipeId(), finishedRecipeChallengeIds.contains(recipeChallenge.getId())));
     }
 
     public CursorPage<RecipeCompleteChallenge> getChallengeRecipes(UUID userId, UUID challengeId, String cursor) {

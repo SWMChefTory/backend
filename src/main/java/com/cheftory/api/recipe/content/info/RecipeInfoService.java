@@ -14,12 +14,10 @@ import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeSort;
-import com.cheftory.api.recipe.util.RecipePageRequest;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -91,16 +89,6 @@ public class RecipeInfoService {
         return recipeInfoRepository.findAllByIdIn(recipeIds);
     }
 
-    @Deprecated(forRemoval = true)
-    public Page<RecipeInfo> getPopulars(int page, RecipeInfoVideoQuery videoQuery) {
-        Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-
-        return switch (videoQuery) {
-            case ALL -> recipeInfoRepository.findByRecipeStatus(RecipeStatus.SUCCESS, pageable);
-            case NORMAL, SHORTS -> recipeInfoRepository.findRecipes(RecipeStatus.SUCCESS, pageable, videoQuery.name());
-        };
-    }
-
     public CursorPage<RecipeInfo> getPopulars(String cursor, RecipeInfoVideoQuery videoQuery) {
         Pageable pageable = CursorPageable.firstPage();
         Pageable probe = CursorPageable.probe(pageable);
@@ -164,13 +152,6 @@ public class RecipeInfoService {
         return recipeInfoRepository
                 .findById(recipeId)
                 .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
-    }
-
-    @Deprecated(forRemoval = true)
-    public Page<RecipeInfo> getCuisines(RecipeCuisineType type, int page) {
-        Pageable pageable = RecipePageRequest.create(page, RecipeSort.COUNT_DESC);
-        String cuisine = i18nTranslator.translate(type.messageKey());
-        return recipeInfoRepository.findCuisineRecipes(cuisine, RecipeStatus.SUCCESS, pageable);
     }
 
     public CursorPage<RecipeInfo> getCuisines(RecipeCuisineType type, String cursor) {

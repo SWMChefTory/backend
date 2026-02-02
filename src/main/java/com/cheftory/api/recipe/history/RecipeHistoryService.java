@@ -15,13 +15,11 @@ import com.cheftory.api.recipe.history.entity.RecipeHistoryUnCategorizedCountPro
 import com.cheftory.api.recipe.history.exception.RecipeHistoryErrorCode;
 import com.cheftory.api.recipe.history.exception.RecipeHistoryException;
 import com.cheftory.api.recipe.history.utils.RecipeHistorySort;
-import com.cheftory.api.recipe.util.RecipePageRequest;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -113,13 +111,6 @@ public class RecipeHistoryService {
         recipeHistoryRepository.saveAll(histories);
     }
 
-    @Deprecated(forRemoval = true)
-    public Page<RecipeHistory> getCategorized(UUID userId, UUID categoryId, int page) {
-        Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
-        return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
-                userId, categoryId, RecipeHistoryStatus.ACTIVE, pageable);
-    }
-
     public CursorPage<RecipeHistory> getCategorized(UUID userId, UUID categoryId, String cursor) {
         Pageable pageable = CursorPageable.firstPage();
         Pageable probe = CursorPageable.probe(pageable);
@@ -141,13 +132,6 @@ public class RecipeHistoryService {
                 userId, categoryId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), probe);
     }
 
-    @Deprecated(forRemoval = true)
-    public Page<RecipeHistory> getUnCategorized(UUID userId, int page) {
-        Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
-        return recipeHistoryRepository.findAllByUserIdAndRecipeCategoryIdAndStatus(
-                userId, null, RecipeHistoryStatus.ACTIVE, pageable);
-    }
-
     public CursorPage<RecipeHistory> getUnCategorized(UUID userId, String cursor) {
         Pageable pageable = CursorPageable.firstPage();
         Pageable probe = CursorPageable.probe(pageable);
@@ -167,12 +151,6 @@ public class RecipeHistoryService {
         ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
         return recipeHistoryRepository.findUncategorizedKeyset(
                 userId, RecipeHistoryStatus.ACTIVE, p.lastViewedAt(), p.lastId(), probe);
-    }
-
-    @Deprecated(forRemoval = true)
-    public Page<RecipeHistory> getRecents(UUID userId, int page) {
-        Pageable pageable = RecipePageRequest.create(page, RecipeHistorySort.VIEWED_AT_DESC);
-        return recipeHistoryRepository.findByUserIdAndStatus(userId, RecipeHistoryStatus.ACTIVE, pageable);
     }
 
     public CursorPage<RecipeHistory> getRecents(UUID userId, String cursor) {

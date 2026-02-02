@@ -6,33 +6,15 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
 
 public record RecentRecipesResponse(
         @JsonProperty("recent_recipes") List<RecentRecipeResponse> recentRecipes,
-        @JsonProperty("current_page") Integer currentPage,
-        @JsonProperty("total_pages") Integer totalPages,
-        @JsonProperty("total_elements") Long totalElements,
         @JsonProperty("has_next") boolean hasNext,
         @JsonProperty("next_cursor") String nextCursor) {
-    @Deprecated(forRemoval = true)
-    public static RecentRecipesResponse from(Page<RecipeHistoryOverview> recentRecipes) {
-        List<RecentRecipeResponse> responses =
-                recentRecipes.stream().map(RecentRecipeResponse::from).toList();
-        return new RecentRecipesResponse(
-                responses,
-                recentRecipes.getNumber(),
-                recentRecipes.getTotalPages(),
-                recentRecipes.getTotalElements(),
-                recentRecipes.hasNext(),
-                null);
-    }
-
     public static RecentRecipesResponse from(CursorPage<RecipeHistoryOverview> recentRecipes) {
         List<RecentRecipeResponse> responses =
                 recentRecipes.items().stream().map(RecentRecipeResponse::from).toList();
-        return new RecentRecipesResponse(
-                responses, null, null, null, recentRecipes.hasNext(), recentRecipes.nextCursor());
+        return new RecentRecipesResponse(responses, recentRecipes.hasNext(), recentRecipes.nextCursor());
     }
 
     public record RecentRecipeResponse(

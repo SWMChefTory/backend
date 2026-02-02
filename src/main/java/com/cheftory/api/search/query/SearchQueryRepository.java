@@ -21,8 +21,6 @@ import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.Pit;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -44,25 +42,6 @@ public class SearchQueryRepository {
     private static final double DECAY_VALUE = 0.5;
 
     private final OpenSearchClient openSearchClient;
-
-    @Deprecated(forRemoval = true)
-    public Page<SearchQuery> searchByKeyword(SearchQueryScope scope, String keyword, Pageable pageable) {
-
-        try {
-            SearchResponse<SearchQuery> response =
-                    openSearchClient.search(pageRequest(scope, keyword, pageable), SearchQuery.class);
-
-            List<SearchQuery> content =
-                    response.hits().hits().stream().map(Hit::source).toList();
-            long total =
-                    response.hits().total() != null ? response.hits().total().value() : 0;
-            return new PageImpl<>(content, pageable, total);
-
-        } catch (Exception e) {
-            log.error(SearchErrorCode.SEARCH_FAILED.getMessage(), keyword, e);
-            throw new SearchException(SearchErrorCode.SEARCH_FAILED);
-        }
-    }
 
     public String createPitId() {
         try {
@@ -142,13 +121,6 @@ public class SearchQueryRepository {
             Pageable pageable) {
         Query q = buildCandidatesFunctionScoreQuery(scope, label, anchorNowIso, profile);
         return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId), "candidates");
-    }
-
-    private SearchRequest pageRequest(SearchQueryScope scope, String keyword, Pageable pageable) {
-        return SearchRequest.of(s -> s.index(INDEX)
-                .query(buildFunctionScoreQuery(scope, keyword, "now"))
-                .from((int) pageable.getOffset())
-                .size(pageable.getPageSize()));
     }
 
     private SearchRequest cursorTemplateRequest(
