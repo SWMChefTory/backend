@@ -366,7 +366,7 @@ public class RecipeControllerTest extends RestDocsTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    private RecipeBookmarkOverview stubHistoryOverview() {
+    private RecipeBookmarkOverview stubBookmarkOverview() {
         RecipeBookmarkOverview overview = mock(RecipeBookmarkOverview.class);
         doReturn(UUID.randomUUID()).when(overview).getRecipeId();
         doReturn(RecipeStatus.SUCCESS).when(overview).getRecipeStatus();
