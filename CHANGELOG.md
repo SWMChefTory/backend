@@ -20,6 +20,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.16] - 2026-02-04
+
+### Added
+- **DB 스로틀링 시스템 도입**: Virtual Thread 환경에서 DB 커넥션 풀 고갈 방지를 위한 `@DbThrottled` 어노테이션 및 `DbThrottlingAspect` 추가 (Semaphore 20개 제한)
+- **영상 검증 단계 추가**: 레시피 생성 파이프라인에 `RecipeCreationVerifyStep` 도입
+
+### Changed
+- **영상 기반 AI 분석 전환**: 자막(Caption) 기반 분석에서 영상 파일 직접 분석 방식으로 변경 (`/verify`, `/meta/video`, `/steps/video` API 연동)
+- **레시피 생성 파이프라인 리팩토링**: `RecipeCaption` 의존성 제거 및 `fileUri`, `mimeType` 기반 흐름으로 개선
+
+### Removed
+- **자막 모듈 제거**: 더 이상 사용되지 않는 `RecipeCaption` 엔티티, 리포지토리 및 관련 로직 제거
+
+---
+
 ## [1.1.15] - 2026-01-22
 
 ### Changed
