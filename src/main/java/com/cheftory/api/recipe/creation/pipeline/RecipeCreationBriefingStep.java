@@ -17,7 +17,7 @@ public class RecipeCreationBriefingStep implements RecipeCreationPipelineStep {
 
     @Override
     public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) {
-        if (context.getCaption() == null) {
+        if (context.getFileUri() == null || context.getMimeType() == null) {
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
         recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);

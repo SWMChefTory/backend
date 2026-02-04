@@ -1,7 +1,7 @@
 package com.cheftory.api.recipe.creation.pipeline;
 
-import com.cheftory.api.recipe.content.caption.RecipeCaptionService;
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
+import com.cheftory.api.recipe.content.verify.RecipeVerifyService;
+import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientResponse;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
@@ -11,19 +11,24 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class RecipeCreationCaptionStep implements RecipeCreationPipelineStep {
-    private final RecipeCaptionService recipeCaptionService;
+public class RecipeCreationVerifyStep implements RecipeCreationPipelineStep {
+    private final RecipeVerifyService recipeVerifyService; // 이름은 나중에 바꿀 수 있음
     private final RecipeProgressService recipeProgressService;
 
     @Override
     public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) {
+
+        /* TODO
+        * 하위 호환성 때문에 남겨둠
+        */
         recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
         try {
-            RecipeCaption caption =
-                    recipeCaptionService.get(recipeCaptionService.create(context.getVideoId(), context.getRecipeId()));
+            RecipeVerifyClientResponse verifyResponse = recipeVerifyService.verify(context.getVideoId());
+            
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
-            return RecipeCreationExecutionContext.from(context, caption);
+            
+            return RecipeCreationExecutionContext.withFileInfo(context, verifyResponse.fileUri(), verifyResponse.mimeType());
         } catch (RecipeException ex) {
             recipeProgressService.failed(
                     context.getRecipeId(), RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);

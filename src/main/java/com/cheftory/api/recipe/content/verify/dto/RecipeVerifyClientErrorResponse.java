@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.content.caption.client.dto;
+package com.cheftory.api.recipe.content.verify.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class ClientCaptionErrorResponse {
+public class RecipeVerifyClientErrorResponse {
     @JsonProperty("error_code")
     private String errorCode;
 

@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.content.step.client;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsRequest;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,11 +14,11 @@ public class RecipeStepClient {
 
     private final WebClient webClient;
 
-    public ClientRecipeStepsResponse fetchRecipeSteps(RecipeCaption recipeCaption) {
-        ClientRecipeStepsRequest request = ClientRecipeStepsRequest.from(recipeCaption);
+    public ClientRecipeStepsResponse fetchRecipeSteps(String fileUri, String mimeType) {
+        ClientRecipeStepsRequest request = ClientRecipeStepsRequest.from(fileUri, mimeType);
         return webClient
                 .post()
-                .uri(uriBuilder -> uriBuilder.path("/steps").build())
+                .uri(uriBuilder -> uriBuilder.path("/steps/video").build())
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(ClientRecipeStepsResponse.class)

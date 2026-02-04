@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.content.detail;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipe.content.detail.entity.RecipeDetail;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,7 @@ public class RecipeDetailService {
 
     private final RecipeDetailClient recipeDetailClient;
 
-    public RecipeDetail getRecipeDetails(String videoId, RecipeCaption recipeCaption) {
-        return recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption).toRecipeDetail();
+    public RecipeDetail getRecipeDetails(String videoId, String fileUri, String mimeType) {
+        return recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType).toRecipeDetail();
     }
 }

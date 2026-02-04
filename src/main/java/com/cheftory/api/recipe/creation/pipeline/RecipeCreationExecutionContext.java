@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.creation.pipeline;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import java.net.URI;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -16,13 +15,14 @@ public class RecipeCreationExecutionContext {
     private UUID recipeId;
     private String videoId;
     private URI videoUrl;
-    private @Nullable RecipeCaption caption;
+    private @Nullable String fileUri;
+    private @Nullable String mimeType;
 
     public static RecipeCreationExecutionContext of(UUID recipeId, String videoId, URI videoUrl) {
-        return new RecipeCreationExecutionContext(recipeId, videoId, videoUrl, null);
+        return new RecipeCreationExecutionContext(recipeId, videoId, videoUrl, null, null);
     }
 
-    public static RecipeCreationExecutionContext from(RecipeCreationExecutionContext context, RecipeCaption caption) {
-        return new RecipeCreationExecutionContext(context.recipeId, context.videoId, context.videoUrl, caption);
+    public static RecipeCreationExecutionContext withFileInfo(RecipeCreationExecutionContext context, String fileUri, String mimeType) {
+        return new RecipeCreationExecutionContext(context.recipeId, context.videoId, context.videoUrl, fileUri, mimeType);
     }
 }

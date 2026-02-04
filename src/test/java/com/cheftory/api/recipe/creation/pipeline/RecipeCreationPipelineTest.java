@@ -24,7 +24,7 @@ import org.springframework.core.task.AsyncTaskExecutor;
 class RecipeCreationPipelineTest {
 
     private RecipeProgressService recipeProgressService;
-    private RecipeCreationCaptionStep recipeCreationCaptionStep;
+    private RecipeCreationVerifyStep recipeCreationVerifyStep;
     private RecipeCreationDetailStep recipeCreationDetailStep;
     private RecipeCreationInstructionStep recipeCreationInstructionStep;
     private RecipeCreationBriefingStep recipeCreationBriefingStep;
@@ -36,7 +36,7 @@ class RecipeCreationPipelineTest {
     @BeforeEach
     void setUp() {
         recipeProgressService = mock(RecipeProgressService.class);
-        recipeCreationCaptionStep = mock(RecipeCreationCaptionStep.class);
+        recipeCreationVerifyStep = mock(RecipeCreationVerifyStep.class);
         recipeCreationDetailStep = mock(RecipeCreationDetailStep.class);
         recipeCreationInstructionStep = mock(RecipeCreationInstructionStep.class);
         recipeCreationBriefingStep = mock(RecipeCreationBriefingStep.class);
@@ -58,7 +58,7 @@ class RecipeCreationPipelineTest {
         try {
             Constructor<RecipeCreationPipeline> ctor = RecipeCreationPipeline.class.getDeclaredConstructor(
                     RecipeProgressService.class,
-                    RecipeCreationCaptionStep.class,
+                    RecipeCreationVerifyStep.class,
                     RecipeCreationDetailStep.class,
                     RecipeCreationInstructionStep.class,
                     RecipeCreationBriefingStep.class,
@@ -67,7 +67,7 @@ class RecipeCreationPipelineTest {
             ctor.setAccessible(true);
             return ctor.newInstance(
                     recipeProgressService,
-                    recipeCreationCaptionStep,
+                    recipeCreationVerifyStep,
                     recipeCreationDetailStep,
                     recipeCreationInstructionStep,
                     recipeCreationBriefingStep,
@@ -89,17 +89,17 @@ class RecipeCreationPipelineTest {
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
             RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
-            RecipeCreationExecutionContext updatedContext = RecipeCreationExecutionContext.from(
-                    context, mock(com.cheftory.api.recipe.content.caption.entity.RecipeCaption.class));
+            RecipeCreationExecutionContext updatedContext = RecipeCreationExecutionContext.withFileInfo(
+                    context, "s3://bucket/file.mp4", "video/mp4");
 
-            when(recipeCreationCaptionStep.run(context)).thenReturn(updatedContext);
+            when(recipeCreationVerifyStep.run(context)).thenReturn(updatedContext);
 
             sut.run(context);
 
-            InOrder order = inOrder(recipeProgressService, recipeCreationCaptionStep, recipeCreationFinalizeStep);
+            InOrder order = inOrder(recipeProgressService, recipeCreationVerifyStep, recipeCreationFinalizeStep);
 
             order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.READY, RecipeProgressDetail.READY);
-            order.verify(recipeCreationCaptionStep).run(context);
+            order.verify(recipeCreationVerifyStep).run(context);
 
             verify(recipeCreationFinalizeStep).run(updatedContext);
         }
@@ -111,10 +111,10 @@ class RecipeCreationPipelineTest {
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
             RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
-            RecipeCreationExecutionContext updatedContext = RecipeCreationExecutionContext.from(
-                    context, mock(com.cheftory.api.recipe.content.caption.entity.RecipeCaption.class));
+            RecipeCreationExecutionContext updatedContext = RecipeCreationExecutionContext.withFileInfo(
+                    context, "s3://bucket/file.mp4", "video/mp4");
 
-            when(recipeCreationCaptionStep.run(context)).thenReturn(updatedContext);
+            when(recipeCreationVerifyStep.run(context)).thenReturn(updatedContext);
 
             sut.run(context);
 

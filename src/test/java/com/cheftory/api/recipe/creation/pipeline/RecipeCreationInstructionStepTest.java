@@ -7,7 +7,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.step.RecipeStepService;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
@@ -54,8 +53,8 @@ class RecipeCreationInstructionStepTest {
     class Run {
 
         @Test
-        @DisplayName("caption이 없으면 RECIPE_CREATE_FAIL 예외가 발생한다")
-        void shouldThrowWhenCaptionMissing() {
+        @DisplayName("file 정보가 없으면 RECIPE_CREATE_FAIL 예외가 발생한다")
+        void shouldThrowWhenFileInfoMissing() {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
@@ -74,9 +73,10 @@ class RecipeCreationInstructionStepTest {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
-            RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
-                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            String fileUri = "s3://bucket/file.mp4";
+            String mimeType = "video/mp4";
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
 
             sut.run(context);
 
@@ -84,7 +84,7 @@ class RecipeCreationInstructionStepTest {
             order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
             order.verify(recipeProgressService).success(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
 
-            verify(recipeStepService).create(recipeId, caption);
+            verify(recipeStepService).create(recipeId, fileUri, mimeType);
         }
 
         @Test
@@ -93,11 +93,12 @@ class RecipeCreationInstructionStepTest {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");
-            RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
-                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            String fileUri = "s3://bucket/file.mp4";
+            String mimeType = "video/mp4";
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
 
-            when(recipeStepService.create(recipeId, caption))
+            when(recipeStepService.create(recipeId, fileUri, mimeType))
                     .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
 
             assertThatThrownBy(() -> sut.run(context))

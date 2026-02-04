@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailRequest;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
@@ -55,29 +54,18 @@ class RecipeDetailClientTest {
     class FetchRecipeDetails {
 
         @Nested
-        @DisplayName("Given - 유효한 비디오 ID와 캡션이 주어졌을 때")
-        class GivenValidVideoIdAndCaption {
+        @DisplayName("Given - 유효한 비디오 ID와 file 정보가 주어졌을 때")
+        class GivenValidVideoIdAndFileInfo {
 
             private String videoId;
-            private RecipeCaption recipeCaption;
+            private String fileUri;
+            private String mimeType;
 
             @BeforeEach
             void setUp() {
                 videoId = "test-video-123";
-                recipeCaption = mock(RecipeCaption.class);
-
-                // Mock RecipeCaption 설정
-                RecipeCaption.Segment segment1 = mock(RecipeCaption.Segment.class);
-                doReturn(0.0).when(segment1).getStart();
-                doReturn(10.0).when(segment1).getEnd();
-                doReturn("첫 번째 캡션").when(segment1).getText();
-
-                RecipeCaption.Segment segment2 = mock(RecipeCaption.Segment.class);
-                doReturn(10.0).when(segment2).getStart();
-                doReturn(20.0).when(segment2).getEnd();
-                doReturn("두 번째 캡션").when(segment2).getText();
-
-                doReturn(List.of(segment1, segment2)).when(recipeCaption).getSegments();
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
             }
 
             @Test
@@ -104,7 +92,7 @@ class RecipeDetailClientTest {
 
                 // When
                 ClientRecipeDetailResponse actualResponse =
-                        recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption);
+                        recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType);
 
                 // Then - 응답 DTO 검증
                 assertThat(actualResponse).isNotNull();
@@ -120,7 +108,7 @@ class RecipeDetailClientTest {
                 // 요청 검증
                 RecordedRequest recordedRequest = mockWebServer.takeRequest();
                 assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-                assertThat(recordedRequest.getPath()).isEqualTo("/meta");
+                assertThat(recordedRequest.getPath()).isEqualTo("/meta/video");
                 assertThat(recordedRequest.getHeader(HttpHeaders.CONTENT_TYPE))
                         .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
@@ -129,10 +117,8 @@ class RecipeDetailClientTest {
                 ClientRecipeDetailRequest actualRequest =
                         objectMapper.readValue(requestBody, ClientRecipeDetailRequest.class);
                 assertThat(actualRequest.videoId()).isEqualTo("test-video-123");
-                assertThat(actualRequest.captions()).hasSize(2);
-                // Caption의 내부 필드는 private이므로 JSON 문자열로 검증
-                assertThat(requestBody).contains("첫 번째 캡션");
-                assertThat(requestBody).contains("두 번째 캡션");
+                assertThat(actualRequest.fileUri()).isEqualTo(fileUri);
+                assertThat(actualRequest.mimeType()).isEqualTo(mimeType);
             }
 
             @Test
@@ -144,7 +130,7 @@ class RecipeDetailClientTest {
                         .setBody("{\"error\":\"Invalid request\"}"));
 
                 // When & Then
-                assertThatThrownBy(() -> recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption))
+                assertThatThrownBy(() -> recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
                         .isInstanceOf(WebClientResponseException.class)
                         .satisfies(exception -> {
                             WebClientResponseException webClientException = (WebClientResponseException) exception;
@@ -154,7 +140,7 @@ class RecipeDetailClientTest {
                 // 요청 검증
                 RecordedRequest recordedRequest = mockWebServer.takeRequest();
                 assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-                assertThat(recordedRequest.getPath()).isEqualTo("/meta");
+                assertThat(recordedRequest.getPath()).isEqualTo("/meta/video");
             }
         }
 
@@ -167,8 +153,8 @@ class RecipeDetailClientTest {
             void shouldHandleEmptyDataCorrectly() throws Exception {
                 // Given
                 String videoId = "empty-test";
-                RecipeCaption recipeCaption = mock(RecipeCaption.class);
-                doReturn(List.of()).when(recipeCaption).getSegments();
+                String fileUri = "s3://bucket/empty.mp4";
+                String mimeType = "video/mp4";
 
                 String responseJson =
                         """
@@ -187,7 +173,7 @@ class RecipeDetailClientTest {
 
                 // When
                 ClientRecipeDetailResponse actualResponse =
-                        recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption);
+                        recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType);
 
                 // Then - 응답 DTO 빈 값 검증
                 assertThat(actualResponse).isNotNull();
@@ -203,7 +189,8 @@ class RecipeDetailClientTest {
                 ClientRecipeDetailRequest actualRequest =
                         objectMapper.readValue(requestBody, ClientRecipeDetailRequest.class);
                 assertThat(actualRequest.videoId()).isEqualTo("empty-test");
-                assertThat(actualRequest.captions()).isEmpty();
+                assertThat(actualRequest.fileUri()).isEqualTo(fileUri);
+                assertThat(actualRequest.mimeType()).isEqualTo(mimeType);
             }
         }
     }

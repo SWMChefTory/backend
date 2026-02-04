@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.content.tag;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.aspect.DbThrottled;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +24,7 @@ public class RecipeTagService {
         return recipeTagRepository.findAllByRecipeIdIn(recipeIds);
     }
 
+    @DbThrottled
     public void create(UUID recipeId, List<String> tags) {
         List<RecipeTag> recipeTags =
                 tags.stream().map(tag -> RecipeTag.create(tag, recipeId, clock)).toList();

@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cheftory.api.recipe.content.briefing.client.dto.BriefingClientResponse;
-import com.cheftory.api.recipe.content.briefing.client.exception.BriefingClientErrorCode;
-import com.cheftory.api.recipe.content.briefing.client.exception.BriefingClientException;
+import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingErrorCode;
+import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
@@ -165,12 +165,12 @@ public class BriefingClientTest {
                             .setBody("{\"error\":\"Internal Server Error\"}"));
                 }
 
-                @DisplayName("Then - BriefingClientException이 발생한다")
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
                 @Test
-                void shouldThrowBriefingClientException() {
+                void shouldThrowBriefingException() {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
-                            .isInstanceOf(BriefingClientException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", BriefingClientErrorCode.SERVER_ERROR);
+                            .isInstanceOf(RecipeBriefingException.class)
+                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
                 }
             }
 
@@ -186,12 +186,12 @@ public class BriefingClientTest {
                             .setBody("{\"error\":\"Bad Request\"}"));
                 }
 
-                @DisplayName("Then - BriefingClientException이 발생한다")
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
                 @Test
-                void shouldThrowBriefingClientException() {
+                void shouldThrowBriefingException() {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
-                            .isInstanceOf(BriefingClientException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", BriefingClientErrorCode.SERVER_ERROR);
+                            .isInstanceOf(RecipeBriefingException.class)
+                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
                 }
             }
 
@@ -205,12 +205,12 @@ public class BriefingClientTest {
                     mockWebServer.shutdown();
                 }
 
-                @DisplayName("Then - BriefingClientException이 발생한다")
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
                 @Test
-                void shouldThrowBriefingClientException() {
+                void shouldThrowBriefingException() {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
-                            .isInstanceOf(BriefingClientException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", BriefingClientErrorCode.SERVER_ERROR);
+                            .isInstanceOf(RecipeBriefingException.class)
+                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
                 }
             }
         }
@@ -235,12 +235,12 @@ public class BriefingClientTest {
             @DisplayName("When - 브리핑을 조회하면")
             class WhenFetchBriefing {
 
-                @DisplayName("Then - BriefingClientException이 발생한다")
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
                 @Test
-                void shouldThrowBriefingClientException() {
+                void shouldThrowBriefingException() {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
-                            .isInstanceOf(BriefingClientException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", BriefingClientErrorCode.SERVER_ERROR);
+                            .isInstanceOf(RecipeBriefingException.class)
+                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
                 }
             }
         }
