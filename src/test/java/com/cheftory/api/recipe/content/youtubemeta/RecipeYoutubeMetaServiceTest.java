@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.youtubemeta.client.VideoInfoClient;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
+import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaStatus;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
@@ -23,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @DisplayName("RecipeYoutubeMetaService")
@@ -210,12 +210,15 @@ public class RecipeYoutubeMetaServiceTest {
             void thenReturnFirstRecipeYoutubeMeta() {
                 doReturn(false).when(meta1).isBanned();
                 doReturn(false).when(meta1).isBlocked();
+                doReturn(YoutubeMetaStatus.ACTIVE).when(meta1).getStatus();
+
                 doReturn(false).when(meta2).isBanned();
                 doReturn(false).when(meta2).isBlocked();
+                doReturn(YoutubeMetaStatus.ACTIVE).when(meta2).getStatus();
 
                 doReturn(java.util.List.of(meta1, meta2))
                     .when(recipeYoutubeMetaRepository)
-                    .findAllByVideoUri(any(URI.class)); // normalizedUrl String
+                    .findAllByVideoUri(any(URI.class));
 
                 RecipeYoutubeMeta result = recipeYoutubeMetaService.getByUrl(originalUri);
 
@@ -277,6 +280,10 @@ public class RecipeYoutubeMetaServiceTest {
                 doReturn(false).when(meta2).isBanned();
                 doReturn(false).when(meta1).isBlocked();
                 doReturn(false).when(meta2).isBlocked();
+                
+                // 추가: getStatus() 호출 시 ACTIVE 반환하도록 설정
+                doReturn(YoutubeMetaStatus.ACTIVE).when(meta1).getStatus();
+                doReturn(YoutubeMetaStatus.ACTIVE).when(meta2).getStatus();
 
                 RecipeYoutubeMeta result = recipeYoutubeMetaService.getByUrl(originalUri);
 

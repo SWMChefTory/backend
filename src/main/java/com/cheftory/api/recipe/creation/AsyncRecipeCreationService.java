@@ -2,8 +2,8 @@ package com.cheftory.api.recipe.creation;
 
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
-import com.cheftory.api.recipe.content.caption.exception.RecipeCaptionErrorCode;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
+import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
@@ -42,7 +42,7 @@ public class AsyncRecipeCreationService {
         } catch (RecipeException e) {
             log.error("레시피 생성 실패: recipeId={}, reason={}", recipeId, e.getErrorMessage(), e);
 
-            if (e.getErrorMessage() == RecipeCaptionErrorCode.NOT_COOK_RECIPE) {
+            if (e.getErrorMessage() == RecipeVerifyErrorCode.NOT_COOK_VIDEO) {
                 recipeYoutubeMetaService.ban(recipeId);
             }
 

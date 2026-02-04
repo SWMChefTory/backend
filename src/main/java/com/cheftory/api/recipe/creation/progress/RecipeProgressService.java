@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.creation.progress;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.aspect.DbThrottled;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressState;
@@ -23,14 +24,17 @@ public class RecipeProgressService {
         return recipeProgressRepository.findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
     }
 
+    @DbThrottled
     public void start(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail) {
         create(recipeId, step, detail, RecipeProgressState.RUNNING);
     }
 
+    @DbThrottled
     public void success(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail) {
         create(recipeId, step, detail, RecipeProgressState.SUCCESS);
     }
 
+    @DbThrottled
     public void failed(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail) {
         create(recipeId, step, detail, RecipeProgressState.FAILED);
     }

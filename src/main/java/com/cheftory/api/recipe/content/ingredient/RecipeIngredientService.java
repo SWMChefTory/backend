@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.content.ingredient;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.aspect.DbThrottled;
 import com.cheftory.api.recipe.content.detail.entity.RecipeDetail.Ingredient;
 import com.cheftory.api.recipe.content.ingredient.entity.RecipeIngredient;
 import java.util.List;
@@ -16,6 +17,7 @@ public class RecipeIngredientService {
     private final RecipeIngredientRepository recipeIngredientRepository;
     private final Clock clock;
 
+    @DbThrottled
     public void create(UUID recipeId, List<Ingredient> ingredients) {
         List<RecipeIngredient> recipeIngredients = ingredients.stream()
                 .map(ingredient -> RecipeIngredient.create(

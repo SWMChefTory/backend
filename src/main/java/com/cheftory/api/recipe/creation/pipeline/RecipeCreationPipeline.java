@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RecipeCreationPipeline {
     private final RecipeProgressService recipeProgressService;
-    private final RecipeCreationCaptionStep recipeCreationCaptionStep;
+    private final RecipeCreationVerifyStep recipeCreationVerifyStep;
     private final RecipeCreationDetailStep recipeCreationDetailStep;
     private final RecipeCreationInstructionStep recipeCreationInstructionStep;
     private final RecipeCreationBriefingStep recipeCreationBriefingStep;
@@ -22,7 +22,7 @@ public class RecipeCreationPipeline {
     public void run(RecipeCreationExecutionContext context) {
         recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.READY, RecipeProgressDetail.READY);
 
-        RecipeCreationExecutionContext updated = recipeCreationCaptionStep.run(context);
+        RecipeCreationExecutionContext updated = recipeCreationVerifyStep.run(context);
 
         new RecipeCreationParallelSteps(
                         recipeCreateExecutor,

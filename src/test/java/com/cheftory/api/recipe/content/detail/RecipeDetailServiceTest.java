@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
 import com.cheftory.api.recipe.content.detail.entity.RecipeDetail;
@@ -33,17 +32,19 @@ public class RecipeDetailServiceTest {
     class GetRecipeDetails {
 
         @Nested
-        @DisplayName("Given - 유효한 비디오 ID와 자막이 주어졌을 때")
-        class GivenValidVideoIdAndCaption {
+        @DisplayName("Given - 유효한 비디오 ID와 file 정보가 주어졌을 때")
+        class GivenValidVideoIdAndFileInfo {
             private String videoId;
-            private RecipeCaption recipeCaption;
+            private String fileUri;
+            private String mimeType;
             private ClientRecipeDetailResponse clientResponse;
             private RecipeDetail expectedRecipeDetail;
 
             @BeforeEach
             void setUp() {
                 videoId = "sample-video-id";
-                recipeCaption = mock(RecipeCaption.class);
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
                 clientResponse = mock(ClientRecipeDetailResponse.class);
 
                 expectedRecipeDetail = RecipeDetail.of(
@@ -56,7 +57,7 @@ public class RecipeDetailServiceTest {
                         2,
                         30);
 
-                when(recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption))
+                when(recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
                         .thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(expectedRecipeDetail);
             }
@@ -69,7 +70,7 @@ public class RecipeDetailServiceTest {
                 @DisplayName("Then - 상세 정보가 정상적으로 반환된다")
                 void thenReturnsRecipeDetail() {
                     // when
-                    RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, recipeCaption);
+                    RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
 
                     // then
                     assertThat(result).isNotNull();
@@ -83,7 +84,7 @@ public class RecipeDetailServiceTest {
                     assertThat(result.servings()).isEqualTo(2);
                     assertThat(result.cookTime()).isEqualTo(30);
 
-                    verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(recipeCaption));
+                    verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(fileUri), eq(mimeType));
                     verify(clientResponse).toRecipeDetail();
                 }
             }
@@ -93,14 +94,16 @@ public class RecipeDetailServiceTest {
         @DisplayName("Given - 간단한 레시피 정보가 주어졌을 때")
         class GivenSimpleRecipeInfo {
             private String videoId;
-            private RecipeCaption recipeCaption;
+            private String fileUri;
+            private String mimeType;
             private ClientRecipeDetailResponse clientResponse;
             private RecipeDetail simpleRecipeDetail;
 
             @BeforeEach
             void setUp() {
                 videoId = "simple-recipe-id";
-                recipeCaption = mock(RecipeCaption.class);
+                fileUri = "s3://bucket/simple.mp4";
+                mimeType = "video/mp4";
                 clientResponse = mock(ClientRecipeDetailResponse.class);
 
                 simpleRecipeDetail = RecipeDetail.of(
@@ -110,7 +113,7 @@ public class RecipeDetailServiceTest {
                         1,
                         5);
 
-                when(recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption))
+                when(recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
                         .thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(simpleRecipeDetail);
             }
@@ -119,7 +122,7 @@ public class RecipeDetailServiceTest {
             @DisplayName("When - 간단한 레시피를 조회하면 Then - 간단한 정보가 반환된다")
             void whenGetSimpleRecipe_thenReturnsSimpleDetail() {
                 // when
-                RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, recipeCaption);
+                RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
 
                 // then
                 assertThat(result).isNotNull();
@@ -129,7 +132,7 @@ public class RecipeDetailServiceTest {
                 assertThat(result.servings()).isEqualTo(1);
                 assertThat(result.cookTime()).isEqualTo(5);
 
-                verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(recipeCaption));
+                verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(fileUri), eq(mimeType));
             }
         }
 
@@ -137,19 +140,21 @@ public class RecipeDetailServiceTest {
         @DisplayName("Given - 빈 재료 목록을 가진 레시피가 주어졌을 때")
         class GivenRecipeWithEmptyIngredients {
             private String videoId;
-            private RecipeCaption recipeCaption;
+            private String fileUri;
+            private String mimeType;
             private ClientRecipeDetailResponse clientResponse;
             private RecipeDetail emptyIngredientsRecipe;
 
             @BeforeEach
             void setUp() {
                 videoId = "empty-ingredients-id";
-                recipeCaption = mock(RecipeCaption.class);
+                fileUri = "s3://bucket/empty.mp4";
+                mimeType = "video/mp4";
                 clientResponse = mock(ClientRecipeDetailResponse.class);
 
                 emptyIngredientsRecipe = RecipeDetail.of("재료 없는 레시피", List.of(), List.of("기타"), 1, 10);
 
-                when(recipeDetailClient.fetchRecipeDetails(videoId, recipeCaption))
+                when(recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
                         .thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(emptyIngredientsRecipe);
             }
@@ -158,7 +163,7 @@ public class RecipeDetailServiceTest {
             @DisplayName("When - 빈 재료 목록 레시피를 조회하면 Then - 빈 재료 목록이 반환된다")
             void whenGetEmptyIngredientsRecipe_thenReturnsEmptyIngredients() {
                 // when
-                RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, recipeCaption);
+                RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
 
                 // then
                 assertThat(result).isNotNull();
@@ -168,7 +173,7 @@ public class RecipeDetailServiceTest {
                 assertThat(result.servings()).isEqualTo(1);
                 assertThat(result.cookTime()).isEqualTo(10);
 
-                verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(recipeCaption));
+                verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(fileUri), eq(mimeType));
             }
         }
     }

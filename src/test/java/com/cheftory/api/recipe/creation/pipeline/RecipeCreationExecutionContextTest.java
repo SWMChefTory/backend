@@ -1,9 +1,7 @@
 package com.cheftory.api.recipe.creation.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
@@ -39,44 +37,49 @@ class RecipeCreationExecutionContextTest {
                 assertThat(context.getRecipeId()).isEqualTo(recipeId);
                 assertThat(context.getVideoId()).isEqualTo(videoId);
                 assertThat(context.getVideoUrl()).isEqualTo(videoUrl);
-                assertThat(context.getCaption()).isNull();
+                assertThat(context.getFileUri()).isNull();
+                assertThat(context.getMimeType()).isNull();
             }
         }
     }
 
     @Nested
-    @DisplayName("from 정적 팩토리 메서드")
-    class FromMethod {
+    @DisplayName("withFileInfo 정적 팩토리 메서드")
+    class WithFileInfoMethod {
 
         @Nested
-        @DisplayName("Given - 기존 컨텍스트와 캡션이 주어졌을 때")
-        class GivenExistingContextAndCaption {
+        @DisplayName("Given - 기존 컨텍스트와 file 정보가 주어졌을 때")
+        class GivenExistingContextAndFileInfo {
 
             private UUID recipeId;
             private String videoId;
             private URI videoUrl;
-            private RecipeCaption caption;
             private RecipeCreationExecutionContext context;
+            private String fileUri;
+            private String mimeType;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
                 videoId = "test-video-id";
                 videoUrl = URI.create("https://youtu.be/test");
-                caption = mock(RecipeCaption.class);
                 context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
             }
 
             @Test
-            @DisplayName("When - from를 호출하면 Then - 새 컨텍스트가 생성되고 캡션이 설정된다")
-            void thenCreatesNewContextWithCaptionSet() {
-                RecipeCreationExecutionContext newContext = RecipeCreationExecutionContext.from(context, caption);
+            @DisplayName("When - withFileInfo를 호출하면 Then - 새 컨텍스트가 생성되고 file 정보가 설정된다")
+            void thenCreatesNewContextWithFileInfo() {
+                RecipeCreationExecutionContext newContext =
+                        RecipeCreationExecutionContext.withFileInfo(context, fileUri, mimeType);
 
                 assertThat(newContext).isNotNull();
                 assertThat(newContext.getRecipeId()).isEqualTo(recipeId);
                 assertThat(newContext.getVideoId()).isEqualTo(videoId);
                 assertThat(newContext.getVideoUrl()).isEqualTo(videoUrl);
-                assertThat(newContext.getCaption()).isEqualTo(caption);
+                assertThat(newContext.getFileUri()).isEqualTo(fileUri);
+                assertThat(newContext.getMimeType()).isEqualTo(mimeType);
             }
         }
     }
@@ -92,31 +95,35 @@ class RecipeCreationExecutionContextTest {
             private UUID recipeId;
             private String videoId;
             private URI videoUrl;
-            private RecipeCaption caption;
+            private String fileUri;
+            private String mimeType;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
                 videoId = "test-video-id";
                 videoUrl = URI.create("https://youtu.be/test");
-                caption = mock(RecipeCaption.class);
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
             }
 
             @Test
-            @DisplayName("Then - caption이 null이면 getCaption()은 null을 반환한다")
-            void thenGetCaptionReturnsNullWhenCaptionIsNull() {
+            @DisplayName("Then - file 정보가 null이면 fileUri/mimeType은 null을 반환한다")
+            void thenGetFileInfoReturnsNullWhenEmpty() {
                 RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
 
-                assertThat(context.getCaption()).isNull();
+                assertThat(context.getFileUri()).isNull();
+                assertThat(context.getMimeType()).isNull();
             }
 
             @Test
-            @DisplayName("Then - caption이 설정되면 getCaption()은 캡션을 반환한다")
-            void thenGetCaptionReturnsCaptionWhenSet() {
-                RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
-                        RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            @DisplayName("Then - file 정보가 설정되면 getFileUri/getMimeType을 반환한다")
+            void thenGetFileInfoReturnsWhenSet() {
+                RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
+                        RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
 
-                assertThat(context.getCaption()).isEqualTo(caption);
+                assertThat(context.getFileUri()).isEqualTo(fileUri);
+                assertThat(context.getMimeType()).isEqualTo(mimeType);
             }
         }
     }

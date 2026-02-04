@@ -6,6 +6,7 @@ import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,8 @@ import org.opensearch.client.opensearch._types.query_dsl.*;
 import org.opensearch.client.opensearch.core.CreatePitRequest;
 import org.opensearch.client.opensearch.core.DeletePitRequest;
 import org.opensearch.client.opensearch.core.SearchRequest;
+import org.opensearch.client.opensearch.core.get.GetResult;
+import org.opensearch.client.opensearch.core.mget.MultiGetResponseItem;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.Pit;
 import org.springframework.data.domain.Pageable;
@@ -68,6 +71,9 @@ public class SearchQueryRepository {
     }
 
     public List<SearchQuery> mgetSearchQueries(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
         try {
             var response = openSearchClient.mget(
                     mgetRequest -> mgetRequest
@@ -78,7 +84,20 @@ public class SearchQueryRepository {
                                     .toList()),
                     SearchQuery.class);
 
-            return response.docs().stream().map(item -> item.result().source()).toList();
+            var docs = response.docs().stream()
+                .map(MultiGetResponseItem::result)
+                .filter(r -> r != null && r.found())
+                .map(GetResult::source)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+
+            if (docs.size() != ids.size()) {
+                var foundIds = docs.stream().map(SearchQuery::getId).collect(java.util.stream.Collectors.toSet());
+                var missing = ids.stream().filter(id -> !foundIds.contains(id)).toList();
+                log.warn("mget seeds missing: requested={}, found={}, missing={}", ids.size(), docs.size(), missing);
+            }
+
+            return docs;
 
         } catch (Exception e) {
             log.error("mget seeds failed: size={}", ids.size(), e);

@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.content.briefing;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.aspect.DbThrottled;
 import com.cheftory.api.recipe.content.briefing.client.BriefingClient;
 import com.cheftory.api.recipe.content.briefing.client.dto.BriefingClientResponse;
 import com.cheftory.api.recipe.content.briefing.entity.RecipeBriefing;
@@ -21,14 +22,11 @@ public class RecipeBriefingService {
     private final RecipeBriefingRepository recipeBriefingRepository;
     private final Clock clock;
 
+    @DbThrottled
     public void create(String videoId, UUID recipeId) {
-        try {
-            BriefingClientResponse response = briefingClient.fetchBriefing(videoId);
-            List<RecipeBriefing> recipeBriefings = response.toRecipeBriefing(recipeId, clock);
-            recipeBriefingRepository.saveAll(recipeBriefings);
-        } catch (Exception e) {
-            throw new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
-        }
+        BriefingClientResponse response = briefingClient.fetchBriefing(videoId);
+        List<RecipeBriefing> recipeBriefings = response.toRecipeBriefing(recipeId, clock);
+        recipeBriefingRepository.saveAll(recipeBriefings);
     }
 
     public List<RecipeBriefing> gets(UUID recipeId) {
