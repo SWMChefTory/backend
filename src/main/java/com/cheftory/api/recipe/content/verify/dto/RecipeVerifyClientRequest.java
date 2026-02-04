@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.content.caption.client.dto;
+package com.cheftory.api.recipe.content.verify.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
@@ -7,11 +7,11 @@ import lombok.Getter;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class ClientCaptionRequest {
+public class RecipeVerifyClientRequest {
     @JsonProperty("video_id")
     private String videoId;
 
-    public static ClientCaptionRequest from(String videoId) {
-        return new ClientCaptionRequest(videoId);
+    public static RecipeVerifyClientRequest from(String videoId) {
+        return new RecipeVerifyClientRequest(videoId);
     }
 }

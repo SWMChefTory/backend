@@ -1,7 +1,7 @@
 package com.cheftory.api.recipe.content.step;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
+import com.cheftory.api._common.aspect.DbThrottled;
 import com.cheftory.api.recipe.content.step.client.RecipeStepClient;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsResponse;
 import com.cheftory.api.recipe.content.step.entity.RecipeStep;
@@ -19,8 +19,9 @@ public class RecipeStepService {
     private final RecipeStepRepository recipeStepRepository;
     private final Clock clock;
 
-    public List<UUID> create(UUID recipeId, RecipeCaption recipeCaption) {
-        ClientRecipeStepsResponse response = recipeStepClient.fetchRecipeSteps(recipeCaption);
+    @DbThrottled
+    public List<UUID> create(UUID recipeId, String fileUri, String mimeType) {
+        ClientRecipeStepsResponse response = recipeStepClient.fetchRecipeSteps(fileUri, mimeType);
 
         List<RecipeStep> recipeSteps = response.toRecipeSteps(recipeId, clock);
 

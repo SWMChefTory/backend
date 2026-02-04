@@ -24,12 +24,12 @@ public class RecipeCreationDetailStep implements RecipeCreationPipelineStep {
 
     @Override
     public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) {
-        if (context.getCaption() == null) {
+        if (context.getFileUri() == null || context.getMimeType() == null) {
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
-        recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+        recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
         try {
-            RecipeDetail detail = recipeDetailService.getRecipeDetails(context.getVideoId(), context.getCaption());
+            RecipeDetail detail = recipeDetailService.getRecipeDetails(context.getVideoId(), context.getFileUri(), context.getMimeType());
             recipeIngredientService.create(context.getRecipeId(), detail.ingredients());
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
@@ -39,11 +39,9 @@ public class RecipeCreationDetailStep implements RecipeCreationPipelineStep {
                     context.getRecipeId(), detail.cookTime(), detail.servings(), detail.description());
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
-            recipeProgressService.success(
-                    context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
             return context;
         } catch (RecipeException ex) {
-            recipeProgressService.failed(context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            recipeProgressService.failed(context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
             throw ex;
         }
     }

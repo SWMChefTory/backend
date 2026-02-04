@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.content.detail.client;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailRequest;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +16,12 @@ public class RecipeDetailClient {
 
     private final WebClient webClient;
 
-    public ClientRecipeDetailResponse fetchRecipeDetails(String videoId, RecipeCaption recipeCaption) {
-        ClientRecipeDetailRequest request = ClientRecipeDetailRequest.from(videoId, recipeCaption);
+    public ClientRecipeDetailResponse fetchRecipeDetails(String videoId, String fileUri, String mimeType) {
+        ClientRecipeDetailRequest request = ClientRecipeDetailRequest.from(videoId, fileUri, mimeType);
 
         return webClient
                 .post()
-                .uri(uriBuilder -> uriBuilder.path("/meta").build())
+                .uri(uriBuilder -> uriBuilder.path("/meta/video").build())
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(ClientRecipeDetailResponse.class)

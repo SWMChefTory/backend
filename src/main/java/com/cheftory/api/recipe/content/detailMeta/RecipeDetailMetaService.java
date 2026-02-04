@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.content.detailMeta;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.aspect.DbThrottled;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaErrorCode;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaException;
@@ -27,6 +28,7 @@ public class RecipeDetailMetaService {
         return recipeDetailMetaRepository.findAllByRecipeIdIn(recipeIds);
     }
 
+    @DbThrottled
     public void create(UUID recipeId, Integer cookTime, Integer servings, String description) {
         RecipeDetailMeta recipeDetailMeta = RecipeDetailMeta.create(cookTime, servings, description, clock, recipeId);
         recipeDetailMetaRepository.save(recipeDetailMeta);

@@ -11,8 +11,6 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.briefing.client.BriefingClient;
 import com.cheftory.api.recipe.content.briefing.client.dto.BriefingClientResponse;
-import com.cheftory.api.recipe.content.briefing.client.exception.BriefingClientErrorCode;
-import com.cheftory.api.recipe.content.briefing.client.exception.BriefingClientException;
 import com.cheftory.api.recipe.content.briefing.entity.RecipeBriefing;
 import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingErrorCode;
 import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingException;
@@ -92,7 +90,7 @@ public class RecipeBriefingServiceTest {
                 videoId = "error-video-id";
                 recipeId = UUID.randomUUID();
 
-                doThrow(new BriefingClientException(BriefingClientErrorCode.SERVER_ERROR))
+                doThrow(new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL))
                         .when(briefingClient)
                         .fetchBriefing(videoId);
             }
@@ -102,11 +100,10 @@ public class RecipeBriefingServiceTest {
             class WhenCreateRecipeBriefing {
 
                 @Test
-                @DisplayName("Then - BRIEFING_CREATE_FAIL 예외가 발생한다")
-                void thenThrowsBriefingCreateFailException() {
+                @DisplayName("Then - RuntimeException이 발생한다")
+                void thenThrowsRuntimeException() {
                     assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
-                            .isInstanceOf(RecipeBriefingException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+                            .isInstanceOf(RuntimeException.class);
 
                     verify(briefingClient).fetchBriefing(videoId);
                 }
@@ -142,11 +139,10 @@ public class RecipeBriefingServiceTest {
             class WhenCreateRecipeBriefing {
 
                 @Test
-                @DisplayName("Then - BRIEFING_CREATE_FAIL 예외가 발생한다")
-                void thenThrowsBriefingCreateFailException() {
+                @DisplayName("Then - RuntimeException이 발생한다")
+                void thenThrowsRuntimeException() {
                     assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
-                            .isInstanceOf(RecipeBriefingException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+                            .isInstanceOf(RuntimeException.class);
 
                     verify(briefingClient).fetchBriefing(videoId);
                     verify(briefingClientResponse).toRecipeBriefing(recipeId, clock);

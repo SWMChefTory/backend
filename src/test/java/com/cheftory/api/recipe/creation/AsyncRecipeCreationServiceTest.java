@@ -12,9 +12,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
-import com.cheftory.api.recipe.content.caption.exception.RecipeCaptionErrorCode;
-import com.cheftory.api.recipe.content.caption.exception.RecipeCaptionException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
+import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
+import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
@@ -111,7 +111,7 @@ class AsyncRecipeCreationServiceTest {
     class ExceptionFlow {
 
         @Nested
-        @DisplayName("NOT_COOK_RECIPE 예외")
+        @DisplayName("NOT_COOK_VIDEO 예외")
         class NotCookRecipeException {
 
             @Nested
@@ -130,7 +130,7 @@ class AsyncRecipeCreationServiceTest {
                     videoId = "not-cook";
                     videoUrl = URI.create("https://youtu.be/not-cook");
 
-                    doThrow(new RecipeCaptionException(RecipeCaptionErrorCode.NOT_COOK_RECIPE))
+                    doThrow(new RecipeVerifyException(RecipeVerifyErrorCode.NOT_COOK_VIDEO))
                             .when(recipeCreationPipeline)
                             .run(any(RecipeCreationExecutionContext.class));
 
@@ -150,7 +150,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
                         verify(recipeBookmarkService).deleteByRecipe(recipeId);
-                        verify(recipeYoutubeMetaService).ban(recipeId);
+                        verify(recipeYoutubeMetaService, never()).ban(any());
                         verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
@@ -160,12 +160,12 @@ class AsyncRecipeCreationServiceTest {
         }
 
         @Nested
-        @DisplayName("CAPTION_CREATE_FAIL 예외")
-        class CaptionCreateFailException {
+        @DisplayName("VERIFY_SERVER_ERROR 예외")
+        class VerifyServerErrorException {
 
             @Nested
-            @DisplayName("Given - 캡션 생성이 실패할 때")
-            class GivenCaptionCreationFail {
+            @DisplayName("Given - verify 호출이 실패할 때")
+            class GivenVerifyFail {
 
                 private UUID recipeId;
                 private long creditCost;
@@ -179,7 +179,7 @@ class AsyncRecipeCreationServiceTest {
                     videoId = "no-meta";
                     videoUrl = URI.create("https://youtu.be/no-meta");
 
-                    doThrow(new RecipeCaptionException(RecipeCaptionErrorCode.CAPTION_CREATE_FAIL))
+                    doThrow(new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR))
                             .when(recipeCreationPipeline)
                             .run(any(RecipeCreationExecutionContext.class));
 
@@ -283,7 +283,7 @@ class AsyncRecipeCreationServiceTest {
                 videoId = "fail-with-histories";
                 videoUrl = URI.create("https://youtu.be/fail-with-histories");
 
-                doThrow(new RecipeCaptionException(RecipeCaptionErrorCode.CAPTION_CREATE_FAIL))
+                doThrow(new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR))
                         .when(recipeCreationPipeline)
                         .run(any(RecipeCreationExecutionContext.class));
 

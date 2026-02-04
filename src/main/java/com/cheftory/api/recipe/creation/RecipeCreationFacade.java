@@ -48,14 +48,19 @@ public class RecipeCreationFacade {
             return recipeInfo.getId();
         } catch (RecipeException e) {
             if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND) {
+                log.info("create new recipe. reason={}", e.getErrorMessage());
                 return createNewRecipe(target);
             }
             if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_FAILED) {
+                log.info("create new recipe. reason={}", e.getErrorMessage());
                 return createNewRecipe(target);
             }
             if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_BANNED) {
+                log.warn("create failed. reason={}", e.getErrorMessage(), e);
                 throw new RecipeException(RecipeErrorCode.RECIPE_BANNED);
             }
+            
+            log.warn("create failed. reason={}", e.getErrorMessage(), e);
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
     }

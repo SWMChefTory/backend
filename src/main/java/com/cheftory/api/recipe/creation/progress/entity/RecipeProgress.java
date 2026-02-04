@@ -30,6 +30,7 @@ public class RecipeProgress extends MarketScope {
     private RecipeProgressStep step;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private RecipeProgressDetail detail;
 
     @Enumerated(EnumType.STRING)

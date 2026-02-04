@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.step.client.RecipeStepClient;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsResponse;
 import com.cheftory.api.recipe.content.step.entity.RecipeStep;
@@ -42,7 +41,8 @@ public class RecipeStepServiceTest {
     class CreateRecipeSteps {
 
         private UUID recipeId;
-        private RecipeCaption recipeCaption;
+        private String fileUri;
+        private String mimeType;
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
@@ -51,7 +51,8 @@ public class RecipeStepServiceTest {
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
-                recipeCaption = mock(RecipeCaption.class);
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
             }
 
             @Nested
@@ -82,7 +83,7 @@ public class RecipeStepServiceTest {
                     List<RecipeStep> converted = List.of(step1);
                     doReturn(LocalDateTime.now()).when(clock).now();
 
-                    when(recipeStepClient.fetchRecipeSteps(recipeCaption)).thenReturn(clientResponse);
+                    when(recipeStepClient.fetchRecipeSteps(fileUri, mimeType)).thenReturn(clientResponse);
                     when(clientResponse.toRecipeSteps(recipeId, clock)).thenReturn(converted);
                     when(recipeStepRepository.saveAll(converted)).thenReturn(converted);
                 }
@@ -90,8 +91,8 @@ public class RecipeStepServiceTest {
                 @DisplayName("Then - 레시피 단계들이 생성된다")
                 @Test
                 void thenRecipeStepsCreated() {
-                    recipeStepService.create(recipeId, recipeCaption);
-                    verify(recipeStepClient).fetchRecipeSteps(recipeCaption);
+                    recipeStepService.create(recipeId, fileUri, mimeType);
+                    verify(recipeStepClient).fetchRecipeSteps(fileUri, mimeType);
                     verify(clientResponse).toRecipeSteps(recipeId, clock);
                     verify(recipeStepRepository).saveAll(clientResponse.toRecipeSteps(recipeId, clock));
                 }

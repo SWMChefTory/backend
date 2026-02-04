@@ -7,7 +7,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cheftory.api.recipe.content.caption.entity.RecipeCaption;
 import com.cheftory.api.recipe.content.detail.RecipeDetailService;
 import com.cheftory.api.recipe.content.detail.entity.RecipeDetail;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
@@ -74,8 +73,8 @@ class RecipeCreationDetailStepTest {
     class Run {
 
         @Test
-        @DisplayName("caption이 없으면 RECIPE_CREATE_FAIL 예외가 발생한다")
-        void shouldThrowWhenCaptionMissing() {
+        @DisplayName("file 정보가 없으면 RECIPE_CREATE_FAIL 예외가 발생한다")
+        void shouldThrowWhenFileInfoMissing() {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
@@ -86,7 +85,7 @@ class RecipeCreationDetailStepTest {
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
             verify(recipeProgressService, never())
-                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
         }
 
         @Test
@@ -95,25 +94,28 @@ class RecipeCreationDetailStepTest {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
-            RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
-                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            String fileUri = "s3://bucket/file.mp4";
+            String mimeType = "video/mp4";
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
 
             RecipeDetail detail = RecipeDetail.of(
                     "desc", List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")), List.of("tag1"), 2, 10);
-            when(recipeDetailService.getRecipeDetails(videoId, caption)).thenReturn(detail);
+            when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType)).thenReturn(detail);
 
             sut.run(context);
 
             InOrder order = inOrder(recipeProgressService);
-            order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
             order.verify(recipeProgressService)
                     .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
             order.verify(recipeProgressService).success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
             order.verify(recipeProgressService)
                     .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
-            order.verify(recipeProgressService)
-                    .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            
+            // DETAIL 성공 기록은 제거됨
+            // order.verify(recipeProgressService)
+            //        .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
 
             verify(recipeIngredientService).create(recipeId, detail.ingredients());
             verify(recipeTagService).create(recipeId, detail.tags());
@@ -127,18 +129,19 @@ class RecipeCreationDetailStepTest {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");
-            RecipeCaption caption = mock(RecipeCaption.class);
-            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.from(
-                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), caption);
+            String fileUri = "s3://bucket/file.mp4";
+            String mimeType = "video/mp4";
+            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
+                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
 
-            when(recipeDetailService.getRecipeDetails(videoId, caption))
+            when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType))
                     .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
 
             assertThatThrownBy(() -> sut.run(context))
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
-            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
             verify(recipeIngredientService, never()).create(ArgumentMatchers.any(), ArgumentMatchers.anyList());
         }
     }
