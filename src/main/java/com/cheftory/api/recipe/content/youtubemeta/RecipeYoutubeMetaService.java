@@ -37,6 +37,14 @@ public class RecipeYoutubeMetaService {
         recipeYoutubeMetaRepository.save(youtubeMeta);
     }
 
+    public void failed(UUID recipeId) {
+        recipeYoutubeMetaRepository.findByRecipeId(recipeId)
+                .ifPresent(meta -> {
+                    meta.failed();
+                    recipeYoutubeMetaRepository.save(meta);
+                });
+    }
+
     public RecipeYoutubeMeta getByUrl(URI uri) {
         YoutubeUri youtubeUri = YoutubeUri.from(uri);
         List<RecipeYoutubeMeta> metas =

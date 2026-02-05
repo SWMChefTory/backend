@@ -93,4 +93,8 @@ public class RecipeYoutubeMeta extends MarketScope {
     public boolean isBlocked() {
         return this.status == YoutubeMetaStatus.BLOCKED;
     }
+
+    public void failed() {
+        this.status = YoutubeMetaStatus.FAILED;
+    }
 }
