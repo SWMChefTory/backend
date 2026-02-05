@@ -38,7 +38,7 @@ public class RecipeBookmarkService {
             maxAttempts = 3)
     public boolean create(UUID userId, UUID recipeId) {
         try {
-            recipeBookmarkRepository.save(RecipeBookmark.create(clock, userId, recipeId));
+            recipeBookmarkRepository.saveAndFlush(RecipeBookmark.create(clock, userId, recipeId));
             return true;
         } catch (DataIntegrityViolationException e) {
             var existingOpt = recipeBookmarkRepository.findByUserIdAndRecipeId(userId, recipeId);
@@ -48,7 +48,7 @@ public class RecipeBookmarkService {
 
                 if (existing.getStatus() == RecipeBookmarkStatus.DELETED) {
                     existing.active(clock);
-                    recipeBookmarkRepository.save(existing);
+                    recipeBookmarkRepository.saveAndFlush(existing);
                     return true;
                 }
 
