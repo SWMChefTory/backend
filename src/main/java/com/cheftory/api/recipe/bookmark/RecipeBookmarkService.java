@@ -36,7 +36,6 @@ public class RecipeBookmarkService {
     @Retryable(
             retryFor = {OptimisticLockingFailureException.class, ObjectOptimisticLockingFailureException.class},
             maxAttempts = 3)
-    @Transactional
     public boolean create(UUID userId, UUID recipeId) {
         try {
             recipeBookmarkRepository.save(RecipeBookmark.create(clock, userId, recipeId));
