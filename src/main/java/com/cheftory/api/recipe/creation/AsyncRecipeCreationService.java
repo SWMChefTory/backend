@@ -61,18 +61,17 @@ public class AsyncRecipeCreationService {
         }
     }
 
-    private void bannedRecipe(UUID recipeId, long creditCost){
+    private void bannedRecipe(UUID recipeId, long creditCost) {
         recipeYoutubeMetaService.ban(recipeId);
-        recipeInfoService.failed(recipeId);
-        recipeProgressService.failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-
-        List<RecipeBookmark> histories = recipeBookmarkService.deleteByRecipe(recipeId);
-
-        histories.forEach(h -> creditPort.refundRecipeCreate(h.getUserId(), recipeId, creditCost));
+        cleanup(recipeId, creditCost);
     }
 
     private void failedRecipe(UUID recipeId, long creditCost) {
         recipeYoutubeMetaService.failed(recipeId);
+        cleanup(recipeId, creditCost);
+    }
+
+    private void cleanup(UUID recipeId, long creditCost) {
         recipeInfoService.failed(recipeId);
         recipeProgressService.failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
 

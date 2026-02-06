@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
+import com.cheftory.api.recipe.content.verify.RecipeVerifyService;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
@@ -41,6 +42,7 @@ class AsyncRecipeCreationServiceTest {
     private RecipeBookmarkService recipeBookmarkService;
     private RecipeCreditPort creditPort;
     private RecipeCreationPipeline recipeCreationPipeline;
+    private RecipeVerifyService recipeVerifyService;
 
     private AsyncRecipeCreationService sut;
 
@@ -150,7 +152,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
                         verify(recipeBookmarkService).deleteByRecipe(recipeId);
-                        verify(recipeYoutubeMetaService, never()).ban(any());
+                        verify(recipeYoutubeMetaService).ban(recipeId); // ban 호출 확인
                         verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
@@ -202,6 +204,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(recipeYoutubeMetaService, never()).ban(any());
+                        verify(recipeYoutubeMetaService).failed(recipeId); // failed 호출 확인
                         verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
                     }
                 }
@@ -251,6 +254,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(recipeYoutubeMetaService, never()).ban(any());
+                        verify(recipeYoutubeMetaService).failed(recipeId); // failed 호출 확인
                         verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
                     }
                 }

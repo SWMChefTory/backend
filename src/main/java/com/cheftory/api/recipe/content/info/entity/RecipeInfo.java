@@ -20,10 +20,6 @@ public class RecipeInfo extends MarketScope {
     @Id
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProcessStep processStep;
-
     @Column(nullable = false)
     private Integer viewCount;
 
@@ -43,7 +39,6 @@ public class RecipeInfo extends MarketScope {
         LocalDateTime now = clock.now();
         return new RecipeInfo(
                 UUID.randomUUID(),
-                ProcessStep.READY,
                 INITIAL_VIEW_COUNT,
                 now,
                 now,
