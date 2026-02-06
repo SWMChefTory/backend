@@ -208,7 +208,7 @@ class CoupangClientTest {
             // when & then
             assertThatThrownBy(() -> coupangClient.searchProducts("error-keyword"))
                     .isInstanceOf(CoupangException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
+                    .hasFieldOrPropertyWithValue("error", CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
         }
 
         @Test
@@ -223,7 +223,7 @@ class CoupangClientTest {
             // when & then
             assertThatThrownBy(() -> coupangClient.searchProducts("bad-request"))
                     .isInstanceOf(CoupangException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
+                    .hasFieldOrPropertyWithValue("error", CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
         }
 
         @Test
@@ -238,7 +238,7 @@ class CoupangClientTest {
             // when & then
             assertThatThrownBy(() -> coupangClient.searchProducts("invalid-json"))
                     .isInstanceOf(CoupangException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
+                    .hasFieldOrPropertyWithValue("error", CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
         }
 
         @Test
@@ -250,7 +250,7 @@ class CoupangClientTest {
             // when & then
             assertThatThrownBy(() -> coupangClient.searchProducts("any"))
                     .isInstanceOf(CoupangException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
+                    .hasFieldOrPropertyWithValue("error", CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
         }
     }
 }

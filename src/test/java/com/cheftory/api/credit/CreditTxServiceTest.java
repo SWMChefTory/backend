@@ -55,7 +55,7 @@ class CreditTxServiceTest {
 
             creditTxService.grantTx(credit);
 
-            verify(transactionRepository, times(1)).save(any());
+            verify(transactionRepository, times(1)).saveAndFlush(any());
 
             ArgumentCaptor<CreditUserBalance> captor = ArgumentCaptor.forClass(CreditUserBalance.class);
             verify(balanceRepository, times(1)).save(captor.capture());
@@ -76,13 +76,13 @@ class CreditTxServiceTest {
 
             doThrow(new DataIntegrityViolationException("duplicate"))
                     .when(transactionRepository)
-                    .save(any());
+                    .saveAndFlush(any());
 
             doReturn(true).when(transactionRepository).existsByIdempotencyKey(credit.idempotencyKey());
 
             creditTxService.grantTx(credit);
 
-            verify(balanceRepository, never()).save(any());
+            verify(balanceRepository, never()).saveAndFlush(any());
             assertThat(balance.getBalance()).isEqualTo(200L);
         }
 
@@ -97,7 +97,7 @@ class CreditTxServiceTest {
 
             doThrow(new DataIntegrityViolationException("duplicate?"))
                     .when(transactionRepository)
-                    .save(any());
+                    .saveAndFlush(any());
 
             doReturn(false).when(transactionRepository).existsByIdempotencyKey(credit.idempotencyKey());
 
@@ -151,7 +151,7 @@ class CreditTxServiceTest {
 
             creditTxService.spendTx(credit);
 
-            verify(transactionRepository, times(1)).save(any());
+            verify(transactionRepository, times(1)).saveAndFlush(any());
 
             ArgumentCaptor<CreditUserBalance> captor = ArgumentCaptor.forClass(CreditUserBalance.class);
             verify(balanceRepository, times(1)).save(captor.capture());

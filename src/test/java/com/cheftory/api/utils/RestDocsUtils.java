@@ -2,7 +2,7 @@ package com.cheftory.api.utils;
 
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -32,10 +32,10 @@ public class RestDocsUtils {
                 PayloadDocumentation.fieldWithPath("message").description("success"));
     }
 
-    public static ResponseFieldsSnippet responseErrorFields(ErrorMessage errorMessage) {
+    public static ResponseFieldsSnippet responseErrorFields(Error error) {
         return PayloadDocumentation.responseFields(
-                PayloadDocumentation.fieldWithPath("errorCode").description(errorMessage.getErrorCode()),
-                PayloadDocumentation.fieldWithPath("message").description(errorMessage.getMessage()));
+                PayloadDocumentation.fieldWithPath("errorCode").description(error.getErrorCode()),
+                PayloadDocumentation.fieldWithPath("message").description(error.getMessage()));
     }
 
     public static RequestHeadersSnippet requestAccessTokenFields() {

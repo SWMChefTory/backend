@@ -80,7 +80,7 @@ class YoutubeVideoResponseTest {
                 com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException.class,
                 response::getThumbnailUri);
 
-        assertThat(exception.getErrorMessage().getMessage()).isEqualTo("썸네일 정보를 찾을 수 없습니다.");
+        assertThat(exception.getError().getMessage()).isEqualTo("썸네일 정보를 찾을 수 없습니다.");
     }
 
     @Test

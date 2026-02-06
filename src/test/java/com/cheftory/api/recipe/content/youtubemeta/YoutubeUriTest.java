@@ -77,9 +77,9 @@ class YoutubeUriTest {
 
             YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(invalidHost));
 
-            assertThat(ex.getErrorMessage().getErrorCode())
+            assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_INVALID.getErrorCode());
-            assertThat(ex.getErrorMessage().getMessage())
+            assertThat(ex.getError().getMessage())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_INVALID.getMessage());
         }
 
@@ -90,9 +90,9 @@ class YoutubeUriTest {
 
             YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(invalidPath));
 
-            assertThat(ex.getErrorMessage().getErrorCode())
+            assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_INVALID.getErrorCode());
-            assertThat(ex.getErrorMessage().getMessage())
+            assertThat(ex.getError().getMessage())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_INVALID.getMessage());
         }
 
@@ -103,9 +103,9 @@ class YoutubeUriTest {
 
             YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(nullQuery));
 
-            assertThat(ex.getErrorMessage().getErrorCode())
+            assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getErrorCode());
-            assertThat(ex.getErrorMessage().getMessage())
+            assertThat(ex.getError().getMessage())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getMessage());
         }
 
@@ -117,9 +117,9 @@ class YoutubeUriTest {
 
             YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(nullHost));
 
-            assertThat(ex.getErrorMessage().getErrorCode())
+            assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL.getErrorCode());
-            assertThat(ex.getErrorMessage().getMessage())
+            assertThat(ex.getError().getMessage())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL.getMessage());
         }
 
@@ -130,9 +130,9 @@ class YoutubeUriTest {
 
             YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(nullPath));
 
-            assertThat(ex.getErrorMessage().getErrorCode())
+            assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL.getErrorCode());
-            assertThat(ex.getErrorMessage().getMessage())
+            assertThat(ex.getError().getMessage())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL.getMessage());
         }
 
@@ -143,9 +143,9 @@ class YoutubeUriTest {
 
             YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(missingV));
 
-            assertThat(ex.getErrorMessage().getErrorCode())
+            assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getErrorCode());
-            assertThat(ex.getErrorMessage().getMessage())
+            assertThat(ex.getError().getMessage())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getMessage());
         }
 
@@ -156,9 +156,9 @@ class YoutubeUriTest {
 
             YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(emptyV));
 
-            assertThat(ex.getErrorMessage().getErrorCode())
+            assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getErrorCode());
-            assertThat(ex.getErrorMessage().getMessage())
+            assertThat(ex.getError().getMessage())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getMessage());
         }
     }

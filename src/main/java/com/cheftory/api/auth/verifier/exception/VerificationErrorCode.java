@@ -1,10 +1,10 @@
 package com.cheftory.api.auth.verifier.exception;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 import lombok.Getter;
 
 @Getter
-public enum VerificationErrorCode implements ErrorMessage {
+public enum VerificationErrorCode implements Error {
 
     // Apple 관련
     APPLE_INVALID_FORMAT("APPLE_001", "Apple 토큰 형식이 유효하지 않습니다."),

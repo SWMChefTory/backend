@@ -3,7 +3,6 @@ package com.cheftory.api.recipe.content.verify.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientRequest;
 import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientResponse;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
@@ -101,7 +100,7 @@ class RecipeVerifyClientTest {
 
             RecipeVerifyException exception =
                     assertThrows(RecipeVerifyException.class, () -> recipeVerifyClient.verifyVideo(videoId));
-            assertThat(exception.getErrorMessage()).isEqualTo(RecipeVerifyErrorCode.NOT_COOK_VIDEO);
+            assertThat(exception.getError()).isEqualTo(RecipeVerifyErrorCode.NOT_COOK_VIDEO);
         }
 
         @Test
@@ -124,7 +123,7 @@ class RecipeVerifyClientTest {
 
             RecipeVerifyException exception =
                     assertThrows(RecipeVerifyException.class, () -> recipeVerifyClient.verifyVideo(videoId));
-            assertThat(exception.getErrorMessage()).isEqualTo(RecipeVerifyErrorCode.SERVER_ERROR);
+            assertThat(exception.getError()).isEqualTo(RecipeVerifyErrorCode.SERVER_ERROR);
         }
     }
 }

@@ -1,10 +1,10 @@
 package com.cheftory.api.recipe.content.info.exception;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 import lombok.Getter;
 
 @Getter
-public enum RecipeInfoErrorCode implements ErrorMessage {
+public enum RecipeInfoErrorCode implements Error {
     RECIPE_INFO_NOT_FOUND("RECIPE_INFO_001", "레시피가 존재하지 않습니다."),
     RECIPE_BANNED("RECIPE_INFO_002", "접근할 수 없는 레시피 입니다."),
     RECIPE_FAILED("RECIPE_INFO_003", "실패한 레시피 입니다."),

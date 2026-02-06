@@ -135,7 +135,7 @@ public class VoiceCommandHistoryTest {
                             .isInstanceOf(VoiceCommandHistoryException.class)
                             .satisfies(ex -> {
                                 VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
-                                assertThat(exception.getErrorMessage())
+                                assertThat(exception.getError())
                                         .isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL);
                             });
                 }
@@ -177,7 +177,7 @@ public class VoiceCommandHistoryTest {
                             .isInstanceOf(VoiceCommandHistoryException.class)
                             .satisfies(ex -> {
                                 VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
-                                assertThat(exception.getErrorMessage())
+                                assertThat(exception.getError())
                                         .isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL);
                             });
                 }

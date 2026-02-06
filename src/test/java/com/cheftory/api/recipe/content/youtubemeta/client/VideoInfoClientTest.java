@@ -179,7 +179,7 @@ public class VideoInfoClientTest {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue(
-                                    "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
+                                    "error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
                 }
             }
 
@@ -225,7 +225,7 @@ public class VideoInfoClientTest {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue(
-                                    "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
+                                    "error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
                 }
             }
 
@@ -273,7 +273,7 @@ public class VideoInfoClientTest {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue(
-                                    "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
+                                    "error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
                 }
             }
         }

@@ -83,7 +83,7 @@ public class RecipeInfoRecipeCategoryTest {
                 void thenShouldThrowException() {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, emptyCategoryName, userId))
                             .isInstanceOfSatisfying(
-                                    RecipeCategoryException.class, ex -> assertThat(ex.getErrorMessage())
+                                    RecipeCategoryException.class, ex -> assertThat(ex.getError())
                                             .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
                 }
             }
@@ -113,7 +113,7 @@ public class RecipeInfoRecipeCategoryTest {
                 void thenShouldThrowException() {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, nullCategoryName, userId))
                             .isInstanceOfSatisfying(
-                                    RecipeCategoryException.class, ex -> assertThat(ex.getErrorMessage())
+                                    RecipeCategoryException.class, ex -> assertThat(ex.getError())
                                             .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
                 }
             }
@@ -143,7 +143,7 @@ public class RecipeInfoRecipeCategoryTest {
                 void thenShouldThrowException() {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, blankCategoryName, userId))
                             .isInstanceOfSatisfying(
-                                    RecipeCategoryException.class, ex -> assertThat(ex.getErrorMessage())
+                                    RecipeCategoryException.class, ex -> assertThat(ex.getError())
                                             .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
                 }
             }

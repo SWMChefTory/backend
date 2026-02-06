@@ -15,7 +15,7 @@ class MarketContextTest {
     void required_shouldThrow_whenMissing() {
         assertThatThrownBy(MarketContext::required)
                 .isInstanceOf(CheftoryException.class)
-                .hasFieldOrPropertyWithValue("errorMessage", GlobalErrorCode.UNKNOWN_REGION);
+                .hasFieldOrPropertyWithValue("error", GlobalErrorCode.UNKNOWN_REGION);
     }
 
     @Test

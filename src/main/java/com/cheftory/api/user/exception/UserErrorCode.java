@@ -1,8 +1,8 @@
 package com.cheftory.api.user.exception;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 
-public enum UserErrorCode implements ErrorMessage {
+public enum UserErrorCode implements Error {
     USER_NOT_FOUND("USER_001", "회원을 찾을 수 없습니다."),
     USER_ALREADY_EXIST("USER_002", "이미 존재하는 회원입니다."),
     TERMS_OF_USE_NOT_AGREED("USER_003", "이용약관에 동의하지 않았습니다."),

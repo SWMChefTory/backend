@@ -102,7 +102,7 @@ class RecipeInfoServiceTest {
                 void thenThrowsRecipeNotFoundException() {
                     RecipeInfoException ex = assertThrows(RecipeInfoException.class, () -> service.block(recipeId));
 
-                    assertThat(ex.getErrorMessage().getErrorCode())
+                    assertThat(ex.getError().getErrorCode())
                             .isEqualTo(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.getErrorCode());
                     verify(recipeInfoRepository).findById(recipeId);
                     verify(recipeInfoRepository, never()).save(any());
@@ -171,7 +171,7 @@ class RecipeInfoServiceTest {
                     RecipeInfoException ex =
                             assertThrows(RecipeInfoException.class, () -> service.getSuccess(recipeId));
 
-                    assertThat(ex.getErrorMessage().getErrorCode())
+                    assertThat(ex.getError().getErrorCode())
                             .isEqualTo(RecipeInfoErrorCode.RECIPE_FAILED.getErrorCode());
                     verify(recipeInfoRepository).findById(recipeId);
                     verify(recipeInfoRepository, never()).increaseCount(any());
@@ -198,7 +198,7 @@ class RecipeInfoServiceTest {
                     RecipeInfoException ex =
                             assertThrows(RecipeInfoException.class, () -> service.getSuccess(recipeId));
 
-                    assertThat(ex.getErrorMessage().getErrorCode())
+                    assertThat(ex.getError().getErrorCode())
                             .isEqualTo(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.getErrorCode());
                     verify(recipeInfoRepository).findById(recipeId);
                     verify(recipeInfoRepository, never()).increaseCount(any());
@@ -367,7 +367,7 @@ class RecipeInfoServiceTest {
                 void thenThrowsRecipeNotFoundException() {
                     RecipeInfoException ex = assertThrows(RecipeInfoException.class, () -> service.success(recipeId));
 
-                    assertThat(ex.getErrorMessage().getErrorCode())
+                    assertThat(ex.getError().getErrorCode())
                             .isEqualTo(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.getErrorCode());
                     verify(recipeInfoRepository).findById(recipeId);
                     verify(recipeInfoRepository, never()).save(any());
@@ -434,7 +434,7 @@ class RecipeInfoServiceTest {
                 void thenThrowsRecipeNotFoundException() {
                     RecipeInfoException ex = assertThrows(RecipeInfoException.class, () -> service.failed(recipeId));
 
-                    assertThat(ex.getErrorMessage().getErrorCode())
+                    assertThat(ex.getError().getErrorCode())
                             .isEqualTo(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.getErrorCode());
                     verify(recipeInfoRepository).findById(recipeId);
                     verify(recipeInfoRepository, never()).save(any());

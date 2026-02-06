@@ -90,11 +90,11 @@ public class RecipeFacade {
             return FullRecipe.of(
                     steps, ingredients, detailMeta, progresses, tags, youtubeMeta, bookmark, recipe, briefings);
         } catch (RecipeException e) {
-            if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND
-                    || e.getErrorMessage() == RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND) {
+            if (e.getError() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND
+                    || e.getError() == RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND) {
                 throw new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND);
             }
-            if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_FAILED) {
+            if (e.getError() == RecipeInfoErrorCode.RECIPE_FAILED) {
                 throw new RecipeException(RecipeErrorCode.RECIPE_FAILED);
             }
             throw e;
@@ -261,7 +261,7 @@ public class RecipeFacade {
             recipeInfoService.block(recipeId);
             recipeBookmarkService.blockByRecipe(recipeId);
         } catch (RecipeException e) {
-            if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO) {
+            if (e.getError() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO) {
                 log.warn("차단되지 않은 영상에 대해 레시피 차단 시도 recipeId={}", recipeId);
                 throw new RecipeException(RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
             }

@@ -74,7 +74,7 @@ class AuthServiceTest {
         AuthException ex = assertThrows(
                 AuthException.class, () -> authService.extractProviderSubFromIdToken(idToken, Provider.GOOGLE));
 
-        assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
+        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
     }
 
     @Test
@@ -82,7 +82,7 @@ class AuthServiceTest {
         AuthException ex =
                 assertThrows(AuthException.class, () -> authService.extractProviderSubFromIdToken(idToken, null));
 
-        assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
+        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
     }
 
     @Test
@@ -140,7 +140,7 @@ class AuthServiceTest {
 
         AuthException ex = assertThrows(AuthException.class, () -> authService.reissue(refreshToken));
 
-        assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
     }
 
     @Test
@@ -160,6 +160,6 @@ class AuthServiceTest {
         AuthException ex =
                 assertThrows(AuthException.class, () -> authService.deleteRefreshToken(userId, refreshToken));
 
-        assertThat(ex.getErrorMessage()).isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
     }
 }
