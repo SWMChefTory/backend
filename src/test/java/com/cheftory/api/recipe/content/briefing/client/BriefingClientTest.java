@@ -170,7 +170,7 @@ public class BriefingClientTest {
                 void shouldThrowBriefingException() {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
                             .isInstanceOf(RecipeBriefingException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+                            .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
                 }
             }
 
@@ -191,7 +191,7 @@ public class BriefingClientTest {
                 void shouldThrowBriefingException() {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
                             .isInstanceOf(RecipeBriefingException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+                            .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
                 }
             }
 
@@ -210,7 +210,7 @@ public class BriefingClientTest {
                 void shouldThrowBriefingException() {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
                             .isInstanceOf(RecipeBriefingException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+                            .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
                 }
             }
         }
@@ -240,7 +240,7 @@ public class BriefingClientTest {
                 void shouldThrowBriefingException() {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
                             .isInstanceOf(RecipeBriefingException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+                            .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
                 }
             }
         }

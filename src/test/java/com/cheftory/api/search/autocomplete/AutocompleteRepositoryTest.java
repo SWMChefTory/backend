@@ -250,7 +250,7 @@ public class AutocompleteRepositoryTest {
                 assertThatThrownBy(() ->
                                 autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit))
                         .isInstanceOf(SearchException.class)
-                        .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
+                        .hasFieldOrPropertyWithValue("error", SearchErrorCode.AUTOCOMPLETE_FAILED);
             }
         }
 
@@ -277,7 +277,7 @@ public class AutocompleteRepositoryTest {
                 assertThatThrownBy(() ->
                                 autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit))
                         .isInstanceOf(SearchException.class)
-                        .hasFieldOrPropertyWithValue("errorMessage", SearchErrorCode.AUTOCOMPLETE_FAILED);
+                        .hasFieldOrPropertyWithValue("error", SearchErrorCode.AUTOCOMPLETE_FAILED);
             }
         }
     }

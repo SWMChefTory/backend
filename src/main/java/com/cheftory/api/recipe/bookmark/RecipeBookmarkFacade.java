@@ -1,11 +1,9 @@
 package com.cheftory.api.recipe.bookmark;
 
-import com.cheftory.api.credit.exception.CreditErrorCode;
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
-import com.cheftory.api.recipe.exception.RecipeException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,12 +23,6 @@ public class RecipeBookmarkFacade {
             if (!created) return;
             creditPort.spendRecipeCreate(userId, recipeId, recipeInfo.getCreditCost());
         } catch (CreditException e) {
-            if (e.getError() == CreditErrorCode.CREDIT_INSUFFICIENT) {
-                recipeBookmarkService.delete(userId, recipeId);
-            }
-            if (e.getError() == CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT) {
-                recipeBookmarkService.delete(userId, recipeId);
-            }
             recipeBookmarkService.delete(userId, recipeId);
             throw e;
         }

@@ -93,7 +93,7 @@ class RecipeCreationVerifyStepTest {
 
             assertThatThrownBy(() -> sut.run(context))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
             verify(recipeProgressService).failed(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
             verify(recipeVerifyService).verify(videoId);

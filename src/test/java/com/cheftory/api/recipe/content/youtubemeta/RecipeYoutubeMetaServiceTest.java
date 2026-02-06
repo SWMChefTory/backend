@@ -102,7 +102,7 @@ public class RecipeYoutubeMetaServiceTest {
                 org.assertj.core.api.Assertions.assertThatThrownBy(() -> recipeYoutubeMetaService.block(recipeId))
                         .isInstanceOf(YoutubeMetaException.class)
                         .hasFieldOrPropertyWithValue(
-                                "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO);
+                                "error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO);
 
                 verify(recipeYoutubeMetaRepository, never()).save(any());
             }
@@ -124,7 +124,7 @@ public class RecipeYoutubeMetaServiceTest {
             void thenThrowNotFound() {
                 org.assertj.core.api.Assertions.assertThatThrownBy(() -> recipeYoutubeMetaService.block(recipeId))
                         .isInstanceOf(YoutubeMetaException.class)
-                        .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
+                        .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
             }
         }
     }
@@ -234,7 +234,7 @@ public class RecipeYoutubeMetaServiceTest {
 
                 assertThatThrownBy(() -> recipeYoutubeMetaService.getByUrl(originalUri))
                     .isInstanceOf(YoutubeMetaException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
+                    .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
             }
 
             @Test
@@ -249,7 +249,7 @@ public class RecipeYoutubeMetaServiceTest {
 
                 assertThatThrownBy(() -> recipeYoutubeMetaService.getByUrl(originalUri))
                     .isInstanceOf(YoutubeMetaException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_BANNED);
+                    .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_BANNED);
             }
 
             @Test
@@ -266,7 +266,7 @@ public class RecipeYoutubeMetaServiceTest {
 
                 assertThatThrownBy(() -> recipeYoutubeMetaService.getByUrl(originalUri))
                     .isInstanceOf(YoutubeMetaException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED);
+                    .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED);
             }
 
             @Test
@@ -402,7 +402,7 @@ public class RecipeYoutubeMetaServiceTest {
                 void thenThrowYoutubeMetaException() {
                     assertThatThrownBy(() -> recipeYoutubeMetaService.get(recipeId))
                             .isInstanceOf(YoutubeMetaException.class)
-                            .hasFieldOrPropertyWithValue("errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
+                            .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
                 }
             }
         }
@@ -531,7 +531,7 @@ public class RecipeYoutubeMetaServiceTest {
                         assertThatThrownBy(() -> recipeYoutubeMetaService.ban(recipeId))
                                 .isInstanceOf(YoutubeMetaException.class)
                                 .hasFieldOrPropertyWithValue(
-                                        "errorMessage", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
+                                        "error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
                     }
                 }
             }

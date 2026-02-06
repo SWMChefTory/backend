@@ -154,7 +154,7 @@ class RecipeCreationFacadeTest {
 
 			assertThatThrownBy(() -> sut.createBookmark(new RecipeCreationTarget.User(uri, userId)))
 					.isInstanceOf(RecipeException.class)
-					.hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_BANNED);
+					.hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_BANNED);
 		}
 
 		@Test
@@ -169,7 +169,7 @@ class RecipeCreationFacadeTest {
 
 			assertThatThrownBy(() -> sut.createBookmark(new RecipeCreationTarget.User(uri, userId)))
 					.isInstanceOf(RecipeException.class)
-					.hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
+					.hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 		}
 	}
 

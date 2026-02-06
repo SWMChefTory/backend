@@ -1,7 +1,6 @@
 package com.cheftory.api.recipe.bookmark;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -13,7 +12,6 @@ import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
-import com.cheftory.api.recipe.exception.RecipeException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -81,7 +79,7 @@ class RecipeBookmarkFacadeTest {
         }
 
         @Test
-        @DisplayName("credit 부족이면 북마크 삭제 후 CREDIT_INSUFFICIENT로 변환해 던진다")
+        @DisplayName("credit 부족이면 북마크 삭제 후 CREDIT_INSUFFICIENT를 던진다")
         void shouldDeleteBookmarkAndThrowCreditInsufficient() {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
@@ -94,18 +92,17 @@ class RecipeBookmarkFacadeTest {
             when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
 
             doThrow(new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
-                .when(creditPort)
-                .spendRecipeCreate(userId, recipeId, creditCost);
+                .when(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
 
             assertThatThrownBy(() -> sut.createAndCharge(userId, recipeId))
-                .isInstanceOf(RecipeException.class)
-                .hasFieldOrPropertyWithValue("errorMessage", CreditErrorCode.CREDIT_INSUFFICIENT);
+                .isInstanceOf(CreditException.class)
+                .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_INSUFFICIENT);
 
             verify(recipeBookmarkService).delete(userId, recipeId);
         }
 
         @Test
-        @DisplayName("credit 동시성 충돌이면 북마크 삭제 후 CREDIT_CONCURRENCY_CONFLICT로 변환해 던진다")
+        @DisplayName("credit 동시성 충돌이면 북마크 삭제 후 CREDIT_CONCURRENCY_CONFLICT를 던진다")
         void shouldDeleteBookmarkAndThrowConcurrencyConflict() {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
@@ -118,12 +115,11 @@ class RecipeBookmarkFacadeTest {
             when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
 
             doThrow(new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT))
-                .when(creditPort)
-                .spendRecipeCreate(userId, recipeId, creditCost);
+                .when(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
 
             assertThatThrownBy(() -> sut.createAndCharge(userId, recipeId))
-                .isInstanceOf(RecipeException.class)
-                .hasFieldOrPropertyWithValue("errorMessage", CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
+                .isInstanceOf(CreditException.class)
+                .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
 
             verify(recipeBookmarkService).delete(userId, recipeId);
         }

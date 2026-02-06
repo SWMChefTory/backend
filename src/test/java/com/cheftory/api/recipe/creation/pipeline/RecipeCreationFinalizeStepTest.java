@@ -61,7 +61,7 @@ class RecipeCreationFinalizeStepTest {
 
             assertThatThrownBy(() -> sut.run(context))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
             verify(recipeProgressService, never())
                     .start(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
@@ -106,7 +106,7 @@ class RecipeCreationFinalizeStepTest {
 
             assertThatThrownBy(() -> sut.run(context))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
             verify(recipeProgressService).failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
         }
