@@ -23,6 +23,8 @@ public class RecipeBookmarkFacade {
     public void createAndCharge(UUID userId, UUID recipeId) {
         RecipeInfo recipeInfo = recipeInfoService.get(recipeId);
         try {
+            boolean created = recipeBookmarkService.create(userId, recipeInfo.getId());
+            if (!created) return;
             creditPort.spendRecipeCreate(userId, recipeId, recipeInfo.getCreditCost());
         } catch (CreditException e) {
             if (e.getErrorMessage() == CreditErrorCode.CREDIT_INSUFFICIENT) {
