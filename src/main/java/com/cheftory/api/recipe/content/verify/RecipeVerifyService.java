@@ -14,4 +14,8 @@ public class RecipeVerifyService {
     public RecipeVerifyClientResponse verify(String videoId) {
         return recipeVerifyClient.verifyVideo(videoId);
     }
+
+    public void cleanup(String fileUri) {
+        recipeVerifyClient.cleanupVideo(fileUri);
+    }
 }

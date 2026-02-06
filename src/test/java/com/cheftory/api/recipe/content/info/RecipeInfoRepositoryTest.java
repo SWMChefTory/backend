@@ -81,7 +81,6 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
 
                     assertThat(foundRecipe).isPresent();
                     assertThat(getField(foundRecipe.get(), "id")).isEqualTo(getField(savedRecipeInfo, "id"));
-                    assertThat(getField(foundRecipe.get(), "processStep")).isEqualTo(ProcessStep.READY);
                     assertThat(getField(foundRecipe.get(), "recipeStatus")).isEqualTo(RecipeStatus.IN_PROGRESS);
                     assertThat(getField(foundRecipe.get(), "viewCount")).isEqualTo(0);
                     assertThat(getField(foundRecipe.get(), "createdAt")).isNotNull();

@@ -47,6 +47,24 @@ public class RecipeVerifyClient {
         }
     }
 
+    public void cleanupVideo(String fileUri) {
+        if (fileUri == null || fileUri.isBlank()) return;
+
+        log.debug("영상 리소스 정리 요청 - fileUri: {}", fileUri);
+
+        try {
+            webClient.delete()
+                    .uri(uriBuilder -> uriBuilder.path("/cleanup")
+                            .queryParam("file_uri", fileUri)
+                            .build())
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
+        } catch (Exception e) {
+            log.warn("영상 리소스 정리 중 오류 발생 - fileUri: {}", fileUri, e);
+        }
+    }
+
     private RecipeVerifyException mapToException(RecipeVerifyClientErrorResponse errorResponse) {
         log.warn("API 에러 응답 - Code: {}, Message: {}", errorResponse.getErrorCode(), errorResponse.getErrorMessage());
 
