@@ -20,6 +20,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.17] - 2026-02-05
+
+### Added
+- **AI 분석 리소스 정리 로직 도입**: 레시피 생성 완료(성공/실패) 후 AI 서버의 임시 파일(Gemini File)을 삭제하는 `RecipeCreationCleanupStep` 추가
+- **북마크 생성 안정화**: `RecipeBookmarkService.create` 시 `saveAndFlush`를 사용하여 유니크 제약 조건 위반 예외를 즉시 감지하고 처리하도록 개선
+
+### Changed
+- **레시피 생성 파이프라인 구조 개선**: 파이프라인 종료 시점에 `finally` 블록을 통한 리소스 정리 보장
+- **실패 처리 로직 세분화**: `AsyncRecipeCreationService`에서 `banned`와 `failed` 상태 처리를 분리하여 데이터 일관성 확보
+
+---
+
 ## [1.1.16] - 2026-02-04
 
 ### Added
