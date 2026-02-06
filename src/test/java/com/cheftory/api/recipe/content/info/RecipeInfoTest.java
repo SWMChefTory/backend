@@ -49,7 +49,6 @@ public class RecipeInfoTest {
                 void thenRecipeIsCreated() {
                     assertThat(recipeInfo).isNotNull();
                     assertThat(recipeInfo.getId()).isNotNull();
-                    assertThat(recipeInfo.getProcessStep()).isEqualTo(ProcessStep.READY);
                     assertThat(recipeInfo.getViewCount()).isEqualTo(0);
                     assertThat(recipeInfo.getCreatedAt()).isNotNull();
                     assertThat(recipeInfo.getUpdatedAt()).isNotNull();

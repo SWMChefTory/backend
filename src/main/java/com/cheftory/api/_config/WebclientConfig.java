@@ -47,7 +47,7 @@ public class WebclientConfig {
     public WebClient webClientForRecipeServer(ExchangeFilterFunction marketHeaderPropagator) {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-                .responseTimeout(Duration.ofMinutes(3));
+                .responseTimeout(Duration.ofMinutes(5));
 
         return WebClient.builder()
                 .baseUrl(recipeServerUrl)

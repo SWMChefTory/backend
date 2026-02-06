@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.bookmark;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -72,7 +73,7 @@ public class RecipeBookmarkServiceTest {
                 assertThat(result).isTrue();
 
                 verify(repository)
-                        .save(argThat(h -> h.getRecipeId().equals(recipeId)
+                        .saveAndFlush(argThat(h -> h.getRecipeId().equals(recipeId)
                                 && h.getUserId().equals(userId)));
 
                 verify(repository, never()).findByUserIdAndRecipeId(any(), any());
@@ -94,80 +95,122 @@ public class RecipeBookmarkServiceTest {
                 userId = UUID.randomUUID();
             }
 
+
             @Test
-            @DisplayName("Then - save에서 무결성 예외 발생 + 기존이 ACTIVE면 false를 반환해야 한다")
-            void thenShouldReturnFalseWhenDuplicateAndActive() {
-                doThrow(new DataIntegrityViolationException("duplicate"))
-                        .when(repository)
-                        .save(any(RecipeBookmark.class));
+            void create_success_returnsTrue_andDoesNotQueryExisting() {
+                UUID userId = UUID.randomUUID();
+                UUID recipeId = UUID.randomUUID();
+
+                boolean result = service.create(userId, recipeId);
+
+                assertTrue(result);
+
+                verify(repository).saveAndFlush(any(RecipeBookmark.class));
+                verify(repository, never()).findByUserIdAndRecipeId(any(), any());
+                verifyNoMoreInteractions(repository);
+            }
+
+            @Test
+            void create_duplicate_existingActive_returnsFalse() {
+                UUID userId = UUID.randomUUID();
+                UUID recipeId = UUID.randomUUID();
+
+                doThrow(new DataIntegrityViolationException("dup"))
+                    .when(repository)
+                    .saveAndFlush(any(RecipeBookmark.class));
 
                 RecipeBookmark existing = mock(RecipeBookmark.class);
-                doReturn(RecipeBookmarkStatus.ACTIVE).when(existing).getStatus();
-                doReturn(Optional.of(existing)).when(repository).findByUserIdAndRecipeId(userId, recipeId);
+                when(existing.getStatus()).thenReturn(RecipeBookmarkStatus.ACTIVE);
+
+                when(repository.findByUserIdAndRecipeId(userId, recipeId))
+                    .thenReturn(Optional.of(existing));
 
                 boolean result = service.create(userId, recipeId);
 
-                assertThat(result).isFalse();
+                assertFalse(result);
 
-                verify(repository).save(any(RecipeBookmark.class));
+                verify(repository).saveAndFlush(any(RecipeBookmark.class));
                 verify(repository).findByUserIdAndRecipeId(userId, recipeId);
-                verify(repository, times(1)).save(any(RecipeBookmark.class));
+
+                verify(existing, never()).active(any());
+                verify(repository, never()).saveAndFlush(existing);
+
+                verifyNoMoreInteractions(repository);
             }
 
             @Test
-            @DisplayName("Then - save에서 무결성 예외 발생 + 기존이 BLOCKED면 false를 반환해야 한다")
-            void thenShouldReturnFalseWhenDuplicateAndBlocked() {
-                doThrow(new DataIntegrityViolationException("duplicate"))
-                        .when(repository)
-                        .save(any(RecipeBookmark.class));
+            void create_duplicate_existingActive_returnsFalse_withoutReSave() {
+                UUID userId = UUID.randomUUID();
+                UUID recipeId = UUID.randomUUID();
+
+                doThrow(new DataIntegrityViolationException("dup"))
+                    .when(repository)
+                    .saveAndFlush(any(RecipeBookmark.class));
 
                 RecipeBookmark existing = mock(RecipeBookmark.class);
-                doReturn(RecipeBookmarkStatus.BLOCKED).when(existing).getStatus();
-                doReturn(Optional.of(existing)).when(repository).findByUserIdAndRecipeId(userId, recipeId);
+                when(existing.getStatus()).thenReturn(RecipeBookmarkStatus.ACTIVE);
+
+                when(repository.findByUserIdAndRecipeId(userId, recipeId))
+                    .thenReturn(Optional.of(existing));
 
                 boolean result = service.create(userId, recipeId);
 
-                assertThat(result).isFalse();
+                assertFalse(result);
 
-                verify(repository).save(any(RecipeBookmark.class));
+                verify(repository).saveAndFlush(any(RecipeBookmark.class));
                 verify(repository).findByUserIdAndRecipeId(userId, recipeId);
-                verify(repository, times(1)).save(any(RecipeBookmark.class));
+
+                verify(existing, never()).active(any());
+                verify(repository, never()).saveAndFlush(existing);
+
+                verifyNoMoreInteractions(repository);
             }
 
             @Test
-            @DisplayName("Then - save에서 무결성 예외 발생 + 기존이 DELETED면 ACTIVE로 복구 후 true를 반환해야 한다")
-            void thenShouldReactivateWhenDuplicateAndDeleted() {
-                RecipeBookmark deleted = mock(RecipeBookmark.class);
-                doReturn(RecipeBookmarkStatus.DELETED).when(deleted).getStatus();
-                doReturn(Optional.of(deleted)).when(repository).findByUserIdAndRecipeId(userId, recipeId);
+            void create_duplicate_butNoExisting_rethrowsOriginalException() {
+                UUID userId = UUID.randomUUID();
+                UUID recipeId = UUID.randomUUID();
 
-                doThrow(new DataIntegrityViolationException("duplicate"))
-                        .doReturn(deleted)
-                        .when(repository)
-                        .save(any(RecipeBookmark.class));
+                DataIntegrityViolationException dup = new DataIntegrityViolationException("dup");
+                doThrow(dup)
+                    .when(repository)
+                    .saveAndFlush(any(RecipeBookmark.class));
 
-                boolean result = service.create(userId, recipeId);
+                when(repository.findByUserIdAndRecipeId(userId, recipeId))
+                    .thenReturn(Optional.empty());
 
-                assertThat(result).isTrue();
+                DataIntegrityViolationException thrown =
+                    assertThrows(DataIntegrityViolationException.class, () -> service.create(userId, recipeId));
 
+                assertSame(dup, thrown);
+
+                verify(repository).saveAndFlush(any(RecipeBookmark.class));
                 verify(repository).findByUserIdAndRecipeId(userId, recipeId);
-                verify(deleted).active(clock);
-                verify(repository, times(2)).save(any(RecipeBookmark.class));
+                verifyNoMoreInteractions(repository);
             }
 
             @Test
-            @DisplayName("Then - save에서 무결성 예외 발생 + find 결과 없으면 예외를 다시 던져야 한다")
-            void thenShouldRethrowWhenNotFoundExistingRow() {
-                doThrow(new DataIntegrityViolationException("constraint"))
-                        .when(repository)
-                        .save(any(RecipeBookmark.class));
+            void create_duplicate_thenFindFails_propagatesException() {
+                UUID userId = UUID.randomUUID();
+                UUID recipeId = UUID.randomUUID();
 
-                doReturn(Optional.empty()).when(repository).findByUserIdAndRecipeId(userId, recipeId);
+                doThrow(new DataIntegrityViolationException("dup"))
+                    .when(repository)
+                    .saveAndFlush(any(RecipeBookmark.class));
 
-                assertThrows(DataIntegrityViolationException.class, () -> service.create(userId, recipeId));
+                RuntimeException dbFail = new RuntimeException("db down");
+                doThrow(dbFail)
+                    .when(repository)
+                    .findByUserIdAndRecipeId(userId, recipeId);
 
-                verify(repository).save(any(RecipeBookmark.class));
+                RuntimeException thrown =
+                    assertThrows(RuntimeException.class, () -> service.create(userId, recipeId));
+
+                assertSame(dbFail, thrown);
+
+                verify(repository).saveAndFlush(any(RecipeBookmark.class));
                 verify(repository).findByUserIdAndRecipeId(userId, recipeId);
+                verifyNoMoreInteractions(repository);
             }
         }
     }

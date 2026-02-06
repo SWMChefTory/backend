@@ -43,10 +43,10 @@ public class AsyncRecipeCreationService {
             log.error("레시피 생성 실패: recipeId={}, reason={}", recipeId, e.getErrorMessage(), e);
 
             if (e.getErrorMessage() == RecipeVerifyErrorCode.NOT_COOK_VIDEO) {
-                recipeYoutubeMetaService.ban(recipeId);
+                bannedRecipe(recipeId, creditCost);
+            } else {
+                failedRecipe(recipeId, creditCost);
             }
-
-            failedRecipe(recipeId, creditCost);
 
         } catch (Exception e) {
             log.error("레시피 생성 실패(Unexpected): recipeId={}", recipeId, e);
@@ -61,7 +61,17 @@ public class AsyncRecipeCreationService {
         }
     }
 
+    private void bannedRecipe(UUID recipeId, long creditCost) {
+        recipeYoutubeMetaService.ban(recipeId);
+        cleanup(recipeId, creditCost);
+    }
+
     private void failedRecipe(UUID recipeId, long creditCost) {
+        recipeYoutubeMetaService.failed(recipeId);
+        cleanup(recipeId, creditCost);
+    }
+
+    private void cleanup(UUID recipeId, long creditCost) {
         recipeInfoService.failed(recipeId);
         recipeProgressService.failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
 

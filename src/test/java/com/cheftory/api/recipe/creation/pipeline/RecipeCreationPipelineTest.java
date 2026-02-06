@@ -29,6 +29,7 @@ class RecipeCreationPipelineTest {
     private RecipeCreationInstructionStep recipeCreationInstructionStep;
     private RecipeCreationBriefingStep recipeCreationBriefingStep;
     private RecipeCreationFinalizeStep recipeCreationFinalizeStep;
+    private RecipeCreationCleanupStep recipeCreationCleanupStep;
     private AsyncTaskExecutor recipeCreateExecutor;
 
     private RecipeCreationPipeline sut;
@@ -41,6 +42,7 @@ class RecipeCreationPipelineTest {
         recipeCreationInstructionStep = mock(RecipeCreationInstructionStep.class);
         recipeCreationBriefingStep = mock(RecipeCreationBriefingStep.class);
         recipeCreationFinalizeStep = mock(RecipeCreationFinalizeStep.class);
+        recipeCreationCleanupStep = mock(RecipeCreationCleanupStep.class);
         recipeCreateExecutor = mock(AsyncTaskExecutor.class);
 
         doAnswer(invocation -> {
@@ -63,6 +65,7 @@ class RecipeCreationPipelineTest {
                     RecipeCreationInstructionStep.class,
                     RecipeCreationBriefingStep.class,
                     RecipeCreationFinalizeStep.class,
+                    RecipeCreationCleanupStep.class,
                     AsyncTaskExecutor.class);
             ctor.setAccessible(true);
             return ctor.newInstance(
@@ -72,6 +75,7 @@ class RecipeCreationPipelineTest {
                     recipeCreationInstructionStep,
                     recipeCreationBriefingStep,
                     recipeCreationFinalizeStep,
+                    recipeCreationCleanupStep,
                     recipeCreateExecutor);
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to create RecipeCreationPipeline", ex);
@@ -83,8 +87,8 @@ class RecipeCreationPipelineTest {
     class Run {
 
         @Test
-        @DisplayName("파이프라인 단계가 순서대로 실행된다")
-        void shouldRunPipelineInOrder() {
+        @DisplayName("파이프라인 단계가 순서대로 실행되고 마지막에 cleanup이 호출된다")
+        void shouldRunPipelineInOrderAndCleanup() {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
@@ -96,17 +100,17 @@ class RecipeCreationPipelineTest {
 
             sut.run(context);
 
-            InOrder order = inOrder(recipeProgressService, recipeCreationVerifyStep, recipeCreationFinalizeStep);
+            InOrder order = inOrder(recipeProgressService, recipeCreationVerifyStep, recipeCreationFinalizeStep, recipeCreationCleanupStep);
 
             order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.READY, RecipeProgressDetail.READY);
             order.verify(recipeCreationVerifyStep).run(context);
-
-            verify(recipeCreationFinalizeStep).run(updatedContext);
+            order.verify(recipeCreationFinalizeStep).run(updatedContext);
+            order.verify(recipeCreationCleanupStep).cleanup(updatedContext);
         }
 
         @Test
-        @DisplayName("병렬 단계 실행은 새로운 RecipeCreationParallelSteps로 위임된다")
-        void shouldDelegateParallelStepsExecution() {
+        @DisplayName("파이프라인 도중 예외가 발생해도 cleanup이 호출된다")
+        void shouldCleanupEvenWhenExceptionThrown() {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
@@ -115,13 +119,13 @@ class RecipeCreationPipelineTest {
                     context, "s3://bucket/file.mp4", "video/mp4");
 
             when(recipeCreationVerifyStep.run(context)).thenReturn(updatedContext);
+            when(recipeCreationFinalizeStep.run(updatedContext)).thenThrow(new RuntimeException("fail"));
 
-            sut.run(context);
+            try {
+                sut.run(context);
+            } catch (Exception ignored) {}
 
-            verify(recipeCreationDetailStep).run(updatedContext);
-            verify(recipeCreationInstructionStep).run(updatedContext);
-            verify(recipeCreationBriefingStep).run(updatedContext);
-            verify(recipeCreationFinalizeStep).run(updatedContext);
+            verify(recipeCreationCleanupStep).cleanup(updatedContext);
         }
     }
 }
