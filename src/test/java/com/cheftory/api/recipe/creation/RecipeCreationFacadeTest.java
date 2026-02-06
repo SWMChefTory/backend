@@ -24,8 +24,6 @@ import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
-import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
-import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
@@ -92,7 +90,7 @@ class RecipeCreationFacadeTest {
 			doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
 			doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
-			UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
+			UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
 			assertThat(result).isEqualTo(recipeId);
 			verify(recipeBookmarkService).create(userId, recipeId);
@@ -115,7 +113,7 @@ class RecipeCreationFacadeTest {
 			doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
 			doReturn(false).when(recipeBookmarkService).create(userId, recipeId);
 
-			UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
+			UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
 			assertThat(result).isEqualTo(recipeId);
 			verify(recipeBookmarkService).create(userId, recipeId);
@@ -136,7 +134,7 @@ class RecipeCreationFacadeTest {
 			doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
 			doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
 
-			UUID result = sut.create(new RecipeCreationTarget.Crawler(uri));
+			UUID result = sut.createBookmark(new RecipeCreationTarget.Crawler(uri));
 
 			assertThat(result).isEqualTo(recipeId);
 			verify(recipeBookmarkService, never()).create(any(), any());
@@ -154,7 +152,7 @@ class RecipeCreationFacadeTest {
 					.when(recipeYoutubeMetaService)
 					.getByUrl(uri);
 
-			assertThatThrownBy(() -> sut.create(new RecipeCreationTarget.User(uri, userId)))
+			assertThatThrownBy(() -> sut.createBookmark(new RecipeCreationTarget.User(uri, userId)))
 					.isInstanceOf(RecipeException.class)
 					.hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_BANNED);
 		}
@@ -169,7 +167,7 @@ class RecipeCreationFacadeTest {
 					.when(recipeYoutubeMetaService)
 					.getByUrl(uri);
 
-			assertThatThrownBy(() -> sut.create(new RecipeCreationTarget.User(uri, userId)))
+			assertThatThrownBy(() -> sut.createBookmark(new RecipeCreationTarget.User(uri, userId)))
 					.isInstanceOf(RecipeException.class)
 					.hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
 		}
@@ -198,7 +196,7 @@ class RecipeCreationFacadeTest {
 			doReturn(recipeInfo).when(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
 			doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
-			UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
+			UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
 			assertThat(result).isEqualTo(recipeId);
 
@@ -238,7 +236,7 @@ class RecipeCreationFacadeTest {
 			doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
 			doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
-			UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
+			UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
 			assertThat(result).isEqualTo(recipeId);
 			verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
@@ -268,7 +266,7 @@ class RecipeCreationFacadeTest {
 			doReturn(recipeInfo).when(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
 			doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
 
-			UUID result = sut.create(new RecipeCreationTarget.User(uri, userId));
+			UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
 			assertThat(result).isEqualTo(recipeId);
 			verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri);

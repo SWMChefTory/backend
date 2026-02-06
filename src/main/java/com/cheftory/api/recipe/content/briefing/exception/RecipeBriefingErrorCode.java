@@ -1,8 +1,8 @@
 package com.cheftory.api.recipe.content.briefing.exception;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 
-public enum RecipeBriefingErrorCode implements ErrorMessage {
+public enum RecipeBriefingErrorCode implements Error {
     BRIEFING_CREATE_FAIL("RECIPE_BRIEFING_001", "레시피 브리핑 생성에 실패했습니다."),
     ;
     final String errorCode;

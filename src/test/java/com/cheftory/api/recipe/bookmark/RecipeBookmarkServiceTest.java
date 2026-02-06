@@ -491,7 +491,7 @@ public class RecipeBookmarkServiceTest {
                             RecipeBookmarkException.class,
                             () -> service.updateCategory(userId, recipeId, newCategoryId));
 
-                    assertThat(exception.getErrorMessage())
+                    assertThat(exception.getError())
                             .isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
                     verify(repository, never()).save(any());
                 }
@@ -872,7 +872,7 @@ public class RecipeBookmarkServiceTest {
                     RecipeBookmarkException exception =
                             assertThrows(RecipeBookmarkException.class, () -> service.delete(userId, recipeId));
 
-                    assertThat(exception.getErrorMessage())
+                    assertThat(exception.getError())
                             .isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
                     verify(repository, never()).save(any());
                 }

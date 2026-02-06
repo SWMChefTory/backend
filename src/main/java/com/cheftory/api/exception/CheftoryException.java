@@ -1,13 +1,13 @@
 package com.cheftory.api.exception;
 
 public class CheftoryException extends RuntimeException {
-    private final ErrorMessage errorMessage;
+    private final Error error;
 
-    public CheftoryException(ErrorMessage errorMessage) {
-        this.errorMessage = errorMessage;
+    public CheftoryException(Error error) {
+        this.error = error;
     }
 
-    public ErrorMessage getErrorMessage() {
-        return errorMessage;
+    public Error getError() {
+        return error;
     }
 }

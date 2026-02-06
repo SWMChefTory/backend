@@ -1,6 +1,6 @@
 package com.cheftory.api.utils;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -50,10 +50,10 @@ public abstract class RestDocsTest {
         response.statusCode(200).body("message", CoreMatchers.equalTo("success"));
     }
 
-    protected void assertErrorResponse(ValidatableMockMvcResponse response, ErrorMessage errorMessage) {
+    protected void assertErrorResponse(ValidatableMockMvcResponse response, Error error) {
         response.statusCode(HttpStatus.BAD_REQUEST.value())
-                .body("errorCode", CoreMatchers.equalTo(errorMessage.getErrorCode()))
-                .body("message", CoreMatchers.equalTo(errorMessage.getMessage()));
+                .body("errorCode", CoreMatchers.equalTo(error.getErrorCode()))
+                .body("message", CoreMatchers.equalTo(error.getMessage()));
     }
 
     protected String jsonBody(Object obj) {

@@ -1,8 +1,8 @@
 package com.cheftory.api.affiliate.coupang.exception;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 
-public enum CoupangErrorCode implements ErrorMessage {
+public enum CoupangErrorCode implements Error {
     COUPANG_API_REQUEST_FAIL("COUPANG_001", "쿠팡 API 요청에 실패했습니다.");
 
     final String errorCode;

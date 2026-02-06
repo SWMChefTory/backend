@@ -1,8 +1,8 @@
 package com.cheftory.api.recipe.content.youtubemeta.exception;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 
-public enum YoutubeMetaErrorCode implements ErrorMessage {
+public enum YoutubeMetaErrorCode implements Error {
     YOUTUBE_META_NOT_FOUND("YOUTUBE_META_001", "유튜브 메타 정보가 존재하지 않습니다."),
     YOUTUBE_URL_HOST_NULL("YOUTUBE_META_003", "유튜브 URL의 호스트가 비어있습니다."),
     YOUTUBE_URL_HOST_INVALID("YOUTUBE_META_004", "지원하지 않는 유튜브 도메인입니다."),

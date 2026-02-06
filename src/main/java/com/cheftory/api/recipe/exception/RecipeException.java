@@ -1,11 +1,11 @@
 package com.cheftory.api.recipe.exception;
 
 import com.cheftory.api.exception.CheftoryException;
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 
 public class RecipeException extends CheftoryException {
 
-    public RecipeException(ErrorMessage errorCode) {
-        super(errorCode);
+    public RecipeException(Error error) {
+        super(error);
     }
 }

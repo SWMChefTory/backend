@@ -1,6 +1,6 @@
 package com.cheftory.api.exception;
 
-import static com.cheftory.api.exception.ErrorMessage.resolveErrorCode;
+import static com.cheftory.api.exception.Error.resolveErrorCode;
 
 import com.cheftory.api._common.reponse.ErrorResponse;
 import com.cheftory.api.auth.exception.AuthErrorCode;
@@ -27,10 +27,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CheftoryException.class)
     public ResponseEntity<ErrorResponse> handleCheftoryException(CheftoryException ex) {
-        if (ex instanceof AuthException && ex.getErrorMessage() == AuthErrorCode.INVALID_TOKEN) {
+        if (ex instanceof AuthException && ex.getError() == AuthErrorCode.INVALID_TOKEN) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(ex));
         } else {
-            log.error(ex.getErrorMessage().getMessage(), ex);
+            log.error(ex.getError().getMessage(), ex);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(ex));
     }
@@ -40,8 +40,8 @@ public class GlobalExceptionHandler {
         log.error(ex.getMessage(), ex);
         String codeName =
                 Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage();
-        ErrorMessage errorMessage = resolveErrorCode(codeName);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(errorMessage));
+        Error error = resolveErrorCode(codeName);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(error));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

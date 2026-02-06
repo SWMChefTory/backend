@@ -71,7 +71,7 @@ class MarketIntegrationTest {
                 .hasCauseInstanceOf(CheftoryException.class)
                 .satisfies(ex -> {
                     CheftoryException cause = (CheftoryException) ex.getCause();
-                    assertThat(cause.getErrorMessage()).isEqualTo(GlobalErrorCode.UNKNOWN_REGION);
+                    assertThat(cause.getError()).isEqualTo(GlobalErrorCode.UNKNOWN_REGION);
                 });
     }
 

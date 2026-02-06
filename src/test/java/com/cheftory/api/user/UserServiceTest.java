@@ -64,7 +64,7 @@ class UserServiceTest {
 
                 UserException ex = assertThrows(UserException.class, () -> userService.get(userId));
 
-                assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
+                assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
             }
         }
     }
@@ -192,7 +192,7 @@ class UserServiceTest {
 
                 UserException ex = assertThrows(UserException.class, () -> userService.deleteUser(userId));
 
-                assertThat(ex.getErrorMessage()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
+                assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
             }
         }
     }

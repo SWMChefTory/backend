@@ -1,10 +1,10 @@
 package com.cheftory.api.recipe.challenge.exception;
 
 import com.cheftory.api._common.PocOnly;
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 
 @PocOnly(until = "2025-12-31")
-public enum RecipeChallengeErrorCode implements ErrorMessage {
+public enum RecipeChallengeErrorCode implements Error {
     RECIPE_CHALLENGE_NOT_FOUND("RECIPE_CHALLENGE_001", "챌린지가 없습니다.");
     private final String errorCode;
     private final String message;
