@@ -20,6 +20,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.18] - 2026-02-07
+
+### Added
+- **튜토리얼 완료 크레딧 기능 추가**: `POST /api/v1/users/tutorial` 엔드포인트 및 사용자 튜토리얼 완료 시 크레딧 지급 로직 도입
+- **공유 크레딧 기능 추가**: `POST /api/v1/users/share` 엔드포인트, `UserShare` 엔티티/리포지토리, `UserShareService`, `UserShareTxService`를 추가하고 일일 지급 제한 정책 적용
+- **크레딧 사유 확장**: `CreditReason`에 `TUTORIAL`, `SHARE` 타입 추가
+- **사용자 크레딧 어댑터 도입**: 사용자 액션(튜토리얼/공유) 보상 처리를 위한 `UserCreditAdapter` 추가
+
+### Changed
+- **에러 처리 인터페이스 통합**: `ErrorMessage`를 `Error`로 전역 전환하여 예외 코드 및 응답 처리 일관성 강화
+- **크레딧 어댑터 책임 분리**: 기존 `CreditAdapter`를 `RecipeCreditAdapter`로 명확화하여 레시피 보상 로직과 사용자 보상 로직의 경계를 분리
+
+---
+
 ## [1.1.17] - 2026-02-05
 
 ### Added
