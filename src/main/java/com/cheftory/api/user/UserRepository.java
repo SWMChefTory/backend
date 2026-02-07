@@ -9,12 +9,14 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByProviderAndProviderSubAndUserStatus(Provider provider, String sub, UserStatus userStatus);
 
     Optional<User> findByIdAndUserStatus(UUID userId, UserStatus userStatus);
 
+    @Transactional
     @Modifying
     @Query(
             """
@@ -26,6 +28,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     """)
     int completeTutorialIfNotCompleted(UUID userId, LocalDateTime now);
 
+    @Transactional
     @Modifying
     @Query(
             """
