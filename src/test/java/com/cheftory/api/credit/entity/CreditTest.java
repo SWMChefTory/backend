@@ -1,9 +1,12 @@
 package com.cheftory.api.credit.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
+import com.cheftory.api._common.Clock;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +31,12 @@ class CreditTest {
     void share_creates_credit() {
         UUID userId = UUID.randomUUID();
         int count = 2;
-        String date = LocalDate.now().toString();
+        LocalDateTime now = LocalDateTime.of(2024, 1, 1, 0, 0);
+        String date = now.toLocalDate().toString();
+        Clock clock = mock(Clock.class);
+        when(clock.now()).thenReturn(now);
 
-        Credit credit = Credit.share(userId, count);
+        Credit credit = Credit.share(userId, count, clock);
 
         assertThat(credit.userId()).isEqualTo(userId);
         assertThat(credit.amount()).isEqualTo(10L);

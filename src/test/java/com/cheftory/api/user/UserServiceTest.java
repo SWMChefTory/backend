@@ -247,10 +247,10 @@ class UserServiceTest {
             when(clock.now()).thenReturn(now);
             when(userRepository.existsById(userId)).thenReturn(true);
             when(userRepository.completeTutorialIfNotCompleted(userId, now)).thenReturn(1);
-            RuntimeException exception = new RuntimeException("credit fail");
+            UserException exception = new UserException(UserErrorCode.USER_NOT_FOUND);
             doThrow(exception).when(userCreditPort).grantUserTutorial(userId);
 
-            RuntimeException thrown = assertThrows(RuntimeException.class, () -> userService.tutorial(userId));
+            UserException thrown = assertThrows(UserException.class, () -> userService.tutorial(userId));
 
             assertThat(thrown).isEqualTo(exception);
             verify(userRepository).revertTutorial(userId, now);
