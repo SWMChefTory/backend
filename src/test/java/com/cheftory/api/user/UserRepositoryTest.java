@@ -5,16 +5,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.user.entity.*;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 class UserRepositoryTest extends DbContextTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Test
     @DisplayName("User 저장 및 조회 테스트")
@@ -44,5 +50,79 @@ class UserRepositoryTest extends DbContextTest {
                 Provider.GOOGLE, "sub-9999", UserStatus.ACTIVE);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("tutorialAt이 null이면 완료 처리로 업데이트된다")
+    void completeTutorialIfNotCompleted_updatesTutorialAt() {
+        Clock clock = new Clock();
+        User user = User.create("튜토리얼", Gender.MALE, LocalDate.of(1990, 1, 1), Provider.GOOGLE, "sub-1", true, clock);
+        userRepository.save(user);
+
+        LocalDateTime now = LocalDateTime.of(2024, 1, 1, 0, 0);
+        int updated = userRepository.completeTutorialIfNotCompleted(user.getId(), now);
+
+        entityManager.clear();
+        assertThat(updated).isEqualTo(1);
+        Optional<User> result = userRepository.findById(user.getId());
+        assertThat(result).isPresent();
+        assertThat(result.get().getTutorialAt()).isEqualTo(now);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("tutorialAt이 이미 있으면 완료 처리되지 않는다")
+    void completeTutorialIfNotCompleted_doesNothing_whenAlreadyCompleted() {
+        Clock clock = new Clock();
+        User user = User.create("튜토리얼", Gender.FEMALE, LocalDate.of(1992, 2, 2), Provider.GOOGLE, "sub-2", true, clock);
+        user.changeTutorial(clock);
+        userRepository.save(user);
+
+        LocalDateTime now = LocalDateTime.of(2024, 1, 2, 0, 0);
+        int updated = userRepository.completeTutorialIfNotCompleted(user.getId(), now);
+
+        entityManager.clear();
+        assertThat(updated).isZero();
+        Optional<User> result = userRepository.findById(user.getId());
+        assertThat(result).isPresent();
+        assertThat(result.get().getTutorialAt()).isNotNull();
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("tutorialAt이 있으면 revert 시 null로 변경된다")
+    void revertTutorial_clears_tutorialAt() {
+        Clock clock = new Clock();
+        User user = User.create("튜토리얼", Gender.MALE, LocalDate.of(1991, 1, 1), Provider.GOOGLE, "sub-3", true, clock);
+        user.changeTutorial(clock);
+        userRepository.save(user);
+
+        LocalDateTime now = LocalDateTime.of(2024, 1, 3, 0, 0);
+        int updated = userRepository.revertTutorial(user.getId(), now);
+
+        entityManager.clear();
+        assertThat(updated).isEqualTo(1);
+        Optional<User> result = userRepository.findById(user.getId());
+        assertThat(result).isPresent();
+        assertThat(result.get().getTutorialAt()).isNull();
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("tutorialAt이 null이면 revert가 적용되지 않는다")
+    void revertTutorial_doesNothing_whenNotCompleted() {
+        Clock clock = new Clock();
+        User user = User.create("튜토리얼", Gender.FEMALE, LocalDate.of(1993, 3, 3), Provider.GOOGLE, "sub-4", true, clock);
+        userRepository.save(user);
+
+        LocalDateTime now = LocalDateTime.of(2024, 1, 4, 0, 0);
+        int updated = userRepository.revertTutorial(user.getId(), now);
+
+        entityManager.clear();
+        assertThat(updated).isZero();
+        Optional<User> result = userRepository.findById(user.getId());
+        assertThat(result).isPresent();
+        assertThat(result.get().getTutorialAt()).isNull();
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CreditAdapter implements RecipeCreditPort {
+public class RecipeCreditAdapter implements RecipeCreditPort {
     private final CreditService creditService;
 
     @Override
