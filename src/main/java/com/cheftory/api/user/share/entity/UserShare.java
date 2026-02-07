@@ -1,7 +1,9 @@
-package com.cheftory.api.user.share;
+package com.cheftory.api.user.share.entity;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.MarketScope;
+import com.cheftory.api.user.share.exception.UserShareErrorCode;
+import com.cheftory.api.user.share.exception.UserShareException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

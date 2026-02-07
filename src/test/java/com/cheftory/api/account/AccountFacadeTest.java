@@ -61,7 +61,7 @@ class AccountFacadeTest {
     @DisplayName("login: providerSub 추출 -> 유저 조회 -> 토큰 발급 -> 세션 저장 -> Account 반환")
     void login_shouldReturnAccount() {
         doReturn(providerSub).when(authService).extractProviderSubFromIdToken(idToken, provider);
-        doReturn(user).when(userService).getByProviderAndProviderSub(provider, providerSub);
+        doReturn(user).when(userService).get(provider, providerSub);
         doReturn(authTokens).when(authService).createAuthToken(userId);
         doNothing().when(authService).saveLoginSession(userId, authTokens.refreshToken());
 
@@ -108,7 +108,7 @@ class AccountFacadeTest {
         sut.logout("refresh-token");
 
         verify(authService).deleteRefreshToken(userId, "refresh-token");
-        verify(userService, never()).deleteUser(any());
+        verify(userService, never()).delete(any());
     }
 
     @Test
@@ -116,11 +116,11 @@ class AccountFacadeTest {
     void delete_shouldDeleteRefreshTokenAndUser() {
         doReturn(userId).when(authService).extractUserIdFromToken("refresh-token");
         doNothing().when(authService).deleteRefreshToken(userId, "refresh-token");
-        doNothing().when(userService).deleteUser(userId);
+        doNothing().when(userService).delete(userId);
 
         sut.delete("refresh-token");
 
         verify(authService).deleteRefreshToken(userId, "refresh-token");
-        verify(userService).deleteUser(userId);
+        verify(userService).delete(userId);
     }
 }

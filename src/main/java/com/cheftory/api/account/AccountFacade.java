@@ -11,6 +11,8 @@ import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
 import java.time.LocalDate;
 import java.util.UUID;
+
+import com.cheftory.api.user.exception.UserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,13 +26,11 @@ public class AccountFacade {
     private final UserService userService;
     private final CreditService creditService;
 
-    public Account login(String idToken, Provider provider) {
+    public Account login(String idToken, Provider provider) throws UserException {
         String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
-        User user = userService.getByProviderAndProviderSub(provider, providerSub);
+        User user = userService.get(provider, providerSub);
 
-        UUID id = user.getId();
-        AuthTokens authTokens = authService.createAuthToken(id);
-        authService.saveLoginSession(id, authTokens.refreshToken());
+        AuthTokens authTokens = createAuthTokensAndSession(user.getId());
 
         return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
     }
@@ -43,7 +43,7 @@ public class AccountFacade {
             LocalDate dateOfBirth,
             boolean isTermsOfUseAgreed,
             boolean isPrivacyPolicyAgreed,
-            boolean isMarketingAgreed) {
+            boolean isMarketingAgreed) throws UserException {
         String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
         User user = userService.create(
                 nickname,
@@ -55,11 +55,8 @@ public class AccountFacade {
                 isPrivacyPolicyAgreed,
                 isMarketingAgreed);
 
-        AuthTokens authTokens = authService.createAuthToken(user.getId());
-        authService.saveLoginSession(user.getId(), authTokens.refreshToken());
-
-        Credit credit = Credit.signupBonus(user.getId());
-        creditService.grant(credit);
+        AuthTokens authTokens = createAuthTokensAndSession(user.getId());
+        creditService.grant(Credit.signupBonus(user.getId()));
 
         return Account.of(authTokens.accessToken(), authTokens.refreshToken(), user);
     }
@@ -72,6 +69,12 @@ public class AccountFacade {
     public void delete(String refreshToken) {
         UUID userId = authService.extractUserIdFromToken(refreshToken);
         authService.deleteRefreshToken(userId, refreshToken);
-        userService.deleteUser(userId);
+        userService.delete(userId);
+    }
+
+    private AuthTokens createAuthTokensAndSession(UUID userId) {
+        AuthTokens authTokens = authService.createAuthToken(userId);
+        authService.saveLoginSession(userId, authTokens.refreshToken());
+        return authTokens;
     }
 }

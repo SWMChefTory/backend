@@ -28,7 +28,6 @@ public class CoupangClient {
 
     public CoupangProducts searchProducts(String keyword) {
         try {
-            // 1) path + query 생성 후 UTF-8 인코딩 → URI 획득
             URI uri = UriComponentsBuilder.fromPath("/v2/providers/affiliate_open_api/apis/openapi/products/search")
                     .queryParam("keyword", keyword)
                     .build()
@@ -39,14 +38,11 @@ public class CoupangClient {
                 throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
             }
 
-            // 2) 서명용 문자열: path + '?' + rawQuery
             String pathAndQueryForSign = uri.getRawPath() + "?" + uri.getRawQuery();
 
-            // 3) HMAC 서명 생성
             String authorization = HmacGenerator.generate(
                     "GET", pathAndQueryForSign, properties.getSecretKey(), properties.getAccessKey());
 
-            // 4) WebClient 요청
             String pathAndQuery = uri.getRawPath() + "?" + uri.getRawQuery();
 
             CoupangSearchResponse response = webClient

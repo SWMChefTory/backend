@@ -5,13 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.entity.*;
 import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.user.exception.UserException;
+import com.cheftory.api.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.*;
 
 @DisplayName("UserService")
@@ -32,6 +34,99 @@ class UserServiceTest {
     }
 
     @Nested
+    @DisplayName("provider+sub로 유저 조회 (getByProviderAndProviderSub)")
+    class GetUserByProviderAndSub {
+
+        @Nested
+        @DisplayName("Given - 유저가 존재할 때")
+        class GivenUserExists {
+
+            @Test
+            @DisplayName("Then - 유저 정보를 반환해야 한다")
+            void thenShouldReturnUser() {
+                User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
+                when(userRepository.find(Provider.KAKAO, "sub"))
+                        .thenReturn(user);
+
+                User result = userService.get(Provider.KAKAO, "sub");
+
+                Assertions.assertEquals(user, result);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("유저 생성 (create)")
+    class CreateUser {
+
+        @Test
+        @DisplayName("이용약관에 동의하지 않으면 예외를 던진다")
+        void throws_when_terms_not_agreed() {
+            UserException ex = assertThrows(UserException.class, () ->
+                    userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", false, true, true));
+
+            assertThat(ex.getError()).isEqualTo(UserErrorCode.TERMS_OF_USE_NOT_AGREED);
+        }
+
+        @Test
+        @DisplayName("개인정보 처리방침에 동의하지 않으면 예외를 던진다")
+        void throws_when_privacy_not_agreed() {
+            UserException ex = assertThrows(UserException.class, () ->
+                    userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, false, true));
+
+            assertThat(ex.getError()).isEqualTo(UserErrorCode.PRIVACY_POLICY_NOT_AGREED);
+        }
+
+        @Test
+        @DisplayName("이미 존재하는 유저면 예외를 던진다")
+        void throws_when_user_already_exists() {
+            when(userRepository.exist(Provider.KAKAO, "sub")).thenReturn(true);
+
+            UserException ex = assertThrows(UserException.class, () ->
+                    userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, true, true));
+
+            assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_ALREADY_EXIST);
+        }
+
+        @Test
+        @DisplayName("정상적으로 유저를 생성한다")
+        void creates_user_successfully() {
+            when(userRepository.exist(Provider.KAKAO, "sub")).thenReturn(false);
+
+            User user = userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, true, true);
+
+            verify(userRepository).create(any(User.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("유저 존재 여부 확인 (exists)")
+    class UserExists {
+
+        @Test
+        @DisplayName("유저가 존재하면 true를 반환한다")
+        void returns_true_when_exists() {
+            UUID userId = UUID.randomUUID();
+            when(userRepository.exist(userId)).thenReturn(true);
+
+            boolean result = userService.exists(userId);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("유저가 존재하지 않으면 false를 반환한다")
+        void returns_false_when_not_exists() {
+            UUID userId = UUID.randomUUID();
+            when(userRepository.exist(userId)).thenReturn(false);
+
+            boolean result = userService.exists(userId);
+
+            assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
     @DisplayName("유저 조회 (get)")
     class GetUser {
 
@@ -43,30 +138,13 @@ class UserServiceTest {
             @DisplayName("Then - 유저 정보를 반환해야 한다")
             void thenShouldReturnUser() {
                 User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
-                when(userRepository.findByIdAndUserStatus(user.getId(), UserStatus.ACTIVE))
-                        .thenReturn(Optional.of(user));
+                UUID userId = UUID.randomUUID();
+                when(userRepository.find(userId))
+                        .thenReturn(user);
 
-                User result = userService.get(user.getId());
+                User result = userService.get(userId);
 
                 Assertions.assertEquals(user, result);
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 유저가 존재하지 않을 때")
-        class GivenUserNotFound {
-
-            @Test
-            @DisplayName("Then - 예외를 던져야 한다")
-            void thenShouldThrowNotFound() {
-
-                UUID userId = UUID.randomUUID();
-                when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
-                        .thenReturn(Optional.empty());
-
-                UserException ex = assertThrows(UserException.class, () -> userService.get(userId));
-
-                assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
             }
         }
     }
@@ -91,69 +169,65 @@ class UserServiceTest {
             @DisplayName("닉네임 수정")
             void updateNicknameOnly() {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
-                UUID id = user.getId();
-                doReturn(Optional.of(user)).when(userRepository).findByIdAndUserStatus(id, UserStatus.ACTIVE);
+                UUID id = UUID.randomUUID();
+                doReturn(user).when(userRepository).find(id);
+                doReturn(user).when(userRepository).update(eq(id), eq(newNickname), eq(oldGender), eq(oldBirth), any(Clock.class));
 
                 userService.update(id, newNickname, oldGender, oldBirth);
 
-                Assertions.assertEquals(newNickname, user.getNickname());
-                Assertions.assertEquals(oldGender, user.getGender());
-                Assertions.assertEquals(oldBirth, user.getDateOfBirth());
+                verify(userRepository).update(id, newNickname, oldGender, oldBirth, clock);
             }
 
             @Test
             @DisplayName("성별 수정")
             void updateGenderOnly() {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
-                UUID id = user.getId();
-                doReturn(Optional.of(user)).when(userRepository).findByIdAndUserStatus(id, UserStatus.ACTIVE);
+                UUID id = UUID.randomUUID();
+                doReturn(user).when(userRepository).find(id);
+                doReturn(user).when(userRepository).update(eq(id), eq(oldNickname), eq(newGender), eq(oldBirth), any(Clock.class));
 
                 userService.update(id, oldNickname, newGender, oldBirth);
 
-                Assertions.assertEquals(oldNickname, user.getNickname());
-                Assertions.assertEquals(newGender, user.getGender());
-                Assertions.assertEquals(oldBirth, user.getDateOfBirth());
+                verify(userRepository).update(id, oldNickname, newGender, oldBirth, clock);
             }
 
             @Test
             @DisplayName("성별 수정 (NULL)")
             void clearGenderToNull() {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
-                UUID id = user.getId();
-                doReturn(Optional.of(user)).when(userRepository).findByIdAndUserStatus(id, UserStatus.ACTIVE);
+                UUID id = UUID.randomUUID();
+                doReturn(user).when(userRepository).find(id);
+                doReturn(user).when(userRepository).update(eq(id), eq(oldNickname), isNull(), eq(oldBirth), any(Clock.class));
 
                 userService.update(id, oldNickname, null, oldBirth);
 
-                Assertions.assertEquals(oldNickname, user.getNickname());
-                Assertions.assertNull(user.getGender());
-                Assertions.assertEquals(oldBirth, user.getDateOfBirth());
+                verify(userRepository).update(id, oldNickname, null, oldBirth, clock);
             }
 
             @Test
             @DisplayName("생년월일 수정")
             void updateBirthOnly() {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
-                UUID id = user.getId();
-                doReturn(Optional.of(user)).when(userRepository).findByIdAndUserStatus(id, UserStatus.ACTIVE);
+                UUID id = UUID.randomUUID();
+                doReturn(user).when(userRepository).find(id);
+                doReturn(user).when(userRepository).update(eq(id), eq(oldNickname), eq(oldGender), eq(newBirth), any(Clock.class));
 
                 userService.update(id, oldNickname, oldGender, newBirth);
 
-                Assertions.assertEquals(oldNickname, user.getNickname());
-                Assertions.assertEquals(oldGender, user.getGender());
-                Assertions.assertEquals(newBirth, user.getDateOfBirth());
+                verify(userRepository).update(id, oldNickname, oldGender, newBirth, clock);
             }
 
             @Test
             @DisplayName("생년월일 수정 (NULL)")
             void clearBirthToNull() {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
-                UUID id = user.getId();
-                doReturn(Optional.of(user)).when(userRepository).findByIdAndUserStatus(id, UserStatus.ACTIVE);
+                UUID id = UUID.randomUUID();
+                doReturn(user).when(userRepository).find(id);
+                doReturn(user).when(userRepository).update(eq(id), eq(oldNickname), eq(oldGender), isNull(), any(Clock.class));
 
                 userService.update(id, oldNickname, oldGender, null);
 
-                Assertions.assertEquals(oldNickname, user.getNickname());
-                Assertions.assertNull(user.getDateOfBirth());
+                verify(userRepository).update(id, oldNickname, oldGender, null, clock);
             }
         }
     }
@@ -172,29 +246,12 @@ class UserServiceTest {
             @DisplayName("Then - 유저 상태를 DELETED로 변경해야 한다")
             void thenShouldMarkUserAsDeleted() {
                 User user = User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
-                when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
-                        .thenReturn(Optional.of(user));
+                when(userRepository.find(userId))
+                        .thenReturn(user);
 
-                userService.deleteUser(userId);
+                userService.delete(userId);
 
-                Assertions.assertEquals(UserStatus.DELETED, user.getUserStatus());
-                verify(userRepository).save(user);
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 유저가 존재하지 않을 때")
-        class GivenUserNotFound {
-
-            @Test
-            @DisplayName("Then - 예외를 던져야 한다")
-            void thenShouldThrowNotFound() {
-                when(userRepository.findByIdAndUserStatus(userId, UserStatus.ACTIVE))
-                        .thenReturn(Optional.empty());
-
-                UserException ex = assertThrows(UserException.class, () -> userService.deleteUser(userId));
-
-                assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
+                verify(userRepository).delete(userId, clock);
             }
         }
     }
@@ -208,37 +265,36 @@ class UserServiceTest {
         @Test
         @DisplayName("유저가 없으면 USER_NOT_FOUND 예외를 던진다")
         void it_throws_when_user_not_found() {
-            when(userRepository.existsById(userId)).thenReturn(false);
+            when(userRepository.exist(userId)).thenReturn(false);
 
             UserException ex = assertThrows(UserException.class, () -> userService.tutorial(userId));
 
             assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
-            verify(userRepository, never()).completeTutorialIfNotCompleted(any(), any());
+            verify(userRepository, never()).completeTutorial(any(), any());
             verify(userCreditPort, never()).grantUserTutorial(any());
         }
 
         @Test
         @DisplayName("이미 완료된 경우 TUTORIAL_ALREADY_FINISHED 예외를 던진다")
         void it_throws_when_already_completed() {
-            when(userRepository.existsById(userId)).thenReturn(true);
-            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any()))
-                    .thenReturn(0);
+            when(userRepository.exist(userId)).thenReturn(true);
+            UserException exception = new UserException(UserErrorCode.TUTORIAL_ALREADY_FINISHED);
+            doThrow(exception).when(userRepository).completeTutorial(eq(userId), any(Clock.class));
 
-            UserException ex = assertThrows(UserException.class, () -> userService.tutorial(userId));
+            UserException thrown = assertThrows(UserException.class, () -> userService.tutorial(userId));
 
-            assertThat(ex.getError()).isEqualTo(UserErrorCode.TUTORIAL_ALREADY_FINISHED);
+            assertThat(thrown).isEqualTo(exception);
             verify(userCreditPort, never()).grantUserTutorial(any());
         }
 
         @Test
         @DisplayName("완료 처리 후 크레딧을 지급한다")
         void it_grants_credit_after_completion() {
-            when(userRepository.existsById(userId)).thenReturn(true);
-            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any()))
-                    .thenReturn(1);
+            when(userRepository.exist(userId)).thenReturn(true);
 
             userService.tutorial(userId);
 
+            verify(userRepository).completeTutorial(userId, clock);
             verify(userCreditPort).grantUserTutorial(userId);
         }
 
@@ -247,15 +303,15 @@ class UserServiceTest {
         void it_reverts_when_credit_grant_fails() {
             LocalDateTime now = LocalDateTime.of(2024, 1, 1, 0, 0);
             when(clock.now()).thenReturn(now);
-            when(userRepository.existsById(userId)).thenReturn(true);
-            when(userRepository.completeTutorialIfNotCompleted(userId, now)).thenReturn(1);
-            UserException exception = new UserException(UserErrorCode.USER_NOT_FOUND);
+            when(userRepository.exist(userId)).thenReturn(true);
+            CreditException exception = new CreditException(null);
             doThrow(exception).when(userCreditPort).grantUserTutorial(userId);
 
-            UserException thrown = assertThrows(UserException.class, () -> userService.tutorial(userId));
+            CreditException thrown = assertThrows(CreditException.class, () -> userService.tutorial(userId));
 
             assertThat(thrown).isEqualTo(exception);
-            verify(userRepository).revertTutorial(userId, now);
+            verify(userRepository).completeTutorial(eq(userId), any(Clock.class));
+            verify(userRepository).decompleteTutorial(eq(userId), any(Clock.class));
         }
     }
 }
