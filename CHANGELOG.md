@@ -20,6 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.19] - 2026-02-07
+
+### Fixed
+- **튜토리얼 크레딧 지급 실패 수정**: `UserRepository.completeTutorialIfNotCompleted()`, `revertTutorial()`에 `@Transactional` 추가 — `@Modifying` 쿼리가 트랜잭션 없이 실행되어 `TransactionRequiredException` 발생하던 문제 해결
+- **크레딧 트랜잭션 reason 컬럼 길이 명시**: `CreditTransaction.reason`에 `@Column(length = 50)` 추가 — 프로덕션 DB 컬럼 크기 부족으로 `SHARE` 값 저장 시 `Data truncated` 오류 발생하던 문제 대응 (DB ALTER TABLE 필요)
+- **예외 처리 범위 확대**: `UserService.tutorial()`과 `UserShareService.share()`의 catch 블록을 `Exception`으로 변경하여 모든 예외에서 보상(revert/compensation) 트랜잭션이 실행되도록 보장
+- **크레딧 동시성 예외 타입 명확화**: `CreditTxService.loadOrCreateBalance()`의 `orElseThrow()`에 `CreditException(CREDIT_CONCURRENCY_CONFLICT)` 명시 — 기존 `NoSuchElementException`이 GLOBAL_3으로 처리되던 문제 해결
+
+---
+
 ## [1.1.18] - 2026-02-07
 
 ### Added
