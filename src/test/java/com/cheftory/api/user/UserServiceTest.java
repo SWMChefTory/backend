@@ -20,13 +20,15 @@ class UserServiceTest {
     private UserRepository userRepository;
     private UserService userService;
     private Clock clock;
+    private UserCreditPort userCreditPort;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
         clock = mock(Clock.class);
+        userCreditPort = mock(UserCreditPort.class);
         doReturn(LocalDateTime.now()).when(clock).now();
-        userService = new UserService(userRepository, clock);
+        userService = new UserService(userRepository, userCreditPort, clock);
     }
 
     @Nested
@@ -194,6 +196,64 @@ class UserServiceTest {
 
                 assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("튜토리얼 완료 처리 (tutorial)")
+    class Tutorial {
+
+        UUID userId = UUID.randomUUID();
+
+        @Test
+        @DisplayName("유저가 없으면 USER_NOT_FOUND 예외를 던진다")
+        void it_throws_when_user_not_found() {
+            when(userRepository.existsById(userId)).thenReturn(false);
+
+            UserException ex = assertThrows(UserException.class, () -> userService.tutorial(userId));
+
+            assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
+            verify(userRepository, never()).completeTutorialIfNotCompleted(any(), any());
+            verify(userCreditPort, never()).grantUserTutorial(any());
+        }
+
+        @Test
+        @DisplayName("이미 완료된 경우 TUTORIAL_ALREADY_FINISHED 예외를 던진다")
+        void it_throws_when_already_completed() {
+            when(userRepository.existsById(userId)).thenReturn(true);
+            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any())).thenReturn(0);
+
+            UserException ex = assertThrows(UserException.class, () -> userService.tutorial(userId));
+
+            assertThat(ex.getError()).isEqualTo(UserErrorCode.TUTORIAL_ALREADY_FINISHED);
+            verify(userCreditPort, never()).grantUserTutorial(any());
+        }
+
+        @Test
+        @DisplayName("완료 처리 후 크레딧을 지급한다")
+        void it_grants_credit_after_completion() {
+            when(userRepository.existsById(userId)).thenReturn(true);
+            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any())).thenReturn(1);
+
+            userService.tutorial(userId);
+
+            verify(userCreditPort).grantUserTutorial(userId);
+        }
+
+        @Test
+        @DisplayName("크레딧 지급 실패 시 보상 처리 후 예외를 던진다")
+        void it_reverts_when_credit_grant_fails() {
+            LocalDateTime now = LocalDateTime.of(2024, 1, 1, 0, 0);
+            when(clock.now()).thenReturn(now);
+            when(userRepository.existsById(userId)).thenReturn(true);
+            when(userRepository.completeTutorialIfNotCompleted(userId, now)).thenReturn(1);
+            RuntimeException exception = new RuntimeException("credit fail");
+            doThrow(exception).when(userCreditPort).grantUserTutorial(userId);
+
+            RuntimeException thrown = assertThrows(RuntimeException.class, () -> userService.tutorial(userId));
+
+            assertThat(thrown).isEqualTo(exception);
+            verify(userRepository).revertTutorial(userId, now);
         }
     }
 }

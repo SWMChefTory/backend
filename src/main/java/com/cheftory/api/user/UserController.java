@@ -1,16 +1,13 @@
 package com.cheftory.api.user;
 
+import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.user.dto.UpdateUserResponse;
 import com.cheftory.api.user.dto.UserResponse;
 import com.cheftory.api.user.entity.User;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,5 +40,11 @@ public class UserController {
                 user.getPrivacyAgreedAt(),
                 user.getMarketingAgreedAt(),
                 user.getProviderSub());
+    }
+
+    @PostMapping("/tutorial")
+    public SuccessOnlyResponse tutorial(@UserPrincipal UUID userId) {
+        userService.tutorial(userId);
+        return SuccessOnlyResponse.create();
     }
 }
