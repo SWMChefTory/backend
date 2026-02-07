@@ -221,7 +221,8 @@ class UserServiceTest {
         @DisplayName("이미 완료된 경우 TUTORIAL_ALREADY_FINISHED 예외를 던진다")
         void it_throws_when_already_completed() {
             when(userRepository.existsById(userId)).thenReturn(true);
-            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any())).thenReturn(0);
+            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any()))
+                    .thenReturn(0);
 
             UserException ex = assertThrows(UserException.class, () -> userService.tutorial(userId));
 
@@ -233,7 +234,8 @@ class UserServiceTest {
         @DisplayName("완료 처리 후 크레딧을 지급한다")
         void it_grants_credit_after_completion() {
             when(userRepository.existsById(userId)).thenReturn(true);
-            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any())).thenReturn(1);
+            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any()))
+                    .thenReturn(1);
 
             userService.tutorial(userId);
 
@@ -247,10 +249,10 @@ class UserServiceTest {
             when(clock.now()).thenReturn(now);
             when(userRepository.existsById(userId)).thenReturn(true);
             when(userRepository.completeTutorialIfNotCompleted(userId, now)).thenReturn(1);
-            RuntimeException exception = new RuntimeException("credit fail");
+            UserException exception = new UserException(UserErrorCode.USER_NOT_FOUND);
             doThrow(exception).when(userCreditPort).grantUserTutorial(userId);
 
-            RuntimeException thrown = assertThrows(RuntimeException.class, () -> userService.tutorial(userId));
+            UserException thrown = assertThrows(UserException.class, () -> userService.tutorial(userId));
 
             assertThat(thrown).isEqualTo(exception);
             verify(userRepository).revertTutorial(userId, now);

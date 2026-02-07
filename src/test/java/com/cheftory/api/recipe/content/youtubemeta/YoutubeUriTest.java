@@ -119,8 +119,7 @@ class YoutubeUriTest {
 
             assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL.getErrorCode());
-            assertThat(ex.getError().getMessage())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL.getMessage());
+            assertThat(ex.getError().getMessage()).isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL.getMessage());
         }
 
         @Test
@@ -132,8 +131,7 @@ class YoutubeUriTest {
 
             assertThat(ex.getError().getErrorCode())
                     .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL.getErrorCode());
-            assertThat(ex.getError().getMessage())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL.getMessage());
+            assertThat(ex.getError().getMessage()).isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL.getMessage());
         }
 
         @Test

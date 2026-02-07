@@ -79,8 +79,7 @@ public class User {
                 isMarketingAgreed ? clock.now() : null,
                 null,
                 provider,
-                providerSub
-            );
+                providerSub);
     }
 
     public void change(String nickname, Gender gender, LocalDate dateOfBirth, Clock clock) {

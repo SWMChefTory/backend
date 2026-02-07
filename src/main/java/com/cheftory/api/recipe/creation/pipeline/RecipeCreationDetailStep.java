@@ -29,7 +29,8 @@ public class RecipeCreationDetailStep implements RecipeCreationPipelineStep {
         }
         recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
         try {
-            RecipeDetail detail = recipeDetailService.getRecipeDetails(context.getVideoId(), context.getFileUri(), context.getMimeType());
+            RecipeDetail detail = recipeDetailService.getRecipeDetails(
+                    context.getVideoId(), context.getFileUri(), context.getMimeType());
             recipeIngredientService.create(context.getRecipeId(), detail.ingredients());
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
@@ -41,7 +42,8 @@ public class RecipeCreationDetailStep implements RecipeCreationPipelineStep {
                     context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
             return context;
         } catch (RecipeException ex) {
-            recipeProgressService.failed(context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
+            recipeProgressService.failed(
+                    context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
             throw ex;
         }
     }

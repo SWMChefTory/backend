@@ -11,7 +11,6 @@ import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCo
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
 import java.net.URI;
 import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.*;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -75,8 +74,7 @@ class RecipeIdentifyServiceTest {
                     when(repository.save(any(RecipeIdentify.class)))
                             .thenThrow(new DataIntegrityViolationException("duplicate key"));
 
-                    RecipeIdentifyException ex =
-                            assertThrows(RecipeIdentifyException.class, () -> service.create(url));
+                    RecipeIdentifyException ex = assertThrows(RecipeIdentifyException.class, () -> service.create(url));
 
                     assertThat(ex.getError().getErrorCode())
                             .isEqualTo(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING.getErrorCode());

@@ -20,9 +20,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(uniqueConstraints = {
-    @UniqueConstraint(name = "uq_user_share_date", columnNames = {"user_id", "shared_at"})
-})
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uq_user_share_date",
+                    columnNames = {"user_id", "shared_at"})
+        })
 public class UserShare extends MarketScope {
     @Id
     private UUID id;

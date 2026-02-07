@@ -1,7 +1,6 @@
 package com.cheftory.api.user;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
@@ -77,7 +76,7 @@ public class UserService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
     }
 
-    public void tutorial(UUID userId){
+    public void tutorial(UUID userId) {
 
         if (!userRepository.existsById(userId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
@@ -90,7 +89,7 @@ public class UserService {
 
         try {
             userCreditPort.grantUserTutorial(userId);
-        } catch (CheftoryException e) {
+        } catch (Exception e) {
             log.error("튜토리얼 크레딧 지급 실패. 보상 실행: userId={}", userId, e);
             userRepository.revertTutorial(userId, clock.now());
             throw e;

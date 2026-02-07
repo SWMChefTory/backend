@@ -27,7 +27,10 @@ public class RecipeCreationPipeline {
         try {
             new RecipeCreationParallelSteps(
                             recipeCreateExecutor,
-                            List.of(recipeCreationDetailStep, recipeCreationInstructionStep, recipeCreationBriefingStep))
+                            List.of(
+                                    recipeCreationDetailStep,
+                                    recipeCreationInstructionStep,
+                                    recipeCreationBriefingStep))
                     .run(updated);
 
             recipeCreationFinalizeStep.run(updated);

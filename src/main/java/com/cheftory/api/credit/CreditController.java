@@ -1,11 +1,8 @@
 package com.cheftory.api.credit;
 
-import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.credit.dto.CreditBalanceResponse;
-import com.cheftory.api.credit.entity.Credit;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

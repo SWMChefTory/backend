@@ -92,11 +92,12 @@ class RecipeBookmarkFacadeTest {
             when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
 
             doThrow(new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
-                .when(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+                    .when(creditPort)
+                    .spendRecipeCreate(userId, recipeId, creditCost);
 
             assertThatThrownBy(() -> sut.createAndCharge(userId, recipeId))
-                .isInstanceOf(CreditException.class)
-                .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_INSUFFICIENT);
+                    .isInstanceOf(CreditException.class)
+                    .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_INSUFFICIENT);
 
             verify(recipeBookmarkService).delete(userId, recipeId);
         }
@@ -115,11 +116,12 @@ class RecipeBookmarkFacadeTest {
             when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
 
             doThrow(new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT))
-                .when(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+                    .when(creditPort)
+                    .spendRecipeCreate(userId, recipeId, creditCost);
 
             assertThatThrownBy(() -> sut.createAndCharge(userId, recipeId))
-                .isInstanceOf(CreditException.class)
-                .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
+                    .isInstanceOf(CreditException.class)
+                    .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
 
             verify(recipeBookmarkService).delete(userId, recipeId);
         }

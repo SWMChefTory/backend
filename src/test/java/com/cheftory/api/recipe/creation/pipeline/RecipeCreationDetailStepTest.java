@@ -101,18 +101,20 @@ class RecipeCreationDetailStepTest {
 
             RecipeDetail detail = RecipeDetail.of(
                     "desc", List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")), List.of("tag1"), 2, 10);
-            when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType)).thenReturn(detail);
+            when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType))
+                    .thenReturn(detail);
 
             sut.run(context);
 
             InOrder order = inOrder(recipeProgressService);
-            order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
+            order.verify(recipeProgressService)
+                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
             order.verify(recipeProgressService)
                     .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
             order.verify(recipeProgressService).success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
             order.verify(recipeProgressService)
                     .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
-            
+
             // DETAIL 성공 기록은 제거됨
             // order.verify(recipeProgressService)
             //        .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);

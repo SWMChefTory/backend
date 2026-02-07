@@ -4,6 +4,8 @@ import com.cheftory.api._common.Clock;
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.entity.CreditTransaction;
 import com.cheftory.api.credit.entity.CreditUserBalance;
+import com.cheftory.api.credit.exception.CreditErrorCode;
+import com.cheftory.api.credit.exception.CreditException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,7 +25,8 @@ public class CreditTxService {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
         if (alreadyProcessed(
-                () -> transactionRepository.saveAndFlush(CreditTransaction.grant(credit, clock)), credit.idempotencyKey())) {
+                () -> transactionRepository.saveAndFlush(CreditTransaction.grant(credit, clock)),
+                credit.idempotencyKey())) {
             return;
         }
 
@@ -36,7 +39,8 @@ public class CreditTxService {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
         if (alreadyProcessed(
-                () -> transactionRepository.saveAndFlush(CreditTransaction.spend(credit, clock)), credit.idempotencyKey())) {
+                () -> transactionRepository.saveAndFlush(CreditTransaction.spend(credit, clock)),
+                credit.idempotencyKey())) {
             return;
         }
 
@@ -61,7 +65,8 @@ public class CreditTxService {
             try {
                 return balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
             } catch (DataIntegrityViolationException e) {
-                return balanceRepository.findById(userId).orElseThrow();
+                return balanceRepository.findById(userId)
+                        .orElseThrow(() -> new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT));
             }
         });
     }

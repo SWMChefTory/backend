@@ -1,6 +1,5 @@
 package com.cheftory.api.recipe.content.youtubemeta.exception;
 
-import com.cheftory.api.exception.Error;
 import com.cheftory.api.recipe.exception.RecipeException;
 
 public class YoutubeMetaException extends RecipeException {

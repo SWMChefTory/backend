@@ -178,8 +178,7 @@ public class VideoInfoClientTest {
                 void thenThrowsYoutubeMetaException() {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
-                            .hasFieldOrPropertyWithValue(
-                                    "error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
+                            .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
                 }
             }
 
