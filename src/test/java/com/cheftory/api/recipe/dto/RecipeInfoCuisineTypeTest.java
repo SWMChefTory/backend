@@ -59,7 +59,7 @@ class RecipeInfoCuisineTypeTest {
         void shouldThrowExceptionForInvalidTypeString() {
             assertThatThrownBy(() -> RecipeCuisineType.fromString("INVALID"))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.INVALID_CUISINE_TYPE);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.INVALID_CUISINE_TYPE);
         }
 
         @Test
@@ -67,7 +67,7 @@ class RecipeInfoCuisineTypeTest {
         void shouldThrowExceptionForEmptyString() {
             assertThatThrownBy(() -> RecipeCuisineType.fromString(""))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.INVALID_CUISINE_TYPE);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.INVALID_CUISINE_TYPE);
         }
 
         @Test

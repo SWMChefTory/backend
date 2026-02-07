@@ -1,8 +1,8 @@
 package com.cheftory.api.auth.exception;
 
-import com.cheftory.api.exception.ErrorMessage;
+import com.cheftory.api.exception.Error;
 
-public enum AuthErrorCode implements ErrorMessage {
+public enum AuthErrorCode implements Error {
     INVALID_TOKEN("AUTH_001", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN("AUTH_002", "만료된 토큰입니다."),
     INVALID_USER("AUTH_003", "유효하지 않은 사용자입니다."),

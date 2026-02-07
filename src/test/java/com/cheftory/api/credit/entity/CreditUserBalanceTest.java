@@ -19,7 +19,7 @@ class CreditUserBalanceTest {
                 .isInstanceOf(CreditException.class)
                 .satisfies(ex -> {
                     CreditException e = (CreditException) ex;
-                    assertThat(e.getErrorMessage()).isEqualTo(CreditErrorCode.CREDIT_INVALID_USER);
+                    assertThat(e.getError()).isEqualTo(CreditErrorCode.CREDIT_INVALID_USER);
                 });
     }
 
@@ -33,7 +33,7 @@ class CreditUserBalanceTest {
                 .isInstanceOf(CreditException.class)
                 .satisfies(ex -> {
                     CreditException e = (CreditException) ex;
-                    assertThat(e.getErrorMessage()).isEqualTo(CreditErrorCode.CREDIT_INSUFFICIENT);
+                    assertThat(e.getError()).isEqualTo(CreditErrorCode.CREDIT_INSUFFICIENT);
                 });
     }
 

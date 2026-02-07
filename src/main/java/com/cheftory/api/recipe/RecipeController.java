@@ -47,7 +47,7 @@ public class RecipeController {
 
     @PostMapping("/api/v1/recipes")
     public RecipeCreateResponse create(@RequestBody RecipeCreateRequest request, @UserPrincipal UUID userId) {
-        UUID recipeId = recipeCreationFacade.create(request.toUserTarget(userId));
+        UUID recipeId = recipeCreationFacade.createBookmark(request.toUserTarget(userId));
         return RecipeCreateResponse.from(recipeId);
     }
 
@@ -130,7 +130,7 @@ public class RecipeController {
 
     @PostMapping("/papi/v1/recipes")
     public RecipeCreateResponse createCrawledRecipe(@RequestBody RecipeCreateRequest request) {
-        UUID recipeId = recipeCreationFacade.create(request.toCrawlerTarget());
+        UUID recipeId = recipeCreationFacade.createBookmark(request.toCrawlerTarget());
         return RecipeCreateResponse.from(recipeId);
     }
 

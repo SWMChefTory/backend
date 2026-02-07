@@ -48,6 +48,9 @@ public class User {
     @Column(name = "marketing_agreed_at")
     private LocalDateTime marketingAgreedAt;
 
+    @Column
+    private LocalDateTime tutorialAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Provider provider;
@@ -74,8 +77,10 @@ public class User {
                 clock.now(),
                 clock.now(),
                 isMarketingAgreed ? clock.now() : null,
+                null,
                 provider,
-                providerSub);
+                providerSub
+            );
     }
 
     public void change(String nickname, Gender gender, LocalDate dateOfBirth, Clock clock) {
@@ -88,5 +93,9 @@ public class User {
     public void changeStatus(UserStatus userStatus, Clock clock) {
         this.userStatus = userStatus;
         this.updatedAt = clock.now();
+    }
+
+    public void changeTutorial(Clock clock) {
+        this.tutorialAt = clock.now();
     }
 }

@@ -132,7 +132,7 @@ class RecipeFacadeTest {
 
             assertThatThrownBy(() -> sut.blockRecipe(recipeId))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
 
             verify(recipeYoutubeMetaService).block(recipeId);
             verify(recipeInfoService, never()).block(any());
@@ -180,7 +180,7 @@ class RecipeFacadeTest {
 
             assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_FOUND);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_NOT_FOUND);
         }
 
         @Test
@@ -200,7 +200,7 @@ class RecipeFacadeTest {
 
             assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_NOT_FOUND);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_NOT_FOUND);
         }
 
         @Test
@@ -215,7 +215,7 @@ class RecipeFacadeTest {
 
             assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_FAILED);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_FAILED);
         }
 
         @Test
@@ -230,7 +230,7 @@ class RecipeFacadeTest {
 
             assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("errorMessage", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
     }
 

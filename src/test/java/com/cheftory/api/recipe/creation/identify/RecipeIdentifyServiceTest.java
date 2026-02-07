@@ -11,8 +11,7 @@ import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCo
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
+
 import org.junit.jupiter.api.*;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -79,7 +78,7 @@ class RecipeIdentifyServiceTest {
                     RecipeIdentifyException ex =
                             assertThrows(RecipeIdentifyException.class, () -> service.create(url));
 
-                    assertThat(ex.getErrorMessage().getErrorCode())
+                    assertThat(ex.getError().getErrorCode())
                             .isEqualTo(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING.getErrorCode());
                     verify(repository).save(any(RecipeIdentify.class));
                 }

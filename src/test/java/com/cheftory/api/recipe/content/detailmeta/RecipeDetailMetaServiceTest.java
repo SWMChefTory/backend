@@ -183,7 +183,7 @@ public class RecipeDetailMetaServiceTest {
             void whenFindByRecipeId_thenReturnsEmptyOptional() {
                 assertThatThrownBy(() -> recipeDetailMetaService.get(recipeId))
                         .isInstanceOf(RecipeDetailMetaException.class)
-                        .hasFieldOrPropertyWithValue("errorMessage", RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND);
+                        .hasFieldOrPropertyWithValue("error", RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND);
             }
         }
     }

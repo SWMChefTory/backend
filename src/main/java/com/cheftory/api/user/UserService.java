@@ -1,6 +1,7 @@
 package com.cheftory.api.user;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
@@ -12,13 +13,16 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserCreditPort userCreditPort;
     private final Clock clock;
 
     public User getByProviderAndProviderSub(Provider provider, String providerSub) {
@@ -71,6 +75,26 @@ public class UserService {
         return userRepository
                 .findByIdAndUserStatus(id, UserStatus.ACTIVE)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    public void tutorial(UUID userId){
+
+        if (!userRepository.existsById(userId)) {
+            throw new UserException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        int updated = userRepository.completeTutorialIfNotCompleted(userId, clock.now());
+        if (updated == 0) {
+            throw new UserException(UserErrorCode.TUTORIAL_ALREADY_FINISHED);
+        }
+
+        try {
+            userCreditPort.grantUserTutorial(userId);
+        } catch (CheftoryException e) {
+            log.error("튜토리얼 크레딧 지급 실패. 보상 실행: userId={}", userId, e);
+            userRepository.revertTutorial(userId, clock.now());
+            throw e;
+        }
     }
 
     @Transactional

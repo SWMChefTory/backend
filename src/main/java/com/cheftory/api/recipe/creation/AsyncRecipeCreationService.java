@@ -40,9 +40,9 @@ public class AsyncRecipeCreationService {
             recipeCreationPipeline.run(RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl));
 
         } catch (RecipeException e) {
-            log.error("레시피 생성 실패: recipeId={}, reason={}", recipeId, e.getErrorMessage(), e);
+            log.error("레시피 생성 실패: recipeId={}, reason={}", recipeId, e.getError(), e);
 
-            if (e.getErrorMessage() == RecipeVerifyErrorCode.NOT_COOK_VIDEO) {
+            if (e.getError() == RecipeVerifyErrorCode.NOT_COOK_VIDEO) {
                 bannedRecipe(recipeId, creditCost);
             } else {
                 failedRecipe(recipeId, creditCost);

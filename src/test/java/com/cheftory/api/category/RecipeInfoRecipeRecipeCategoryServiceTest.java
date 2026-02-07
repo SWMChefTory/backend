@@ -100,7 +100,7 @@ public class RecipeInfoRecipeRecipeCategoryServiceTest {
                         recipeCategoryService.create(categoryName, userId);
                     });
 
-                    assertThat(exception.getErrorMessage())
+                    assertThat(exception.getError())
                             .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
                 }
             }
@@ -203,7 +203,7 @@ public class RecipeInfoRecipeRecipeCategoryServiceTest {
                     try {
                         recipeCategoryService.delete(recipeCategoryId);
                     } catch (RecipeCategoryException e) {
-                        assertThat(e.getErrorMessage()).isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND);
+                        assertThat(e.getError()).isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND);
                     }
                 }
             }

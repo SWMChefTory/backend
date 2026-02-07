@@ -7,7 +7,6 @@ import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
-import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
@@ -19,7 +18,7 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-import java.util.List;
+
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,28 +38,28 @@ public class RecipeCreationFacade {
     private final RecipeCreditPort creditPort;
     private final RecipeCreationTxService recipeCreationTxService;
 
-    public UUID create(RecipeCreationTarget target) {
+    public UUID createBookmark(RecipeCreationTarget target) {
         try {
             UUID recipeId = recipeYoutubeMetaService.getByUrl(target.uri()).getRecipeId();
             RecipeInfo recipeInfo = recipeInfoService.getSuccess(recipeId);
 
-            create(target, recipeInfo);
+            createBookmark(target, recipeInfo);
             return recipeInfo.getId();
         } catch (RecipeException e) {
-            if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND) {
-                log.info("create new recipe. reason={}", e.getErrorMessage());
+            if (e.getError() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND) {
+                log.info("create new recipe. reason={}", e.getError());
                 return createNewRecipe(target);
             }
-            if (e.getErrorMessage() == RecipeInfoErrorCode.RECIPE_FAILED) {
-                log.info("create new recipe. reason={}", e.getErrorMessage());
+            if (e.getError() == RecipeInfoErrorCode.RECIPE_FAILED) {
+                log.info("create new recipe. reason={}", e.getError());
                 return createNewRecipe(target);
             }
-            if (e.getErrorMessage() == YoutubeMetaErrorCode.YOUTUBE_META_BANNED) {
-                log.warn("create failed. reason={}", e.getErrorMessage(), e);
+            if (e.getError() == YoutubeMetaErrorCode.YOUTUBE_META_BANNED) {
+                log.warn("create failed. reason={}", e.getError(), e);
                 throw new RecipeException(RecipeErrorCode.RECIPE_BANNED);
             }
             
-            log.warn("create failed. reason={}", e.getErrorMessage(), e);
+            log.warn("create failed. reason={}", e.getError(), e);
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
     }
@@ -70,7 +69,7 @@ public class RecipeCreationFacade {
             YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(target.uri());
             RecipeInfo recipeInfo = recipeCreationTxService.createWithIdentifyWithVideoInfo(videoInfo);
             try {
-                create(target, recipeInfo);
+                createBookmark(target, recipeInfo);
                 asyncRecipeCreationService.create(
                     recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri());
                 return recipeInfo.getId();
@@ -81,17 +80,17 @@ public class RecipeCreationFacade {
                 throw e;
             }
         } catch (RecipeException e) {
-            if (e.getErrorMessage() == RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING) {
+            if (e.getError() == RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING) {
                 UUID recipeId = recipeYoutubeMetaService.getByUrl(target.uri()).getRecipeId();
                 RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
-                create(target, recipe);
+                createBookmark(target, recipe);
                 return recipe.getId();
             }
             throw e;
         }
     }
 
-    private void create(RecipeCreationTarget target, RecipeInfo recipeInfo) {
+    private void createBookmark(RecipeCreationTarget target, RecipeInfo recipeInfo) {
         switch (target) {
             case RecipeCreationTarget.User user -> {
                 UUID userId = user.userId();
@@ -104,10 +103,10 @@ public class RecipeCreationFacade {
                 } catch (CreditException e) {
                     recipeBookmarkService.delete(userId, recipeInfo.getId());
 
-                    if (e.getErrorMessage() == CreditErrorCode.CREDIT_INSUFFICIENT) {
+                    if (e.getError() == CreditErrorCode.CREDIT_INSUFFICIENT) {
                         throw new RecipeException(CreditErrorCode.CREDIT_INSUFFICIENT);
                     }
-                    if (e.getErrorMessage() == CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT) {
+                    if (e.getError() == CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT) {
                         throw new RecipeException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
                     }
                     throw e;

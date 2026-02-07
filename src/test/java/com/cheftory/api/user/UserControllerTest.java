@@ -348,4 +348,57 @@ public class UserControllerTest extends RestDocsTest {
                     .body("date_of_birth", equalTo(null));
         }
     }
+
+    @Nested
+    @DisplayName("POST /api/v1/users/tutorial - 튜토리얼 완료")
+    class tutorialResponse {
+
+        @Test
+        @DisplayName("성공 - 성공 메시지를 반환한다")
+        void shouldReturnSuccessMessage() {
+            var response = given().contentType(ContentType.JSON)
+                    .attribute("userId", fixedUserId.toString())
+                    .header("Authorization", "Bearer accessToken")
+                    .when()
+                    .post("/api/v1/users/tutorial")
+                    .then()
+                    .status(HttpStatus.OK);
+
+            response.body("message", equalTo("success"));
+        }
+
+        @Test
+        @DisplayName("실패 - 유저가 없으면 USER_NOT_FOUND 에러를 반환한다")
+        void shouldReturnUserNotFound() {
+            doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
+                    .when(userService)
+                    .tutorial(fixedUserId);
+
+            var response = given().contentType(ContentType.JSON)
+                    .attribute("userId", fixedUserId.toString())
+                    .header("Authorization", "Bearer accessToken")
+                    .when()
+                    .post("/api/v1/users/tutorial")
+                    .then();
+
+            assertErrorResponse(response, UserErrorCode.USER_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("실패 - 이미 완료된 경우 TUTORIAL_ALREADY_FINISHED 에러를 반환한다")
+        void shouldReturnTutorialAlreadyFinished() {
+            doThrow(new UserException(UserErrorCode.TUTORIAL_ALREADY_FINISHED))
+                    .when(userService)
+                    .tutorial(fixedUserId);
+
+            var response = given().contentType(ContentType.JSON)
+                    .attribute("userId", fixedUserId.toString())
+                    .header("Authorization", "Bearer accessToken")
+                    .when()
+                    .post("/api/v1/users/tutorial")
+                    .then();
+
+            assertErrorResponse(response, UserErrorCode.TUTORIAL_ALREADY_FINISHED);
+        }
+    }
 }
