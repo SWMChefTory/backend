@@ -53,8 +53,10 @@ public class RecipeVerifyClient {
         log.debug("영상 리소스 정리 요청 - fileUri: {}", fileUri);
 
         try {
-            webClient.delete()
-                    .uri(uriBuilder -> uriBuilder.path("/cleanup")
+            webClient
+                    .delete()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/cleanup")
                             .queryParam("file_uri", fileUri)
                             .build())
                     .retrieve()

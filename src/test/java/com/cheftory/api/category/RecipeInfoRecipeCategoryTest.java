@@ -82,9 +82,8 @@ public class RecipeInfoRecipeCategoryTest {
                 @DisplayName("Then - 예외가 발생해야 한다")
                 void thenShouldThrowException() {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, emptyCategoryName, userId))
-                            .isInstanceOfSatisfying(
-                                    RecipeCategoryException.class, ex -> assertThat(ex.getError())
-                                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
+                            .isInstanceOfSatisfying(RecipeCategoryException.class, ex -> assertThat(ex.getError())
+                                    .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
                 }
             }
         }
@@ -112,9 +111,8 @@ public class RecipeInfoRecipeCategoryTest {
                 @DisplayName("Then - 예외가 발생해야 한다")
                 void thenShouldThrowException() {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, nullCategoryName, userId))
-                            .isInstanceOfSatisfying(
-                                    RecipeCategoryException.class, ex -> assertThat(ex.getError())
-                                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
+                            .isInstanceOfSatisfying(RecipeCategoryException.class, ex -> assertThat(ex.getError())
+                                    .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
                 }
             }
         }
@@ -142,9 +140,8 @@ public class RecipeInfoRecipeCategoryTest {
                 @DisplayName("Then - 예외가 발생해야 한다")
                 void thenShouldThrowException() {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, blankCategoryName, userId))
-                            .isInstanceOfSatisfying(
-                                    RecipeCategoryException.class, ex -> assertThat(ex.getError())
-                                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
+                            .isInstanceOfSatisfying(RecipeCategoryException.class, ex -> assertThat(ex.getError())
+                                    .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
                 }
             }
         }

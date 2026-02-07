@@ -38,32 +38,31 @@ public class RecipeYoutubeMetaService {
     }
 
     public void failed(UUID recipeId) {
-        recipeYoutubeMetaRepository.findByRecipeId(recipeId)
-                .ifPresent(meta -> {
-                    meta.failed();
-                    recipeYoutubeMetaRepository.save(meta);
-                });
+        recipeYoutubeMetaRepository.findByRecipeId(recipeId).ifPresent(meta -> {
+            meta.failed();
+            recipeYoutubeMetaRepository.save(meta);
+        });
     }
 
     public RecipeYoutubeMeta getByUrl(URI uri) {
         YoutubeUri youtubeUri = YoutubeUri.from(uri);
-        List<RecipeYoutubeMeta> metas =
-            recipeYoutubeMetaRepository.findAllByVideoUri(youtubeUri.getNormalizedUrl());
+        List<RecipeYoutubeMeta> metas = recipeYoutubeMetaRepository.findAllByVideoUri(youtubeUri.getNormalizedUrl());
 
         validateAllActive(metas);
 
         List<RecipeYoutubeMeta> actives = metas.stream()
-            .filter(m -> m.getStatus() == YoutubeMetaStatus.ACTIVE)
-            .toList();
+                .filter(m -> m.getStatus() == YoutubeMetaStatus.ACTIVE)
+                .toList();
 
         if (actives.isEmpty()) {
             throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
         }
 
         if (actives.size() > 1) {
-            log.warn("Multiple RecipeYoutubeMeta detected. count={}, recipeIds={}",
-                metas.size(),
-                metas.stream().map(RecipeYoutubeMeta::getRecipeId).toList());
+            log.warn(
+                    "Multiple RecipeYoutubeMeta detected. count={}, recipeIds={}",
+                    metas.size(),
+                    metas.stream().map(RecipeYoutubeMeta::getRecipeId).toList());
         }
 
         return actives.getFirst();

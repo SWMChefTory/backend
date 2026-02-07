@@ -29,7 +29,8 @@ class RecipeCreationCleanupStepTest {
         String fileUri = "s3://bucket/file.mp4";
         RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
                 RecipeCreationExecutionContext.of(recipeId, "video-123", URI.create("https://youtu.be/123")),
-                fileUri, "video/mp4");
+                fileUri,
+                "video/mp4");
 
         // When
         sut.cleanup(context);
@@ -52,8 +53,8 @@ class RecipeCreationCleanupStepTest {
     @DisplayName("fileUri가 null이면 아무것도 하지 않는다")
     void shouldDoNothingWhenFileUriIsNull() {
         // Given
-        RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(
-                UUID.randomUUID(), "video-123", URI.create("https://youtu.be/123"));
+        RecipeCreationExecutionContext context =
+                RecipeCreationExecutionContext.of(UUID.randomUUID(), "video-123", URI.create("https://youtu.be/123"));
 
         // When
         sut.cleanup(context);

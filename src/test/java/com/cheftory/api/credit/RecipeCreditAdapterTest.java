@@ -34,12 +34,11 @@ class RecipeCreditAdapterTest {
         recipeCreditAdapter.spendRecipeCreate(userId, recipeId, cost);
 
         // then
-        verify(creditService).spend(argThat(credit -> 
-            credit.userId().equals(userId) && 
-            credit.reason() == CreditReason.RECIPE_CREATE &&
-            credit.amount() == cost &&
-            credit.idempotencyKey().contains("recipe-create:" + userId + ":" + recipeId)
-        ));
+        verify(creditService)
+                .spend(argThat(credit -> credit.userId().equals(userId)
+                        && credit.reason() == CreditReason.RECIPE_CREATE
+                        && credit.amount() == cost
+                        && credit.idempotencyKey().contains("recipe-create:" + userId + ":" + recipeId)));
     }
 
     @Test
@@ -54,11 +53,10 @@ class RecipeCreditAdapterTest {
         recipeCreditAdapter.refundRecipeCreate(userId, recipeId, cost);
 
         // then
-        verify(creditService).grant(argThat(credit -> 
-            credit.userId().equals(userId) && 
-            credit.reason() == CreditReason.RECIPE_CREATE_REFUND &&
-            credit.amount() == cost &&
-            credit.idempotencyKey().contains("recipe-create-refund:" + userId + ":" + recipeId)
-        ));
+        verify(creditService)
+                .grant(argThat(credit -> credit.userId().equals(userId)
+                        && credit.reason() == CreditReason.RECIPE_CREATE_REFUND
+                        && credit.amount() == cost
+                        && credit.idempotencyKey().contains("recipe-create-refund:" + userId + ":" + recipeId)));
     }
 }

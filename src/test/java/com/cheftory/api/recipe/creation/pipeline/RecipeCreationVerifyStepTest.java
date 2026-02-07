@@ -59,7 +59,7 @@ class RecipeCreationVerifyStepTest {
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
             RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
-            
+
             String fileUri = "s3://bucket/file.mp4";
             String mimeType = "video/mp4";
             RecipeVerifyClientResponse verifyResponse = new RecipeVerifyClientResponse(fileUri, mimeType);

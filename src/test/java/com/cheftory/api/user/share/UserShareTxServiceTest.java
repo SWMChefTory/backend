@@ -91,7 +91,8 @@ class UserShareTxServiceTest {
             when(userShareRepository.findByUserIdAndSharedAt(userId, today)).thenReturn(Optional.of(existingShare));
 
             // when & then
-            UserShareException exception = assertThrows(UserShareException.class, () -> userShareTxService.shareTx(userId));
+            UserShareException exception =
+                    assertThrows(UserShareException.class, () -> userShareTxService.shareTx(userId));
             assertThat(exception.getError()).isEqualTo(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
         }
 

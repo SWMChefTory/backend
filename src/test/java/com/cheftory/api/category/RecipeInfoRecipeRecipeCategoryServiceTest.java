@@ -100,8 +100,7 @@ public class RecipeInfoRecipeRecipeCategoryServiceTest {
                         recipeCategoryService.create(categoryName, userId);
                     });
 
-                    assertThat(exception.getError())
-                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
+                    assertThat(exception.getError()).isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
                 }
             }
         }

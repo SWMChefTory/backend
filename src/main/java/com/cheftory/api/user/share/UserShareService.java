@@ -1,9 +1,7 @@
 package com.cheftory.api.user.share;
 
-
-import java.util.UUID;
-
 import com.cheftory.api.credit.exception.CreditException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,6 @@ public class UserShareService {
 
     private final UserShareTxService userShareTxService;
     private final UserShareCreditPort userShareCreditPort;
-
 
     public int share(UUID userId) {
         UserShare userShare = userShareTxService.shareTx(userId);

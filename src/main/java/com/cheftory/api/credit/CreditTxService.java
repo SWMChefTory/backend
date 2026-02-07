@@ -23,7 +23,8 @@ public class CreditTxService {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
         if (alreadyProcessed(
-                () -> transactionRepository.saveAndFlush(CreditTransaction.grant(credit, clock)), credit.idempotencyKey())) {
+                () -> transactionRepository.saveAndFlush(CreditTransaction.grant(credit, clock)),
+                credit.idempotencyKey())) {
             return;
         }
 
@@ -36,7 +37,8 @@ public class CreditTxService {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
         if (alreadyProcessed(
-                () -> transactionRepository.saveAndFlush(CreditTransaction.spend(credit, clock)), credit.idempotencyKey())) {
+                () -> transactionRepository.saveAndFlush(CreditTransaction.spend(credit, clock)),
+                credit.idempotencyKey())) {
             return;
         }
 

@@ -2,10 +2,9 @@ package com.cheftory.api.credit;
 
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.entity.CreditUserBalance;
-import java.util.UUID;
-
 import com.cheftory.api.credit.exception.CreditErrorCode;
 import com.cheftory.api.credit.exception.CreditException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -40,8 +39,13 @@ public class CreditService {
 
     @Recover
     public void recover(ObjectOptimisticLockingFailureException e, Credit credit) {
-        log.warn("Credit optimistic lock retry exhausted. userId={}, reason={}, amount={}, key={}",
-            credit.userId(), credit.reason(), credit.amount(), credit.idempotencyKey(), e);
+        log.warn(
+                "Credit optimistic lock retry exhausted. userId={}, reason={}, amount={}, key={}",
+                credit.userId(),
+                credit.reason(),
+                credit.amount(),
+                credit.idempotencyKey(),
+                e);
         throw new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
     }
 }

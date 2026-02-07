@@ -19,16 +19,17 @@ public class RecipeCreationVerifyStep implements RecipeCreationPipelineStep {
     public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) {
 
         /* TODO
-        * 하위 호환성 때문에 남겨둠
-        */
+         * 하위 호환성 때문에 남겨둠
+         */
         recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
         try {
             RecipeVerifyClientResponse verifyResponse = recipeVerifyService.verify(context.getVideoId());
-            
+
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
-            
-            return RecipeCreationExecutionContext.withFileInfo(context, verifyResponse.fileUri(), verifyResponse.mimeType());
+
+            return RecipeCreationExecutionContext.withFileInfo(
+                    context, verifyResponse.fileUri(), verifyResponse.mimeType());
         } catch (RecipeException ex) {
             recipeProgressService.failed(
                     context.getRecipeId(), RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);

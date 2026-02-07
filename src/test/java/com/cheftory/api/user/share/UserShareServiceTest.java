@@ -60,7 +60,7 @@ class UserShareServiceTest {
             when(userShare.getCount()).thenReturn(1);
             when(userShare.getSharedAt()).thenReturn(sharedAt);
             when(userShareTxService.shareTx(userId)).thenReturn(userShare);
-            
+
             CreditException creditException = mock(CreditException.class);
             doThrow(creditException).when(userShareCreditPort).grantUserShare(userId, 1);
 

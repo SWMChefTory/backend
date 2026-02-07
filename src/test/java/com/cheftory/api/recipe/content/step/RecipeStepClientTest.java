@@ -100,8 +100,7 @@ class RecipeStepClientTest {
             RecordedRequest recordedRequest = mockWebServer.takeRequest();
             assertThat(recordedRequest.getMethod()).isEqualTo("POST");
             assertThat(recordedRequest.getPath()).isEqualTo("/steps/video");
-            assertThat(recordedRequest.getHeader(HttpHeaders.CONTENT_TYPE))
-                    .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+            assertThat(recordedRequest.getHeader(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
             ClientRecipeStepsRequest actualRequest =
                     objectMapper.readValue(recordedRequest.getBody().readUtf8(), ClientRecipeStepsRequest.class);

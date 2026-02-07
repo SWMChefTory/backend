@@ -18,7 +18,6 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
-
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +57,7 @@ public class RecipeCreationFacade {
                 log.warn("create failed. reason={}", e.getError(), e);
                 throw new RecipeException(RecipeErrorCode.RECIPE_BANNED);
             }
-            
+
             log.warn("create failed. reason={}", e.getError(), e);
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
@@ -71,12 +70,13 @@ public class RecipeCreationFacade {
             try {
                 createBookmark(target, recipeInfo);
                 asyncRecipeCreationService.create(
-                    recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri());
+                        recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri());
                 return recipeInfo.getId();
             } catch (Exception e) {
                 recipeIdentifyService.delete(target.uri());
                 recipeInfoService.failed(recipeInfo.getId());
-                recipeProgressService.failed(recipeInfo.getId(), RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                recipeProgressService.failed(
+                        recipeInfo.getId(), RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
                 throw e;
             }
         } catch (RecipeException e) {
@@ -112,8 +112,7 @@ public class RecipeCreationFacade {
                     throw e;
                 }
             }
-            case RecipeCreationTarget.Crawler crawler -> {
-            }
+            case RecipeCreationTarget.Crawler crawler -> {}
         }
     }
 }

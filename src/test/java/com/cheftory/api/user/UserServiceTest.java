@@ -221,7 +221,8 @@ class UserServiceTest {
         @DisplayName("이미 완료된 경우 TUTORIAL_ALREADY_FINISHED 예외를 던진다")
         void it_throws_when_already_completed() {
             when(userRepository.existsById(userId)).thenReturn(true);
-            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any())).thenReturn(0);
+            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any()))
+                    .thenReturn(0);
 
             UserException ex = assertThrows(UserException.class, () -> userService.tutorial(userId));
 
@@ -233,7 +234,8 @@ class UserServiceTest {
         @DisplayName("완료 처리 후 크레딧을 지급한다")
         void it_grants_credit_after_completion() {
             when(userRepository.existsById(userId)).thenReturn(true);
-            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any())).thenReturn(1);
+            when(userRepository.completeTutorialIfNotCompleted(eq(userId), any()))
+                    .thenReturn(1);
 
             userService.tutorial(userId);
 

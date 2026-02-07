@@ -95,7 +95,6 @@ public class RecipeBookmarkServiceTest {
                 userId = UUID.randomUUID();
             }
 
-
             @Test
             void create_success_returnsTrue_andDoesNotQueryExisting() {
                 UUID userId = UUID.randomUUID();
@@ -116,14 +115,13 @@ public class RecipeBookmarkServiceTest {
                 UUID recipeId = UUID.randomUUID();
 
                 doThrow(new DataIntegrityViolationException("dup"))
-                    .when(repository)
-                    .saveAndFlush(any(RecipeBookmark.class));
+                        .when(repository)
+                        .saveAndFlush(any(RecipeBookmark.class));
 
                 RecipeBookmark existing = mock(RecipeBookmark.class);
                 when(existing.getStatus()).thenReturn(RecipeBookmarkStatus.ACTIVE);
 
-                when(repository.findByUserIdAndRecipeId(userId, recipeId))
-                    .thenReturn(Optional.of(existing));
+                when(repository.findByUserIdAndRecipeId(userId, recipeId)).thenReturn(Optional.of(existing));
 
                 boolean result = service.create(userId, recipeId);
 
@@ -144,14 +142,13 @@ public class RecipeBookmarkServiceTest {
                 UUID recipeId = UUID.randomUUID();
 
                 doThrow(new DataIntegrityViolationException("dup"))
-                    .when(repository)
-                    .saveAndFlush(any(RecipeBookmark.class));
+                        .when(repository)
+                        .saveAndFlush(any(RecipeBookmark.class));
 
                 RecipeBookmark existing = mock(RecipeBookmark.class);
                 when(existing.getStatus()).thenReturn(RecipeBookmarkStatus.ACTIVE);
 
-                when(repository.findByUserIdAndRecipeId(userId, recipeId))
-                    .thenReturn(Optional.of(existing));
+                when(repository.findByUserIdAndRecipeId(userId, recipeId)).thenReturn(Optional.of(existing));
 
                 boolean result = service.create(userId, recipeId);
 
@@ -172,15 +169,12 @@ public class RecipeBookmarkServiceTest {
                 UUID recipeId = UUID.randomUUID();
 
                 DataIntegrityViolationException dup = new DataIntegrityViolationException("dup");
-                doThrow(dup)
-                    .when(repository)
-                    .saveAndFlush(any(RecipeBookmark.class));
+                doThrow(dup).when(repository).saveAndFlush(any(RecipeBookmark.class));
 
-                when(repository.findByUserIdAndRecipeId(userId, recipeId))
-                    .thenReturn(Optional.empty());
+                when(repository.findByUserIdAndRecipeId(userId, recipeId)).thenReturn(Optional.empty());
 
                 DataIntegrityViolationException thrown =
-                    assertThrows(DataIntegrityViolationException.class, () -> service.create(userId, recipeId));
+                        assertThrows(DataIntegrityViolationException.class, () -> service.create(userId, recipeId));
 
                 assertSame(dup, thrown);
 
@@ -195,16 +189,13 @@ public class RecipeBookmarkServiceTest {
                 UUID recipeId = UUID.randomUUID();
 
                 doThrow(new DataIntegrityViolationException("dup"))
-                    .when(repository)
-                    .saveAndFlush(any(RecipeBookmark.class));
+                        .when(repository)
+                        .saveAndFlush(any(RecipeBookmark.class));
 
                 RuntimeException dbFail = new RuntimeException("db down");
-                doThrow(dbFail)
-                    .when(repository)
-                    .findByUserIdAndRecipeId(userId, recipeId);
+                doThrow(dbFail).when(repository).findByUserIdAndRecipeId(userId, recipeId);
 
-                RuntimeException thrown =
-                    assertThrows(RuntimeException.class, () -> service.create(userId, recipeId));
+                RuntimeException thrown = assertThrows(RuntimeException.class, () -> service.create(userId, recipeId));
 
                 assertSame(dbFail, thrown);
 
@@ -491,8 +482,7 @@ public class RecipeBookmarkServiceTest {
                             RecipeBookmarkException.class,
                             () -> service.updateCategory(userId, recipeId, newCategoryId));
 
-                    assertThat(exception.getError())
-                            .isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
+                    assertThat(exception.getError()).isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
                     verify(repository, never()).save(any());
                 }
             }
@@ -872,8 +862,7 @@ public class RecipeBookmarkServiceTest {
                     RecipeBookmarkException exception =
                             assertThrows(RecipeBookmarkException.class, () -> service.delete(userId, recipeId));
 
-                    assertThat(exception.getError())
-                            .isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
+                    assertThat(exception.getError()).isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
                     verify(repository, never()).save(any());
                 }
             }

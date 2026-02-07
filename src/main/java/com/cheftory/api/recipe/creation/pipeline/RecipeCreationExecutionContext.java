@@ -22,7 +22,9 @@ public class RecipeCreationExecutionContext {
         return new RecipeCreationExecutionContext(recipeId, videoId, videoUrl, null, null);
     }
 
-    public static RecipeCreationExecutionContext withFileInfo(RecipeCreationExecutionContext context, String fileUri, String mimeType) {
-        return new RecipeCreationExecutionContext(context.recipeId, context.videoId, context.videoUrl, fileUri, mimeType);
+    public static RecipeCreationExecutionContext withFileInfo(
+            RecipeCreationExecutionContext context, String fileUri, String mimeType) {
+        return new RecipeCreationExecutionContext(
+                context.recipeId, context.videoId, context.videoUrl, fileUri, mimeType);
     }
 }

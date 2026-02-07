@@ -93,14 +93,18 @@ class RecipeCreationPipelineTest {
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
             RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
-            RecipeCreationExecutionContext updatedContext = RecipeCreationExecutionContext.withFileInfo(
-                    context, "s3://bucket/file.mp4", "video/mp4");
+            RecipeCreationExecutionContext updatedContext =
+                    RecipeCreationExecutionContext.withFileInfo(context, "s3://bucket/file.mp4", "video/mp4");
 
             when(recipeCreationVerifyStep.run(context)).thenReturn(updatedContext);
 
             sut.run(context);
 
-            InOrder order = inOrder(recipeProgressService, recipeCreationVerifyStep, recipeCreationFinalizeStep, recipeCreationCleanupStep);
+            InOrder order = inOrder(
+                    recipeProgressService,
+                    recipeCreationVerifyStep,
+                    recipeCreationFinalizeStep,
+                    recipeCreationCleanupStep);
 
             order.verify(recipeProgressService).start(recipeId, RecipeProgressStep.READY, RecipeProgressDetail.READY);
             order.verify(recipeCreationVerifyStep).run(context);
@@ -115,15 +119,16 @@ class RecipeCreationPipelineTest {
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
             RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
-            RecipeCreationExecutionContext updatedContext = RecipeCreationExecutionContext.withFileInfo(
-                    context, "s3://bucket/file.mp4", "video/mp4");
+            RecipeCreationExecutionContext updatedContext =
+                    RecipeCreationExecutionContext.withFileInfo(context, "s3://bucket/file.mp4", "video/mp4");
 
             when(recipeCreationVerifyStep.run(context)).thenReturn(updatedContext);
             when(recipeCreationFinalizeStep.run(updatedContext)).thenThrow(new RuntimeException("fail"));
 
             try {
                 sut.run(context);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             verify(recipeCreationCleanupStep).cleanup(updatedContext);
         }

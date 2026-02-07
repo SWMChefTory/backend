@@ -38,12 +38,7 @@ public class RecipeInfo extends MarketScope {
     public static RecipeInfo create(Clock clock) {
         LocalDateTime now = clock.now();
         return new RecipeInfo(
-                UUID.randomUUID(),
-                INITIAL_VIEW_COUNT,
-                now,
-                now,
-                RecipeStatus.IN_PROGRESS,
-                DEFAULT_CREDIT_COST);
+                UUID.randomUUID(), INITIAL_VIEW_COUNT, now, now, RecipeStatus.IN_PROGRESS, DEFAULT_CREDIT_COST);
     }
 
     public void success(Clock clock) {

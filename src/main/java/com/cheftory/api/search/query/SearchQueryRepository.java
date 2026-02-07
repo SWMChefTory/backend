@@ -85,11 +85,11 @@ public class SearchQueryRepository {
                     SearchQuery.class);
 
             var docs = response.docs().stream()
-                .map(MultiGetResponseItem::result)
-                .filter(r -> r != null && r.found())
-                .map(GetResult::source)
-                .filter(java.util.Objects::nonNull)
-                .toList();
+                    .map(MultiGetResponseItem::result)
+                    .filter(r -> r != null && r.found())
+                    .map(GetResult::source)
+                    .filter(java.util.Objects::nonNull)
+                    .toList();
 
             if (docs.size() != ids.size()) {
                 var foundIds = docs.stream().map(SearchQuery::getId).collect(java.util.stream.Collectors.toSet());

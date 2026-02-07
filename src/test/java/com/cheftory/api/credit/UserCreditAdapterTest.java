@@ -25,7 +25,7 @@ class UserCreditAdapterTest {
         creditService = mock(CreditService.class);
         clock = mock(Clock.class);
         when(clock.now()).thenReturn(LocalDateTime.of(2024, 1, 1, 0, 0));
-        userCreditAdapter = new UserCreditAdapter(creditService,clock);
+        userCreditAdapter = new UserCreditAdapter(creditService, clock);
     }
 
     @Test
@@ -39,13 +39,12 @@ class UserCreditAdapterTest {
         userCreditAdapter.grantUserShare(userId, count);
 
         // then
-        verify(creditService).grant(argThat(credit -> 
-            credit.userId().equals(userId) && 
-            credit.reason() == CreditReason.SHARE &&
-            credit.amount() == 10L &&
-            credit.idempotencyKey().contains("share:" + userId + ":") &&
-            credit.idempotencyKey().endsWith(":" + count)
-        ));
+        verify(creditService)
+                .grant(argThat(credit -> credit.userId().equals(userId)
+                        && credit.reason() == CreditReason.SHARE
+                        && credit.amount() == 10L
+                        && credit.idempotencyKey().contains("share:" + userId + ":")
+                        && credit.idempotencyKey().endsWith(":" + count)));
     }
 
     @Test
@@ -58,10 +57,9 @@ class UserCreditAdapterTest {
         userCreditAdapter.grantUserTutorial(userId);
 
         // then
-        verify(creditService).grant(argThat(credit -> 
-            credit.userId().equals(userId) && 
-            credit.reason() == CreditReason.TUTORIAL &&
-            credit.amount() == 30L
-        ));
+        verify(creditService)
+                .grant(argThat(credit -> credit.userId().equals(userId)
+                        && credit.reason() == CreditReason.TUTORIAL
+                        && credit.amount() == 30L));
     }
 }

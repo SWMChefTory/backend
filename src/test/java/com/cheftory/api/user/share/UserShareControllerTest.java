@@ -72,8 +72,7 @@ public class UserShareControllerTest extends RestDocsTest {
                             getNestedClassPath(this.getClass()) + "/{method-name}",
                             requestPreprocessor(),
                             responsePreprocessor(),
-                            responseFields(
-                                    fieldWithPath("share_count").description("오늘의 공유 횟수"))));
+                            responseFields(fieldWithPath("share_count").description("오늘의 공유 횟수"))));
 
             response.body("share_count", equalTo(1));
         }
@@ -82,7 +81,8 @@ public class UserShareControllerTest extends RestDocsTest {
         @DisplayName("실패 - 일일 공유 제한을 초과하면 에러를 반환한다")
         void shouldReturnLimitExceededError() {
             doThrow(new UserShareException(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED))
-                    .when(userShareService).share(fixedUserId);
+                    .when(userShareService)
+                    .share(fixedUserId);
 
             var response = given().contentType(ContentType.JSON)
                     .attribute("userId", fixedUserId.toString())
