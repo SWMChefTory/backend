@@ -28,7 +28,7 @@ public class CreditTransaction {
     private CreditTransactionType type;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private CreditReason reason;
 
     @Column(nullable = false)
