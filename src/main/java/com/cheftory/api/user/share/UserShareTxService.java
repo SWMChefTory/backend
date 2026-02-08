@@ -24,6 +24,7 @@ public class UserShareTxService {
 
     @Retryable(
             retryFor = ObjectOptimisticLockingFailureException.class,
+            notRetryFor = UserShareException.class,
             maxAttempts = 3,
             backoff = @Backoff(delay = 30, multiplier = 2.0))
     @Transactional
@@ -65,5 +66,14 @@ public class UserShareTxService {
     }
 
     @Recover
-    public void recover(ObjectOptimisticLockingFailureException e, UUID userId, LocalDateTime sharedAt) {}
+    public UserShare recover(UserShareException e, UUID userId) {
+        // 비즈니스 로직 에러(3회 초과 등)는 그대로 다시 던지기
+        throw e;
+    }
+
+    @Recover
+    public void recover(ObjectOptimisticLockingFailureException e, UUID userId, LocalDate sharedAt) {
+        // 보상 트랜잭션 실패 시 로그를 남기고 에러를 다시 던짐
+        throw new UserShareException(UserShareErrorCode.USER_SHARE_CREATE_FAIL);
+    }
 }
