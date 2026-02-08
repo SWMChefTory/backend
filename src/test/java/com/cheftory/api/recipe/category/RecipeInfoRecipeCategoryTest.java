@@ -1,4 +1,4 @@
-package com.cheftory.api.category;
+package com.cheftory.api.recipe.category;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

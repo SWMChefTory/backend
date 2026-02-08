@@ -98,8 +98,8 @@ public class RecipeController {
     }
 
     @DeleteMapping("/api/v1/recipes/categories/{recipeCategoryId}")
-    public SuccessOnlyResponse deleteRecipeCategory(@PathVariable UUID recipeCategoryId) {
-        recipeFacade.deleteCategory(recipeCategoryId);
+    public SuccessOnlyResponse deleteRecipeCategory(@UserPrincipal UUID userId, @PathVariable UUID recipeCategoryId) {
+        recipeFacade.deleteCategory(userId, recipeCategoryId);
         return SuccessOnlyResponse.create();
     }
 

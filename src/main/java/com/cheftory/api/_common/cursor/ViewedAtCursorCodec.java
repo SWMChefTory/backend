@@ -10,15 +10,23 @@ public class ViewedAtCursorCodec implements CursorCodec<ViewedAtCursor> {
     private static final String SEP = "|";
 
     public ViewedAtCursor decode(String cursor) {
-        int idx = cursor.lastIndexOf(SEP);
+        try {
+            int idx = cursor.lastIndexOf(SEP);
 
-        LocalDateTime t = LocalDateTime.parse(cursor.substring(0, idx));
-        UUID id = UUID.fromString(cursor.substring(idx + 1));
-        return new ViewedAtCursor(t, id);
+            LocalDateTime t = LocalDateTime.parse(cursor.substring(0, idx));
+            UUID id = UUID.fromString(cursor.substring(idx + 1));
+            return new ViewedAtCursor(t, id);
+        } catch (Exception e) {
+            throw new CursorException(CursorErrorCode.INVALID_CURSOR);
+        }
     }
 
     @Override
     public String encode(ViewedAtCursor value) {
-        return value.lastViewedAt().toString() + SEP + value.lastId().toString();
+        try {
+            return value.lastViewedAt().toString() + SEP + value.lastId().toString();
+        } catch (Exception e) {
+            throw new CursorException(CursorErrorCode.INVALID_CURSOR);
+        }
     }
 }

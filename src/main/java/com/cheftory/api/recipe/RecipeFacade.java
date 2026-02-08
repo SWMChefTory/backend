@@ -240,9 +240,9 @@ public class RecipeFacade {
         return RecipeCategoryCounts.of(uncategorizedCount.getCount(), categoriesWithCount);
     }
 
-    public void deleteCategory(UUID categoryId) {
+    public void deleteCategory(UUID userId, UUID categoryId) {
         recipeBookmarkService.unCategorize(categoryId);
-        recipeCategoryService.delete(categoryId);
+        recipeCategoryService.delete(userId, categoryId);
     }
 
     public RecipeProgressStatus getRecipeProgress(UUID recipeId) {

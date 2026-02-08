@@ -2,6 +2,9 @@ package com.cheftory.api.recipe.bookmark.exception;
 
 import com.cheftory.api.exception.Error;
 
+/**
+ * 레시피 북마크 에러 코드
+ */
 public enum RecipeBookmarkErrorCode implements Error {
     RECIPE_BOOKMARK_NOT_FOUND("RECIPE_BOOKMARK_001", "유저 레시피가 존재하지 않습니다."),
     RECIPE_BOOKMARK_ALREADY_EXISTS("RECIPE_BOOKMARK_002", "이미 존재하는 유저 레시피입니다."),
