@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.auth.entity.AuthTokenType;
 import com.cheftory.api.auth.entity.Login;
 import com.cheftory.api.auth.exception.AuthErrorCode;
 import com.cheftory.api.auth.exception.AuthException;
@@ -87,8 +88,8 @@ class AuthServiceTest {
 
     @Test
     void createAuthToken_shouldReturnTokens() {
-        doReturn(accessToken).when(jwtProvider).createAccessToken(userId);
-        doReturn(refreshToken).when(jwtProvider).createRefreshToken(userId);
+        doReturn(accessToken).when(jwtProvider).createToken(userId, AuthTokenType.ACCESS);
+        doReturn(refreshToken).when(jwtProvider).createToken(userId, AuthTokenType.REFRESH);
 
         AuthTokens result = authService.createAuthToken(userId);
 
@@ -106,7 +107,7 @@ class AuthServiceTest {
         authService.saveLoginSession(userId, refreshToken);
 
         ArgumentCaptor<Login> captor = ArgumentCaptor.forClass(Login.class);
-        verify(loginRepository).save(captor.capture());
+        verify(loginRepository).create(captor.capture());
         Login saved = captor.getValue();
 
         assertThat(saved.getUserId()).isEqualTo(userId);
@@ -119,11 +120,10 @@ class AuthServiceTest {
     void reissue_shouldUpdateAndReturnNewTokens() {
         Login existingLogin = Login.create(userId, refreshToken, fixedNow.plusDays(1), clock);
 
-        doReturn(true).when(jwtProvider).isRefreshToken(refreshToken);
-        doReturn(userId).when(jwtProvider).getUserIdFromToken(refreshToken);
-        doReturn(accessToken).when(jwtProvider).createAccessToken(userId);
-        doReturn(newRefreshToken).when(jwtProvider).createRefreshToken(userId);
-        doReturn(Optional.of(existingLogin)).when(loginRepository).findByUserIdAndRefreshToken(userId, refreshToken);
+        doReturn(userId).when(jwtProvider).getUserId(refreshToken, AuthTokenType.REFRESH);
+        doReturn(accessToken).when(jwtProvider).createToken(userId, AuthTokenType.ACCESS);
+        doReturn(newRefreshToken).when(jwtProvider).createToken(userId, AuthTokenType.REFRESH);
+        doReturn(Optional.of(existingLogin)).when(loginRepository).find(userId, refreshToken);
 
         doReturn(fixedNow.plusDays(7)).when(jwtProvider).getExpiration(newRefreshToken);
 
@@ -131,12 +131,14 @@ class AuthServiceTest {
 
         assertThat(result.accessToken()).isEqualTo(accessToken);
         assertThat(result.refreshToken()).isEqualTo(newRefreshToken);
-        verify(loginRepository).save(any(Login.class));
+        verify(loginRepository).create(any(Login.class));
     }
 
     @Test
     void reissue_withInvalidToken_shouldThrow() {
-        doReturn(false).when(jwtProvider).isRefreshToken(refreshToken);
+        doThrow(new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN))
+                .when(jwtProvider)
+                .getUserId(refreshToken, AuthTokenType.REFRESH);
 
         AuthException ex = assertThrows(AuthException.class, () -> authService.reissue(refreshToken));
 
@@ -146,16 +148,16 @@ class AuthServiceTest {
     @Test
     void deleteRefreshToken_shouldDeleteLogin() {
         Login login = Login.create(userId, refreshToken, fixedNow.plusDays(1), clock);
-        doReturn(Optional.of(login)).when(loginRepository).findByUserIdAndRefreshToken(userId, refreshToken);
+        doReturn(Optional.of(login)).when(loginRepository).find(userId, refreshToken);
 
         authService.deleteRefreshToken(userId, refreshToken);
 
-        verify(loginRepository).delete(login);
+        verify(loginRepository).delete(login.getUserId(), login.getRefreshToken());
     }
 
     @Test
     void deleteRefreshToken_shouldThrowWhenNotFound() {
-        doReturn(Optional.empty()).when(loginRepository).findByUserIdAndRefreshToken(userId, refreshToken);
+        doReturn(Optional.empty()).when(loginRepository).find(userId, refreshToken);
 
         AuthException ex =
                 assertThrows(AuthException.class, () -> authService.deleteRefreshToken(userId, refreshToken));

@@ -3,14 +3,16 @@ package com.cheftory.api.auth.jwt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.cheftory.api._common.Clock;
+import com.cheftory.api.auth.entity.AuthTokenType;
 import com.cheftory.api.auth.exception.AuthErrorCode;
 import com.cheftory.api.auth.exception.AuthException;
 import com.cheftory.api.auth.jwt.property.JwtProperties;
+import org.mockito.Mockito;
 import io.jsonwebtoken.security.Keys;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
 import javax.crypto.SecretKey;
@@ -21,6 +23,7 @@ class TokenProviderTest {
 
     private TokenProvider tokenProvider;
     private JwtProperties jwtProperties;
+    private Clock clock;
 
     private final String secret = "test-secret-key-that-is-at-least-256-bits-long-for-hs256-algorithm";
     private final long accessTokenExpiration = 3600L;
@@ -31,6 +34,9 @@ class TokenProviderTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        clock = Mockito.mock(Clock.class);
+        Mockito.when(clock.nowMillis()).thenAnswer(i -> System.currentTimeMillis());
+
         jwtProperties = new JwtProperties();
 
         Field secretField = JwtProperties.class.getDeclaredField("secret");
@@ -53,12 +59,12 @@ class TokenProviderTest {
         refreshTokenTypeField.setAccessible(true);
         refreshTokenTypeField.set(jwtProperties, refreshTokenType);
 
-        tokenProvider = new TokenProvider(jwtProperties);
+        tokenProvider = new TokenProvider(jwtProperties, clock);
     }
 
     @Test
     void createAccessToken_shouldReturnValidToken() {
-        String token = tokenProvider.createAccessToken(userId);
+        String token = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
         assertThat(token).isNotNull();
         assertThat(token).isNotBlank();
@@ -67,7 +73,7 @@ class TokenProviderTest {
 
     @Test
     void createRefreshToken_shouldReturnValidToken() {
-        String token = tokenProvider.createRefreshToken(userId);
+        String token = tokenProvider.createToken(userId, AuthTokenType.REFRESH);
 
         assertThat(token).isNotNull();
         assertThat(token).isNotBlank();
@@ -76,24 +82,25 @@ class TokenProviderTest {
 
     @Test
     void getUserIdFromToken_withValidAccessToken_shouldReturnUserId() {
-        String token = tokenProvider.createAccessToken(userId);
+        String token = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
-        UUID extractedUserId = tokenProvider.getUserIdFromToken(token);
+        UUID extractedUserId = tokenProvider.getUserId(token, AuthTokenType.ACCESS);
 
         assertThat(extractedUserId).isEqualTo(userId);
     }
 
     @Test
-    void getUserIdFromToken_withMalformedToken_shouldThrowInvalidToken() {
+    void getUserId_withMalformedToken_shouldThrowInvalidToken() {
         String malformedToken = "not.a.valid.jwt.token";
 
-        AuthException ex = assertThrows(AuthException.class, () -> tokenProvider.getUserIdFromToken(malformedToken));
+        AuthException ex =
+                assertThrows(AuthException.class, () -> tokenProvider.getUserId(malformedToken, AuthTokenType.ACCESS));
 
         assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_TOKEN);
     }
 
     @Test
-    void getUserIdFromToken_withExpiredToken_shouldThrowInvalidToken() {
+    void getUserId_withExpiredToken_shouldThrowExpiredToken() {
         SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         Date now = new Date();
         Date oneSecondAgo = new Date(now.getTime() - 1000);
@@ -106,41 +113,14 @@ class TokenProviderTest {
                 .signWith(secretKey)
                 .compact();
 
-        AuthException ex = assertThrows(AuthException.class, () -> tokenProvider.getUserIdFromToken(expiredToken));
+        AuthException ex = assertThrows(AuthException.class, () -> tokenProvider.getUserId(expiredToken, AuthTokenType.ACCESS));
 
-        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_TOKEN);
-    }
-
-    @Test
-    void isRefreshToken_withRefreshToken_shouldReturnTrue() {
-        String refreshToken = tokenProvider.createRefreshToken(userId);
-
-        boolean isRefresh = tokenProvider.isRefreshToken(refreshToken);
-
-        assertThat(isRefresh).isTrue();
-    }
-
-    @Test
-    void isRefreshToken_withAccessToken_shouldReturnFalse() {
-        String accessToken = tokenProvider.createAccessToken(userId);
-
-        boolean isRefresh = tokenProvider.isRefreshToken(accessToken);
-
-        assertThat(isRefresh).isFalse();
-    }
-
-    @Test
-    void isRefreshToken_withMalformedToken_shouldThrowInvalidToken() {
-        String malformedToken = "not.a.valid.jwt.token";
-
-        AuthException ex = assertThrows(AuthException.class, () -> tokenProvider.isRefreshToken(malformedToken));
-
-        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_TOKEN);
+        assertThat(ex.getError()).isEqualTo(AuthErrorCode.EXPIRED_TOKEN);
     }
 
     @Test
     void getExpiration_withValidToken_shouldReturnExpirationDateTime() {
-        String token = tokenProvider.createAccessToken(userId);
+        String token = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
         LocalDateTime expiration = tokenProvider.getExpiration(token);
 
@@ -150,7 +130,7 @@ class TokenProviderTest {
 
     @Test
     void getExpiration_withRefreshToken_shouldReturnExpirationDateTime() {
-        String refreshToken = tokenProvider.createRefreshToken(userId);
+        String refreshToken = tokenProvider.createToken(userId, AuthTokenType.REFRESH);
 
         LocalDateTime expiration = tokenProvider.getExpiration(refreshToken);
 
@@ -169,9 +149,9 @@ class TokenProviderTest {
 
     @Test
     void getUserIdFromToken_and_getExpiration_shouldUseSameExpirationTime() {
-        String token = tokenProvider.createAccessToken(userId);
+        String token = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
-        UUID extractedUserId = tokenProvider.getUserIdFromToken(token);
+        UUID extractedUserId = tokenProvider.getUserId(token, AuthTokenType.ACCESS);
         LocalDateTime expiration = tokenProvider.getExpiration(token);
 
         assertThat(extractedUserId).isEqualTo(userId);
@@ -180,7 +160,7 @@ class TokenProviderTest {
     }
 
     @Test
-    void getUserIdFromToken_withInvalidSignature_shouldThrowInvalidToken() {
+    void getUserId_withInvalidSignature_shouldThrowInvalidToken() {
         String differentSecret = "different-secret-key-that-is-at-least-256-bits-long-for-hs256-algorithm";
         SecretKey differentKey = Keys.hmacShaKeyFor(differentSecret.getBytes(StandardCharsets.UTF_8));
         String tokenWithDifferentSignature = io.jsonwebtoken.Jwts.builder()
@@ -191,24 +171,27 @@ class TokenProviderTest {
                 .signWith(differentKey)
                 .compact();
 
-        AuthException ex = assertThrows(AuthException.class, () -> tokenProvider.getUserIdFromToken(tokenWithDifferentSignature));
+        AuthException ex =
+                assertThrows(AuthException.class, () -> tokenProvider.getUserId(tokenWithDifferentSignature, AuthTokenType.ACCESS));
 
         assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_TOKEN);
     }
 
     @Test
     void tokenExpiration_shouldMatchConfiguredExpiration() {
-        String accessToken = tokenProvider.createAccessToken(userId);
-        String refreshToken = tokenProvider.createRefreshToken(userId);
+        String accessToken = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
+        String refreshToken = tokenProvider.createToken(userId, AuthTokenType.REFRESH);
 
         LocalDateTime accessExpiration = tokenProvider.getExpiration(accessToken);
         LocalDateTime refreshExpiration = tokenProvider.getExpiration(refreshToken);
         LocalDateTime now = LocalDateTime.now();
 
-        long accessMinutesDiff = java.time.Duration.between(now, accessExpiration).toMinutes();
+        long accessMinutesDiff =
+                java.time.Duration.between(now, accessExpiration).toMinutes();
         assertThat(accessMinutesDiff).isCloseTo(accessTokenExpiration / 60, org.assertj.core.data.Offset.offset(1L));
 
-        long refreshDaysDiff = java.time.Duration.between(now, refreshExpiration).toDays();
+        long refreshDaysDiff =
+                java.time.Duration.between(now, refreshExpiration).toDays();
         assertThat(refreshDaysDiff).isCloseTo(refreshTokenExpiration / 86400, org.assertj.core.data.Offset.offset(1L));
     }
 }

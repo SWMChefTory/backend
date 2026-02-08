@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.account.model.Account;
 import com.cheftory.api.auth.AuthService;
+import com.cheftory.api.auth.entity.AuthTokenType;
 import com.cheftory.api.auth.model.AuthTokens;
 import com.cheftory.api.credit.CreditService;
 import com.cheftory.api.credit.entity.Credit;
@@ -102,7 +103,7 @@ class AccountFacadeTest {
     @Test
     @DisplayName("logout: refreshToken에서 userId 추출 후 refreshToken 삭제")
     void logout_shouldDeleteRefreshToken() {
-        doReturn(userId).when(authService).extractUserIdFromToken("refresh-token");
+        doReturn(userId).when(authService).extractUserIdFromToken("refresh-token", AuthTokenType.REFRESH);
         doNothing().when(authService).deleteRefreshToken(userId, "refresh-token");
 
         sut.logout("refresh-token");
@@ -114,7 +115,7 @@ class AccountFacadeTest {
     @Test
     @DisplayName("delete: refreshToken 삭제 후 유저 삭제")
     void delete_shouldDeleteRefreshTokenAndUser() {
-        doReturn(userId).when(authService).extractUserIdFromToken("refresh-token");
+        doReturn(userId).when(authService).extractUserIdFromToken("refresh-token", AuthTokenType.REFRESH);
         doNothing().when(authService).deleteRefreshToken(userId, "refresh-token");
         doNothing().when(userService).delete(userId);
 

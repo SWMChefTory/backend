@@ -4,17 +4,26 @@ import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+/**
+ * Apple OAuth 설정 프로퍼티
+ */
 @Getter
 @Component
 @ConfigurationProperties(prefix = "apple")
 public class AppleProperties {
-    // iOS/Android App ID
+    /**
+     * iOS/Android App ID
+     */
     private String appId;
 
-    // Web Service ID
+    /**
+     * Web Service ID
+     */
     private String serviceId;
 
-    // Deprecated: backward compatibility를 위해 유지
+    /**
+     * Deprecated: backward compatibility를 위해 유지
+     */
     @Deprecated
     private String clientId;
 
@@ -26,7 +35,11 @@ public class AppleProperties {
         this.serviceId = serviceId;
     }
 
-    /** Backward compatibility를 위한 setter client-id가 설정되면 app-id로 자동 매핑 */
+    /**
+     * Backward compatibility를 위한 setter client-id가 설정되면 app-id로 자동 매핑
+     *
+     * @param clientId 클라이언트 ID
+     */
     @Deprecated
     public void setClientId(String clientId) {
         this.clientId = clientId;

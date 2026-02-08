@@ -2,6 +2,7 @@ package com.cheftory.api.account;
 
 import com.cheftory.api.account.model.Account;
 import com.cheftory.api.auth.AuthService;
+import com.cheftory.api.auth.entity.AuthTokenType;
 import com.cheftory.api.auth.model.AuthTokens;
 import com.cheftory.api.credit.CreditService;
 import com.cheftory.api.credit.entity.Credit;
@@ -9,10 +10,9 @@ import com.cheftory.api.user.UserService;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
+import com.cheftory.api.user.exception.UserException;
 import java.time.LocalDate;
 import java.util.UUID;
-
-import com.cheftory.api.user.exception.UserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,7 +43,8 @@ public class AccountFacade {
             LocalDate dateOfBirth,
             boolean isTermsOfUseAgreed,
             boolean isPrivacyPolicyAgreed,
-            boolean isMarketingAgreed) throws UserException {
+            boolean isMarketingAgreed)
+            throws UserException {
         String providerSub = authService.extractProviderSubFromIdToken(idToken, provider);
         User user = userService.create(
                 nickname,
@@ -62,12 +63,12 @@ public class AccountFacade {
     }
 
     public void logout(String refreshToken) {
-        UUID userId = authService.extractUserIdFromToken(refreshToken);
+        UUID userId = authService.extractUserIdFromToken(refreshToken, AuthTokenType.REFRESH);
         authService.deleteRefreshToken(userId, refreshToken);
     }
 
     public void delete(String refreshToken) {
-        UUID userId = authService.extractUserIdFromToken(refreshToken);
+        UUID userId = authService.extractUserIdFromToken(refreshToken, AuthTokenType.REFRESH);
         authService.deleteRefreshToken(userId, refreshToken);
         userService.delete(userId);
     }
