@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.bookmark.repository;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCountProjection;
@@ -102,9 +103,9 @@ public interface RecipeBookmarkRepository {
      * @param userId 사용자 ID
      * @param cursor 페이징 커서
      * @return 페이징된 북마크 목록
-     * @throws RecipeBookmarkException 유효하지 않은 커서일 때
+     * @throws CursorException 유효하지 않은 커서일 때
      */
-    CursorPage<RecipeBookmark> keysetRecents(UUID userId, String cursor) throws RecipeBookmarkException;
+    CursorPage<RecipeBookmark> keysetRecents(UUID userId, String cursor) throws CursorException;
 
     /**
      * 최근 레시피 북마크 첫 페이지 조회
@@ -121,10 +122,10 @@ public interface RecipeBookmarkRepository {
      * @param categoryId 카테고리 ID
      * @param cursor 페이징 커서
      * @return 페이징된 북마크 목록
-     * @throws RecipeBookmarkException 유효하지 않은 커서일 때
+     * @throws CursorException 유효하지 않은 커서일 때
      */
     CursorPage<RecipeBookmark> keysetCategorized(UUID userId, UUID categoryId, String cursor)
-            throws RecipeBookmarkException;
+            throws CursorException;
 
     /**
      * 카테고리별 레시피 북마크 첫 페이지 조회

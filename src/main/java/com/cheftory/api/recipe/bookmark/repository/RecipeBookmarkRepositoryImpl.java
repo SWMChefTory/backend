@@ -120,7 +120,7 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
     }
 
     @Override
-    public CursorPage<RecipeBookmark> keysetRecents(UUID userId, String cursor) throws RecipeBookmarkException {
+    public CursorPage<RecipeBookmark> keysetRecents(UUID userId, String cursor) throws CursorException {
         Pageable pageable = CursorPageable.firstPage();
         Pageable probe = CursorPageable.probe(pageable);
 
@@ -141,7 +141,7 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
 
     @Override
     public CursorPage<RecipeBookmark> keysetCategorized(UUID userId, UUID categoryId, String cursor)
-            throws RecipeBookmarkException {
+            throws CursorException {
         Pageable pageable = CursorPageable.firstPage();
         Pageable probe = CursorPageable.probe(pageable);
 

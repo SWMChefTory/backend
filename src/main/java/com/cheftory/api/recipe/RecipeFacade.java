@@ -241,8 +241,8 @@ public class RecipeFacade {
     }
 
     public void deleteCategory(UUID userId, UUID categoryId) {
-        recipeBookmarkService.unCategorize(categoryId);
         recipeCategoryService.delete(userId, categoryId);
+        recipeBookmarkService.unCategorize(categoryId);
     }
 
     public RecipeProgressStatus getRecipeProgress(UUID recipeId) {

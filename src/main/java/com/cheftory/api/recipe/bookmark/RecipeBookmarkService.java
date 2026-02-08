@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.bookmark;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
@@ -131,10 +132,10 @@ public class RecipeBookmarkService {
      * @param categoryId 카테고리 ID
      * @param cursor 페이징 커서 (null이면 첫 페이지)
      * @return 페이징된 북마크 목록
-     * @throws RecipeBookmarkException 유효하지 않은 커서일 때
+     * @throws CursorException 유효하지 않은 커서일 때
      */
     public CursorPage<RecipeBookmark> getCategorized(UUID userId, UUID categoryId, String cursor)
-            throws RecipeBookmarkException {
+            throws CursorException {
         boolean first = (cursor == null || cursor.isBlank());
 
         return first
@@ -148,9 +149,9 @@ public class RecipeBookmarkService {
      * @param userId 사용자 ID
      * @param cursor 페이징 커서 (null이면 첫 페이지)
      * @return 페이징된 북마크 목록
-     * @throws RecipeBookmarkException 유효하지 않은 커서일 때
+     * @throws CursorException 유효하지 않은 커서일 때
      */
-    public CursorPage<RecipeBookmark> getRecents(UUID userId, String cursor) throws RecipeBookmarkException {
+    public CursorPage<RecipeBookmark> getRecents(UUID userId, String cursor) throws CursorException {
         boolean first = (cursor == null || cursor.isBlank());
 
         return first
