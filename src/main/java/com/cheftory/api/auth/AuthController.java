@@ -4,6 +4,7 @@ import com.cheftory.api.auth.dto.TokenReissueRequest;
 import com.cheftory.api.auth.dto.TokenReissueResponse;
 import com.cheftory.api.auth.dto.UserIdResponse;
 import com.cheftory.api.auth.entity.AuthTokenType;
+import com.cheftory.api.auth.exception.AuthException;
 import com.cheftory.api.auth.model.AuthTokens;
 import com.cheftory.api.auth.util.BearerAuthorizationUtils;
 import java.util.UUID;
@@ -33,7 +34,7 @@ public class AuthController {
      * @throws AuthException 토큰이 만료되었을 때 EXPIRED_TOKEN
      */
     @PostMapping("/papi/v1/auth/extract-user-id")
-    public UserIdResponse loginWithOAuth(@RequestHeader("Authorization") String accessToken) {
+    public UserIdResponse loginWithOAuth(@RequestHeader("Authorization") String accessToken) throws AuthException {
         UUID userId = authService.extractUserIdFromToken(
                 BearerAuthorizationUtils.removePrefix(accessToken), AuthTokenType.ACCESS);
         return UserIdResponse.of(userId);
@@ -48,7 +49,7 @@ public class AuthController {
      * @throws AuthException 리프레시 토큰이 만료되었을 때 EXPIRED_TOKEN
      */
     @PostMapping("/api/v1/auth/token/reissue")
-    public TokenReissueResponse reissueToken(@RequestBody TokenReissueRequest request) {
+    public TokenReissueResponse reissueToken(@RequestBody TokenReissueRequest request) throws AuthException {
         AuthTokens authTokens = authService.reissue(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
         return TokenReissueResponse.from(authTokens);
     }

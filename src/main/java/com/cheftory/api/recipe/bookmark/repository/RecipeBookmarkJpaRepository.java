@@ -13,6 +13,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+/**
+ * 레시피 북마크 JPA 리포지토리
+ */
 public interface RecipeBookmarkJpaRepository extends JpaRepository<RecipeBookmark, UUID> {
 
     @Query(

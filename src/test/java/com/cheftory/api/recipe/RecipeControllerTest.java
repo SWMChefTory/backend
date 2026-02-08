@@ -240,7 +240,7 @@ public class RecipeControllerTest extends RestDocsTest {
                 .then()
                 .status(HttpStatus.OK);
 
-        verify(recipeFacade).deleteCategory(categoryId);
+        verify(recipeFacade).deleteCategory(userId, categoryId);
     }
 
     @Test
