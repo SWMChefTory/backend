@@ -103,7 +103,7 @@ class RecipeSearchFacadeTest {
         doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
         doReturn(List.of(detailMeta)).when(recipeDetailMetaService).getIn(List.of(recipeId));
         doReturn(List.of(tag)).when(recipeTagService).getIn(List.of(recipeId));
-        doReturn(List.of(bookmark)).when(recipeBookmarkService).getByRecipes(List.of(recipeId), userId);
+        doReturn(List.of(bookmark)).when(recipeBookmarkService).gets(List.of(recipeId), userId);
 
         CursorPage<RecipeOverview> result = recipeSearchFacade.searchRecipes("김치찌개", userId, cursor);
 

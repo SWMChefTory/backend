@@ -7,6 +7,7 @@ import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkStatus;
+import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkJpaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -20,10 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @DisplayName("RecipeBookmarkRepository Tests")
-public class RecipeBookmarkRepositoryTest extends DbContextTest {
+public class RecipeBookmarkJpaRepositoryTest extends DbContextTest {
 
     @Autowired
-    private RecipeBookmarkRepository repository;
+    private RecipeBookmarkJpaRepository repository;
 
     @MockitoBean
     private Clock clock;

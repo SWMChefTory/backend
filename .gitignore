@@ -36,6 +36,7 @@ out/
 
 ### VS Code ###
 .vscode/
+.sisyphus/
 
 ### 로컬 환경 설정 파일 무시 ###
 application-local.yml

@@ -118,7 +118,7 @@ class RecipeFacadeTest {
 
             verify(recipeYoutubeMetaService).block(recipeId);
             verify(recipeInfoService).block(recipeId);
-            verify(recipeBookmarkService).blockByRecipe(recipeId);
+            verify(recipeBookmarkService).block(recipeId);
         }
 
         @Test
@@ -136,7 +136,7 @@ class RecipeFacadeTest {
 
             verify(recipeYoutubeMetaService).block(recipeId);
             verify(recipeInfoService, never()).block(any());
-            verify(recipeBookmarkService, never()).blockByRecipe(any());
+            verify(recipeBookmarkService, never()).block(any());
         }
     }
 
@@ -160,7 +160,7 @@ class RecipeFacadeTest {
             doReturn(Collections.emptyList()).when(recipeTagService).gets(recipeId);
             doReturn(Collections.emptyList()).when(recipeBriefingService).gets(recipeId);
             doReturn(mockYoutubeMeta(recipeId)).when(recipeYoutubeMetaService).get(recipeId);
-            doReturn(mockBookmark(recipeId, userId)).when(recipeBookmarkService).getWithView(userId, recipeId);
+            doReturn(mockBookmark(recipeId, userId)).when(recipeBookmarkService).get(userId, recipeId);
 
             FullRecipe result = sut.getFullRecipe(recipeId, userId);
 
@@ -322,35 +322,6 @@ class RecipeFacadeTest {
             assertThat(result.nextCursor()).isEqualTo(nextCursor);
             verify(recipeBookmarkService).getCategorized(userId, categoryId, cursor);
         }
-
-        @Test
-        @DisplayName("커서 기반 미분류 북마크를 반환한다")
-        void shouldReturnUncategorizedBookmarksWithCursor() {
-            UUID userId = UUID.randomUUID();
-            String cursor = "cursor-1";
-            UUID recipeId = UUID.randomUUID();
-            String nextCursor = "cursor-2";
-
-            CursorPage<RecipeBookmark> bookmarks = CursorPage.of(List.of(mockBookmark(recipeId, userId)), nextCursor);
-
-            doReturn(bookmarks).when(recipeBookmarkService).getUnCategorized(userId, cursor);
-            doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
-                    .when(recipeInfoService)
-                    .getValidRecipes(anyList());
-            doReturn(List.of(mockYoutubeMeta(recipeId)))
-                    .when(recipeYoutubeMetaService)
-                    .getByRecipes(anyList());
-            doReturn(List.of(mockDetailMeta(recipeId)))
-                    .when(recipeDetailMetaService)
-                    .getIn(anyList());
-            doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
-
-            CursorPage<RecipeBookmarkOverview> result = sut.getUnCategorized(userId, cursor);
-
-            assertThat(result.items()).hasSize(1);
-            assertThat(result.nextCursor()).isEqualTo(nextCursor);
-            verify(recipeBookmarkService).getUnCategorized(userId, cursor);
-        }
     }
 
     @Nested
@@ -452,7 +423,7 @@ class RecipeFacadeTest {
                     .when(recipeDetailMetaService)
                     .getIn(List.of(recipeId));
             doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeBookmarkService).getByRecipes(List.of(recipeId), userId);
+            doReturn(List.of()).when(recipeBookmarkService).gets(List.of(recipeId), userId);
 
             CursorPage<RecipeOverview> result = sut.getCuisineRecipes(RecipeCuisineType.KOREAN, userId, cursor);
 
@@ -487,7 +458,7 @@ class RecipeFacadeTest {
                     .when(recipeDetailMetaService)
                     .getIn(List.of(recipeId));
             doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeBookmarkService).getByRecipes(List.of(recipeId), userId);
+            doReturn(List.of()).when(recipeBookmarkService).gets(List.of(recipeId), userId);
 
             CursorPage<RecipeOverview> result =
                     sut.getRecommendRecipes(RecipeInfoRecommendType.POPULAR, userId, cursor, RecipeInfoVideoQuery.ALL);
@@ -519,7 +490,7 @@ class RecipeFacadeTest {
                     .when(recipeDetailMetaService)
                     .getIn(List.of(recipeId));
             doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeBookmarkService).getByRecipes(List.of(recipeId), userId);
+            doReturn(List.of()).when(recipeBookmarkService).gets(List.of(recipeId), userId);
 
             CursorPage<RecipeOverview> result =
                     sut.getRecommendRecipes(RecipeInfoRecommendType.CHEF, userId, cursor, RecipeInfoVideoQuery.ALL);

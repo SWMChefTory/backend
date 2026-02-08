@@ -13,6 +13,8 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 
 import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.user.share.exception.UserShareErrorCode;
+import com.cheftory.api.user.share.exception.UserShareException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.UUID;

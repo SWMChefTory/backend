@@ -65,7 +65,8 @@ public class CreditTxService {
             try {
                 return balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
             } catch (DataIntegrityViolationException e) {
-                return balanceRepository.findById(userId)
+                return balanceRepository
+                        .findById(userId)
                         .orElseThrow(() -> new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT));
             }
         });

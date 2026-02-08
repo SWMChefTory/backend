@@ -1,10 +1,11 @@
-package com.cheftory.api.user.share;
+package com.cheftory.api.user.share.exception;
 
 import com.cheftory.api.exception.Error;
 
 public enum UserShareErrorCode implements Error {
     USER_SHARE_LIMIT_EXCEEDED("USER_SHARE_001", "일일 공유 횟수를 초과했습니다"),
-    USER_SHARE_CREATE_FAIL("USER_SHARE_002", "공유 생성에 실패했습니다");
+    USER_SHARE_CREATE_FAIL("USER_SHARE_002", "공유 생성에 실패했습니다"),
+    USER_SHARE_NOT_FOUND("USER_SHARE_003", "일일 공유하기가 존재하지 않습니다.");
 
     private final String errorCode;
     private final String message;

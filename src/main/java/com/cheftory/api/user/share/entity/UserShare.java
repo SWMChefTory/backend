@@ -1,7 +1,9 @@
-package com.cheftory.api.user.share;
+package com.cheftory.api.user.share.entity;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.MarketScope;
+import com.cheftory.api.user.share.exception.UserShareErrorCode;
+import com.cheftory.api.user.share.exception.UserShareException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -50,7 +52,7 @@ public class UserShare extends MarketScope {
         return new UserShare(UUID.randomUUID(), userId, sharedAt, 0, 0, now);
     }
 
-    public void increase(int max) {
+    public void increase(int max) throws UserShareException {
         if (this.count >= max) {
             throw new UserShareException(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
         }

@@ -74,9 +74,10 @@ public class AsyncRecipeCreationService {
     private void cleanup(UUID recipeId, long creditCost) {
         recipeInfoService.failed(recipeId);
         recipeProgressService.failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+        List<RecipeBookmark> bookmarks = recipeBookmarkService.gets(recipeId);
+        recipeBookmarkService.deletes(
+                bookmarks.stream().map(RecipeBookmark::getId).toList());
 
-        List<RecipeBookmark> histories = recipeBookmarkService.deleteByRecipe(recipeId);
-
-        histories.forEach(h -> creditPort.refundRecipeCreate(h.getUserId(), recipeId, creditCost));
+        bookmarks.forEach(h -> creditPort.refundRecipeCreate(h.getUserId(), recipeId, creditCost));
     }
 }

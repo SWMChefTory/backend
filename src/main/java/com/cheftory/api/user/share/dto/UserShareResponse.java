@@ -1,4 +1,4 @@
-package com.cheftory.api.user.share;
+package com.cheftory.api.user.share.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
