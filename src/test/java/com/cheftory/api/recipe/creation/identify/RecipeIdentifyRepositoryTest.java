@@ -83,6 +83,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
                 void beforeEach() {
                     identifyUrl = RecipeIdentify.create(url, clock);
                     repository.save(identifyUrl);
+                    repository.flush();
                 }
 
                 @Test
@@ -90,6 +91,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
                 void thenUniqueViolation() {
                     assertThrows(DataIntegrityViolationException.class, () -> {
                         repository.save(RecipeIdentify.create(url, clock));
+                        repository.flush();
                     });
                 }
             }

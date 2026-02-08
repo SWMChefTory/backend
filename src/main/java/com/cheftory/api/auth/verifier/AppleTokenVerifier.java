@@ -52,7 +52,7 @@ public class AppleTokenVerifier {
         return cachedJwkSet.get();
     }
 
-    private JWTClaimsSet extractVerifiedClaims(String identityToken) {
+    private JWTClaimsSet extractVerifiedClaims(String identityToken) throws VerificationException {
         try {
             SignedJWT jwt = SignedJWT.parse(identityToken);
             JWSHeader header = jwt.getHeader();
@@ -123,7 +123,14 @@ public class AppleTokenVerifier {
         }
     }
 
-    public String getSubFromToken(String identityToken) {
+    /**
+     * Apple ID 토큰에서 sub 클레임 추출
+     *
+     * @param identityToken Apple ID 토큰
+     * @return 유저 고유 식별자 (sub)
+     * @throws VerificationException 토큰 검증 실패 시
+     */
+    public String getSubFromToken(String identityToken) throws VerificationException {
         JWTClaimsSet claims = extractVerifiedClaims(identityToken);
         return claims.getSubject();
     }

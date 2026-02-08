@@ -17,25 +17,25 @@ public class RecipeBookmarkController {
     private final RecipeBookmarkFacade recipeBookmarkFacade;
 
     @PutMapping("/categories")
-    public SuccessOnlyResponse updateBookmarkCategory(
+    public SuccessOnlyResponse updateCategory(
             @RequestBody @Valid RecipeBookmarkRequest.UpdateCategory request,
             @PathVariable("recipeId") @ExistsRecipeId UUID recipeId,
             @UserPrincipal UUID userId) {
-        recipeBookmarkService.updateCategory(userId, recipeId, request.categoryId());
+        recipeBookmarkService.categorize(userId, recipeId, request.categoryId());
         return SuccessOnlyResponse.create();
     }
 
     @DeleteMapping("/bookmark")
-    public SuccessOnlyResponse deleteBookmark(
+    public SuccessOnlyResponse delete(
             @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
         recipeBookmarkService.delete(userId, recipeId);
         return SuccessOnlyResponse.create();
     }
 
     @PostMapping("/bookmark")
-    public SuccessOnlyResponse createBookmark(
+    public SuccessOnlyResponse create(
             @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
-        recipeBookmarkFacade.createAndCharge(userId, recipeId);
+        recipeBookmarkFacade.create(userId, recipeId);
         return SuccessOnlyResponse.create();
     }
 }

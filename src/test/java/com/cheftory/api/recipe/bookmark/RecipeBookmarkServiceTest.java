@@ -8,26 +8,20 @@ import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.cursor.CursorPage;
-import com.cheftory.api._common.cursor.ViewedAtCursor;
-import com.cheftory.api._common.cursor.ViewedAtCursorCodec;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCountProjection;
-import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkStatus;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkUnCategorizedCount;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkUnCategorizedCountProjection;
-import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkErrorCode;
 import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
+import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Pageable;
 
 @DisplayName("RecipeBookmarkService Tests")
 public class RecipeBookmarkServiceTest {
@@ -35,14 +29,12 @@ public class RecipeBookmarkServiceTest {
     private RecipeBookmarkRepository repository;
     private RecipeBookmarkService service;
     private Clock clock;
-    private ViewedAtCursorCodec viewedAtCursorCodec;
 
     @BeforeEach
     void setUp() {
         repository = mock(RecipeBookmarkRepository.class);
         clock = mock(Clock.class);
-        viewedAtCursorCodec = mock(ViewedAtCursorCodec.class);
-        service = new RecipeBookmarkService(repository, viewedAtCursorCodec, clock);
+        service = new RecipeBookmarkService(repository, clock);
     }
 
     @Nested
@@ -66,19 +58,19 @@ public class RecipeBookmarkServiceTest {
             }
 
             @Test
-            @DisplayName("Then - save가 호출되고 true를 반환해야 한다")
-            void thenShouldCallSaveAndReturnTrue() {
+            @DisplayName("Then - create가 호출되고 true를 반환해야 한다")
+            void thenShouldCallCreateAndReturnTrue() {
+                doReturn(true).when(repository).create(any(RecipeBookmark.class));
+
                 boolean result = service.create(userId, recipeId);
 
                 assertThat(result).isTrue();
 
                 verify(repository)
-                        .saveAndFlush(argThat(h -> h.getRecipeId().equals(recipeId)
+                        .create(argThat(h -> h.getRecipeId().equals(recipeId)
                                 && h.getUserId().equals(userId)));
 
-                verify(repository, never()).findByUserIdAndRecipeId(any(), any());
-                verify(repository, never()).existsByUserIdAndRecipeId(any(), any());
-                verify(repository, never()).existsByRecipeIdAndUserIdAndStatus(any(), any(), any());
+                verify(repository, never()).recreate(any(), any(), any());
             }
         }
 
@@ -96,112 +88,38 @@ public class RecipeBookmarkServiceTest {
             }
 
             @Test
-            void create_success_returnsTrue_andDoesNotQueryExisting() {
-                UUID userId = UUID.randomUUID();
-                UUID recipeId = UUID.randomUUID();
+            void create_duplicate_existingActive_returnsTrue() {
+                doThrow(new RecipeBookmarkException(
+                                com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkErrorCode
+                                        .RECIPE_BOOKMARK_ALREADY_EXISTS))
+                        .when(repository)
+                        .create(any(RecipeBookmark.class));
+
+                doReturn(true).when(repository).recreate(userId, recipeId, clock);
 
                 boolean result = service.create(userId, recipeId);
 
                 assertTrue(result);
 
-                verify(repository).saveAndFlush(any(RecipeBookmark.class));
-                verify(repository, never()).findByUserIdAndRecipeId(any(), any());
-                verifyNoMoreInteractions(repository);
+                verify(repository).create(any(RecipeBookmark.class));
+                verify(repository).recreate(userId, recipeId, clock);
             }
 
             @Test
-            void create_duplicate_existingActive_returnsFalse() {
-                UUID userId = UUID.randomUUID();
-                UUID recipeId = UUID.randomUUID();
+            void create_duplicate_recreateFails_propagatesException() {
+                RecipeBookmarkException exception = new RecipeBookmarkException(
+                        com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
+                doThrow(exception).when(repository).create(any(RecipeBookmark.class));
 
-                doThrow(new DataIntegrityViolationException("dup"))
-                        .when(repository)
-                        .saveAndFlush(any(RecipeBookmark.class));
+                doThrow(exception).when(repository).recreate(userId, recipeId, clock);
 
-                RecipeBookmark existing = mock(RecipeBookmark.class);
-                when(existing.getStatus()).thenReturn(RecipeBookmarkStatus.ACTIVE);
+                RecipeBookmarkException thrown =
+                        assertThrows(RecipeBookmarkException.class, () -> service.create(userId, recipeId));
 
-                when(repository.findByUserIdAndRecipeId(userId, recipeId)).thenReturn(Optional.of(existing));
+                assertSame(exception, thrown);
 
-                boolean result = service.create(userId, recipeId);
-
-                assertFalse(result);
-
-                verify(repository).saveAndFlush(any(RecipeBookmark.class));
-                verify(repository).findByUserIdAndRecipeId(userId, recipeId);
-
-                verify(existing, never()).active(any());
-                verify(repository, never()).saveAndFlush(existing);
-
-                verifyNoMoreInteractions(repository);
-            }
-
-            @Test
-            void create_duplicate_existingActive_returnsFalse_withoutReSave() {
-                UUID userId = UUID.randomUUID();
-                UUID recipeId = UUID.randomUUID();
-
-                doThrow(new DataIntegrityViolationException("dup"))
-                        .when(repository)
-                        .saveAndFlush(any(RecipeBookmark.class));
-
-                RecipeBookmark existing = mock(RecipeBookmark.class);
-                when(existing.getStatus()).thenReturn(RecipeBookmarkStatus.ACTIVE);
-
-                when(repository.findByUserIdAndRecipeId(userId, recipeId)).thenReturn(Optional.of(existing));
-
-                boolean result = service.create(userId, recipeId);
-
-                assertFalse(result);
-
-                verify(repository).saveAndFlush(any(RecipeBookmark.class));
-                verify(repository).findByUserIdAndRecipeId(userId, recipeId);
-
-                verify(existing, never()).active(any());
-                verify(repository, never()).saveAndFlush(existing);
-
-                verifyNoMoreInteractions(repository);
-            }
-
-            @Test
-            void create_duplicate_butNoExisting_rethrowsOriginalException() {
-                UUID userId = UUID.randomUUID();
-                UUID recipeId = UUID.randomUUID();
-
-                DataIntegrityViolationException dup = new DataIntegrityViolationException("dup");
-                doThrow(dup).when(repository).saveAndFlush(any(RecipeBookmark.class));
-
-                when(repository.findByUserIdAndRecipeId(userId, recipeId)).thenReturn(Optional.empty());
-
-                DataIntegrityViolationException thrown =
-                        assertThrows(DataIntegrityViolationException.class, () -> service.create(userId, recipeId));
-
-                assertSame(dup, thrown);
-
-                verify(repository).saveAndFlush(any(RecipeBookmark.class));
-                verify(repository).findByUserIdAndRecipeId(userId, recipeId);
-                verifyNoMoreInteractions(repository);
-            }
-
-            @Test
-            void create_duplicate_thenFindFails_propagatesException() {
-                UUID userId = UUID.randomUUID();
-                UUID recipeId = UUID.randomUUID();
-
-                doThrow(new DataIntegrityViolationException("dup"))
-                        .when(repository)
-                        .saveAndFlush(any(RecipeBookmark.class));
-
-                RuntimeException dbFail = new RuntimeException("db down");
-                doThrow(dbFail).when(repository).findByUserIdAndRecipeId(userId, recipeId);
-
-                RuntimeException thrown = assertThrows(RuntimeException.class, () -> service.create(userId, recipeId));
-
-                assertSame(dbFail, thrown);
-
-                verify(repository).saveAndFlush(any(RecipeBookmark.class));
-                verify(repository).findByUserIdAndRecipeId(userId, recipeId);
-                verifyNoMoreInteractions(repository);
+                verify(repository).create(any(RecipeBookmark.class));
+                verify(repository).recreate(userId, recipeId, clock);
             }
         }
     }
@@ -214,62 +132,33 @@ public class RecipeBookmarkServiceTest {
         @DisplayName("cursor가 비어 있으면 최근 북마크 첫 페이지를 조회한다")
         void shouldGetRecentsFirstPageWithCursor() {
             UUID userId = UUID.randomUUID();
-            UUID id = UUID.randomUUID();
-            LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
+            List<RecipeBookmark> bookmarks = List.of(mock(RecipeBookmark.class), mock(RecipeBookmark.class));
 
-            RecipeBookmark bookmark = mock(RecipeBookmark.class);
-            doReturn(viewedAt).when(bookmark).getViewedAt();
-            doReturn(id).when(bookmark).getId();
-
-            List<RecipeBookmark> rows = java.util.Collections.nCopies(21, bookmark);
-
-            doReturn(rows)
-                    .when(repository)
-                    .findRecentsFirst(eq(userId), eq(RecipeBookmarkStatus.ACTIVE), any(Pageable.class));
-
-            doReturn("next-cursor").when(viewedAtCursorCodec).encode(any(ViewedAtCursor.class));
+            CursorPage<RecipeBookmark> cursorPage = new CursorPage<>(bookmarks, "next-cursor");
+            doReturn(cursorPage).when(repository).keysetRecentsFirst(userId);
 
             CursorPage<RecipeBookmark> result = service.getRecents(userId, null);
 
-            assertThat(result.items()).hasSize(20);
+            assertThat(result.items()).hasSize(2);
             assertThat(result.nextCursor()).isEqualTo("next-cursor");
 
-            verify(repository)
-                    .findRecentsFirst(eq(userId), eq(RecipeBookmarkStatus.ACTIVE), argThat(p -> p.getPageSize() == 21));
+            verify(repository).keysetRecentsFirst(userId);
         }
 
         @Test
         @DisplayName("cursor가 있으면 최근 북마크 keyset을 조회한다")
         void shouldGetRecentsKeysetWithCursor() {
             UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 1, 10, 0, 0);
-            ViewedAtCursor decoded = new ViewedAtCursor(viewedAt, recipeId);
+            String cursor = "cursor";
 
-            RecipeBookmark bookmark = mock(RecipeBookmark.class);
-            doReturn(viewedAt.minusMinutes(1)).when(bookmark).getViewedAt();
-            doReturn(UUID.randomUUID()).when(bookmark).getId();
+            List<RecipeBookmark> bookmarks = List.of(mock(RecipeBookmark.class), mock(RecipeBookmark.class));
+            CursorPage<RecipeBookmark> cursorPage = new CursorPage<>(bookmarks, "next-cursor");
+            doReturn(cursorPage).when(repository).keysetRecents(userId, cursor);
 
-            doReturn(decoded).when(viewedAtCursorCodec).decode("cursor");
-            doReturn(List.of(bookmark))
-                    .when(repository)
-                    .findRecentsKeyset(
-                            eq(userId),
-                            eq(RecipeBookmarkStatus.ACTIVE),
-                            eq(viewedAt),
-                            eq(recipeId),
-                            any(Pageable.class));
+            CursorPage<RecipeBookmark> result = service.getRecents(userId, cursor);
 
-            CursorPage<RecipeBookmark> result = service.getRecents(userId, "cursor");
-
-            assertThat(result.items()).hasSize(1);
-            verify(repository)
-                    .findRecentsKeyset(
-                            eq(userId),
-                            eq(RecipeBookmarkStatus.ACTIVE),
-                            eq(viewedAt),
-                            eq(recipeId),
-                            any(Pageable.class));
+            assertThat(result.items()).hasSize(2);
+            verify(repository).keysetRecents(userId, cursor);
         }
 
         @Test
@@ -277,837 +166,497 @@ public class RecipeBookmarkServiceTest {
         void shouldGetCategorizedKeysetWithCursor() {
             UUID userId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 2, 10, 0, 0);
-            ViewedAtCursor decoded = new ViewedAtCursor(viewedAt, recipeId);
+            String cursor = "cursor";
 
-            RecipeBookmark bookmark = mock(RecipeBookmark.class);
-            doReturn(viewedAt.minusMinutes(1)).when(bookmark).getViewedAt();
-            doReturn(UUID.randomUUID()).when(bookmark).getId();
+            List<RecipeBookmark> bookmarks = List.of(mock(RecipeBookmark.class), mock(RecipeBookmark.class));
+            CursorPage<RecipeBookmark> cursorPage = new CursorPage<>(bookmarks, "next-cursor");
 
-            doReturn(decoded).when(viewedAtCursorCodec).decode("cursor");
-            doReturn(List.of(bookmark))
-                    .when(repository)
-                    .findCategorizedKeyset(
-                            eq(userId),
-                            eq(categoryId),
-                            eq(RecipeBookmarkStatus.ACTIVE),
-                            eq(viewedAt),
-                            eq(recipeId),
-                            any(Pageable.class));
+            doReturn(cursorPage).when(repository).keysetCategorized(userId, categoryId, cursor);
 
-            CursorPage<RecipeBookmark> result = service.getCategorized(userId, categoryId, "cursor");
+            CursorPage<RecipeBookmark> result = service.getCategorized(userId, categoryId, cursor);
 
-            assertThat(result.items()).hasSize(1);
-            verify(repository)
-                    .findCategorizedKeyset(
-                            eq(userId),
-                            eq(categoryId),
-                            eq(RecipeBookmarkStatus.ACTIVE),
-                            eq(viewedAt),
-                            eq(recipeId),
-                            any(Pageable.class));
+            assertThat(result.items()).hasSize(2);
+            verify(repository).keysetCategorized(userId, categoryId, cursor);
         }
-
-        @Test
-        @DisplayName("커서 기반 미분류 조회는 keyset을 사용한다")
-        void shouldGetUncategorizedKeysetWithCursor() {
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            LocalDateTime viewedAt = LocalDateTime.of(2024, 1, 3, 10, 0, 0);
-            ViewedAtCursor decoded = new ViewedAtCursor(viewedAt, recipeId);
-
-            RecipeBookmark bookmark = mock(RecipeBookmark.class);
-            doReturn(viewedAt.minusMinutes(1)).when(bookmark).getViewedAt();
-            doReturn(UUID.randomUUID()).when(bookmark).getId();
-
-            doReturn(decoded).when(viewedAtCursorCodec).decode("cursor");
-            doReturn(List.of(bookmark))
-                    .when(repository)
-                    .findUncategorizedKeyset(
-                            eq(userId),
-                            eq(RecipeBookmarkStatus.ACTIVE),
-                            eq(viewedAt),
-                            eq(recipeId),
-                            any(Pageable.class));
-
-            CursorPage<RecipeBookmark> result = service.getUnCategorized(userId, "cursor");
-
-            assertThat(result.items()).hasSize(1);
-            verify(repository)
-                    .findUncategorizedKeyset(
-                            eq(userId),
-                            eq(RecipeBookmarkStatus.ACTIVE),
-                            eq(viewedAt),
-                            eq(recipeId),
-                            any(Pageable.class));
-        }
-    }
-
-    @Nested
-    @DisplayName("레시피 북마크 조회")
-    class FindRecipeBookmark {
 
         @Nested
-        @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
-        class GivenValidRecipeAndUserId {
-
-            private UUID recipeId;
-            private UUID userId;
-            private LocalDateTime initialTime;
-            private LocalDateTime updateTime;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-                userId = UUID.randomUUID();
-                initialTime = LocalDateTime.of(2023, 12, 31, 12, 0, 0);
-                updateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-            }
+        @DisplayName("레시피 북마크 조회")
+        class FindRecipeBookmark {
 
             @Nested
-            @DisplayName("When - 레시피 북마크를 조회한다면")
-            class WhenFindingRecipeBookmark {
+            @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
+            class GivenValidRecipeAndUserId {
 
-                private RecipeBookmark realRecipeBookmark;
-
-                @BeforeEach
-                void beforeEach() {
-                    doReturn(initialTime).when(clock).now();
-                    realRecipeBookmark = RecipeBookmark.create(clock, userId, recipeId);
-
-                    doReturn(updateTime).when(clock).now();
-
-                    doReturn(Optional.of(realRecipeBookmark))
-                            .when(repository)
-                            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE);
-                    doReturn(realRecipeBookmark).when(repository).save(any(RecipeBookmark.class));
-                }
-
-                @Test
-                @DisplayName("Then - getWithView 메서드는 viewedAt을 업데이트하고 반환해야 한다")
-                public void thenShouldReturnCorrectRecipeBookmark() {
-                    RecipeBookmark status = service.getWithView(userId, recipeId);
-
-                    assertThat(status).isNotNull();
-                    assertThat(status.getRecipeId()).isEqualTo(recipeId);
-                    assertThat(status.getUserId()).isEqualTo(userId);
-                    assertThat(status.getViewedAt()).isEqualTo(updateTime);
-
-                    verify(repository).findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE);
-                    verify(repository).save(realRecipeBookmark);
-                }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("레시피 북마크 카테고리 변경")
-    class ChangeRecipeBookmarkRecipeCategory {
-
-        @Nested
-        @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
-        class GivenValidRecipeAndUserId {
-
-            private UUID recipeId;
-            private UUID userId;
-            private UUID newCategoryId;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-                userId = UUID.randomUUID();
-                newCategoryId = UUID.randomUUID();
-            }
-
-            @Nested
-            @DisplayName("When - 레시피 북마크의 카테고리를 변경한다면")
-            class WhenChangingRecipeBookmarkRecipeCategory {
-
-                private RecipeBookmark realRecipeBookmark;
+                private UUID recipeId;
+                private UUID userId;
 
                 @BeforeEach
-                void beforeEach() {
-                    realRecipeBookmark = RecipeBookmark.create(clock, userId, recipeId);
-                    doReturn(Optional.of(realRecipeBookmark))
-                            .when(repository)
-                            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE);
-                    doReturn(realRecipeBookmark).when(repository).save(any(RecipeBookmark.class));
+                void setUp() {
+                    recipeId = UUID.randomUUID();
+                    userId = UUID.randomUUID();
                 }
 
-                @Test
-                @DisplayName("Then - 카테고리가 올바르게 변경되어야 한다")
-                public void thenShouldChangeCategoryCorrectly() {
-                    service.updateCategory(userId, recipeId, newCategoryId);
+                @Nested
+                @DisplayName("When - 레시피 북마크를 조회한다면")
+                class WhenFindingRecipeBookmark {
 
-                    assertThat(realRecipeBookmark.getRecipeCategoryId()).isEqualTo(newCategoryId);
-                    verify(repository)
-                            .save(argThat(h -> h.getRecipeId().equals(recipeId)
-                                    && h.getUserId().equals(userId)
-                                    && h.getRecipeCategoryId().equals(newCategoryId)));
+                    private RecipeBookmark realRecipeBookmark;
+
+                    @BeforeEach
+                    void beforeEach() {
+                        realRecipeBookmark = mock(RecipeBookmark.class);
+                        doReturn(realRecipeBookmark).when(repository).get(userId, recipeId);
+                    }
+
+                    @Test
+                    @DisplayName("Then - get 메서드는 레시피 북마크를 반환해야 한다")
+                    public void thenShouldReturnCorrectRecipeBookmark() {
+                        RecipeBookmark status = service.get(userId, recipeId);
+
+                        assertThat(status).isNotNull();
+                        assertThat(status).isEqualTo(realRecipeBookmark);
+
+                        verify(repository).get(userId, recipeId);
+                    }
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 존재하지 않는 레시피 ID와 사용자 ID가 주어졌을 때")
-        class GivenNonExistentRecipeAndUserId {
-
-            private UUID recipeId;
-            private UUID userId;
-            private UUID newCategoryId;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-                userId = UUID.randomUUID();
-                newCategoryId = UUID.randomUUID();
-            }
+        @DisplayName("레시피 북마크 카테고리 변경")
+        class ChangeRecipeBookmarkRecipeCategory {
 
             @Nested
-            @DisplayName("When - 레시피 북마크의 카테고리를 변경한다면")
-            class WhenChangingNonExistentRecipeBookmarkRecipeCategory {
+            @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
+            class GivenValidRecipeAndUserId {
+
+                private UUID recipeId;
+                private UUID userId;
+                private UUID newCategoryId;
 
                 @BeforeEach
-                void beforeEach() {
-                    doReturn(Optional.empty())
-                            .when(repository)
-                            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE);
+                void setUp() {
+                    recipeId = UUID.randomUUID();
+                    userId = UUID.randomUUID();
+                    newCategoryId = UUID.randomUUID();
                 }
 
-                @Test
-                @DisplayName("Then - RecipeBookmarkException이 발생해야 한다")
-                public void thenShouldThrowViewStatusException() {
-                    RecipeBookmarkException exception = assertThrows(
-                            RecipeBookmarkException.class,
-                            () -> service.updateCategory(userId, recipeId, newCategoryId));
+                @Nested
+                @DisplayName("When - 레시피 북마크의 카테고리를 변경한다면")
+                class WhenChangingRecipeBookmarkRecipeCategory {
 
-                    assertThat(exception.getError()).isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
-                    verify(repository, never()).save(any());
-                }
-            }
-        }
-    }
+                    @Test
+                    @DisplayName("Then - 카테고리가 올바르게 변경되어야 한다")
+                    public void thenShouldChangeCategoryCorrectly() {
+                        service.categorize(userId, recipeId, newCategoryId);
 
-    @Nested
-    @DisplayName("레시피 북마크 카테고리 삭제")
-    class DeleteRecipeBookmarkRecipeCategory {
-
-        @Nested
-        @DisplayName("Given - 삭제할 카테고리 ID가 주어졌을 때")
-        class GivenRecipeCategoryIdToDelete {
-
-            private UUID categoryId;
-            private LocalDateTime fixedTime;
-
-            @BeforeEach
-            void setUp() {
-                categoryId = UUID.randomUUID();
-                fixedTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-                doReturn(fixedTime).when(clock).now();
-            }
-
-            @Nested
-            @DisplayName("When - 해당 카테고리를 가진 레시피 북마크들이 존재한다면")
-            class WhenRecipeBookmarksWithRecipeCategoryExist {
-
-                private List<RecipeBookmark> viewStatusesWithCategory;
-
-                @BeforeEach
-                void beforeEach() {
-                    RecipeBookmark status1 = RecipeBookmark.create(clock, UUID.randomUUID(), UUID.randomUUID());
-                    status1.updateRecipeCategoryId(categoryId);
-
-                    RecipeBookmark status2 = RecipeBookmark.create(clock, UUID.randomUUID(), UUID.randomUUID());
-                    status2.updateRecipeCategoryId(categoryId);
-
-                    viewStatusesWithCategory = List.of(status1, status2);
-
-                    doReturn(viewStatusesWithCategory)
-                            .when(repository)
-                            .findByRecipeCategoryIdAndStatus(categoryId, RecipeBookmarkStatus.ACTIVE);
-                    doReturn(viewStatusesWithCategory).when(repository).saveAll(any());
-                }
-
-                @Test
-                @DisplayName("Then - 해당 카테고리를 가진 모든 레시피 북마크의 카테고리가 비워져야 한다")
-                public void thenShouldEmptyAllRecipeBookmarkCategories() {
-                    service.unCategorize(categoryId);
-
-                    assertThat(viewStatusesWithCategory).allMatch(status -> status.getRecipeCategoryId() == null);
-
-                    verify(repository).saveAll(argThat(statuses -> {
-                        List<RecipeBookmark> statusList = (List<RecipeBookmark>) statuses;
-                        return statusList.size() == 2
-                                && statusList.stream().allMatch(s -> s.getRecipeCategoryId() == null);
-                    }));
-                }
-            }
-
-            @Nested
-            @DisplayName("When - 해당 카테고리를 가진 레시피 북마크가 없다면")
-            class WhenNoRecipeBookmarksWithRecipeCategoryExist {
-
-                @BeforeEach
-                void beforeEach() {
-                    doReturn(List.of())
-                            .when(repository)
-                            .findByRecipeCategoryIdAndStatus(categoryId, RecipeBookmarkStatus.ACTIVE);
-                }
-
-                @Test
-                @DisplayName("Then - saveAll이 빈 리스트로 호출되어야 한다")
-                public void thenShouldCallSaveAllWithEmptyList() {
-                    service.unCategorize(categoryId);
-
-                    verify(repository).findByRecipeCategoryIdAndStatus(categoryId, RecipeBookmarkStatus.ACTIVE);
-                    verify(repository).saveAll(List.of());
-                }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("카테고리별 레시피 개수 조회")
-    class CountRecipeBookmarksByCategories {
-
-        @Nested
-        @DisplayName("Given - 유효한 카테고리 ID 목록이 주어졌을 때")
-        class GivenValidRecipeCategoryIds {
-
-            private List<UUID> categoryIds;
-
-            @BeforeEach
-            void setUp() {
-                categoryIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-            }
-
-            @Nested
-            @DisplayName("When - 카테고리별 레시피 개수를 조회한다면")
-            class WhenCountingRecipeBookmarksByCategories {
-
-                private List<RecipeBookmarkCategorizedCountProjection> projections;
-
-                @BeforeEach
-                void beforeEach() {
-                    projections = List.of(
-                            createMockProjection(categoryIds.get(0), 5L), createMockProjection(categoryIds.get(1), 3L));
-                    doReturn(projections)
-                            .when(repository)
-                            .countByCategoryIdsAndStatus(categoryIds, RecipeBookmarkStatus.ACTIVE);
-                }
-
-                private RecipeBookmarkCategorizedCountProjection createMockProjection(UUID categoryId, Long count) {
-                    RecipeBookmarkCategorizedCountProjection projection =
-                            mock(RecipeBookmarkCategorizedCountProjection.class);
-                    doReturn(categoryId).when(projection).getCategoryId();
-                    doReturn(count).when(projection).getCount();
-                    return projection;
-                }
-
-                @Test
-                @DisplayName("Then - 각 카테고리별 레시피 개수가 반환되어야 한다")
-                void thenShouldReturnRecipeBookmarkCountsByCategories() {
-                    List<RecipeBookmarkCategorizedCount> result = service.countByCategories(categoryIds);
-
-                    assertThat(result).hasSize(2);
-
-                    RecipeBookmarkCategorizedCount first = result.get(0);
-                    assertThat(first.getCategoryId()).isEqualTo(categoryIds.get(0));
-                    assertThat(first.getCount()).isEqualTo(5);
-
-                    RecipeBookmarkCategorizedCount second = result.get(1);
-                    assertThat(second.getCategoryId()).isEqualTo(categoryIds.get(1));
-                    assertThat(second.getCount()).isEqualTo(3);
-
-                    verify(repository).countByCategoryIdsAndStatus(categoryIds, RecipeBookmarkStatus.ACTIVE);
-                }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("사용자의 레시피 북마크 목록 조회")
-    class GetUserRecipeBookmarks {
-
-        @Nested
-        @DisplayName("Given - 유효한 레시피 ID 목록과 사용자 ID가 주어졌을 때")
-        class GivenValidRecipeIdsAndUserId {
-
-            private List<UUID> recipeIds;
-            private UUID userId;
-
-            @BeforeEach
-            void setUp() {
-                recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-                userId = UUID.randomUUID();
-            }
-
-            @Nested
-            @DisplayName("When - 사용자의 레시피 북마크 목록을 조회한다면")
-            class WhenGettingUserRecipeBookmarks {
-
-                private List<RecipeBookmark> viewStatuses;
-
-                @BeforeEach
-                void beforeEach() {
-                    viewStatuses = List.of(
-                            RecipeBookmark.create(clock, userId, recipeIds.get(0)),
-                            RecipeBookmark.create(clock, userId, recipeIds.get(1)));
-
-                    doReturn(viewStatuses)
-                            .when(repository)
-                            .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeBookmarkStatus.ACTIVE);
-                }
-
-                @Test
-                @DisplayName("Then - 사용자가 조회한 레시피 상태 목록을 반환해야 한다")
-                void thenShouldReturnUserRecipeBookmarks() {
-                    List<RecipeBookmark> result = service.getByRecipes(recipeIds, userId);
-
-                    assertThat(result).hasSize(2);
-                    assertThat(result).containsExactlyElementsOf(viewStatuses);
-                    verify(repository)
-                            .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeBookmarkStatus.ACTIVE);
+                        verify(repository).categorize(userId, recipeId, newCategoryId);
+                    }
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 사용자가 조회하지 않은 레시피 ID 목록이 주어졌을 때")
-        class GivenUnviewedRecipeIds {
-
-            private List<UUID> recipeIds;
-            private UUID userId;
-
-            @BeforeEach
-            void setUp() {
-                recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-                userId = UUID.randomUUID();
-            }
+        @DisplayName("레시피 북마크 카테고리 삭제")
+        class DeleteRecipeBookmarkRecipeCategory {
 
             @Nested
-            @DisplayName("When - 사용자의 레시피 북마크 목록을 조회한다면")
-            class WhenGettingUserRecipeBookmarks {
+            @DisplayName("Given - 삭제할 카테고리 ID가 주어졌을 때")
+            class GivenRecipeCategoryIdToDelete {
+
+                private UUID categoryId;
 
                 @BeforeEach
-                void beforeEach() {
-                    doReturn(List.of())
-                            .when(repository)
-                            .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeBookmarkStatus.ACTIVE);
+                void setUp() {
+                    categoryId = UUID.randomUUID();
                 }
 
-                @Test
-                @DisplayName("Then - 빈 목록을 반환해야 한다")
-                void thenShouldReturnEmptyList() {
-                    List<RecipeBookmark> result = service.getByRecipes(recipeIds, userId);
+                @Nested
+                @DisplayName("When - 해당 카테고리를 가진 레시피 북마크들이 존재한다면")
+                class WhenRecipeBookmarksWithRecipeCategoryExist {
 
-                    assertThat(result).isEmpty();
-                    verify(repository)
-                            .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeBookmarkStatus.ACTIVE);
+                    @Test
+                    @DisplayName("Then - 카테고리를 가진 모든 레시피 북마크의 카테고리가 비워져야 한다")
+                    public void thenShouldEmptyAllRecipeBookmarkCategories() {
+                        service.unCategorize(categoryId);
+
+                        verify(repository).unCategorize(categoryId);
+                    }
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 빈 레시피 ID 목록이 주어졌을 때")
-        class GivenEmptyRecipeIds {
-
-            private UUID userId;
-
-            @BeforeEach
-            void setUp() {
-                userId = UUID.randomUUID();
-            }
+        @DisplayName("카테고리별 레시피 개수 조회")
+        class CountRecipeBookmarksByCategories {
 
             @Nested
-            @DisplayName("When - 사용자의 레시피 북마크 목록을 조회한다면")
-            class WhenGettingUserRecipeBookmarks {
+            @DisplayName("Given - 유효한 카테고리 ID 목록이 주어졌을 때")
+            class GivenValidRecipeCategoryIds {
+
+                private List<UUID> categoryIds;
 
                 @BeforeEach
-                void beforeEach() {
-                    doReturn(List.of())
-                            .when(repository)
-                            .findByRecipeIdInAndUserIdAndStatus(List.of(), userId, RecipeBookmarkStatus.ACTIVE);
+                void setUp() {
+                    categoryIds = List.of(UUID.randomUUID(), UUID.randomUUID());
                 }
 
-                @Test
-                @DisplayName("Then - 빈 목록을 반환해야 한다")
-                void thenShouldReturnEmptyList() {
-                    List<RecipeBookmark> result = service.getByRecipes(List.of(), userId);
+                @Nested
+                @DisplayName("When - 카테고리별 레시피 개수를 조회한다면")
+                class WhenCountingRecipeBookmarksByCategories {
 
-                    assertThat(result).isEmpty();
-                    verify(repository)
-                            .findByRecipeIdInAndUserIdAndStatus(List.of(), userId, RecipeBookmarkStatus.ACTIVE);
+                    private List<RecipeBookmarkCategorizedCountProjection> projections;
+
+                    @BeforeEach
+                    void beforeEach() {
+                        projections = List.of(
+                                createMockProjection(categoryIds.get(0), 5L),
+                                createMockProjection(categoryIds.get(1), 3L));
+                        doReturn(projections).when(repository).countCategorized(categoryIds);
+                    }
+
+                    private RecipeBookmarkCategorizedCountProjection createMockProjection(UUID categoryId, Long count) {
+                        RecipeBookmarkCategorizedCountProjection projection =
+                                mock(RecipeBookmarkCategorizedCountProjection.class);
+                        doReturn(categoryId).when(projection).getCategoryId();
+                        doReturn(count).when(projection).getCount();
+                        return projection;
+                    }
+
+                    @Test
+                    @DisplayName("Then - 각 카테고리별 레시피 개수가 반환되어야 한다")
+                    void thenShouldReturnRecipeBookmarkCountsByCategories() {
+                        List<RecipeBookmarkCategorizedCount> result = service.countByCategories(categoryIds);
+
+                        assertThat(result).hasSize(2);
+
+                        RecipeBookmarkCategorizedCount first = result.get(0);
+                        assertThat(first.getCategoryId()).isEqualTo(categoryIds.get(0));
+                        assertThat(first.getCount()).isEqualTo(5);
+
+                        RecipeBookmarkCategorizedCount second = result.get(1);
+                        assertThat(second.getCategoryId()).isEqualTo(categoryIds.get(1));
+                        assertThat(second.getCount()).isEqualTo(3);
+
+                        verify(repository).countCategorized(categoryIds);
+                    }
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 일부만 조회한 레시피 ID 목록이 주어졌을 때")
-        class GivenPartiallyViewedRecipeIds {
+        @DisplayName("사용자의 레시피 북마크 목록 조회")
+        class GetUserRecipeBookmarks {
 
-            private List<UUID> recipeIds;
-            private UUID userId;
+            @Nested
+            @DisplayName("Given - 유효한 레시피 ID 목록과 사용자 ID가 주어졌을 때")
+            class GivenValidRecipeIdsAndUserId {
 
-            @BeforeEach
-            void setUp() {
-                recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
-                userId = UUID.randomUUID();
+                private List<UUID> recipeIds;
+                private UUID userId;
+
+                @BeforeEach
+                void setUp() {
+                    recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+                    userId = UUID.randomUUID();
+                }
+
+                @Nested
+                @DisplayName("When - 사용자의 레시피 북마크 목록을 조회한다면")
+                class WhenGettingUserRecipeBookmarks {
+
+                    private List<RecipeBookmark> viewStatuses;
+
+                    @BeforeEach
+                    void beforeEach() {
+                        viewStatuses = List.of(mock(RecipeBookmark.class), mock(RecipeBookmark.class));
+
+                        doReturn(viewStatuses).when(repository).gets(userId, recipeIds);
+                    }
+
+                    @Test
+                    @DisplayName("Then - 사용자가 조회한 레시피 상태 목록을 반환해야 한다")
+                    void thenShouldReturnUserRecipeBookmarks() {
+                        List<RecipeBookmark> result = service.gets(recipeIds, userId);
+
+                        assertThat(result).hasSize(2);
+                        assertThat(result).containsExactlyElementsOf(viewStatuses);
+                        verify(repository).gets(userId, recipeIds);
+                    }
+                }
             }
 
             @Nested
-            @DisplayName("When - 사용자의 레시피 북마크 목록을 조회한다면")
-            class WhenGettingUserRecipeBookmarks {
+            @DisplayName("Given - 사용자가 조회하지 않은 레시피 ID 목록이 주어졌을 때")
+            class GivenUnviewedRecipeIds {
 
-                private List<RecipeBookmark> viewStatuses;
+                private List<UUID> recipeIds;
+                private UUID userId;
 
                 @BeforeEach
-                void beforeEach() {
-                    viewStatuses = List.of(
-                            RecipeBookmark.create(clock, userId, recipeIds.get(0)),
-                            RecipeBookmark.create(clock, userId, recipeIds.get(2)));
-
-                    doReturn(viewStatuses)
-                            .when(repository)
-                            .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeBookmarkStatus.ACTIVE);
+                void setUp() {
+                    recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+                    userId = UUID.randomUUID();
                 }
 
-                @Test
-                @DisplayName("Then - 조회한 레시피 상태만 반환해야 한다")
-                void thenShouldReturnOnlyViewedRecipeStatuses() {
-                    List<RecipeBookmark> result = service.getByRecipes(recipeIds, userId);
+                @Nested
+                @DisplayName("When - 사용자의 레시피 북마크 목록을 조회한다면")
+                class WhenGettingUserRecipeBookmarks {
 
-                    assertThat(result).hasSize(2);
-                    assertThat(result.get(0).getRecipeId()).isEqualTo(recipeIds.get(0));
-                    assertThat(result.get(1).getRecipeId()).isEqualTo(recipeIds.get(2));
-                    verify(repository)
-                            .findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeBookmarkStatus.ACTIVE);
+                    @BeforeEach
+                    void beforeEach() {
+                        doReturn(List.of()).when(repository).gets(userId, recipeIds);
+                    }
+
+                    @Test
+                    @DisplayName("Then - 빈 목록을 반환해야 한다")
+                    void thenShouldReturnEmptyList() {
+                        List<RecipeBookmark> result = service.gets(recipeIds, userId);
+
+                        assertThat(result).isEmpty();
+                        verify(repository).gets(userId, recipeIds);
+                    }
                 }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("레시피 북마크 삭제")
-    class DeleteRecipeBookmark {
-
-        @Nested
-        @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
-        class GivenValidRecipeAndUserId {
-
-            private UUID recipeId;
-            private UUID userId;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-                userId = UUID.randomUUID();
             }
 
             @Nested
-            @DisplayName("When - 레시피 북마크를 삭제한다면")
-            class WhenDeletingRecipeBookmark {
+            @DisplayName("Given - 빈 레시피 ID 목록이 주어졌을 때")
+            class GivenEmptyRecipeIds {
 
-                private RecipeBookmark realRecipeBookmark;
+                private UUID userId;
 
                 @BeforeEach
-                void beforeEach() {
-                    realRecipeBookmark = RecipeBookmark.create(clock, userId, recipeId);
-                    doReturn(Optional.of(realRecipeBookmark))
-                            .when(repository)
-                            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE);
+                void setUp() {
+                    userId = UUID.randomUUID();
                 }
 
-                @Test
-                @DisplayName("Then - 레시피 북마크가 삭제되어야 한다")
-                public void thenShouldDeleteRecipeBookmark() {
-                    service.delete(userId, recipeId);
+                @Nested
+                @DisplayName("When - 사용자의 레시피 북마크 목록을 조회한다면")
+                class WhenGettingUserRecipeBookmarks {
 
-                    verify(repository).findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE);
-                    verify(repository).save(realRecipeBookmark);
-                    assertThat(realRecipeBookmark.getStatus() == RecipeBookmarkStatus.DELETED)
-                            .isTrue();
+                    @BeforeEach
+                    void beforeEach() {
+                        doReturn(List.of()).when(repository).gets(userId, List.of());
+                    }
+
+                    @Test
+                    @DisplayName("Then - 빈 목록을 반환해야 한다")
+                    void thenShouldReturnEmptyList() {
+                        List<RecipeBookmark> result = service.gets(List.of(), userId);
+
+                        assertThat(result).isEmpty();
+                        verify(repository).gets(userId, List.of());
+                    }
                 }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 존재하지 않는 레시피 ID와 사용자 ID가 주어졌을 떄")
-        class GivenNonExistentRecipeAndUserId {
-
-            private UUID recipeId;
-            private UUID userId;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-                userId = UUID.randomUUID();
             }
 
             @Nested
-            @DisplayName("When - 레시피 북마크를 삭제한다면")
-            class WhenDeletingNonExistentRecipeBookmark {
+            @DisplayName("Given - 일부만 조회한 레시피 ID 목록이 주어졌을 때")
+            class GivenPartiallyViewedRecipeIds {
+
+                private List<UUID> recipeIds;
+                private UUID userId;
 
                 @BeforeEach
-                void beforeEach() {
-                    doReturn(Optional.empty())
-                            .when(repository)
-                            .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE);
+                void setUp() {
+                    recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+                    userId = UUID.randomUUID();
                 }
 
-                @Test
-                @DisplayName("Then - RecipeBookmarkException이 발생해야 한다")
-                public void thenShouldThrowViewStatusException() {
-                    RecipeBookmarkException exception =
-                            assertThrows(RecipeBookmarkException.class, () -> service.delete(userId, recipeId));
+                @Nested
+                @DisplayName("When - 사용자의 레시피 북마크 목록을 조회한다면")
+                class WhenGettingUserRecipeBookmarks {
 
-                    assertThat(exception.getError()).isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
-                    verify(repository, never()).save(any());
-                }
-            }
-        }
-    }
+                    private List<RecipeBookmark> viewStatuses;
+                    private RecipeBookmark bookmark0;
+                    private RecipeBookmark bookmark2;
 
-    @Nested
-    @DisplayName("미분류 레시피 개수 조회")
-    class CountUncategorized {
+                    @BeforeEach
+                    void beforeEach() {
+                        bookmark0 = mock(RecipeBookmark.class);
+                        bookmark2 = mock(RecipeBookmark.class);
+                        viewStatuses = List.of(bookmark0, bookmark2);
 
-        @Nested
-        @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
-        class GivenValidUserId {
+                        doReturn(viewStatuses).when(repository).gets(userId, recipeIds);
+                    }
 
-            private UUID userId;
+                    @Test
+                    @DisplayName("Then - 조회한 레시피 상태만 반환해야 한다")
+                    void thenShouldReturnOnlyViewedRecipeStatuses() {
+                        List<RecipeBookmark> result = service.gets(recipeIds, userId);
 
-            @BeforeEach
-            void setUp() {
-                userId = UUID.randomUUID();
-            }
-
-            @Nested
-            @DisplayName("When - 미분류 레시피 개수를 조회한다면")
-            class WhenCountingUncategorized {
-
-                private RecipeBookmarkUnCategorizedCountProjection projection;
-
-                @BeforeEach
-                void beforeEach() {
-                    projection = mock(RecipeBookmarkUnCategorizedCountProjection.class);
-                    doReturn(5L).when(projection).getCount();
-                    doReturn(projection).when(repository).countByUserIdAndStatus(userId, RecipeBookmarkStatus.ACTIVE);
-                }
-
-                @Test
-                @DisplayName("Then - 올바른 미분류 레시피 개수를 반환해야 한다")
-                void thenShouldReturnCorrectUncategorizedCount() {
-                    RecipeBookmarkUnCategorizedCount result = service.countUncategorized(userId);
-
-                    assertThat(result.getCount()).isEqualTo(5);
-                    verify(repository).countByUserIdAndStatus(userId, RecipeBookmarkStatus.ACTIVE);
+                        assertThat(result).hasSize(2);
+                        assertThat(result.get(0)).isEqualTo(bookmark0);
+                        assertThat(result.get(1)).isEqualTo(bookmark2);
+                        verify(repository).gets(userId, recipeIds);
+                    }
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 미분류 레시피가 없는 사용자 ID가 주어졌을 때")
-        class GivenUserIdWithNoUncategorized {
-
-            private UUID userId;
-
-            @BeforeEach
-            void setUp() {
-                userId = UUID.randomUUID();
-            }
+        @DisplayName("레시피 북마크 삭제")
+        class DeleteRecipeBookmark {
 
             @Nested
-            @DisplayName("When - 미분류 레시피 개수를 조회한다면")
-            class WhenCountingUncategorized {
+            @DisplayName("Given - 유효한 레시피 ID와 사용자 ID가 주어졌을 때")
+            class GivenValidRecipeAndUserId {
 
-                private RecipeBookmarkUnCategorizedCountProjection projection;
-
-                @BeforeEach
-                void beforeEach() {
-                    projection = mock(RecipeBookmarkUnCategorizedCountProjection.class);
-                    doReturn(0L).when(projection).getCount();
-                    doReturn(projection).when(repository).countByUserIdAndStatus(userId, RecipeBookmarkStatus.ACTIVE);
-                }
-
-                @Test
-                @DisplayName("Then - 0을 반환해야 한다")
-                void thenShouldReturnZero() {
-                    RecipeBookmarkUnCategorizedCount result = service.countUncategorized(userId);
-
-                    assertThat(result.getCount()).isEqualTo(0);
-                    verify(repository).countByUserIdAndStatus(userId, RecipeBookmarkStatus.ACTIVE);
-                }
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("레시피별 북마크 삭제")
-    class DeleteByRecipe {
-
-        @Nested
-        @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
-        class GivenValidRecipeId {
-
-            private UUID recipeId;
-            private LocalDateTime fixedTime;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-                fixedTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-                doReturn(fixedTime).when(clock).now();
-            }
-
-            @Nested
-            @DisplayName("When - 해당 레시피의 모든 북마크를 삭제한다면")
-            class WhenDeletingAllBookmarksByRecipe {
-
-                private List<RecipeBookmark> bookmarks;
+                private UUID recipeId;
+                private UUID userId;
 
                 @BeforeEach
-                void beforeEach() {
-                    RecipeBookmark bookmark1 = RecipeBookmark.create(clock, UUID.randomUUID(), recipeId);
-                    RecipeBookmark bookmark2 = RecipeBookmark.create(clock, UUID.randomUUID(), recipeId);
-                    RecipeBookmark bookmark3 = RecipeBookmark.create(clock, UUID.randomUUID(), recipeId);
-                    bookmarks = List.of(bookmark1, bookmark2, bookmark3);
-
-                    doReturn(bookmarks)
-                            .when(repository)
-                            .findAllByRecipeIdAndStatus(recipeId, RecipeBookmarkStatus.ACTIVE);
-
-                    doReturn(bookmarks).when(repository).saveAll(anyList());
+                void setUp() {
+                    recipeId = UUID.randomUUID();
+                    userId = UUID.randomUUID();
                 }
 
-                @Test
-                @DisplayName("Then - 모든 북마크가 삭제 상태로 변경되어야 한다")
-                void thenShouldDeleteAllBookmarks() {
-                    List<RecipeBookmark> result = service.deleteByRecipe(recipeId);
+                @Nested
+                @DisplayName("When - 레시피 북마크를 삭제한다면")
+                class WhenDeletingRecipeBookmark {
 
-                    assertThat(result).hasSize(3);
-                    assertThat(bookmarks).allMatch(bookmark -> bookmark.getStatus() == RecipeBookmarkStatus.DELETED);
+                    @Test
+                    @DisplayName("Then - 레시피 북마크가 삭제되어야 한다")
+                    public void thenShouldDeleteRecipeBookmark() {
+                        service.delete(userId, recipeId);
 
-                    verify(repository).findAllByRecipeIdAndStatus(recipeId, RecipeBookmarkStatus.ACTIVE);
-                    verify(repository).saveAll(argThat(savedBookmarks -> {
-                        List<RecipeBookmark> list = (List<RecipeBookmark>) savedBookmarks;
-                        return list.size() == 3
-                                && list.stream().allMatch(h -> h.getStatus() == RecipeBookmarkStatus.DELETED);
-                    }));
+                        verify(repository).delete(userId, recipeId, clock);
+                    }
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 북마크가 없는 레시피 ID가 주어졌을 때")
-        class GivenRecipeIdWithNoBookmarks {
+        @DisplayName("미분류 레시피 개수 조회")
+        class CountUncategorized {
 
-            private UUID recipeId;
+            @Nested
+            @DisplayName("Given - 유효한 사용자 ID가 주어졌을 때")
+            class GivenValidUserId {
 
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
+                private UUID userId;
+
+                @BeforeEach
+                void setUp() {
+                    userId = UUID.randomUUID();
+                }
+
+                @Nested
+                @DisplayName("When - 미분류 레시피 개수를 조회한다면")
+                class WhenCountingUncategorized {
+
+                    private RecipeBookmarkUnCategorizedCountProjection projection;
+
+                    @BeforeEach
+                    void beforeEach() {
+                        projection = mock(RecipeBookmarkUnCategorizedCountProjection.class);
+                        doReturn(5L).when(projection).getCount();
+                        doReturn(projection).when(repository).countUncategorized(userId);
+                    }
+
+                    @Test
+                    @DisplayName("Then - 올바른 미분류 레시피 개수를 반환해야 한다")
+                    void thenShouldReturnCorrectUncategorizedCount() {
+                        RecipeBookmarkUnCategorizedCount result = service.countUncategorized(userId);
+
+                        assertThat(result.getCount()).isEqualTo(5);
+                        verify(repository).countUncategorized(userId);
+                    }
+                }
             }
 
             @Nested
-            @DisplayName("When - 해당 레시피의 모든 북마크를 삭제한다면")
-            class WhenDeletingAllBookmarksByRecipe {
+            @DisplayName("Given - 미분류 레시피가 없는 사용자 ID가 주어졌을 때")
+            class GivenUserIdWithNoUncategorized {
+
+                private UUID userId;
 
                 @BeforeEach
-                void beforeEach() {
-                    doReturn(List.of())
-                            .when(repository)
-                            .findAllByRecipeIdAndStatus(recipeId, RecipeBookmarkStatus.ACTIVE);
+                void setUp() {
+                    userId = UUID.randomUUID();
                 }
 
-                @Test
-                @DisplayName("Then - 빈 리스트로 saveAll이 호출되어야 한다")
-                void thenShouldSaveEmptyList() {
-                    List<RecipeBookmark> result = service.deleteByRecipe(recipeId);
+                @Nested
+                @DisplayName("When - 미분류 레시피 개수를 조회한다면")
+                class WhenCountingUncategorized {
 
-                    assertThat(result).isEmpty();
-                    verify(repository).findAllByRecipeIdAndStatus(recipeId, RecipeBookmarkStatus.ACTIVE);
-                    verify(repository).saveAll(List.of());
-                }
-            }
-        }
-    }
+                    private RecipeBookmarkUnCategorizedCountProjection projection;
 
-    @Nested
-    @DisplayName("레시피별 북마크 차단")
-    class BlockByRecipe {
+                    @BeforeEach
+                    void beforeEach() {
+                        projection = mock(RecipeBookmarkUnCategorizedCountProjection.class);
+                        doReturn(0L).when(projection).getCount();
+                        doReturn(projection).when(repository).countUncategorized(userId);
+                    }
 
-        @Nested
-        @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
-        class GivenValidRecipeId {
+                    @Test
+                    @DisplayName("Then - 0을 반환해야 한다")
+                    void thenShouldReturnZero() {
+                        RecipeBookmarkUnCategorizedCount result = service.countUncategorized(userId);
 
-            private UUID recipeId;
-            private LocalDateTime fixedTime;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-                fixedTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-                doReturn(fixedTime).when(clock).now();
-            }
-
-            @Nested
-            @DisplayName("When - 해당 레시피의 모든 북마크를 차단한다면")
-            class WhenBlockingAllBookmarksByRecipe {
-
-                private List<RecipeBookmark> bookmarks;
-
-                @BeforeEach
-                void beforeEach() {
-                    RecipeBookmark bookmark1 = RecipeBookmark.create(clock, UUID.randomUUID(), recipeId);
-                    RecipeBookmark bookmark2 = RecipeBookmark.create(clock, UUID.randomUUID(), recipeId);
-                    bookmarks = List.of(bookmark1, bookmark2);
-
-                    doReturn(bookmarks).when(repository).findAllByRecipeId(recipeId);
-                    doReturn(bookmarks).when(repository).saveAll(anyList());
-                }
-
-                @Test
-                @DisplayName("Then - 모든 북마크가 BLOCKED 상태로 변경되어야 한다")
-                void thenShouldBlockAllBookmarks() {
-                    service.blockByRecipe(recipeId);
-
-                    assertThat(bookmarks).allMatch(h -> h.getStatus() == RecipeBookmarkStatus.BLOCKED);
-                    verify(repository).findAllByRecipeId(recipeId);
-                    verify(repository).saveAll(argThat(saved -> {
-                        List<RecipeBookmark> list = (List<RecipeBookmark>) saved;
-                        return list.size() == 2
-                                && list.stream().allMatch(h -> h.getStatus() == RecipeBookmarkStatus.BLOCKED);
-                    }));
+                        assertThat(result.getCount()).isEqualTo(0);
+                        verify(repository).countUncategorized(userId);
+                    }
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 북마크가 없는 레시피 ID가 주어졌을 때")
-        class GivenRecipeIdWithNoBookmarks {
-
-            private UUID recipeId;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-                doReturn(List.of()).when(repository).findAllByRecipeId(recipeId);
-            }
+        @DisplayName("북마크 ID들로 삭제")
+        class DeletesByIds {
 
             @Nested
-            @DisplayName("When - 해당 레시피의 모든 북마크를 차단한다면")
-            class WhenBlockingAllHistoriesByRecipe {
+            @DisplayName("Given - 유효한 북마크 ID 목록이 주어졌을 때")
+            class GivenValidBookmarkIds {
 
-                @Test
-                @DisplayName("Then - 빈 리스트로 saveAll이 호출되어야 한다")
-                void thenShouldSaveEmptyList() {
-                    service.blockByRecipe(recipeId);
+                private List<UUID> bookmarkIds;
 
-                    verify(repository).findAllByRecipeId(recipeId);
-                    verify(repository).saveAll(List.of());
+                @BeforeEach
+                void setUp() {
+                    bookmarkIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+                }
+
+                @Nested
+                @DisplayName("When - 해당 북마크 ID들의 북마크를 삭제한다면")
+                class WhenDeletingBookmarksByIds {
+
+                    @Test
+                    @DisplayName("Then - 모든 북마크가 삭제되어야 한다")
+                    void thenShouldDeleteBookmarksByIds() {
+                        service.deletes(bookmarkIds);
+
+                        verify(repository).deletes(bookmarkIds, clock);
+                    }
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("레시피별 북마크 차단")
+        class BlockByRecipe {
+
+            @Nested
+            @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
+            class GivenValidRecipeId {
+
+                private UUID recipeId;
+
+                @BeforeEach
+                void setUp() {
+                    recipeId = UUID.randomUUID();
+                }
+
+                @Nested
+                @DisplayName("When - 해당 레시피의 모든 북마크를 차단한다면")
+                class WhenBlockingAllBookmarksByRecipe {
+
+                    @Test
+                    @DisplayName("Then - 모든 북마크가 BLOCKED 상태로 변경되어야 한다")
+                    void thenShouldBlockAllBookmarks() {
+                        service.block(recipeId);
+
+                        verify(repository).block(recipeId, clock);
+                    }
                 }
             }
         }

@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.cheftory.api.auth.entity.AuthTokenType;
 import com.cheftory.api.auth.exception.AuthErrorCode;
 import com.cheftory.api.auth.jwt.TokenProvider;
 import java.util.UUID;
@@ -48,7 +49,7 @@ public class SecurityControllerTest {
     @Test
     void 인증_있으면_200() throws Exception {
         UUID userId = UUID.randomUUID();
-        String validJwt = tokenProvider.createAccessToken(userId);
+        String validJwt = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
         mockMvc.perform(get("/api/security/success")
                         .with(countryHeader())
@@ -67,7 +68,7 @@ public class SecurityControllerTest {
     @Test
     void 계정_생성_항상_200() throws Exception {
         UUID userId = UUID.randomUUID();
-        String validJwt = tokenProvider.createAccessToken(userId);
+        String validJwt = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
         mockMvc.perform(get("/api/v1/account/security/success")
                         .with(countryHeader())

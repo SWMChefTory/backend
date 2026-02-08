@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.account.model.Account;
 import com.cheftory.api.auth.AuthService;
+import com.cheftory.api.auth.entity.AuthTokenType;
 import com.cheftory.api.auth.model.AuthTokens;
 import com.cheftory.api.credit.CreditService;
 import com.cheftory.api.credit.entity.Credit;
@@ -61,7 +62,7 @@ class AccountFacadeTest {
     @DisplayName("login: providerSub 추출 -> 유저 조회 -> 토큰 발급 -> 세션 저장 -> Account 반환")
     void login_shouldReturnAccount() {
         doReturn(providerSub).when(authService).extractProviderSubFromIdToken(idToken, provider);
-        doReturn(user).when(userService).getByProviderAndProviderSub(provider, providerSub);
+        doReturn(user).when(userService).get(provider, providerSub);
         doReturn(authTokens).when(authService).createAuthToken(userId);
         doNothing().when(authService).saveLoginSession(userId, authTokens.refreshToken());
 
@@ -102,25 +103,25 @@ class AccountFacadeTest {
     @Test
     @DisplayName("logout: refreshToken에서 userId 추출 후 refreshToken 삭제")
     void logout_shouldDeleteRefreshToken() {
-        doReturn(userId).when(authService).extractUserIdFromToken("refresh-token");
+        doReturn(userId).when(authService).extractUserIdFromToken("refresh-token", AuthTokenType.REFRESH);
         doNothing().when(authService).deleteRefreshToken(userId, "refresh-token");
 
         sut.logout("refresh-token");
 
         verify(authService).deleteRefreshToken(userId, "refresh-token");
-        verify(userService, never()).deleteUser(any());
+        verify(userService, never()).delete(any());
     }
 
     @Test
     @DisplayName("delete: refreshToken 삭제 후 유저 삭제")
     void delete_shouldDeleteRefreshTokenAndUser() {
-        doReturn(userId).when(authService).extractUserIdFromToken("refresh-token");
+        doReturn(userId).when(authService).extractUserIdFromToken("refresh-token", AuthTokenType.REFRESH);
         doNothing().when(authService).deleteRefreshToken(userId, "refresh-token");
-        doNothing().when(userService).deleteUser(userId);
+        doNothing().when(userService).delete(userId);
 
         sut.delete("refresh-token");
 
         verify(authService).deleteRefreshToken(userId, "refresh-token");
-        verify(userService).deleteUser(userId);
+        verify(userService).delete(userId);
     }
 }

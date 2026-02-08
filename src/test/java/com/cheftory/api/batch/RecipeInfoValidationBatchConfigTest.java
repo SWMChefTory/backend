@@ -15,9 +15,9 @@ import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.region.MarketContext;
-import com.cheftory.api.recipe.bookmark.RecipeBookmarkRepository;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkStatus;
+import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkJpaRepository;
 import com.cheftory.api.recipe.content.info.RecipeInfoRepository;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
@@ -60,7 +60,7 @@ class RecipeInfoValidationBatchConfigTest {
     private RecipeInfoRepository recipeInfoRepository;
 
     @Autowired
-    private RecipeBookmarkRepository recipeBookmarkRepository;
+    private RecipeBookmarkJpaRepository recipeBookmarkJpaRepository;
 
     @Autowired
     private Clock clock;
@@ -77,13 +77,13 @@ class RecipeInfoValidationBatchConfigTest {
     @BeforeEach
     void setUp() {
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
-            recipeBookmarkRepository.deleteAll();
+            recipeBookmarkJpaRepository.deleteAll();
             youtubeMetaRepository.deleteAll();
             recipeInfoRepository.deleteAll();
         }
 
         try (var ignored = MarketContext.with(new MarketContext.Info(GLOBAL, "US"))) {
-            recipeBookmarkRepository.deleteAll();
+            recipeBookmarkJpaRepository.deleteAll();
             youtubeMetaRepository.deleteAll();
             recipeInfoRepository.deleteAll();
         }
@@ -318,7 +318,7 @@ class RecipeInfoValidationBatchConfigTest {
             long blockedRecipe = recipeInfoRepository.findAll().stream()
                     .filter(r -> r.getRecipeStatus() == RecipeStatus.BLOCKED)
                     .count();
-            long blockedBookmark = recipeBookmarkRepository.findAll().stream()
+            long blockedBookmark = recipeBookmarkJpaRepository.findAll().stream()
                     .filter(h -> h.getStatus() == RecipeBookmarkStatus.BLOCKED)
                     .count();
 
@@ -350,7 +350,7 @@ class RecipeInfoValidationBatchConfigTest {
     }
 
     private void assertBookmarkStatus(UUID bookmarkId, RecipeBookmarkStatus expectedStatus) {
-        var bookmark = recipeBookmarkRepository.findById(bookmarkId).orElseThrow();
+        var bookmark = recipeBookmarkJpaRepository.findById(bookmarkId).orElseThrow();
         assertThat(bookmark.getStatus()).isEqualTo(expectedStatus);
     }
 
@@ -412,7 +412,7 @@ class RecipeInfoValidationBatchConfigTest {
 
     private UUID createRecipeBookmark(UUID userId, UUID recipeId) {
         RecipeBookmark bookmark = RecipeBookmark.create(clock, userId, recipeId);
-        return recipeBookmarkRepository.save(bookmark).getId();
+        return recipeBookmarkJpaRepository.save(bookmark).getId();
     }
 
     private byte[] uuidToBytes(UUID uuid) {

@@ -101,7 +101,7 @@ class AsyncRecipeCreationServiceTest {
 
                     verify(recipeInfoService, never()).failed(any());
                     verify(recipeProgressService, never()).failed(any(), any(), any());
-                    verify(recipeBookmarkService, never()).deleteByRecipe(any());
+                    verify(recipeBookmarkService, never()).deletes(any());
                     verifyNoInteractions(creditPort);
                 }
             }
@@ -136,7 +136,7 @@ class AsyncRecipeCreationServiceTest {
                             .when(recipeCreationPipeline)
                             .run(any(RecipeCreationExecutionContext.class));
 
-                    doReturn(List.of()).when(recipeBookmarkService).deleteByRecipe(recipeId);
+                    doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
                 }
 
                 @Nested
@@ -151,7 +151,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeInfoService).failed(recipeId);
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeBookmarkService).deleteByRecipe(recipeId);
+                        verify(recipeBookmarkService).gets(recipeId);
                         verify(recipeYoutubeMetaService).ban(recipeId); // ban 호출 확인
                         verify(recipeIdentifyService).delete(videoUrl);
 
@@ -185,7 +185,7 @@ class AsyncRecipeCreationServiceTest {
                             .when(recipeCreationPipeline)
                             .run(any(RecipeCreationExecutionContext.class));
 
-                    doReturn(List.of()).when(recipeBookmarkService).deleteByRecipe(recipeId);
+                    doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
                 }
 
                 @Nested
@@ -200,7 +200,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeInfoService).failed(recipeId);
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeBookmarkService).deleteByRecipe(recipeId);
+                        verify(recipeBookmarkService).gets(recipeId);
                         verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(recipeYoutubeMetaService, never()).ban(any());
@@ -235,7 +235,7 @@ class AsyncRecipeCreationServiceTest {
                             .when(recipeCreationPipeline)
                             .run(any(RecipeCreationExecutionContext.class));
 
-                    doReturn(List.of()).when(recipeBookmarkService).deleteByRecipe(recipeId);
+                    doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
                 }
 
                 @Nested
@@ -250,7 +250,7 @@ class AsyncRecipeCreationServiceTest {
                         verify(recipeInfoService).failed(recipeId);
                         verify(recipeProgressService)
                                 .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeBookmarkService).deleteByRecipe(recipeId);
+                        verify(recipeBookmarkService).gets(recipeId);
                         verify(recipeIdentifyService).delete(videoUrl);
 
                         verify(recipeYoutubeMetaService, never()).ban(any());
@@ -301,7 +301,7 @@ class AsyncRecipeCreationServiceTest {
 
                 doReturn(List.of(bookmark1, bookmark2))
                         .when(recipeBookmarkService)
-                        .deleteByRecipe(recipeId);
+                        .gets(recipeId);
             }
 
             @Test
@@ -310,7 +310,7 @@ class AsyncRecipeCreationServiceTest {
                 sut.create(recipeId, creditCost, videoId, videoUrl);
 
                 verify(recipeInfoService).failed(recipeId);
-                verify(recipeBookmarkService).deleteByRecipe(recipeId);
+                verify(recipeBookmarkService).gets(recipeId);
 
                 verify(creditPort).refundRecipeCreate(userId1, recipeId, creditCost);
                 verify(creditPort).refundRecipeCreate(userId2, recipeId, creditCost);

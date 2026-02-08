@@ -209,33 +209,6 @@ public class RecipeControllerTest extends RestDocsTest {
     }
 
     @Test
-    @DisplayName("커서로 미분류 레시피를 조회하면 커서 기반 응답을 반환한다")
-    void shouldReturnUncategorizedRecipesWithCursor() {
-        UUID userId = UUID.randomUUID();
-        String cursor = "cursor-1";
-        String nextCursor = "cursor-2";
-        RecipeBookmarkOverview overview = stubBookmarkOverview();
-
-        setUser(userId);
-
-        doReturn(CursorPage.of(List.of(overview), nextCursor))
-                .when(recipeFacade)
-                .getUnCategorized(userId, cursor);
-
-        given().contentType(ContentType.JSON)
-                .header("Authorization", "Bearer accessToken")
-                .param("cursor", cursor)
-                .get("/api/v1/recipes/uncategorized")
-                .then()
-                .status(HttpStatus.OK)
-                .body("unCategorized_recipes", hasSize(1))
-                .body("has_next", equalTo(true))
-                .body("next_cursor", equalTo(nextCursor));
-
-        verify(recipeFacade).getUnCategorized(userId, cursor);
-    }
-
-    @Test
     @DisplayName("레시피 카테고리 목록을 조회한다")
     void shouldReturnRecipeCategories() {
         UUID userId = UUID.randomUUID();

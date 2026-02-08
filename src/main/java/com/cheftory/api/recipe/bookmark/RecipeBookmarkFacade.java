@@ -16,7 +16,7 @@ public class RecipeBookmarkFacade {
     private final RecipeInfoService recipeInfoService;
     private final RecipeCreditPort creditPort;
 
-    public void createAndCharge(UUID userId, UUID recipeId) {
+    public void create(UUID userId, UUID recipeId) {
         RecipeInfo recipeInfo = recipeInfoService.get(recipeId);
         try {
             boolean created = recipeBookmarkService.create(userId, recipeInfo.getId());

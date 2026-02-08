@@ -13,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * Google OAuth 토큰 검증기
+ */
 @Component
 @Slf4j
 public class GoogleTokenVerifier {
@@ -20,7 +23,14 @@ public class GoogleTokenVerifier {
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public String getSubFromToken(String idToken) {
+    /**
+     * Google ID 토큰에서 sub 클레임 추출
+     *
+     * @param idToken Google ID 토큰
+     * @return 유저 고유 식별자 (sub)
+     * @throws VerificationException 토큰 검증 실패 시
+     */
+    public String getSubFromToken(String idToken) throws VerificationException {
         JsonNode payload = getPayload(idToken);
         JsonNode subNode = payload.get("sub");
 

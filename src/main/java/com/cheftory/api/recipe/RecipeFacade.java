@@ -84,11 +84,15 @@ public class RecipeFacade {
             List<RecipeTag> tags = recipeTagService.gets(recipeId);
             List<RecipeBriefing> briefings = recipeBriefingService.gets(recipeId);
             RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
-            RecipeBookmark bookmark = recipeBookmarkService.getWithView(userId, recipeId);
             recipeRankService.logEvent(userId, recipeId, RankingEventType.VIEW);
+            if (recipeBookmarkService.exist(userId, recipeId)) {
+                RecipeBookmark bookmark = recipeBookmarkService.get(userId, recipeId);
+                return FullRecipe.owned(
+                        steps, ingredients, detailMeta, progresses, tags, youtubeMeta, bookmark, recipe, briefings);
+            }
+            return FullRecipe.notOwned(
+                    steps, ingredients, detailMeta, progresses, tags, youtubeMeta, recipe, briefings);
 
-            return FullRecipe.of(
-                    steps, ingredients, detailMeta, progresses, tags, youtubeMeta, bookmark, recipe, briefings);
         } catch (RecipeException e) {
             if (e.getError() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND
                     || e.getError() == RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND) {
@@ -114,13 +118,6 @@ public class RecipeFacade {
 
     public CursorPage<RecipeBookmarkOverview> getCategorized(UUID userId, UUID recipeCategoryId, String cursor) {
         CursorPage<RecipeBookmark> bookmarks = recipeBookmarkService.getCategorized(userId, recipeCategoryId, cursor);
-
-        List<RecipeBookmarkOverview> items = makeBookmarkOverviews(bookmarks.items());
-        return CursorPage.of(items, bookmarks.nextCursor());
-    }
-
-    public CursorPage<RecipeBookmarkOverview> getUnCategorized(UUID userId, String cursor) {
-        CursorPage<RecipeBookmark> bookmarks = recipeBookmarkService.getUnCategorized(userId, cursor);
 
         List<RecipeBookmarkOverview> items = makeBookmarkOverviews(bookmarks.items());
         return CursorPage.of(items, bookmarks.nextCursor());
@@ -194,7 +191,7 @@ public class RecipeFacade {
         Map<UUID, List<RecipeTag>> tagsMap =
                 recipeTagService.getIn(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
-        Map<UUID, RecipeBookmark> recipeViewStatusMap = recipeBookmarkService.getByRecipes(recipeIds, userId).stream()
+        Map<UUID, RecipeBookmark> recipeViewStatusMap = recipeBookmarkService.gets(recipeIds, userId).stream()
                 .collect(Collectors.toMap(RecipeBookmark::getRecipeId, Function.identity()));
 
         return recipes.stream()
@@ -259,7 +256,7 @@ public class RecipeFacade {
         try {
             recipeYoutubeMetaService.block(recipeId);
             recipeInfoService.block(recipeId);
-            recipeBookmarkService.blockByRecipe(recipeId);
+            recipeBookmarkService.block(recipeId);
         } catch (RecipeException e) {
             if (e.getError() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO) {
                 log.warn("차단되지 않은 영상에 대해 레시피 차단 시도 recipeId={}", recipeId);
