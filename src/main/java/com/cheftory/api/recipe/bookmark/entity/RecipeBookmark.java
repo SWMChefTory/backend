@@ -17,6 +17,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 레시피 북마크 엔티티
+ */
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -59,6 +62,14 @@ public class RecipeBookmark extends MarketScope {
     @Column(nullable = false)
     private long version;
 
+    /**
+     * 레시피 북마크 엔티티 생성
+     *
+     * @param clock 시계
+     * @param userId 사용자 ID
+     * @param recipeId 레시피 ID
+     * @return 생성된 북마크 엔티티
+     */
     public static RecipeBookmark create(Clock clock, UUID userId, UUID recipeId) {
         return new RecipeBookmark(
                 UUID.randomUUID(),
@@ -73,28 +84,56 @@ public class RecipeBookmark extends MarketScope {
                 0L);
     }
 
+    /**
+     * 레시피 카테고리 ID 설정
+     *
+     * @param recipeCategoryId 카테고리 ID
+     */
     public void updateRecipeCategoryId(UUID recipeCategoryId) {
         this.recipeCategoryId = recipeCategoryId;
     }
 
+    /**
+     * 레시피 카테고리 ID 초기화
+     */
     public void emptyRecipeCategoryId() {
         this.recipeCategoryId = null;
     }
 
+    /**
+     * 최근 조회 시간 업데이트
+     *
+     * @param clock 시계
+     */
     public void updateViewedAt(Clock clock) {
         this.viewedAt = clock.now();
     }
 
+    /**
+     * 레시피 북마크 차단
+     *
+     * @param clock 시계
+     */
     public void block(Clock clock) {
         this.status = RecipeBookmarkStatus.BLOCKED;
         this.updatedAt = clock.now();
     }
 
+    /**
+     * 레시피 북마크 삭제
+     *
+     * @param clock 시계
+     */
     public void delete(Clock clock) {
         this.status = RecipeBookmarkStatus.DELETED;
         this.updatedAt = clock.now();
     }
 
+    /**
+     * 레시피 북마크 활성화
+     *
+     * @param clock 시계
+     */
     public void active(Clock clock) {
         this.status = RecipeBookmarkStatus.ACTIVE;
         this.updatedAt = clock.now();

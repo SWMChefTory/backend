@@ -1,4 +1,4 @@
-package com.cheftory.api.category;
+package com.cheftory.api.recipe.category;
 
 import static com.cheftory.api.utils.RestDocsUtils.getNestedClassPath;
 import static com.cheftory.api.utils.RestDocsUtils.requestAccessTokenFields;
@@ -15,8 +15,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 
 import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
-import com.cheftory.api.recipe.category.RecipeCategoryController;
-import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Map;

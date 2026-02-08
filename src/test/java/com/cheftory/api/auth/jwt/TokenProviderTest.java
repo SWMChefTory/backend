@@ -195,4 +195,24 @@ class TokenProviderTest {
                 java.time.Duration.between(now, refreshExpiration).toDays();
         assertThat(refreshDaysDiff).isCloseTo(refreshTokenExpiration / 86400, org.assertj.core.data.Offset.offset(1L));
     }
+
+    @Test
+    void getUserId_withAccessTokenButExpectingRefreshToken_shouldThrowInvalidRefreshToken() {
+        String accessToken = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
+
+        AuthException ex =
+                assertThrows(AuthException.class, () -> tokenProvider.getUserId(accessToken, AuthTokenType.REFRESH));
+
+        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
+    }
+
+    @Test
+    void getUserId_withRefreshTokenButExpectingAccessToken_shouldThrowInvalidAccessToken() {
+        String refreshToken = tokenProvider.createToken(userId, AuthTokenType.REFRESH);
+
+        AuthException ex =
+                assertThrows(AuthException.class, () -> tokenProvider.getUserId(refreshToken, AuthTokenType.ACCESS));
+
+        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_ACCESS_TOKEN);
+    }
 }

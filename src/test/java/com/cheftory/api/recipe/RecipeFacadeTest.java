@@ -365,11 +365,12 @@ class RecipeFacadeTest {
         @DisplayName("카테고리 삭제 시 unCategorize 후 delete가 호출된다")
         void shouldDeleteCategory() {
             UUID categoryId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
 
-            sut.deleteCategory(categoryId);
+            sut.deleteCategory(userId, categoryId);
 
             verify(recipeBookmarkService).unCategorize(categoryId);
-            verify(recipeCategoryService).delete(categoryId);
+            verify(recipeCategoryService).delete(userId, categoryId);
         }
     }
 

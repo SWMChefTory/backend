@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Import;
 
 @DataJpaTest
 @Import(UserRepositoryImpl.class)
-class UserRepositoryImplTest extends DbContextTest {
+class UserRepositoryTest extends DbContextTest {
 
     @Autowired
     private UserRepository userRepository;
