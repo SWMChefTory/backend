@@ -20,6 +20,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.20] - 2026-02-08
+
+### Changed
+- **Repository 리팩토링**: Repository 계층을 인터페이스와 구현체로 분리하여 책임 명확화 및 테스트 용이성 개선
+  - `UserRepository` → `UserRepository` (인터페이스) + `UserRepositoryImpl` (구현체)
+  - `UserShareRepository` → `UserShareRepository` (인터페이스) + `UserShareRepositoryImpl` (구현체)
+  - `LoginRepository` → `LoginRepository` (인터페이스) + `LoginRepositoryImpl` (구현체)
+  - `RecipeBookmarkRepository` → `RecipeBookmarkRepository` (인터페이스) + `RecipeBookmarkRepositoryImpl` (구현체)
+- **Ports 패턴 도입**: 외부 시스템과의 통합을 위한 `UserCreditPort`, `UserShareCreditPort`, `RecipeCreditPort` 인터페이스 도입으로 의존성 역전 원칙 적용
+- **JavaDoc 추가**: 인증 관련 클래스 (`Login`, `LoginRepository`, `AuthService`, `TokenProvider` 등)에 포괄적인 JavaDoc 추가로 가독성 및 유지보수성 개선
+
+### Fixed
+- **일일 공유 횟수 초과 시 에러코드 수정**: `UserShareTxService`의 `@Retryable` 어노테이션에 `notRetryFor = UserShareException.class` 추가 — 일일 공유 횟수 초과 시 재시도로 인해 글로벌 에러코드가 아닌 구체적인 `USER_SHARE_DAILY_LIMIT_EXCEEDED` 에러코드가 반환되도록 수정
+- **보상 트랜잭션 복구 로직 개선**: `UserShareTxService.recover()` 메서드를 `UserShareException`과 `ObjectOptimisticLockingFailureException`으로 오버로드하여 각 예외 타입별 적절한 복구 로직 구현
+
+### Added
+- **검증 도구 추가**: `.sisyphus/` 디렉토리를 `.gitignore`에 추가하여 개발 환경 도구 관리
+- **테스트 커버리지 확대**: 새로운 Repository 구현체에 대한 단위 테스트 추가 (`UserRepositoryImplTest`, `UserShareRepositoryImplTest`, `RecipeBookmarkJpaRepositoryTest` 등)
+
+---
+
 ## [1.1.19] - 2026-02-07
 
 ### Fixed
