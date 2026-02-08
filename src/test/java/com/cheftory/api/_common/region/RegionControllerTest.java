@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.cheftory.api.auth.entity.AuthTokenType;
 import com.cheftory.api.auth.jwt.TokenProvider;
 import com.cheftory.api.exception.GlobalErrorCode;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public class RegionControllerTest {
     @Test
     void 지역_없으면_400_예외처리() throws Exception {
         UUID userId = UUID.randomUUID();
-        String validJwt = tokenProvider.createAccessToken(userId);
+        String validJwt = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
         mockMvc.perform(get("/api/security/failed").header(HttpHeaders.AUTHORIZATION, "Bearer " + validJwt))
                 .andExpect(status().is4xxClientError())

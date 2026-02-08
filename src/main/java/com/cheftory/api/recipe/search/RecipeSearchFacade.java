@@ -55,7 +55,7 @@ public class RecipeSearchFacade {
         Map<UUID, List<RecipeTag>> tagsMap =
                 recipeTagService.getIn(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
-        Map<UUID, RecipeBookmark> recipeViewStatusMap = recipeBookmarkService.getByRecipes(recipeIds, userId).stream()
+        Map<UUID, RecipeBookmark> recipeViewStatusMap = recipeBookmarkService.gets(recipeIds, userId).stream()
                 .collect(Collectors.toMap(RecipeBookmark::getRecipeId, Function.identity()));
 
         return recipes.stream()

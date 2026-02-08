@@ -1,14 +1,12 @@
 package com.cheftory.api.user.share;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.share.entity.UserShare;
 import com.cheftory.api.user.share.exception.UserShareException;
 import com.cheftory.api.user.share.port.UserShareCreditPort;
 import com.cheftory.api.user.share.repository.UserShareRepository;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,8 +37,8 @@ public class UserShareService {
      * @throws CreditException 크레딧 지급 실패 시
      */
     public int share(UUID userId) throws UserShareException, CreditException {
-        UserShare userShare = userShareRepository.create(userId,clock);
-        UserShare increased  = userShareRepository.shareTx(userShare.getId(),DAILY_SHARE_LIMIT);
+        UserShare userShare = userShareRepository.create(userId, clock);
+        UserShare increased = userShareRepository.shareTx(userShare.getId(), DAILY_SHARE_LIMIT);
 
         try {
             userShareCreditPort.grantUserShare(userId, increased.getCount());

@@ -100,7 +100,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
                     doReturn(true).when(recipeCategoryService).exists(any(UUID.class));
                     doNothing()
                             .when(recipeBookmarkService)
-                            .updateCategory(any(UUID.class), any(UUID.class), any(UUID.class));
+                            .categorize(any(UUID.class), any(UUID.class), any(UUID.class));
                     doReturn(true).when(recipeInfoService).exists(any(UUID.class));
                 }
 
@@ -124,7 +124,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
                                     requestFields(fieldWithPath("category_id").description("레시피 북마크 카테고리 ID")),
                                     responseSuccessFields()));
                     assertSuccessResponse(response);
-                    verify(recipeBookmarkService).updateCategory(userId, recipeId, categoryId);
+                    verify(recipeBookmarkService).categorize(userId, recipeId, categoryId);
                 }
             }
         }
@@ -270,7 +270,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
                                     pathParameters(parameterWithName("recipeId").description("레시피 ID")),
                                     responseSuccessFields()));
                     assertSuccessResponse(response);
-                    verify(recipeBookmarkFacade).createAndCharge(userId, recipeId);
+                    verify(recipeBookmarkFacade).create(userId, recipeId);
                 }
             }
         }
@@ -293,7 +293,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
                 doReturn(true).when(recipeInfoService).exists(any(UUID.class));
                 doThrow(new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND))
                         .when(recipeBookmarkFacade)
-                        .createAndCharge(any(UUID.class), any(UUID.class));
+                        .create(any(UUID.class), any(UUID.class));
             }
 
             @Test

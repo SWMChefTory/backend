@@ -38,21 +38,20 @@ public record UserResponse(
          * 소셜 로그인 제공자별 유저 고유 식별자
          */
         @JsonProperty("provider_sub") String providerSub) {
-	/**
-	 * User 엔티티로부터 UserResponse 생성
-	 *
-	 * @param user 유저 엔티티
-	 * @return 유저 응답 DTO
-	 */
-	public static UserResponse from(User user) {
-		return new UserResponse(
-				user.getNickname(),
-				user.getGender(),
-				user.getDateOfBirth(),
-				user.getTermsOfUseAgreedAt(),
-				user.getPrivacyAgreedAt(),
-				user.getMarketingAgreedAt(),
-				user.getProviderSub()
-		);
-	}
+    /**
+     * User 엔티티로부터 UserResponse 생성
+     *
+     * @param user 유저 엔티티
+     * @return 유저 응답 DTO
+     */
+    public static UserResponse from(User user) {
+        return new UserResponse(
+                user.getNickname(),
+                user.getGender(),
+                user.getDateOfBirth(),
+                user.getTermsOfUseAgreedAt(),
+                user.getPrivacyAgreedAt(),
+                user.getMarketingAgreedAt(),
+                user.getProviderSub());
+    }
 }

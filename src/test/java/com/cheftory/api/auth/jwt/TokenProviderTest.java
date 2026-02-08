@@ -8,7 +8,6 @@ import com.cheftory.api.auth.entity.AuthTokenType;
 import com.cheftory.api.auth.exception.AuthErrorCode;
 import com.cheftory.api.auth.exception.AuthException;
 import com.cheftory.api.auth.jwt.property.JwtProperties;
-import org.mockito.Mockito;
 import io.jsonwebtoken.security.Keys;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +17,7 @@ import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class TokenProviderTest {
 
@@ -113,7 +113,8 @@ class TokenProviderTest {
                 .signWith(secretKey)
                 .compact();
 
-        AuthException ex = assertThrows(AuthException.class, () -> tokenProvider.getUserId(expiredToken, AuthTokenType.ACCESS));
+        AuthException ex =
+                assertThrows(AuthException.class, () -> tokenProvider.getUserId(expiredToken, AuthTokenType.ACCESS));
 
         assertThat(ex.getError()).isEqualTo(AuthErrorCode.EXPIRED_TOKEN);
     }
@@ -171,8 +172,8 @@ class TokenProviderTest {
                 .signWith(differentKey)
                 .compact();
 
-        AuthException ex =
-                assertThrows(AuthException.class, () -> tokenProvider.getUserId(tokenWithDifferentSignature, AuthTokenType.ACCESS));
+        AuthException ex = assertThrows(
+                AuthException.class, () -> tokenProvider.getUserId(tokenWithDifferentSignature, AuthTokenType.ACCESS));
 
         assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_TOKEN);
     }

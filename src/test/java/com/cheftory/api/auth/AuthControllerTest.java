@@ -67,7 +67,9 @@ public class AuthControllerTest extends RestDocsTest {
                 userId = generateUserId();
                 validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.token";
 
-                doReturn(userId).when(authService).extractUserIdFromToken(validToken, com.cheftory.api.auth.entity.AuthTokenType.ACCESS);
+                doReturn(userId)
+                        .when(authService)
+                        .extractUserIdFromToken(validToken, com.cheftory.api.auth.entity.AuthTokenType.ACCESS);
             }
 
             @Test
@@ -86,7 +88,8 @@ public class AuthControllerTest extends RestDocsTest {
                                 requestAccessTokenFields(),
                                 responseFields(fieldWithPath("user_id").description("사용자 ID"))));
                 response.body("user_id", equalTo(userId.toString()));
-                verify(authService).extractUserIdFromToken(validToken, com.cheftory.api.auth.entity.AuthTokenType.ACCESS);
+                verify(authService)
+                        .extractUserIdFromToken(validToken, com.cheftory.api.auth.entity.AuthTokenType.ACCESS);
             }
         }
 
@@ -125,7 +128,8 @@ public class AuthControllerTest extends RestDocsTest {
                                         fieldWithPath("message").description("에러 메시지")),
                                 responseErrorFields(AuthErrorCode.INVALID_TOKEN)));
                 response.body("errorCode", equalTo(AuthErrorCode.INVALID_TOKEN.getErrorCode()));
-                verify(authService).extractUserIdFromToken(invalidToken, com.cheftory.api.auth.entity.AuthTokenType.ACCESS);
+                verify(authService)
+                        .extractUserIdFromToken(invalidToken, com.cheftory.api.auth.entity.AuthTokenType.ACCESS);
             }
         }
 
@@ -182,7 +186,8 @@ public class AuthControllerTest extends RestDocsTest {
                                         .description("만료된 토큰")),
                                 responseErrorFields(AuthErrorCode.EXPIRED_TOKEN)));
                 response.body("errorCode", equalTo(AuthErrorCode.EXPIRED_TOKEN.getErrorCode()));
-                verify(authService).extractUserIdFromToken(expiredToken, com.cheftory.api.auth.entity.AuthTokenType.ACCESS);
+                verify(authService)
+                        .extractUserIdFromToken(expiredToken, com.cheftory.api.auth.entity.AuthTokenType.ACCESS);
             }
         }
     }

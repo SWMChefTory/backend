@@ -27,13 +27,6 @@ public class LoginRepositoryImpl implements LoginRepository {
     }
 
     @Override
-    public Login find(UUID userId, String refreshToken) throws AuthException {
-        return loginJpaRepository
-                .findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
-    }
-
-    @Override
     public void update(
             UUID userId, String oldRefreshToken, String newRefreshToken, LocalDateTime newRefreshTokenExpiredAt)
             throws AuthException {

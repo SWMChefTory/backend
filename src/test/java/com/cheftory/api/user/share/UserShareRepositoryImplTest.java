@@ -124,9 +124,9 @@ class UserShareRepositoryImplTest {
             when(userShareJpaRepository.findById(userShareId)).thenReturn(Optional.empty());
 
             // when & then
-            UserShareException exception =
-                    assertThrows(UserShareException.class, () -> userShareRepositoryImpl.compensateTx(userShareId, today));
-            assertThat(exception.getError()).isEqualTo(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
+            UserShareException exception = assertThrows(
+                    UserShareException.class, () -> userShareRepositoryImpl.compensateTx(userShareId, today));
+            assertThat(exception.getError()).isEqualTo(UserShareErrorCode.USER_SHARE_NOT_FOUND);
         }
     }
 
@@ -192,8 +192,8 @@ class UserShareRepositoryImplTest {
                     new ObjectOptimisticLockingFailureException(UserShare.class, userShareId);
 
             // when & then
-            UserShareException userShareException =
-                    assertThrows(UserShareException.class, () -> userShareRepositoryImpl.recover(exception, userShareId));
+            UserShareException userShareException = assertThrows(
+                    UserShareException.class, () -> userShareRepositoryImpl.recover(exception, userShareId, 3));
 
             assertThat(userShareException.getError()).isEqualTo(UserShareErrorCode.USER_SHARE_CREATE_FAIL);
         }
@@ -206,8 +206,8 @@ class UserShareRepositoryImplTest {
                     new ObjectOptimisticLockingFailureException(UserShare.class, userShareId);
 
             // when & then
-            UserShareException userShareException =
-                assertThrows(UserShareException.class, () -> userShareRepositoryImpl.recover(exception, userShareId));
+            UserShareException userShareException = assertThrows(
+                    UserShareException.class, () -> userShareRepositoryImpl.recover(exception, userShareId, 3));
 
             assertThat(userShareException.getError()).isEqualTo(UserShareErrorCode.USER_SHARE_CREATE_FAIL);
         }

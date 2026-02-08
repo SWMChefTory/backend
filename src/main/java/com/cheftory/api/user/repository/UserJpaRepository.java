@@ -3,11 +3,10 @@ package com.cheftory.api.user.repository;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
 import com.cheftory.api.user.entity.UserStatus;
+import io.lettuce.core.dynamic.annotation.Param;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
-
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -57,7 +56,8 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
      */
     @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("""
+    @Query(
+            """
 update User u
    set u.tutorialAt = :now,
        u.updatedAt = :now
@@ -75,7 +75,8 @@ update User u
      */
     @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("""
+    @Query(
+            """
 update User u
    set u.tutorialAt = null,
        u.updatedAt = :now

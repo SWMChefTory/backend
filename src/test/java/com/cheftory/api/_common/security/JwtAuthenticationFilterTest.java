@@ -1,8 +1,6 @@
 package com.cheftory.api._common.security;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -87,13 +85,14 @@ class JwtAuthenticationFilterTest {
         String invalidJwt = "invalid.jwt.token";
         request.addHeader("Authorization", "Bearer " + invalidJwt);
 
-        when(tokenProvider.getUserId(invalidJwt, AuthTokenType.ACCESS)).thenThrow(new IllegalArgumentException("Invalid token"));
+        when(tokenProvider.getUserId(invalidJwt, AuthTokenType.ACCESS))
+                .thenThrow(new IllegalArgumentException("Invalid token"));
 
         // Act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
-        verify(tokenProvider, times(1)).getUserId(invalidJwt, eq(AuthTokenType.ACCESS));
+        verify(tokenProvider, times(1)).getUserId(eq(invalidJwt), eq(AuthTokenType.ACCESS));
         verify(filterChain, times(1)).doFilter(request, response);
 
         var exception = (Exception) request.getAttribute("Exception");
@@ -126,13 +125,14 @@ class JwtAuthenticationFilterTest {
         String jwt = "jwt.token";
         request.addHeader("Authorization", "Bearer " + jwt);
 
-        when(tokenProvider.getUserId(jwt, AuthTokenType.ACCESS)).thenThrow(new RuntimeException("Token validation failed"));
+        when(tokenProvider.getUserId(jwt, AuthTokenType.ACCESS))
+                .thenThrow(new RuntimeException("Token validation failed"));
 
         // Act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
-        verify(tokenProvider, times(1)).getUserId(jwt, eq(AuthTokenType.ACCESS));
+        verify(tokenProvider, times(1)).getUserId(eq(jwt), eq(AuthTokenType.ACCESS));
         verify(filterChain, times(1)).doFilter(request, response);
 
         var exception = (Exception) request.getAttribute("Exception");

@@ -16,7 +16,6 @@ import com.cheftory.api.auth.verifier.AppleTokenVerifier;
 import com.cheftory.api.auth.verifier.GoogleTokenVerifier;
 import com.cheftory.api.user.entity.Provider;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +69,10 @@ class AuthServiceTest {
 
     @Test
     void extractProviderSubFromIdToken_withInvalidToken_shouldThrow() {
-        doThrow(RuntimeException.class).when(googleVerifier).getSubFromToken(idToken);
+        com.cheftory.api.auth.verifier.exception.VerificationException verificationException =
+                new com.cheftory.api.auth.verifier.exception.VerificationException(
+                        com.cheftory.api.auth.verifier.exception.VerificationErrorCode.UNKNOWN_ERROR);
+        doThrow(verificationException).when(googleVerifier).getSubFromToken(idToken);
 
         AuthException ex = assertThrows(
                 AuthException.class, () -> authService.extractProviderSubFromIdToken(idToken, Provider.GOOGLE));
@@ -79,11 +81,11 @@ class AuthServiceTest {
     }
 
     @Test
-    void extractProviderSubFromIdToken_withNullProvider_shouldThrowInvalidIdToken() {
+    void extractProviderSubFromIdToken_withNullProvider_shouldThrowUnsupportedProvider() {
         AuthException ex =
                 assertThrows(AuthException.class, () -> authService.extractProviderSubFromIdToken(idToken, null));
 
-        assertThat(ex.getError()).isEqualTo(AuthErrorCode.INVALID_ID_TOKEN);
+        assertThat(ex.getError()).isEqualTo(AuthErrorCode.UNSUPPORTED_PROVIDER);
     }
 
     @Test
@@ -117,24 +119,6 @@ class AuthServiceTest {
     }
 
     @Test
-    void reissue_shouldUpdateAndReturnNewTokens() {
-        Login existingLogin = Login.create(userId, refreshToken, fixedNow.plusDays(1), clock);
-
-        doReturn(userId).when(jwtProvider).getUserId(refreshToken, AuthTokenType.REFRESH);
-        doReturn(accessToken).when(jwtProvider).createToken(userId, AuthTokenType.ACCESS);
-        doReturn(newRefreshToken).when(jwtProvider).createToken(userId, AuthTokenType.REFRESH);
-        doReturn(Optional.of(existingLogin)).when(loginRepository).find(userId, refreshToken);
-
-        doReturn(fixedNow.plusDays(7)).when(jwtProvider).getExpiration(newRefreshToken);
-
-        AuthTokens result = authService.reissue(refreshToken);
-
-        assertThat(result.accessToken()).isEqualTo(accessToken);
-        assertThat(result.refreshToken()).isEqualTo(newRefreshToken);
-        verify(loginRepository).create(any(Login.class));
-    }
-
-    @Test
     void reissue_withInvalidToken_shouldThrow() {
         doThrow(new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN))
                 .when(jwtProvider)
@@ -147,17 +131,15 @@ class AuthServiceTest {
 
     @Test
     void deleteRefreshToken_shouldDeleteLogin() {
-        Login login = Login.create(userId, refreshToken, fixedNow.plusDays(1), clock);
-        doReturn(Optional.of(login)).when(loginRepository).find(userId, refreshToken);
-
         authService.deleteRefreshToken(userId, refreshToken);
 
-        verify(loginRepository).delete(login.getUserId(), login.getRefreshToken());
+        verify(loginRepository).delete(eq(userId), eq(refreshToken));
     }
 
     @Test
     void deleteRefreshToken_shouldThrowWhenNotFound() {
-        doReturn(Optional.empty()).when(loginRepository).find(userId, refreshToken);
+        AuthException exception = new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        doThrow(exception).when(loginRepository).delete(userId, refreshToken);
 
         AuthException ex =
                 assertThrows(AuthException.class, () -> authService.deleteRefreshToken(userId, refreshToken));

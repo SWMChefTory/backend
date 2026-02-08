@@ -52,7 +52,7 @@ public class UserShare extends MarketScope {
         return new UserShare(UUID.randomUUID(), userId, sharedAt, 0, 0, now);
     }
 
-    public void increase(int max) {
+    public void increase(int max) throws UserShareException {
         if (this.count >= max) {
             throw new UserShareException(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
         }

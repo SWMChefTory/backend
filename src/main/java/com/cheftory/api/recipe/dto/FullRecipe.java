@@ -34,7 +34,7 @@ public class FullRecipe {
     private RecipeInfo recipe;
     private List<RecipeBriefing> recipeBriefings;
 
-    public static FullRecipe of(
+    public static FullRecipe owned(
             List<RecipeStep> recipeSteps,
             List<RecipeIngredient> recipeIngredients,
             @Nullable RecipeDetailMeta recipeDetailMeta,
@@ -52,6 +52,28 @@ public class FullRecipe {
                 recipeSteps,
                 recipeProgresses,
                 recipeBookmark,
+                recipeYoutubeMeta,
+                recipe,
+                recipeBriefings);
+    }
+
+    public static FullRecipe notOwned(
+            List<RecipeStep> recipeSteps,
+            List<RecipeIngredient> recipeIngredients,
+            @Nullable RecipeDetailMeta recipeDetailMeta,
+            List<RecipeProgress> recipeProgresses,
+            List<RecipeTag> recipeTags,
+            RecipeYoutubeMeta recipeYoutubeMeta,
+            RecipeInfo recipe,
+            List<RecipeBriefing> recipeBriefings) {
+
+        return new FullRecipe(
+                recipeIngredients,
+                recipeTags,
+                recipeDetailMeta,
+                recipeSteps,
+                recipeProgresses,
+                null,
                 recipeYoutubeMeta,
                 recipe,
                 recipeBriefings);

@@ -24,7 +24,6 @@ import com.cheftory.api.recipe.dto.RecipeOverviewResponse;
 import com.cheftory.api.recipe.dto.RecipeProgressResponse;
 import com.cheftory.api.recipe.dto.RecipeProgressStatus;
 import com.cheftory.api.recipe.dto.RecommendRecipesResponse;
-import com.cheftory.api.recipe.dto.UnCategorizedRecipesResponse;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -96,12 +95,6 @@ public class RecipeController {
             @UserPrincipal UUID userId,
             @RequestParam(required = false) String cursor) {
         return CategorizedRecipesResponse.from(recipeFacade.getCategorized(userId, categoryId, cursor));
-    }
-
-    @GetMapping("/api/v1/recipes/uncategorized")
-    public UnCategorizedRecipesResponse getUnCategorizedRecipes(
-            @UserPrincipal UUID userId, @RequestParam(required = false) String cursor) {
-        return UnCategorizedRecipesResponse.from(recipeFacade.getUnCategorized(userId, cursor));
     }
 
     @DeleteMapping("/api/v1/recipes/categories/{recipeCategoryId}")

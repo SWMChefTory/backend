@@ -13,7 +13,6 @@ import com.cheftory.api.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import org.junit.jupiter.api.*;
 
 @DisplayName("UserService")
@@ -45,8 +44,7 @@ class UserServiceTest {
             @DisplayName("Then - 유저 정보를 반환해야 한다")
             void thenShouldReturnUser() {
                 User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
-                when(userRepository.find(Provider.KAKAO, "sub"))
-                        .thenReturn(user);
+                when(userRepository.find(Provider.KAKAO, "sub")).thenReturn(user);
 
                 User result = userService.get(Provider.KAKAO, "sub");
 
@@ -62,8 +60,10 @@ class UserServiceTest {
         @Test
         @DisplayName("이용약관에 동의하지 않으면 예외를 던진다")
         void throws_when_terms_not_agreed() {
-            UserException ex = assertThrows(UserException.class, () ->
-                    userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", false, true, true));
+            UserException ex = assertThrows(
+                    UserException.class,
+                    () -> userService.create(
+                            "nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", false, true, true));
 
             assertThat(ex.getError()).isEqualTo(UserErrorCode.TERMS_OF_USE_NOT_AGREED);
         }
@@ -71,8 +71,10 @@ class UserServiceTest {
         @Test
         @DisplayName("개인정보 처리방침에 동의하지 않으면 예외를 던진다")
         void throws_when_privacy_not_agreed() {
-            UserException ex = assertThrows(UserException.class, () ->
-                    userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, false, true));
+            UserException ex = assertThrows(
+                    UserException.class,
+                    () -> userService.create(
+                            "nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, false, true));
 
             assertThat(ex.getError()).isEqualTo(UserErrorCode.PRIVACY_POLICY_NOT_AGREED);
         }
@@ -82,8 +84,10 @@ class UserServiceTest {
         void throws_when_user_already_exists() {
             when(userRepository.exist(Provider.KAKAO, "sub")).thenReturn(true);
 
-            UserException ex = assertThrows(UserException.class, () ->
-                    userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, true, true));
+            UserException ex = assertThrows(
+                    UserException.class,
+                    () -> userService.create(
+                            "nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, true, true));
 
             assertThat(ex.getError()).isEqualTo(UserErrorCode.USER_ALREADY_EXIST);
         }
@@ -93,7 +97,8 @@ class UserServiceTest {
         void creates_user_successfully() {
             when(userRepository.exist(Provider.KAKAO, "sub")).thenReturn(false);
 
-            User user = userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, true, true);
+            User user =
+                    userService.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, true, true);
 
             verify(userRepository).create(any(User.class));
         }
@@ -139,8 +144,7 @@ class UserServiceTest {
             void thenShouldReturnUser() {
                 User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
                 UUID userId = UUID.randomUUID();
-                when(userRepository.find(userId))
-                        .thenReturn(user);
+                when(userRepository.find(userId)).thenReturn(user);
 
                 User result = userService.get(userId);
 
@@ -171,7 +175,9 @@ class UserServiceTest {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
-                doReturn(user).when(userRepository).update(eq(id), eq(newNickname), eq(oldGender), eq(oldBirth), any(Clock.class));
+                doReturn(user)
+                        .when(userRepository)
+                        .update(eq(id), eq(newNickname), eq(oldGender), eq(oldBirth), any(Clock.class));
 
                 userService.update(id, newNickname, oldGender, oldBirth);
 
@@ -184,7 +190,9 @@ class UserServiceTest {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
-                doReturn(user).when(userRepository).update(eq(id), eq(oldNickname), eq(newGender), eq(oldBirth), any(Clock.class));
+                doReturn(user)
+                        .when(userRepository)
+                        .update(eq(id), eq(oldNickname), eq(newGender), eq(oldBirth), any(Clock.class));
 
                 userService.update(id, oldNickname, newGender, oldBirth);
 
@@ -197,7 +205,9 @@ class UserServiceTest {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
-                doReturn(user).when(userRepository).update(eq(id), eq(oldNickname), isNull(), eq(oldBirth), any(Clock.class));
+                doReturn(user)
+                        .when(userRepository)
+                        .update(eq(id), eq(oldNickname), isNull(), eq(oldBirth), any(Clock.class));
 
                 userService.update(id, oldNickname, null, oldBirth);
 
@@ -210,7 +220,9 @@ class UserServiceTest {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
-                doReturn(user).when(userRepository).update(eq(id), eq(oldNickname), eq(oldGender), eq(newBirth), any(Clock.class));
+                doReturn(user)
+                        .when(userRepository)
+                        .update(eq(id), eq(oldNickname), eq(oldGender), eq(newBirth), any(Clock.class));
 
                 userService.update(id, oldNickname, oldGender, newBirth);
 
@@ -223,7 +235,9 @@ class UserServiceTest {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
-                doReturn(user).when(userRepository).update(eq(id), eq(oldNickname), eq(oldGender), isNull(), any(Clock.class));
+                doReturn(user)
+                        .when(userRepository)
+                        .update(eq(id), eq(oldNickname), eq(oldGender), isNull(), any(Clock.class));
 
                 userService.update(id, oldNickname, oldGender, null);
 
@@ -246,8 +260,7 @@ class UserServiceTest {
             @DisplayName("Then - 유저 상태를 DELETED로 변경해야 한다")
             void thenShouldMarkUserAsDeleted() {
                 User user = User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
-                when(userRepository.find(userId))
-                        .thenReturn(user);
+                when(userRepository.find(userId)).thenReturn(user);
 
                 userService.delete(userId);
 

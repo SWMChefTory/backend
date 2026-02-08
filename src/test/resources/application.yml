@@ -66,4 +66,6 @@ ai-recipe-summary:
 jwt:
   access-token-expiration: 3600
   refresh-token-expiration: 604800
+  access-token-type: ACCESS
+  refresh-token-type: REFRESH
   secret: test1test2test3test4test5test6test7test8test9test10

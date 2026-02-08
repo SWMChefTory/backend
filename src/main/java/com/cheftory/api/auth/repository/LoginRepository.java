@@ -19,16 +19,6 @@ public interface LoginRepository {
     void delete(UUID userId, String refreshToken) throws AuthException;
 
     /**
-     * 로그인 조회
-     *
-     * @param userId 유저 ID
-     * @param refreshToken 리프레시 토큰
-     * @return 조회된 로그인 엔티티
-     * @throws AuthException 로그인을 찾을 수 없을 때 INVALID_REFRESH_TOKEN
-     */
-    Login find(UUID userId, String refreshToken) throws AuthException;
-
-    /**
      * 로그인 리프레시 토큰 갱신
      *
      * @param userId 유저 ID
