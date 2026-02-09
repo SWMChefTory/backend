@@ -1,7 +1,6 @@
 package com.cheftory.api.recipe.rank;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
-import com.cheftory.api.exception.CheftoryException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

@@ -2,7 +2,6 @@ package com.cheftory.api.recipe.rank;
 
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
-import com.cheftory.api.exception.CheftoryException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;

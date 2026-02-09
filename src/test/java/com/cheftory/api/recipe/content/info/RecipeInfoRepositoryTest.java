@@ -312,8 +312,7 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                             .filter(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS)
                             .count();
                     long inProgressCount = notFailedRecipeInfos.stream()
-                            .filter(recipe ->
-                                    getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS)
+                            .filter(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS)
                             .count();
 
                     assertThat(successCount).isEqualTo(2);
@@ -430,11 +429,9 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
 
                     // 각 상태가 모두 포함되는지 확인
                     boolean hasInProgress = foundRecipeInfos.stream()
-                            .anyMatch(recipe ->
-                                    getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS);
+                            .anyMatch(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS);
                     boolean hasSuccess = foundRecipeInfos.stream()
-                            .anyMatch(
-                                    recipe -> getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS);
+                            .anyMatch(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS);
                     boolean hasFailed = foundRecipeInfos.stream()
                             .anyMatch(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.FAILED);
 

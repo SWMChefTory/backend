@@ -3,7 +3,6 @@ package com.cheftory.api.user;
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
 import com.cheftory.api.credit.exception.CreditException;
-import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.user.dto.UserRequest;
 import com.cheftory.api.user.dto.UserResponse;
 import com.cheftory.api.user.entity.User;

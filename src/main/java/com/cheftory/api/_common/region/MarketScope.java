@@ -1,6 +1,5 @@
 package com.cheftory.api._common.region;
 
-import com.cheftory.api.exception.CheftoryException;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
