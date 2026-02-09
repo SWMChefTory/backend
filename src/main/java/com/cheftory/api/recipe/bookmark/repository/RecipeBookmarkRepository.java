@@ -95,7 +95,7 @@ public interface RecipeBookmarkRepository {
      * @return 조회된 북마크
      * @throws RecipeBookmarkException 북마크를 찾을 수 없을 때
      */
-    RecipeBookmark get(UUID userId, UUID recipeId) throws RecipeBookmarkException;
+    RecipeBookmark find(UUID userId, UUID recipeId) throws RecipeBookmarkException;
 
     /**
      * 최근 레시피 북마크 목록 조회 (커서 기반 페이징)
@@ -158,7 +158,7 @@ public interface RecipeBookmarkRepository {
      * @param recipeIds 레시피 ID 목록
      * @return 북마크 목록
      */
-    List<RecipeBookmark> gets(UUID userId, List<UUID> recipeIds);
+    List<RecipeBookmark> finds(UUID userId, List<UUID> recipeIds);
 
     /**
      * 레시피 ID로 레시피 북마크 목록 조회
@@ -166,5 +166,5 @@ public interface RecipeBookmarkRepository {
      * @param recipeId 레시피 ID
      * @return 북마크 목록
      */
-    List<RecipeBookmark> gets(UUID recipeId);
+    List<RecipeBookmark> finds(UUID recipeId);
 }

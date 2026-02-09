@@ -9,9 +9,10 @@ import com.cheftory.api.affiliate.model.CoupangProduct;
 import com.cheftory.api.affiliate.model.CoupangProducts;
 import java.io.IOException;
 import java.util.List;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
+import mockwebserver3.RecordedRequest;
+import okhttp3.Headers;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -42,8 +43,8 @@ class CoupangClientTest {
     }
 
     @AfterEach
-    void tearDown() throws IOException {
-        mockWebServer.shutdown();
+    void tearDown() {
+        mockWebServer.close();
     }
 
     @Nested
@@ -78,10 +79,8 @@ class CoupangClientTest {
           }
           """;
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(json));
+            mockWebServer.enqueue(new MockResponse(
+                    200, Headers.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE), json));
 
             // when
             CoupangProducts result = coupangClient.searchProducts("Water");
@@ -91,7 +90,7 @@ class CoupangClientTest {
             assertThat(products).isNotNull();
             assertThat(products).hasSize(1);
 
-            CoupangProduct product = products.get(0);
+            CoupangProduct product = products.getFirst();
             assertThat(product.getKeyword()).isEqualTo("Water");
             assertThat(product.getRank()).isEqualTo(12);
             assertThat(product.getIsRocket()).isFalse();
@@ -105,10 +104,10 @@ class CoupangClientTest {
             // then: 요청 형식 검증
             RecordedRequest req = mockWebServer.takeRequest();
             assertThat(req.getMethod()).isEqualTo("GET");
-            assertThat(req.getPath())
+            assertThat(req.getTarget())
                     .isEqualTo("/v2/providers/affiliate_open_api/apis/openapi/products/search?keyword=Water");
-            assertThat(req.getHeader("Authorization")).isNotBlank();
-            assertThat(req.getHeader(HttpHeaders.ACCEPT)).contains(MediaType.APPLICATION_JSON_VALUE);
+            assertThat(req.getHeaders().get("Authorization")).isNotBlank();
+            assertThat(req.getHeaders().get(HttpHeaders.ACCEPT)).contains(MediaType.APPLICATION_JSON_VALUE);
         }
 
         @Test
@@ -150,10 +149,8 @@ class CoupangClientTest {
           }
           """;
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(json));
+            mockWebServer.enqueue(new MockResponse(
+                    200, Headers.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE), json));
 
             // when
             CoupangProducts result = coupangClient.searchProducts("노트북");
@@ -183,10 +180,8 @@ class CoupangClientTest {
           }
           """;
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(json));
+            mockWebServer.enqueue(new MockResponse(
+                    200, Headers.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE), json));
 
             // when
             CoupangProducts result = coupangClient.searchProducts("없는상품");
@@ -200,11 +195,13 @@ class CoupangClientTest {
         @DisplayName("서버가 500을 반환하면 CoupangException을 던진다")
         void shouldThrowOn500() {
             // given
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(500)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody("{\"error\":\"Internal Server Error\"}"));
 
+            String responseBody = "{\"error\":\"Internal Server Error\"}";
+            mockWebServer.enqueue(new MockResponse.Builder()
+                    .code(500)
+                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(responseBody)
+                    .build());
             // when & then
             assertThatThrownBy(() -> coupangClient.searchProducts("error-keyword"))
                     .isInstanceOf(CoupangException.class)
@@ -215,10 +212,10 @@ class CoupangClientTest {
         @DisplayName("서버가 400을 반환하면 CoupangException을 던진다")
         void shouldThrowOn400() {
             // given
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(400)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody("{\"error\":\"Bad Request\"}"));
+            mockWebServer.enqueue(new MockResponse(
+                    400,
+                    Headers.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE),
+                    "{\"error\":\"Bad Request\"}"));
 
             // when & then
             assertThatThrownBy(() -> coupangClient.searchProducts("bad-request"))
@@ -230,10 +227,12 @@ class CoupangClientTest {
         @DisplayName("잘못된 JSON이면 CoupangException을 던진다")
         void shouldThrowOnInvalidJson() {
             // given
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody("{ invalid json }"));
+            String responseBody = "{ invalid json }";
+            mockWebServer.enqueue(new MockResponse.Builder()
+                    .code(200)
+                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(responseBody)
+                    .build());
 
             // when & then
             assertThatThrownBy(() -> coupangClient.searchProducts("invalid-json"))
@@ -243,9 +242,8 @@ class CoupangClientTest {
 
         @Test
         @DisplayName("네트워크 실패 시 CoupangException을 던진다")
-        void shouldThrowOnNetworkFailure() throws IOException {
-            // given: 서버 종료로 연결 실패 시뮬레이션
-            mockWebServer.shutdown();
+        void shouldThrowOnNetworkFailure() {
+            mockWebServer.close();
 
             // when & then
             assertThatThrownBy(() -> coupangClient.searchProducts("any"))

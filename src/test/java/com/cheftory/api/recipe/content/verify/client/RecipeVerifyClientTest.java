@@ -8,14 +8,11 @@ import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
+import mockwebserver3.RecordedRequest;
+import okhttp3.Headers;
+import org.junit.jupiter.api.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -24,7 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 class RecipeVerifyClientTest {
 
     private MockWebServer mockWebServer;
-    private RecipeVerifyClient recipeVerifyClient;
+    private RecipeVerifyClient verifyClient;
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -35,13 +32,13 @@ class RecipeVerifyClientTest {
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 
-        recipeVerifyClient = new RecipeVerifyClient(webClient);
+        verifyClient = new RecipeVerifyExternalClient(webClient);
         objectMapper = new ObjectMapper();
     }
 
     @AfterEach
-    void tearDown() throws IOException {
-        mockWebServer.shutdown();
+    void tearDown() {
+        mockWebServer.close();
     }
 
     @Nested
@@ -61,12 +58,10 @@ class RecipeVerifyClientTest {
           }
           """;
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(responseBody));
+            mockWebServer.enqueue(new MockResponse(
+                    200, Headers.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE), responseBody));
 
-            RecipeVerifyClientResponse result = recipeVerifyClient.verifyVideo(videoId);
+            RecipeVerifyClientResponse result = verifyClient.verify(videoId);
 
             assertThat(result).isNotNull();
             assertThat(result.fileUri()).isEqualTo("s3://bucket/file.mp4");
@@ -74,9 +69,10 @@ class RecipeVerifyClientTest {
 
             RecordedRequest recordedRequest = mockWebServer.takeRequest();
             assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-            assertThat(recordedRequest.getPath()).isEqualTo("/verify");
+            assertThat(recordedRequest.getTarget()).isEqualTo("/verify");
 
-            var requestNode = objectMapper.readTree(recordedRequest.getBody().readUtf8());
+					Assertions.assertNotNull(recordedRequest.getBody());
+					var requestNode = objectMapper.readTree(recordedRequest.getBody().utf8());
             assertThat(requestNode.get("video_id").asText()).isEqualTo(videoId);
         }
 
@@ -93,13 +89,11 @@ class RecipeVerifyClientTest {
           }
           """;
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(500)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(errorResponseBody));
+            mockWebServer.enqueue(new MockResponse(
+                    500, Headers.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE), errorResponseBody));
 
             RecipeVerifyException exception =
-                    assertThrows(RecipeVerifyException.class, () -> recipeVerifyClient.verifyVideo(videoId));
+                    assertThrows(RecipeVerifyException.class, () -> verifyClient.verify(videoId));
             assertThat(exception.getError()).isEqualTo(RecipeVerifyErrorCode.SERVER_ERROR);
         }
     }

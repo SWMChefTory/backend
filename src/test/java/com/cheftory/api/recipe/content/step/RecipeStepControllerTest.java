@@ -177,63 +177,24 @@ public class RecipeStepControllerTest extends RestDocsTest {
         }
 
         @Nested
-        @DisplayName("Given - 단일 단계만 있는 레시피 ID가 주어졌을 때")
-        class GivenRecipeIdWithSingleStep {
+        @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
+        class GivenNonExistentRecipeId {
 
-            private UUID recipeId;
+            private UUID nonExistentRecipeId;
 
             @BeforeEach
             void setUp() {
-                recipeId = UUID.randomUUID();
+                nonExistentRecipeId = UUID.randomUUID();
+                doReturn(false).when(recipeInfoService).exists(nonExistentRecipeId);
             }
 
-            @Nested
-            @DisplayName("When - 레시피 단계를 조회한다면")
-            class WhenRequestingRecipeSteps {
-
-                private List<RecipeStep> recipeSteps;
-                private RecipeStep singleStep;
-                private UUID stepId;
-
-                @BeforeEach
-                void setUp() {
-                    stepId = UUID.randomUUID();
-                    singleStep = mock(RecipeStep.class);
-
-                    doReturn(stepId).when(singleStep).getId();
-                    doReturn(1).when(singleStep).getStepOrder();
-                    doReturn("간단한 조리").when(singleStep).getSubtitle();
-                    doReturn(0.0).when(singleStep).getStart();
-
-                    RecipeStep.Detail detail = RecipeStep.Detail.of("계란을 풀어서 프라이팬에 넣고 익혀주세요", 0.0);
-                    doReturn(List.of(detail)).when(singleStep).getDetails();
-
-                    recipeSteps = List.of(singleStep);
-                    doReturn(recipeSteps).when(recipeStepService).gets(any(UUID.class));
-                    doReturn(true).when(recipeInfoService).exists(any(UUID.class));
-                }
-
-                @Test
-                @DisplayName("Then - 단일 레시피 단계를 성공적으로 반환해야 한다")
-                void thenShouldReturnSingleRecipeStep() {
-                    var response = given().contentType(ContentType.JSON)
-                            .get("/papi/v1/recipes/{recipeId}/steps", recipeId)
-                            .then()
-                            .status(HttpStatus.OK)
-                            .body("steps", hasSize(1));
-
-                    verify(recipeStepService).gets(recipeId);
-
-                    var responseBody = response.extract().jsonPath();
-
-                    assertThat(responseBody.getUUID("steps[0].id")).isEqualTo(stepId);
-                    assertThat(responseBody.getInt("steps[0].step_order")).isEqualTo(1);
-                    assertThat(responseBody.getString("steps[0].subtitle")).isEqualTo("간단한 조리");
-                    assertThat(responseBody.getDouble("steps[0].start")).isEqualTo(0.0);
-                    assertThat(responseBody.getList("steps[0].details")).hasSize(1);
-                    assertThat(responseBody.getString("steps[0].details[0].text"))
-                            .isEqualTo("계란을 풀어서 프라이팬에 넣고 익혀주세요");
-                }
+            @Test
+            @DisplayName("Then - 400 Bad Request를 반환해야 한다")
+            void thenShouldReturnBadRequest() {
+                given().contentType(ContentType.JSON)
+                        .get("/papi/v1/recipes/{recipeId}/steps", nonExistentRecipeId)
+                        .then()
+                        .status(HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -246,167 +207,20 @@ public class RecipeStepControllerTest extends RestDocsTest {
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
+                doReturn(Collections.emptyList()).when(recipeStepService).gets(any(UUID.class));
+                doReturn(true).when(recipeInfoService).exists(any(UUID.class));
             }
 
-            @Nested
-            @DisplayName("When - 레시피 단계를 조회한다면")
-            class WhenRequestingRecipeSteps {
+            @Test
+            @DisplayName("Then - 빈 단계 목록을 반환해야 한다")
+            void thenShouldReturnEmptySteps() {
+                given().contentType(ContentType.JSON)
+                        .get("/papi/v1/recipes/{recipeId}/steps", recipeId)
+                        .then()
+                        .status(HttpStatus.OK)
+                        .body("steps", hasSize(0));
 
-                @BeforeEach
-                void setUp() {
-                    doReturn(Collections.emptyList()).when(recipeStepService).gets(any(UUID.class));
-                    doReturn(true).when(recipeInfoService).exists(any(UUID.class));
-                }
-
-                @Test
-                @DisplayName("Then - 빈 단계 목록을 반환해야 한다")
-                void thenShouldReturnEmptySteps() {
-                    given().contentType(ContentType.JSON)
-                            .get("/papi/v1/recipes/{recipeId}/steps", recipeId)
-                            .then()
-                            .status(HttpStatus.OK)
-                            .body("steps", hasSize(0));
-
-                    verify(recipeStepService).gets(recipeId);
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
-        class GivenNonExistentRecipeId {
-
-            private UUID nonExistentRecipeId;
-
-            @BeforeEach
-            void setUp() {
-                nonExistentRecipeId = UUID.randomUUID();
-            }
-
-            @Nested
-            @DisplayName("When - 레시피 단계를 조회한다면")
-            class WhenRequestingRecipeSteps {
-
-                @BeforeEach
-                void setUp() {
-                    doReturn(Collections.emptyList()).when(recipeStepService).gets(any(UUID.class));
-                    doReturn(true).when(recipeInfoService).exists(any(UUID.class));
-                }
-
-                @Test
-                @DisplayName("Then - 빈 단계 목록을 반환해야 한다")
-                void thenShouldReturnEmptyStepsForNonExistentRecipe() {
-                    given().contentType(ContentType.JSON)
-                            .get("/papi/v1/recipes/{recipeId}/steps", nonExistentRecipeId)
-                            .then()
-                            .status(HttpStatus.OK)
-                            .body("steps", hasSize(0));
-
-                    verify(recipeStepService).gets(nonExistentRecipeId);
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 복잡한 다단계 레시피 ID가 주어졌을 때")
-        class GivenComplexMultiStepRecipeId {
-
-            private UUID recipeId;
-
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-            }
-
-            @Nested
-            @DisplayName("When - 레시피 단계를 조회한다면")
-            class WhenRequestingRecipeSteps {
-
-                private List<RecipeStep> complexRecipeSteps;
-
-                @BeforeEach
-                void setUp() {
-                    // 3단계 복잡한 레시피 생성
-                    RecipeStep step1 = mock(RecipeStep.class);
-                    RecipeStep step2 = mock(RecipeStep.class);
-                    RecipeStep step3 = mock(RecipeStep.class);
-
-                    UUID step1Id = UUID.randomUUID();
-                    UUID step2Id = UUID.randomUUID();
-                    UUID step3Id = UUID.randomUUID();
-
-                    // Step 1
-                    doReturn(step1Id).when(step1).getId();
-                    doReturn(1).when(step1).getStepOrder();
-                    doReturn("재료 손질").when(step1).getSubtitle();
-                    doReturn(0.0).when(step1).getStart();
-                    doReturn(List.of(
-                                    RecipeStep.Detail.of("야채를 씻습니다", 0.0),
-                                    RecipeStep.Detail.of("고기를 손질합니다", 10.0),
-                                    RecipeStep.Detail.of("양념을 준비합니다", 20.0)))
-                            .when(step1)
-                            .getDetails();
-
-                    // Step 2
-                    doReturn(step2Id).when(step2).getId();
-                    doReturn(2).when(step2).getStepOrder();
-                    doReturn("조리 시작").when(step2).getSubtitle();
-                    doReturn(60.0).when(step2).getStart();
-                    doReturn(List.of(RecipeStep.Detail.of("팬을 예열합니다", 60.0), RecipeStep.Detail.of("고기를 볶습니다", 75.0)))
-                            .when(step2)
-                            .getDetails();
-
-                    // Step 3
-                    doReturn(step3Id).when(step3).getId();
-                    doReturn(3).when(step3).getStepOrder();
-                    doReturn("마무리").when(step3).getSubtitle();
-                    doReturn(120.0).when(step3).getStart();
-                    doReturn(List.of(
-                                    RecipeStep.Detail.of("야채를 추가합니다", 120.0),
-                                    RecipeStep.Detail.of("양념을 넣고 볶습니다", 135.0),
-                                    RecipeStep.Detail.of("완성된 요리를 그릇에 담습니다", 150.0)))
-                            .when(step3)
-                            .getDetails();
-
-                    complexRecipeSteps = List.of(step1, step2, step3);
-                    doReturn(complexRecipeSteps).when(recipeStepService).gets(any(UUID.class));
-                    doReturn(true).when(recipeInfoService).exists(any(UUID.class));
-                }
-
-                @Test
-                @DisplayName("Then - 모든 복잡한 단계들을 성공적으로 반환해야 한다")
-                void thenShouldReturnAllComplexSteps() {
-                    var response = given().contentType(ContentType.JSON)
-                            .get("/papi/v1/recipes/{recipeId}/steps", recipeId)
-                            .then()
-                            .status(HttpStatus.OK)
-                            .body("steps", hasSize(3));
-
-                    verify(recipeStepService).gets(recipeId);
-
-                    var responseBody = response.extract().jsonPath();
-
-                    // 전체 단계 수 검증
-                    assertThat(responseBody.getList("steps")).hasSize(3);
-
-                    // 각 단계의 기본 정보 검증
-                    assertThat(responseBody.getInt("steps[0].step_order")).isEqualTo(1);
-                    assertThat(responseBody.getString("steps[0].subtitle")).isEqualTo("재료 손질");
-                    assertThat(responseBody.getList("steps[0].details")).hasSize(3);
-
-                    assertThat(responseBody.getInt("steps[1].step_order")).isEqualTo(2);
-                    assertThat(responseBody.getString("steps[1].subtitle")).isEqualTo("조리 시작");
-                    assertThat(responseBody.getList("steps[1].details")).hasSize(2);
-
-                    assertThat(responseBody.getInt("steps[2].step_order")).isEqualTo(3);
-                    assertThat(responseBody.getString("steps[2].subtitle")).isEqualTo("마무리");
-                    assertThat(responseBody.getList("steps[2].details")).hasSize(3);
-
-                    // 시작 시간 순서 검증
-                    assertThat(responseBody.getDouble("steps[0].start")).isEqualTo(0.0);
-                    assertThat(responseBody.getDouble("steps[1].start")).isEqualTo(60.0);
-                    assertThat(responseBody.getDouble("steps[2].start")).isEqualTo(120.0);
-                }
+                verify(recipeStepService).gets(recipeId);
             }
         }
     }

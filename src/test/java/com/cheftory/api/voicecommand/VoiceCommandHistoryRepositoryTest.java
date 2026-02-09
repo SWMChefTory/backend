@@ -1,6 +1,6 @@
 package com.cheftory.api.voicecommand;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api.voicecommand.enums.IntentModel;

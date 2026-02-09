@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserService service;
 
     /**
      * 현재 로그인한 유저 정보 조회
@@ -30,7 +30,7 @@ public class UserController {
      */
     @GetMapping("/me")
     public UserResponse getUser(@UserPrincipal UUID userId) throws UserException {
-        User user = userService.get(userId);
+        User user = service.get(userId);
         return UserResponse.from(user);
     }
 
@@ -44,7 +44,7 @@ public class UserController {
     @PatchMapping("/me")
     public UserResponse updateUser(@UserPrincipal UUID userId, @RequestBody UserRequest.Update request)
             throws UserException {
-        User user = userService.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
+        User user = service.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
         return UserResponse.from(user);
     }
 
@@ -59,7 +59,7 @@ public class UserController {
      */
     @PostMapping("/tutorial")
     public SuccessOnlyResponse tutorial(@UserPrincipal UUID userId) throws UserException, CreditException {
-        userService.tutorial(userId);
+        service.tutorial(userId);
         return SuccessOnlyResponse.create();
     }
 }

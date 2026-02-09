@@ -19,7 +19,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class UserShareRepositoryImpl implements UserShareRepository {
-    private final UserShareJpaRepository userShareJpaRepository;
+    private final UserShareJpaRepository repository;
     private final OptimisticRetryExecutor optimisticRetryExecutor;
 
     /**
@@ -36,12 +36,12 @@ public class UserShareRepositoryImpl implements UserShareRepository {
     public UserShare shareTx(UUID userShareId, int limit) throws UserShareException {
         return optimisticRetryExecutor.execute(
                 () -> {
-                    UserShare userShare = userShareJpaRepository
+                    UserShare userShare = repository
                             .findById(userShareId)
                             .orElseThrow(() -> new UserShareException(UserShareErrorCode.USER_SHARE_NOT_FOUND));
 
                     userShare.increase(limit);
-                    return userShareJpaRepository.save(userShare);
+                    return repository.save(userShare);
                 },
                 (cause) -> new UserShareException(UserShareErrorCode.USER_SHARE_CREATE_FAIL));
     }
@@ -59,12 +59,12 @@ public class UserShareRepositoryImpl implements UserShareRepository {
     public void compensateTx(UUID userShareId, LocalDate sharedAt) throws UserShareException {
         optimisticRetryExecutor.execute(
                 () -> {
-                    UserShare userShare = userShareJpaRepository
+                    UserShare userShare = repository
                             .findById(userShareId)
                             .orElseThrow(() -> new UserShareException(UserShareErrorCode.USER_SHARE_NOT_FOUND));
 
                     userShare.decrease();
-                    userShareJpaRepository.save(userShare);
+                    repository.save(userShare);
                 },
                 (cause) -> new UserShareException(UserShareErrorCode.USER_SHARE_CREATE_FAIL));
     }
@@ -83,11 +83,11 @@ public class UserShareRepositoryImpl implements UserShareRepository {
     public UserShare create(UUID userId, Clock clock) throws UserShareException {
         LocalDate today = clock.now().toLocalDate();
         try {
-            return userShareJpaRepository
+            return repository
                     .findByUserIdAndSharedAt(userId, today)
-                    .orElseGet(() -> userShareJpaRepository.saveAndFlush(UserShare.create(userId, today, clock)));
+                    .orElseGet(() -> repository.saveAndFlush(UserShare.create(userId, today, clock)));
         } catch (DataIntegrityViolationException e) {
-            return userShareJpaRepository
+            return repository
                     .findByUserIdAndSharedAt(userId, today)
                     .orElseThrow(() -> new UserShareException(UserShareErrorCode.USER_SHARE_NOT_FOUND));
         }

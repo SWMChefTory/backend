@@ -17,24 +17,21 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class CreditService {
 
-    private final CreditTxService creditTxService;
-    private final CreditUserBalanceRepository balanceRepository;
+    private final CreditTxService txService;
+    private final CreditUserBalanceRepository repository;
 
     public long getBalance(UUID userId) {
-        return balanceRepository
-                .findById(userId)
-                .map(CreditUserBalance::getBalance)
-                .orElse(0L);
+        return repository.findById(userId).map(CreditUserBalance::getBalance).orElse(0L);
     }
 
     @Retryable(retryFor = ObjectOptimisticLockingFailureException.class, maxAttempts = 5)
     public void grant(Credit credit) throws CreditException {
-        creditTxService.grantTx(credit);
+        txService.grantTx(credit);
     }
 
     @Retryable(retryFor = ObjectOptimisticLockingFailureException.class, maxAttempts = 5)
     public void spend(Credit credit) throws CreditException {
-        creditTxService.spendTx(credit);
+        txService.spendTx(credit);
     }
 
     @Recover

@@ -63,7 +63,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
             RecipeBookmark bookmark = RecipeBookmark.create(clock, userId, recipeId);
             recipeBookmarkRepository.create(bookmark);
 
-            RecipeBookmark saved = recipeBookmarkRepository.get(userId, recipeId);
+            RecipeBookmark saved = recipeBookmarkRepository.find(userId, recipeId);
             assertThat(saved.getRecipeId()).isEqualTo(recipeId);
             assertThat(saved.getUserId()).isEqualTo(userId);
         }
@@ -86,7 +86,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
             boolean result = recipeBookmarkRepository.recreate(userId, recipeId, clock);
 
             assertThat(result).isTrue();
-            RecipeBookmark recreated = recipeBookmarkRepository.get(userId, recipeId);
+            RecipeBookmark recreated = recipeBookmarkRepository.find(userId, recipeId);
             assertThat(recreated.getStatus()).isEqualTo(RecipeBookmarkStatus.ACTIVE);
         }
 
@@ -163,7 +163,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
             recipeBookmarkRepository.categorize(userId, recipeId, categoryId);
 
-            RecipeBookmark result = recipeBookmarkRepository.get(userId, recipeId);
+            RecipeBookmark result = recipeBookmarkRepository.find(userId, recipeId);
             assertThat(result.getRecipeCategoryId()).isEqualTo(categoryId);
         }
 
@@ -198,7 +198,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
             recipeBookmarkRepository.unCategorize(categoryId);
 
-            RecipeBookmark result = recipeBookmarkRepository.get(userId, recipeId);
+            RecipeBookmark result = recipeBookmarkRepository.find(userId, recipeId);
             assertThat(result.getRecipeCategoryId()).isNull();
         }
     }
@@ -310,7 +310,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
 
-            assertThatThrownBy(() -> recipeBookmarkRepository.get(userId, recipeId))
+            assertThatThrownBy(() -> recipeBookmarkRepository.find(userId, recipeId))
                     .isInstanceOf(RecipeBookmarkException.class)
                     .extracting("error")
                     .isEqualTo(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
@@ -476,7 +476,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
             recipeBookmarkRepository.create(bookmark2);
 
             List<RecipeBookmark> result =
-                    recipeBookmarkRepository.gets(userId, List.of(recipeId1, recipeId2, recipeId3));
+                    recipeBookmarkRepository.finds(userId, List.of(recipeId1, recipeId2, recipeId3));
 
             assertThat(result).hasSize(2);
             assertThat(result.get(0).getRecipeId()).isIn(recipeId1, recipeId2);
@@ -495,7 +495,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
             recipeBookmarkRepository.create(bookmark1);
             recipeBookmarkRepository.create(bookmark2);
 
-            List<RecipeBookmark> result = recipeBookmarkRepository.gets(recipeId);
+            List<RecipeBookmark> result = recipeBookmarkRepository.finds(recipeId);
 
             assertThat(result).hasSize(2);
         }

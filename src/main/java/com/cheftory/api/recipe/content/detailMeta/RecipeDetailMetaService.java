@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class RecipeDetailMetaService {
-    private final RecipeDetailMetaRepository recipeDetailMetaRepository;
+    private final RecipeDetailMetaRepository repository;
     private final Clock clock;
 
     /**
@@ -28,7 +28,7 @@ public class RecipeDetailMetaService {
      * @throws RecipeDetailMetaException 정보를 찾을 수 없을 때 RECIPE_DETAIL_META_NOT_FOUND
      */
     public RecipeDetailMeta get(UUID recipeId) throws RecipeDetailMetaException {
-        return recipeDetailMetaRepository.get(recipeId);
+        return repository.get(recipeId);
     }
 
     /**
@@ -38,7 +38,7 @@ public class RecipeDetailMetaService {
      * @return 레시피 상세 메타 정보 목록
      */
     public List<RecipeDetailMeta> getIn(List<UUID> recipeIds) {
-        return recipeDetailMetaRepository.gets(recipeIds);
+        return repository.gets(recipeIds);
     }
 
     /**
@@ -51,6 +51,6 @@ public class RecipeDetailMetaService {
      */
     public void create(UUID recipeId, Integer cookTime, Integer servings, String description) {
         RecipeDetailMeta recipeDetailMeta = RecipeDetailMeta.create(cookTime, servings, description, clock, recipeId);
-        recipeDetailMetaRepository.create(recipeDetailMeta);
+        repository.create(recipeDetailMeta);
     }
 }

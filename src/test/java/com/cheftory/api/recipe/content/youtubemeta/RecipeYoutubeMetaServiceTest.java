@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.content.youtubemeta.client.VideoInfoClient;
+import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaClient;
+import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaExternalClient;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaStatus;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
@@ -17,8 +19,8 @@ import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
+import com.cheftory.api.recipe.content.youtubemeta.repository.RecipeYoutubeMetaRepository;
 import java.net.URI;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,17 +31,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 @DisplayName("RecipeYoutubeMetaService")
 public class RecipeYoutubeMetaServiceTest {
 
-    private RecipeYoutubeMetaService recipeYoutubeMetaService;
-    private RecipeYoutubeMetaRepository recipeYoutubeMetaRepository;
-    private VideoInfoClient videoInfoClient;
+    private RecipeYoutubeMetaService service;
+    private RecipeYoutubeMetaRepository repository;
+    private YoutubeMetaClient client;
     private Clock clock;
 
     @BeforeEach
     public void setUp() {
-        recipeYoutubeMetaRepository = mock(RecipeYoutubeMetaRepository.class);
-        videoInfoClient = mock(VideoInfoClient.class);
+        repository = mock(RecipeYoutubeMetaRepository.class);
+        client = mock(YoutubeMetaExternalClient.class);
         clock = mock(Clock.class);
-        recipeYoutubeMetaService = new RecipeYoutubeMetaService(recipeYoutubeMetaRepository, videoInfoClient, clock);
+        service = new RecipeYoutubeMetaService(repository, client, clock);
     }
 
     @Nested
@@ -60,22 +62,21 @@ public class RecipeYoutubeMetaServiceTest {
         class GivenMetaExistsAndVideoBlocked {
 
             @BeforeEach
-            void setUp() {
-                doReturn(Optional.of(meta)).when(recipeYoutubeMetaRepository).findByRecipeId(recipeId);
+            void setUp() throws YoutubeMetaException {
+                doReturn(meta).when(repository).find(recipeId);
                 doReturn(URI.create("https://www.youtube.com/watch?v=blocked"))
                         .when(meta)
                         .getVideoUri();
-                doReturn(true).when(videoInfoClient).isBlockedVideo(any(YoutubeUri.class));
+                doReturn(true).when(client).isBlocked(any(YoutubeUri.class));
             }
 
             @Test
             @DisplayName("Then - 메타가 BLOCKED 처리되고 저장된다")
             void thenBlockAndSave() throws YoutubeMetaException {
-                recipeYoutubeMetaService.block(recipeId);
+                service.block(recipeId);
 
-                verify(videoInfoClient).isBlockedVideo(any(YoutubeUri.class));
-                verify(meta).block();
-                verify(recipeYoutubeMetaRepository).save(meta);
+                verify(client).isBlocked(any(YoutubeUri.class));
+                verify(repository).block(recipeId);
             }
         }
 
@@ -84,22 +85,22 @@ public class RecipeYoutubeMetaServiceTest {
         class GivenMetaExistsAndVideoNotBlocked {
 
             @BeforeEach
-            void setUp() {
-                doReturn(Optional.of(meta)).when(recipeYoutubeMetaRepository).findByRecipeId(recipeId);
+            void setUp() throws YoutubeMetaException {
+                doReturn(meta).when(repository).find(recipeId);
                 doReturn(URI.create("https://www.youtube.com/watch?v=notblocked"))
                         .when(meta)
                         .getVideoUri();
-                doReturn(false).when(videoInfoClient).isBlockedVideo(any(YoutubeUri.class));
+                doReturn(false).when(client).isBlocked(any(YoutubeUri.class));
             }
 
             @Test
             @DisplayName("Then - YOUTUBE_META_NOT_BLOCKED_VIDEO 예외가 발생한다")
-            void thenThrowNotBlockedVideo() {
-                assertThatThrownBy(() -> recipeYoutubeMetaService.block(recipeId))
+            void thenThrowNotBlockedVideo() throws YoutubeMetaException {
+                assertThatThrownBy(() -> service.block(recipeId))
                         .isInstanceOf(YoutubeMetaException.class)
                         .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO);
 
-                verify(recipeYoutubeMetaRepository, never()).save(any());
+                verify(repository, never()).block(recipeId);
             }
         }
 
@@ -108,14 +109,16 @@ public class RecipeYoutubeMetaServiceTest {
         class GivenMetaNotFound {
 
             @BeforeEach
-            void setUp() {
-                doReturn(Optional.empty()).when(recipeYoutubeMetaRepository).findByRecipeId(recipeId);
+            void setUp() throws YoutubeMetaException {
+                doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
+                        .when(repository)
+                        .find(recipeId);
             }
 
             @Test
             @DisplayName("Then - YOUTUBE_META_NOT_FOUND 예외가 발생한다")
             void thenThrowNotFound() {
-                assertThatThrownBy(() -> recipeYoutubeMetaService.block(recipeId))
+                assertThatThrownBy(() -> service.block(recipeId))
                         .isInstanceOf(YoutubeMetaException.class)
                         .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
             }
@@ -163,17 +166,15 @@ public class RecipeYoutubeMetaServiceTest {
                 @BeforeEach
                 void setUp() {
                     recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
-                    doReturn(recipeYoutubeMeta)
-                            .when(recipeYoutubeMetaRepository)
-                            .save(any(RecipeYoutubeMeta.class));
+                    doReturn(recipeYoutubeMeta).when(repository).create(any(RecipeYoutubeMeta.class));
                 }
 
                 @Test
-                @DisplayName("Then - RecipeYoutubeMetaRepository의 save 메서드가 호출된다.")
+                @DisplayName("Then - RecipeYoutubeMetaRepository의 create 메서드가 호출된다.")
                 void thenRecipeYoutubeMetaRepositorySaveCalled() {
-                    recipeYoutubeMetaService.create(youtubeVideoInfo, recipeId);
+                    service.create(youtubeVideoInfo, recipeId);
 
-                    verify(recipeYoutubeMetaRepository).save(any(RecipeYoutubeMeta.class));
+                    verify(repository).create(any(RecipeYoutubeMeta.class));
                 }
             }
         }
@@ -209,11 +210,9 @@ public class RecipeYoutubeMetaServiceTest {
                 doReturn(false).when(meta2).isBlocked();
                 doReturn(YoutubeMetaStatus.ACTIVE).when(meta2).getStatus();
 
-                doReturn(java.util.List.of(meta1, meta2))
-                        .when(recipeYoutubeMetaRepository)
-                        .findAllByVideoUri(any(URI.class));
+                doReturn(java.util.List.of(meta1, meta2)).when(repository).find(any(URI.class));
 
-                RecipeYoutubeMeta result = recipeYoutubeMetaService.getByUrl(originalUri);
+                RecipeYoutubeMeta result = service.getByUrl(originalUri);
 
                 assertThat(result).isEqualTo(meta1);
             }
@@ -221,9 +220,9 @@ public class RecipeYoutubeMetaServiceTest {
             @Test
             @DisplayName("Then - 결과가 없으면 YOUTUBE_META_NOT_FOUND 예외를 던진다")
             void thenThrowNotFoundIfNone() {
-                doReturn(java.util.List.of()).when(recipeYoutubeMetaRepository).findAllByVideoUri(any(URI.class));
+                doReturn(java.util.List.of()).when(repository).find(any(URI.class));
 
-                assertThatThrownBy(() -> recipeYoutubeMetaService.getByUrl(originalUri))
+                assertThatThrownBy(() -> service.getByUrl(originalUri))
                         .isInstanceOf(YoutubeMetaException.class)
                         .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
             }
@@ -231,14 +230,12 @@ public class RecipeYoutubeMetaServiceTest {
             @Test
             @DisplayName("Then - 결과 중 banned가 하나라도 있으면 YOUTUBE_META_BANNED 예외를 던진다")
             void thenThrowBannedIfAnyBanned() {
-                doReturn(java.util.List.of(meta1, meta2))
-                        .when(recipeYoutubeMetaRepository)
-                        .findAllByVideoUri(any(URI.class));
+                doReturn(java.util.List.of(meta1, meta2)).when(repository).find(any(URI.class));
 
                 doReturn(false).when(meta1).isBanned();
                 doReturn(true).when(meta2).isBanned();
 
-                assertThatThrownBy(() -> recipeYoutubeMetaService.getByUrl(originalUri))
+                assertThatThrownBy(() -> service.getByUrl(originalUri))
                         .isInstanceOf(YoutubeMetaException.class)
                         .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_BANNED);
             }
@@ -246,16 +243,14 @@ public class RecipeYoutubeMetaServiceTest {
             @Test
             @DisplayName("Then - 결과 중 blocked가 하나라도 있으면 YOUTUBE_META_BLOCKED 예외를 던진다")
             void thenThrowBlockedIfAnyBlocked() {
-                doReturn(java.util.List.of(meta1, meta2))
-                        .when(recipeYoutubeMetaRepository)
-                        .findAllByVideoUri(any(URI.class));
+                doReturn(java.util.List.of(meta1, meta2)).when(repository).find(any(URI.class));
 
                 doReturn(false).when(meta1).isBanned();
                 doReturn(false).when(meta2).isBanned();
                 doReturn(false).when(meta1).isBlocked();
                 doReturn(true).when(meta2).isBlocked();
 
-                assertThatThrownBy(() -> recipeYoutubeMetaService.getByUrl(originalUri))
+                assertThatThrownBy(() -> service.getByUrl(originalUri))
                         .isInstanceOf(YoutubeMetaException.class)
                         .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED);
             }
@@ -263,9 +258,7 @@ public class RecipeYoutubeMetaServiceTest {
             @Test
             @DisplayName("Then - banned/blocked가 하나도 없으면 정상적으로 첫번째 메타를 반환한다")
             void thenReturnFirstWhenNoneBannedAndNoneBlocked() throws YoutubeMetaException {
-                doReturn(java.util.List.of(meta1, meta2))
-                        .when(recipeYoutubeMetaRepository)
-                        .findAllByVideoUri(any(URI.class));
+                doReturn(java.util.List.of(meta1, meta2)).when(repository).find(any(URI.class));
 
                 doReturn(false).when(meta1).isBanned();
                 doReturn(false).when(meta2).isBanned();
@@ -276,7 +269,7 @@ public class RecipeYoutubeMetaServiceTest {
                 doReturn(YoutubeMetaStatus.ACTIVE).when(meta1).getStatus();
                 doReturn(YoutubeMetaStatus.ACTIVE).when(meta2).getStatus();
 
-                RecipeYoutubeMeta result = recipeYoutubeMetaService.getByUrl(originalUri);
+                RecipeYoutubeMeta result = service.getByUrl(originalUri);
 
                 assertThat(result).isEqualTo(meta1);
             }
@@ -302,7 +295,7 @@ public class RecipeYoutubeMetaServiceTest {
 
             @BeforeEach
             void setUp() throws YoutubeMetaException {
-                doReturn(youtubeVideoInfo).when(videoInfoClient).fetchVideoInfo(any(YoutubeUri.class));
+                doReturn(youtubeVideoInfo).when(client).fetch(any(YoutubeUri.class));
             }
 
             @Nested
@@ -312,7 +305,7 @@ public class RecipeYoutubeMetaServiceTest {
                 @Test
                 @DisplayName("Then - 해당 URL에 매핑된 YoutubeVideoInfo를 반환한다.")
                 void thenReturnYoutubeVideoInfo() throws YoutubeMetaException {
-                    YoutubeVideoInfo result = recipeYoutubeMetaService.getVideoInfo(originalUri);
+                    YoutubeVideoInfo result = service.getVideoInfo(originalUri);
 
                     assertThat(result).isNotNull();
                     assertThat(result).isEqualTo(youtubeVideoInfo);
@@ -321,11 +314,11 @@ public class RecipeYoutubeMetaServiceTest {
 
             @Nested
             @DisplayName("Given - VideoInfoClient에서 예외가 발생할 때")
-            class GivenVideoInfoClientThrowsException {
+            class GivenYoutubeMetaExternalClientThrowsException {
 
                 @BeforeEach
                 void setUp() throws YoutubeMetaException {
-                    doReturn(null).when(videoInfoClient).fetchVideoInfo(any(YoutubeUri.class));
+                    doReturn(null).when(client).fetch(any(YoutubeUri.class));
                 }
 
                 @Nested
@@ -335,7 +328,7 @@ public class RecipeYoutubeMetaServiceTest {
                     @Test
                     @DisplayName("Then - null을 반환한다")
                     void thenReturnNull() throws YoutubeMetaException {
-                        YoutubeVideoInfo result = recipeYoutubeMetaService.getVideoInfo(originalUri);
+                        YoutubeVideoInfo result = service.getVideoInfo(originalUri);
 
                         assertThat(result).isNull();
                     }
@@ -361,16 +354,14 @@ public class RecipeYoutubeMetaServiceTest {
             class GivenExistingRecipeId {
 
                 @BeforeEach
-                void setUp() {
-                    doReturn(Optional.of(recipeYoutubeMeta))
-                            .when(recipeYoutubeMetaRepository)
-                            .findByRecipeId(recipeId);
+                void setUp() throws YoutubeMetaException {
+                    doReturn(recipeYoutubeMeta).when(repository).find(recipeId);
                 }
 
                 @Test
                 @DisplayName("Then - 해당 Recipe ID에 매핑된 RecipeYoutubeMeta를 반환한다.")
                 void thenReturnRecipeYoutubeMeta() throws YoutubeMetaException {
-                    RecipeYoutubeMeta result = recipeYoutubeMetaService.get(recipeId);
+                    RecipeYoutubeMeta result = service.get(recipeId);
 
                     assertThat(result).isNotNull();
                     assertThat(result).isEqualTo(recipeYoutubeMeta);
@@ -382,14 +373,16 @@ public class RecipeYoutubeMetaServiceTest {
             class GivenNonExistentRecipeId {
 
                 @BeforeEach
-                void setUp() {
-                    doReturn(Optional.empty()).when(recipeYoutubeMetaRepository).findByRecipeId(recipeId);
+                void setUp() throws YoutubeMetaException {
+                    doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
+                            .when(repository)
+                            .find(recipeId);
                 }
 
                 @Test
                 @DisplayName("Then - YoutubeMetaException 예외가 발생한다.")
                 void thenThrowYoutubeMetaException() {
-                    assertThatThrownBy(() -> recipeYoutubeMetaService.get(recipeId))
+                    assertThatThrownBy(() -> service.get(recipeId))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
                 }
@@ -416,8 +409,8 @@ public class RecipeYoutubeMetaServiceTest {
                 @BeforeEach
                 void setUp() {
                     doReturn(java.util.List.of(recipeYoutubeMeta))
-                            .when(recipeYoutubeMetaRepository)
-                            .findAllByRecipeIdIn(any());
+                            .when(repository)
+                            .finds(any());
                 }
 
                 @Nested
@@ -427,7 +420,7 @@ public class RecipeYoutubeMetaServiceTest {
                     @Test
                     @DisplayName("Then - 해당 리스트에 매핑된 RecipeYoutubeMeta 리스트를 반환한다")
                     void thenReturnRecipeYoutubeMetaList() {
-                        var result = recipeYoutubeMetaService.getByRecipes(java.util.List.of(recipeId));
+                        var result = service.gets(java.util.List.of(recipeId));
 
                         assertThat(result).isNotNull();
                         assertThat(result).isNotEmpty();
@@ -442,9 +435,7 @@ public class RecipeYoutubeMetaServiceTest {
 
                 @BeforeEach
                 void setUp() {
-                    doReturn(java.util.List.of())
-                            .when(recipeYoutubeMetaRepository)
-                            .findAllByRecipeIdIn(any());
+                    doReturn(java.util.List.of()).when(repository).finds(any());
                 }
 
                 @Nested
@@ -454,7 +445,7 @@ public class RecipeYoutubeMetaServiceTest {
                     @Test
                     @DisplayName("Then - 빈 리스트를 반환한다")
                     void thenReturnEmptyList() {
-                        var result = recipeYoutubeMetaService.getByRecipes(java.util.List.of());
+                        var result = service.gets(java.util.List.of());
 
                         assertThat(result).isNotNull();
                         assertThat(result).isEmpty();
@@ -475,12 +466,9 @@ public class RecipeYoutubeMetaServiceTest {
                 private UUID recipeId;
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws YoutubeMetaException {
                     recipeYoutubeMeta = mock(RecipeYoutubeMeta.class);
                     recipeId = UUID.randomUUID();
-                    doReturn(Optional.of(recipeYoutubeMeta))
-                            .when(recipeYoutubeMetaRepository)
-                            .findByRecipeId(recipeId);
                 }
 
                 @Nested
@@ -488,12 +476,11 @@ public class RecipeYoutubeMetaServiceTest {
                 class WhenBanMethod {
 
                     @Test
-                    @DisplayName("Then - 해당 RecipeYoutubeMeta의 ban 메서드가 호출되고 저장된다")
+                    @DisplayName("Then - repository의 ban 메서드가 호출된다")
                     void thenCallBanMethodAndSave() throws YoutubeMetaException {
-                        recipeYoutubeMetaService.ban(recipeId);
+                        service.ban(recipeId);
 
-                        verify(recipeYoutubeMeta).ban();
-                        verify(recipeYoutubeMetaRepository).save(recipeYoutubeMeta);
+                        verify(repository).ban(recipeId);
                     }
                 }
             }
@@ -505,9 +492,11 @@ public class RecipeYoutubeMetaServiceTest {
                 private UUID recipeId;
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws YoutubeMetaException {
                     recipeId = UUID.randomUUID();
-                    doReturn(Optional.empty()).when(recipeYoutubeMetaRepository).findByRecipeId(recipeId);
+                    doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
+                            .when(repository)
+                            .ban(recipeId);
                 }
 
                 @Nested
@@ -516,7 +505,7 @@ public class RecipeYoutubeMetaServiceTest {
                     @Test
                     @DisplayName("Then - YoutubeMetaException 예외가 발생한다")
                     void thenThrowYoutubeMetaException() {
-                        assertThatThrownBy(() -> recipeYoutubeMetaService.ban(recipeId))
+                        assertThatThrownBy(() -> service.ban(recipeId))
                                 .isInstanceOf(YoutubeMetaException.class)
                                 .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
                     }

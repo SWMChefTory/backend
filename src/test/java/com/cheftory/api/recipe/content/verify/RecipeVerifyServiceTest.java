@@ -5,7 +5,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.cheftory.api.recipe.content.verify.client.RecipeVerifyClient;
+import com.cheftory.api.recipe.content.verify.client.RecipeVerifyExternalClient;
 import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientResponse;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,13 +15,13 @@ import org.junit.jupiter.api.Test;
 @DisplayName("RecipeVerifyService")
 class RecipeVerifyServiceTest {
 
-    private RecipeVerifyClient recipeVerifyClient;
+    private RecipeVerifyExternalClient recipeVerifyExternalClient;
     private RecipeVerifyService recipeVerifyService;
 
     @BeforeEach
     void setUp() {
-        recipeVerifyClient = mock(RecipeVerifyClient.class);
-        recipeVerifyService = new RecipeVerifyService(recipeVerifyClient);
+        recipeVerifyExternalClient = mock(RecipeVerifyExternalClient.class);
+        recipeVerifyService = new RecipeVerifyService(recipeVerifyExternalClient);
     }
 
     @Test
@@ -30,11 +30,11 @@ class RecipeVerifyServiceTest {
         String videoId = "sample-video-id";
         RecipeVerifyClientResponse response = new RecipeVerifyClientResponse("s3://bucket/file.mp4", "video/mp4");
 
-        doReturn(response).when(recipeVerifyClient).verifyVideo(videoId);
+        doReturn(response).when(recipeVerifyExternalClient).verify(videoId);
 
         RecipeVerifyClientResponse result = recipeVerifyService.verify(videoId);
 
         assertThat(result).isEqualTo(response);
-        verify(recipeVerifyClient).verifyVideo(videoId);
+        verify(recipeVerifyExternalClient).verify(videoId);
     }
 }

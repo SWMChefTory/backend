@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/users/share")
 public class UserShareController {
 
-    private final UserShareService userShareService;
+    private final UserShareService service;
 
     /**
      * 유저 공유 요청 처리
@@ -30,7 +30,7 @@ public class UserShareController {
      */
     @PostMapping
     public UserShareResponse share(@UserPrincipal UUID userId) throws CreditException, UserShareException {
-        int count = userShareService.share(userId);
+        int count = service.share(userId);
         return UserShareResponse.of(count);
     }
 }

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.I18nTranslator;
@@ -28,18 +27,15 @@ class RecipeInfoServiceTest {
 
     private RecipeInfoRepository repository;
     private Clock clock;
-    private I18nTranslator i18nTranslator;
+    private I18nTranslator translator;
     private RecipeInfoService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(RecipeInfoRepository.class);
         clock = mock(Clock.class);
-        i18nTranslator = mock(I18nTranslator.class);
-        service = mock(RecipeInfoService.class, org.mockito.Mockito.CALLS_REAL_METHODS);
-        setField(service, "repository", repository);
-        setField(service, "clock", clock);
-        setField(service, "i18nTranslator", i18nTranslator);
+        translator = mock(I18nTranslator.class);
+        service = new RecipeInfoService(repository, clock, translator);
     }
 
     @Nested
@@ -232,13 +228,13 @@ class RecipeInfoServiceTest {
         @DisplayName("음식 종류는 cursor가 없으면 cusineFirst를 호출한다")
         void shouldCallCuisineFirstWhenCursorBlank() throws Exception {
             CursorPage<RecipeInfo> expected = CursorPage.of(List.of(), "next");
-            doReturn("한식").when(i18nTranslator).translate(RecipeCuisineType.KOREAN.messageKey());
+            doReturn("한식").when(translator).translate(RecipeCuisineType.KOREAN.messageKey());
             doReturn(expected).when(repository).cusineFirst("한식");
 
             CursorPage<RecipeInfo> result = service.getCuisines(RecipeCuisineType.KOREAN, null);
 
             assertThat(result).isEqualTo(expected);
-            verify(i18nTranslator).translate(RecipeCuisineType.KOREAN.messageKey());
+            verify(translator).translate(RecipeCuisineType.KOREAN.messageKey());
             verify(repository).cusineFirst("한식");
         }
 
@@ -246,13 +242,13 @@ class RecipeInfoServiceTest {
         @DisplayName("음식 종류는 cursor가 있으면 cuisineKeyset을 호출한다")
         void shouldCallCuisineKeysetWhenCursorExists() throws Exception {
             CursorPage<RecipeInfo> expected = CursorPage.of(List.of(), null);
-            doReturn("한식").when(i18nTranslator).translate(RecipeCuisineType.KOREAN.messageKey());
+            doReturn("한식").when(translator).translate(RecipeCuisineType.KOREAN.messageKey());
             doReturn(expected).when(repository).cuisineKeyset("한식", "cursor");
 
             CursorPage<RecipeInfo> result = service.getCuisines(RecipeCuisineType.KOREAN, "cursor");
 
             assertThat(result).isEqualTo(expected);
-            verify(i18nTranslator).translate(RecipeCuisineType.KOREAN.messageKey());
+            verify(translator).translate(RecipeCuisineType.KOREAN.messageKey());
             verify(repository).cuisineKeyset("한식", "cursor");
         }
     }

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class RecipeBookmarkService {
-    private final RecipeBookmarkRepository recipeBookmarkRepository;
+    private final RecipeBookmarkRepository repository;
     private final Clock clock;
 
     /**
@@ -34,10 +34,10 @@ public class RecipeBookmarkService {
      */
     public boolean create(UUID userId, UUID recipeId) throws RecipeBookmarkException {
         try {
-            recipeBookmarkRepository.create(RecipeBookmark.create(clock, userId, recipeId));
+            repository.create(RecipeBookmark.create(clock, userId, recipeId));
             return true;
         } catch (RecipeBookmarkException e) {
-            return recipeBookmarkRepository.recreate(userId, recipeId, clock);
+            return repository.recreate(userId, recipeId, clock);
         }
     }
 
@@ -49,7 +49,7 @@ public class RecipeBookmarkService {
      * @return 북마크 존재 여부
      */
     public boolean exist(UUID userId, UUID recipeId) {
-        return recipeBookmarkRepository.exists(userId, recipeId);
+        return repository.exists(userId, recipeId);
     }
 
     /**
@@ -61,7 +61,7 @@ public class RecipeBookmarkService {
      * @throws RecipeBookmarkException 북마크를 찾을 수 없을 때
      */
     public RecipeBookmark get(UUID userId, UUID recipeId) throws RecipeBookmarkException {
-        return recipeBookmarkRepository.get(userId, recipeId);
+        return repository.find(userId, recipeId);
     }
 
     /**
@@ -73,7 +73,7 @@ public class RecipeBookmarkService {
      * @throws RecipeBookmarkException 북마크를 찾을 수 없을 때
      */
     public void categorize(UUID userId, UUID recipeId, UUID categoryId) throws RecipeBookmarkException {
-        recipeBookmarkRepository.categorize(userId, recipeId, categoryId);
+        repository.categorize(userId, recipeId, categoryId);
     }
 
     /**
@@ -83,7 +83,7 @@ public class RecipeBookmarkService {
      * @throws RecipeBookmarkException 낙관적 락 실패 시
      */
     public void unCategorize(UUID categoryId) throws RecipeBookmarkException {
-        recipeBookmarkRepository.unCategorize(categoryId);
+        repository.unCategorize(categoryId);
     }
 
     /**
@@ -94,7 +94,7 @@ public class RecipeBookmarkService {
      * @throws RecipeBookmarkException 북마크를 찾을 수 없을 때
      */
     public void delete(UUID userId, UUID recipeId) throws RecipeBookmarkException {
-        recipeBookmarkRepository.delete(userId, recipeId, clock);
+        repository.delete(userId, recipeId, clock);
     }
 
     /**
@@ -103,7 +103,7 @@ public class RecipeBookmarkService {
      * @param recipeBookmarkIds 북마크 ID 목록
      */
     public void deletes(List<UUID> recipeBookmarkIds) {
-        recipeBookmarkRepository.deletes(recipeBookmarkIds, clock);
+        repository.deletes(recipeBookmarkIds, clock);
     }
 
     /**
@@ -113,7 +113,7 @@ public class RecipeBookmarkService {
      * @return 북마크 목록
      */
     public List<RecipeBookmark> gets(UUID recipeId) {
-        return recipeBookmarkRepository.gets(recipeId);
+        return repository.finds(recipeId);
     }
 
     /**
@@ -122,7 +122,7 @@ public class RecipeBookmarkService {
      * @param recipeId 레시피 ID
      */
     public void block(UUID recipeId) {
-        recipeBookmarkRepository.block(recipeId, clock);
+        repository.block(recipeId, clock);
     }
 
     /**
@@ -139,8 +139,8 @@ public class RecipeBookmarkService {
         boolean first = (cursor == null || cursor.isBlank());
 
         return first
-                ? recipeBookmarkRepository.keysetCategorizedFirst(userId, categoryId)
-                : recipeBookmarkRepository.keysetCategorized(userId, categoryId, cursor);
+                ? repository.keysetCategorizedFirst(userId, categoryId)
+                : repository.keysetCategorized(userId, categoryId, cursor);
     }
 
     /**
@@ -154,9 +154,7 @@ public class RecipeBookmarkService {
     public CursorPage<RecipeBookmark> getRecents(UUID userId, String cursor) throws CursorException {
         boolean first = (cursor == null || cursor.isBlank());
 
-        return first
-                ? recipeBookmarkRepository.keysetRecentsFirst(userId)
-                : recipeBookmarkRepository.keysetRecents(userId, cursor);
+        return first ? repository.keysetRecentsFirst(userId) : repository.keysetRecents(userId, cursor);
     }
 
     /**
@@ -166,8 +164,7 @@ public class RecipeBookmarkService {
      * @return 카테고리별 북마크 개수 목록
      */
     public List<RecipeBookmarkCategorizedCount> countByCategories(List<UUID> categoryIds) {
-        List<RecipeBookmarkCategorizedCountProjection> projections =
-                recipeBookmarkRepository.countCategorized(categoryIds);
+        List<RecipeBookmarkCategorizedCountProjection> projections = repository.countCategorized(categoryIds);
         return projections.stream()
                 .map(projection -> RecipeBookmarkCategorizedCount.of(
                         projection.getCategoryId(), projection.getCount().intValue()))
@@ -181,7 +178,7 @@ public class RecipeBookmarkService {
      * @return 카테고리 없는 북마크 개수
      */
     public RecipeBookmarkUnCategorizedCount countUncategorized(UUID userId) {
-        RecipeBookmarkUnCategorizedCountProjection projection = recipeBookmarkRepository.countUncategorized(userId);
+        RecipeBookmarkUnCategorizedCountProjection projection = repository.countUncategorized(userId);
         return RecipeBookmarkUnCategorizedCount.of(projection.getCount().intValue());
     }
 
@@ -193,6 +190,6 @@ public class RecipeBookmarkService {
      * @return 북마크 목록
      */
     public List<RecipeBookmark> gets(List<UUID> recipeIds, UUID userId) {
-        return recipeBookmarkRepository.gets(userId, recipeIds);
+        return repository.finds(userId, recipeIds);
     }
 }

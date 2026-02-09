@@ -101,9 +101,9 @@ class RecipeSearchFacadeTest {
         RecipeBookmark bookmark = mock(RecipeBookmark.class);
         doReturn(recipeId).when(bookmark).getRecipeId();
 
-        doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
+        doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).gets(List.of(recipeId));
         doReturn(List.of(detailMeta)).when(recipeDetailMetaService).getIn(List.of(recipeId));
-        doReturn(List.of(tag)).when(recipeTagService).getIn(List.of(recipeId));
+        doReturn(List.of(tag)).when(recipeTagService).gets(List.of(recipeId));
         doReturn(List.of(bookmark)).when(recipeBookmarkService).gets(List.of(recipeId), userId);
 
         CursorPage<RecipeOverview> result = recipeSearchFacade.searchRecipes("김치찌개", userId, cursor);

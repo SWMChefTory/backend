@@ -1,8 +1,7 @@
 package com.cheftory.api.recipe.bookmark;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -19,10 +18,7 @@ import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 @DisplayName("RecipeBookmarkService Tests")
 public class RecipeBookmarkServiceTest {
@@ -206,7 +202,7 @@ public class RecipeBookmarkServiceTest {
                     @BeforeEach
                     void beforeEach() throws RecipeBookmarkException {
                         realRecipeBookmark = mock(RecipeBookmark.class);
-                        doReturn(realRecipeBookmark).when(repository).get(userId, recipeId);
+                        doReturn(realRecipeBookmark).when(repository).find(userId, recipeId);
                     }
 
                     @Test
@@ -217,7 +213,7 @@ public class RecipeBookmarkServiceTest {
                         assertThat(status).isNotNull();
                         assertThat(status).isEqualTo(realRecipeBookmark);
 
-                        verify(repository).get(userId, recipeId);
+                        verify(repository).find(userId, recipeId);
                     }
                 }
             }
@@ -372,7 +368,7 @@ public class RecipeBookmarkServiceTest {
                     void beforeEach() {
                         viewStatuses = List.of(mock(RecipeBookmark.class), mock(RecipeBookmark.class));
 
-                        doReturn(viewStatuses).when(repository).gets(userId, recipeIds);
+                        doReturn(viewStatuses).when(repository).finds(userId, recipeIds);
                     }
 
                     @Test
@@ -382,7 +378,7 @@ public class RecipeBookmarkServiceTest {
 
                         assertThat(result).hasSize(2);
                         assertThat(result).containsExactlyElementsOf(viewStatuses);
-                        verify(repository).gets(userId, recipeIds);
+                        verify(repository).finds(userId, recipeIds);
                     }
                 }
             }
@@ -406,7 +402,7 @@ public class RecipeBookmarkServiceTest {
 
                     @BeforeEach
                     void beforeEach() {
-                        doReturn(List.of()).when(repository).gets(userId, recipeIds);
+                        doReturn(List.of()).when(repository).finds(userId, recipeIds);
                     }
 
                     @Test
@@ -415,7 +411,7 @@ public class RecipeBookmarkServiceTest {
                         List<RecipeBookmark> result = service.gets(recipeIds, userId);
 
                         assertThat(result).isEmpty();
-                        verify(repository).gets(userId, recipeIds);
+                        verify(repository).finds(userId, recipeIds);
                     }
                 }
             }
@@ -437,7 +433,7 @@ public class RecipeBookmarkServiceTest {
 
                     @BeforeEach
                     void beforeEach() {
-                        doReturn(List.of()).when(repository).gets(userId, List.of());
+                        doReturn(List.of()).when(repository).finds(userId, List.of());
                     }
 
                     @Test
@@ -446,7 +442,7 @@ public class RecipeBookmarkServiceTest {
                         List<RecipeBookmark> result = service.gets(List.of(), userId);
 
                         assertThat(result).isEmpty();
-                        verify(repository).gets(userId, List.of());
+                        verify(repository).finds(userId, List.of());
                     }
                 }
             }
@@ -478,7 +474,7 @@ public class RecipeBookmarkServiceTest {
                         bookmark2 = mock(RecipeBookmark.class);
                         viewStatuses = List.of(bookmark0, bookmark2);
 
-                        doReturn(viewStatuses).when(repository).gets(userId, recipeIds);
+                        doReturn(viewStatuses).when(repository).finds(userId, recipeIds);
                     }
 
                     @Test
@@ -489,7 +485,7 @@ public class RecipeBookmarkServiceTest {
                         assertThat(result).hasSize(2);
                         assertThat(result.get(0)).isEqualTo(bookmark0);
                         assertThat(result.get(1)).isEqualTo(bookmark2);
-                        verify(repository).gets(userId, recipeIds);
+                        verify(repository).finds(userId, recipeIds);
                     }
                 }
             }

@@ -9,6 +9,9 @@ import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
+import com.cheftory.api.recipe.content.youtubemeta.repository.RecipeYoutubeMetaRepository;
+import com.cheftory.api.recipe.content.youtubemeta.repository.RecipeYoutubeMetaRepositoryImpl;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,11 +21,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @DisplayName("RecipeYoutubeMetaRepository")
+@Import(RecipeYoutubeMetaRepositoryImpl.class)
 public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
 
     @Autowired
@@ -80,7 +85,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
                 @Test
                 void ThenSaveSuccessfully() {
 
-                    recipeYoutubeMeta = repository.save(recipeYoutubeMeta);
+                    recipeYoutubeMeta = repository.create(recipeYoutubeMeta);
 
                     assertThat(recipeYoutubeMeta.getId()).isNotNull();
                     assertThat(recipeYoutubeMeta.getVideoUri()).isEqualTo(youtubeUri.toUri());
@@ -124,7 +129,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
             doReturn(FIXED_TIME).when(clock).now();
 
             recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
-            repository.save(recipeYoutubeMeta);
+            repository.create(recipeYoutubeMeta);
         }
 
         @DisplayName("When - 유효한 URL로 조회한다면")
@@ -135,7 +140,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
 
             @BeforeEach
             void beforeEach() {
-                recipeYoutubeMetaList = repository.findAllByVideoUri(youtubeUri.toUri());
+                recipeYoutubeMetaList = repository.find(youtubeUri.toUri());
             }
 
             @DisplayName("Then - 정상적으로 조회된다")
@@ -143,7 +148,7 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
             void ThenGetSuccessfully() {
                 assertThat(recipeYoutubeMetaList).isNotNull();
                 assertThat(recipeYoutubeMetaList).hasSize(1);
-                RecipeYoutubeMeta foundRecipeYoutubeMeta = recipeYoutubeMetaList.get(0);
+                RecipeYoutubeMeta foundRecipeYoutubeMeta = recipeYoutubeMetaList.getFirst();
                 assertThat(foundRecipeYoutubeMeta.getId()).isEqualTo(recipeYoutubeMeta.getId());
                 assertThat(foundRecipeYoutubeMeta.getVideoUri()).isEqualTo(youtubeUri.toUri());
                 assertThat(foundRecipeYoutubeMeta.getTitle()).isEqualTo(title);
@@ -152,15 +157,14 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
             }
         }
 
-        @DisplayName("When - 유효한 레시피 메타 ID로 조회한다면")
+        @DisplayName("When - 유효한 레시피 ID로 조회한다면")
         @Nested
         class WhenGettingByValidId {
             private RecipeYoutubeMeta foundRecipeYoutubeMeta;
 
             @BeforeEach
-            void beforeEach() {
-                foundRecipeYoutubeMeta =
-                        repository.findById(recipeYoutubeMeta.getId()).orElse(null);
+            void beforeEach() throws YoutubeMetaException {
+                foundRecipeYoutubeMeta = repository.find(recipeId);
             }
 
             @DisplayName("Then - 정상적으로 조회된다")
@@ -243,15 +247,15 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
                 recipeYoutubeMeta1 = RecipeYoutubeMeta.create(youtubeVideoInfo1, recipeId1, clock);
                 recipeYoutubeMeta2 = RecipeYoutubeMeta.create(youtubeVideoInfo2, recipeId2, clock);
                 youtubeMetaIds = List.of(
-                        repository.save(recipeYoutubeMeta1).getId(),
-                        repository.save(recipeYoutubeMeta2).getId());
+                        repository.create(recipeYoutubeMeta1).getId(),
+                        repository.create(recipeYoutubeMeta2).getId());
                 recipeIds = List.of(recipeId1, recipeId2);
             }
 
             @DisplayName("Then - 정상적으로 조회된다")
             @Test
             void ThenGetListSuccessfully() {
-                recipeYoutubeMetas = repository.findAllByRecipeIdIn(recipeIds);
+                recipeYoutubeMetas = repository.finds(recipeIds);
                 assertThat(recipeYoutubeMetas).isNotNull();
                 assertThat(recipeYoutubeMetas).hasSize(2);
             }

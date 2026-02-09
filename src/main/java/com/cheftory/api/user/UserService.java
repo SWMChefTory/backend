@@ -22,8 +22,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final UserCreditPort userCreditPort;
+    private final UserRepository repository;
+    private final UserCreditPort creditPort;
     private final Clock clock;
 
     /**
@@ -35,7 +35,7 @@ public class UserService {
      * @throws UserException 유저를 찾을 수 없을 때 USER_NOT_FOUND
      */
     public User get(Provider provider, String providerSub) throws UserException {
-        return userRepository.find(provider, providerSub);
+        return repository.find(provider, providerSub);
     }
 
     /**
@@ -73,14 +73,14 @@ public class UserService {
             throw new UserException(UserErrorCode.PRIVACY_POLICY_NOT_AGREED);
         }
 
-        boolean exist = userRepository.exist(provider, providerSub);
+        boolean exist = repository.exist(provider, providerSub);
 
         if (exist) {
             throw new UserException(UserErrorCode.USER_ALREADY_EXIST);
         }
 
         User user = User.create(nickname, gender, dateOfBirth, provider, providerSub, isMarketingAgreed, clock);
-        return userRepository.create(user);
+        return repository.create(user);
     }
 
     /**
@@ -91,7 +91,7 @@ public class UserService {
      * @throws UserException 유저를 찾을 수 없을 때 USER_NOT_FOUND
      */
     public User get(UUID userId) throws UserException {
-        return userRepository.find(userId);
+        return repository.find(userId);
     }
 
     /**
@@ -104,7 +104,7 @@ public class UserService {
      * @return 수정된 유저 정보
      */
     public User update(UUID userId, String nickname, Gender gender, LocalDate dateOfBirth) throws UserException {
-        return userRepository.update(userId, nickname, gender, dateOfBirth, clock);
+        return repository.update(userId, nickname, gender, dateOfBirth, clock);
     }
 
     /**
@@ -117,19 +117,19 @@ public class UserService {
      */
     public void tutorial(UUID userId) throws UserException, CreditException {
 
-        boolean exist = userRepository.exist(userId);
+        boolean exist = repository.exist(userId);
 
         if (!exist) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        userRepository.completeTutorial(userId, clock);
+        repository.completeTutorial(userId, clock);
 
         try {
-            userCreditPort.grantUserTutorial(userId);
+            creditPort.grantUserTutorial(userId);
         } catch (CreditException e) {
             log.error("튜토리얼 크레딧 지급 실패. 보상 실행: userId={}", userId, e);
-            userRepository.decompleteTutorial(userId, clock);
+            repository.decompleteTutorial(userId, clock);
             throw e;
         }
     }
@@ -141,7 +141,7 @@ public class UserService {
      * @throws UserException 유저를 찾을 수 없을 때 USER_NOT_FOUND
      */
     public void delete(UUID userId) throws UserException {
-        userRepository.delete(userId, clock);
+        repository.delete(userId, clock);
     }
 
     /**
@@ -151,6 +151,6 @@ public class UserService {
      * @return 유저 존재 여부
      */
     public boolean exists(UUID userId) {
-        return userRepository.exist(userId);
+        return repository.exist(userId);
     }
 }

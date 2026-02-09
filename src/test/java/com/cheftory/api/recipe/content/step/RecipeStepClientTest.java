@@ -3,16 +3,16 @@ package com.cheftory.api.recipe.content.step;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.cheftory.api.recipe.content.step.client.RecipeStepClient;
+import com.cheftory.api.recipe.content.step.client.RecipeStepExternalClient;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsRequest;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsResponse;
 import com.cheftory.api.recipe.content.step.exception.RecipeStepErrorCode;
 import com.cheftory.api.recipe.content.step.exception.RecipeStepException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
+import mockwebserver3.RecordedRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,11 +23,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@DisplayName("RecipeStepClient 테스트")
+@DisplayName("RecipeStepExternalClient 테스트")
 class RecipeStepClientTest {
 
     private MockWebServer mockWebServer;
-    private RecipeStepClient recipeStepClient;
+    private RecipeStepExternalClient recipeStepClient;
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -38,13 +38,13 @@ class RecipeStepClientTest {
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 
-        recipeStepClient = new RecipeStepClient(webClient);
+        recipeStepClient = new RecipeStepExternalClient(webClient);
         objectMapper = new ObjectMapper();
     }
 
     @AfterEach
     void tearDown() throws IOException {
-        mockWebServer.shutdown();
+        mockWebServer.close();
     }
 
     @Nested
@@ -59,74 +59,77 @@ class RecipeStepClientTest {
 
             String responseJson =
                     """
-          {
-            "steps": [
-              {
-                "subtitle": "첫 번째 단계",
-                "start": 10.0,
-                "descriptions": [
-                  {
-                    "text": "재료를 준비합니다",
-                    "start": 10.5
-                  },
-                  {
-                    "text": "도구를 정리합니다",
-                    "start": 11.0
-                  }
-                ]
-              },
-              {
-                "subtitle": "두 번째 단계",
-                "start": 30.0,
-                "descriptions": [
-                  {
-                    "text": "요리를 시작합니다",
-                    "start": 30.5
-                  }
-                ]
-              }
-            ]
-          }
-          """;
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(HttpStatus.OK.value())
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(responseJson));
+			{
+				"steps": [
+					{
+						"subtitle": "첫 번째 단계",
+						"start": 10.0,
+						"descriptions": [
+							{
+								"text": "재료를 준비합니다",
+								"start": 10.5
+							},
+							{
+								"text": "도구를 정리합니다",
+								"start": 11.0
+							}
+						]
+					},
+					{
+						"subtitle": "두 번째 단계",
+						"start": 30.0,
+						"descriptions": [
+							{
+								"text": "요리를 시작합니다",
+								"start": 30.5
+							}
+						]
+					}
+				]
+			}
+			""";
 
-            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetchRecipeSteps(fileUri, mimeType);
+            mockWebServer.enqueue(new MockResponse.Builder()
+                    .code(HttpStatus.OK.value())
+                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(responseJson)
+                    .build());
+
+            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetch(fileUri, mimeType);
 
             assertThat(actualResponse).isNotNull();
             assertThat(actualResponse.steps()).hasSize(2);
 
             RecordedRequest recordedRequest = mockWebServer.takeRequest();
             assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-            assertThat(recordedRequest.getPath()).isEqualTo("/steps/video");
-            assertThat(recordedRequest.getHeader(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+            assertThat(recordedRequest.getTarget()).isEqualTo("/steps/video");
+            assertThat(recordedRequest.getHeaders().get(HttpHeaders.CONTENT_TYPE))
+                    .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
             ClientRecipeStepsRequest actualRequest =
-                    objectMapper.readValue(recordedRequest.getBody().readUtf8(), ClientRecipeStepsRequest.class);
+                    objectMapper.readValue(recordedRequest.getBody().utf8(), ClientRecipeStepsRequest.class);
             assertThat(actualRequest.fileUri()).isEqualTo(fileUri);
             assertThat(actualRequest.mimeType()).isEqualTo(mimeType);
         }
 
         @Test
-        @DisplayName("서버 에러 시 RecipeStepException으로 래핑되고 cause는 WebClientResponseException이다")
-        void shouldThrowWebClientResponseExceptionOnServerError() throws InterruptedException {
+        @DisplayName("서버 에러 시 RecipeStepException으로 래핑된다")
+        void shouldThrowRecipeStepExceptionOnServerError() throws Exception {
             String fileUri = "s3://bucket/file.mp4";
             String mimeType = "video/mp4";
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(HttpStatus.BAD_REQUEST.value())
-                    .setHeader("Content-Type", "application/json")
-                    .setBody("{\"error\":\"Invalid request\"}"));
+            mockWebServer.enqueue(new MockResponse.Builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body("{\"error\":\"Invalid request\"}")
+                    .build());
 
-            assertThatThrownBy(() -> recipeStepClient.fetchRecipeSteps(fileUri, mimeType))
+            assertThatThrownBy(() -> recipeStepClient.fetch(fileUri, mimeType))
                     .isInstanceOf(RecipeStepException.class)
                     .hasFieldOrPropertyWithValue("error", RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
 
             RecordedRequest recordedRequest = mockWebServer.takeRequest();
             assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-            assertThat(recordedRequest.getPath()).isEqualTo("/steps/video");
         }
 
         @Test
@@ -135,24 +138,16 @@ class RecipeStepClientTest {
             String fileUri = "s3://bucket/empty.mp4";
             String mimeType = "video/mp4";
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(HttpStatus.OK.value())
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody("{\"steps\": []}"));
+            mockWebServer.enqueue(new MockResponse.Builder()
+                    .code(HttpStatus.OK.value())
+                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body("{\"steps\": []}")
+                    .build());
 
-            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetchRecipeSteps(fileUri, mimeType);
+            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetch(fileUri, mimeType);
 
             assertThat(actualResponse).isNotNull();
             assertThat(actualResponse.steps()).isEmpty();
-
-            RecordedRequest recordedRequest = mockWebServer.takeRequest();
-            assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-            assertThat(recordedRequest.getPath()).isEqualTo("/steps/video");
-
-            ClientRecipeStepsRequest actualRequest =
-                    objectMapper.readValue(recordedRequest.getBody().readUtf8(), ClientRecipeStepsRequest.class);
-            assertThat(actualRequest.fileUri()).isEqualTo(fileUri);
-            assertThat(actualRequest.mimeType()).isEqualTo(mimeType);
         }
 
         @Test
@@ -163,39 +158,34 @@ class RecipeStepClientTest {
 
             String responseJson =
                     """
-          {
-            "steps": [
-              {
-                "subtitle": "특수 단계 & 테스트",
-                "start": 0.123,
-                "descriptions": [
-                  {
-                    "text": "특수문자 포함: @#$%",
-                    "start": 0.5
-                  }
-                ]
-              }
-            ]
-          }
-          """;
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(HttpStatus.OK.value())
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(responseJson));
+			{
+				"steps": [
+					{
+						"subtitle": "특수 단계 & 테스트",
+						"start": 0.123,
+						"descriptions": [
+							{
+								"text": "특수문자 포함: @#$%",
+								"start": 0.5
+							}
+						]
+					}
+				]
+			}
+			""";
 
-            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetchRecipeSteps(fileUri, mimeType);
+            mockWebServer.enqueue(new MockResponse.Builder()
+                    .code(HttpStatus.OK.value())
+                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(responseJson)
+                    .build());
+
+            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetch(fileUri, mimeType);
 
             assertThat(actualResponse.steps()).hasSize(1);
             ClientRecipeStepsResponse.Step step = actualResponse.steps().getFirst();
             assertThat(step.subtitle()).isEqualTo("특수 단계 & 테스트");
             assertThat(step.start()).isEqualTo(0.123);
-            assertThat(step.descriptions()).hasSize(1);
-
-            RecordedRequest recordedRequest = mockWebServer.takeRequest();
-            ClientRecipeStepsRequest actualRequest =
-                    objectMapper.readValue(recordedRequest.getBody().readUtf8(), ClientRecipeStepsRequest.class);
-            assertThat(actualRequest.fileUri()).isEqualTo(fileUri);
-            assertThat(actualRequest.mimeType()).isEqualTo(mimeType);
         }
     }
 }

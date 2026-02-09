@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recipes/categories")
 public class RecipeCategoryController {
-    private final RecipeCategoryService recipeCategoryService;
+    private final RecipeCategoryService service;
 
     /**
      * 레시피 카테고리 생성
@@ -32,7 +32,7 @@ public class RecipeCategoryController {
     public RecipeCategoryResponse.Create createCategory(
             @RequestBody RecipeCategoryRequest.Create request, @UserPrincipal UUID userId)
             throws RecipeCategoryException {
-        UUID recipeCategoryId = recipeCategoryService.create(request.name(), userId);
+        UUID recipeCategoryId = service.create(request.name(), userId);
         return RecipeCategoryResponse.Create.from(recipeCategoryId);
     }
 }

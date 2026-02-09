@@ -58,8 +58,7 @@ public class RecipeDetailServiceTest {
                         2,
                         30);
 
-                when(recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
-                        .thenReturn(clientResponse);
+                when(recipeDetailClient.fetch(videoId, fileUri, mimeType)).thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(expectedRecipeDetail);
             }
 
@@ -85,7 +84,7 @@ public class RecipeDetailServiceTest {
                     assertThat(result.servings()).isEqualTo(2);
                     assertThat(result.cookTime()).isEqualTo(30);
 
-                    verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(fileUri), eq(mimeType));
+                    verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType));
                     verify(clientResponse).toRecipeDetail();
                 }
             }
@@ -114,8 +113,7 @@ public class RecipeDetailServiceTest {
                         1,
                         5);
 
-                when(recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
-                        .thenReturn(clientResponse);
+                when(recipeDetailClient.fetch(videoId, fileUri, mimeType)).thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(simpleRecipeDetail);
             }
 
@@ -133,7 +131,7 @@ public class RecipeDetailServiceTest {
                 assertThat(result.servings()).isEqualTo(1);
                 assertThat(result.cookTime()).isEqualTo(5);
 
-                verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(fileUri), eq(mimeType));
+                verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType));
             }
         }
 
@@ -155,8 +153,7 @@ public class RecipeDetailServiceTest {
 
                 emptyIngredientsRecipe = RecipeDetail.of("재료 없는 레시피", List.of(), List.of("기타"), 1, 10);
 
-                when(recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
-                        .thenReturn(clientResponse);
+                when(recipeDetailClient.fetch(videoId, fileUri, mimeType)).thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(emptyIngredientsRecipe);
             }
 
@@ -174,7 +171,7 @@ public class RecipeDetailServiceTest {
                 assertThat(result.servings()).isEqualTo(1);
                 assertThat(result.cookTime()).isEqualTo(10);
 
-                verify(recipeDetailClient).fetchRecipeDetails(eq(videoId), eq(fileUri), eq(mimeType));
+                verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType));
             }
         }
     }

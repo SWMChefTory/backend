@@ -273,11 +273,11 @@ class RecipeFacadeTest {
             doReturn(Collections.emptyList()).when(recipeInfoService).getProgresses(anyList());
             doReturn(List.of(mockYoutubeMeta(recipeId)))
                     .when(recipeYoutubeMetaService)
-                    .getByRecipes(anyList());
+                    .gets(anyList());
             doReturn(List.of(mockDetailMeta(recipeId)))
                     .when(recipeDetailMetaService)
                     .getIn(anyList());
-            doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
+            doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).gets(anyList());
 
             CursorPage<RecipeBookmarkOverview> result = sut.getRecents(userId, cursor);
 
@@ -346,11 +346,11 @@ class RecipeFacadeTest {
 
             doReturn(List.of(mockYoutubeMeta(recipeId)))
                     .when(recipeYoutubeMetaService)
-                    .getByRecipes(List.of(recipeId));
+                    .gets(List.of(recipeId));
             doReturn(List.of(mockDetailMeta(recipeId)))
                     .when(recipeDetailMetaService)
                     .getIn(List.of(recipeId));
-            doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
+            doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).gets(List.of(recipeId));
             doReturn(List.of()).when(recipeBookmarkService).gets(List.of(recipeId), userId);
 
             CursorPage<RecipeOverview> result =
@@ -378,11 +378,11 @@ class RecipeFacadeTest {
 
             doReturn(List.of(mockYoutubeMeta(recipeId)))
                     .when(recipeYoutubeMetaService)
-                    .getByRecipes(List.of(recipeId));
+                    .gets(List.of(recipeId));
             doReturn(List.of(mockDetailMeta(recipeId)))
                     .when(recipeDetailMetaService)
                     .getIn(List.of(recipeId));
-            doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).getIn(List.of(recipeId));
+            doReturn(List.of(mockTag(recipeId, "태그1"))).when(recipeTagService).gets(List.of(recipeId));
             doReturn(List.of()).when(recipeBookmarkService).gets(List.of(recipeId), userId);
 
             CursorPage<RecipeOverview> result =

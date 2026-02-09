@@ -157,14 +157,14 @@ public class RecipeFacade {
                         recipeInfoService.gets(recipeIds).stream(), recipeInfoService.getProgresses(recipeIds).stream())
                 .collect(Collectors.toMap(RecipeInfo::getId, Function.identity()));
 
-        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.getByRecipes(recipeIds).stream()
+        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.gets(recipeIds).stream()
                 .collect(Collectors.toMap(RecipeYoutubeMeta::getRecipeId, Function.identity(), (a, b) -> a));
 
         Map<UUID, RecipeDetailMeta> detailMetaMap = recipeDetailMetaService.getIn(recipeIds).stream()
                 .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
 
         Map<UUID, List<RecipeTag>> tagsMap =
-                recipeTagService.getIn(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+                recipeTagService.gets(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
         return bookmarks.stream()
                 .map(bookmark -> {
@@ -194,14 +194,14 @@ public class RecipeFacade {
     private List<RecipeOverview> makeOverviews(List<RecipeInfo> recipes, UUID userId) {
         List<UUID> recipeIds = recipes.stream().map(RecipeInfo::getId).toList();
 
-        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.getByRecipes(recipeIds).stream()
+        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.gets(recipeIds).stream()
                 .collect(Collectors.toMap(RecipeYoutubeMeta::getRecipeId, Function.identity()));
 
         Map<UUID, RecipeDetailMeta> detailMetaMap = recipeDetailMetaService.getIn(recipeIds).stream()
                 .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
 
         Map<UUID, List<RecipeTag>> tagsMap =
-                recipeTagService.getIn(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+                recipeTagService.gets(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
         Map<UUID, RecipeBookmark> recipeViewStatusMap = recipeBookmarkService.gets(recipeIds, userId).stream()
                 .collect(Collectors.toMap(RecipeBookmark::getRecipeId, Function.identity()));

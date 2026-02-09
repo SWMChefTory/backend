@@ -18,8 +18,7 @@ public class RecipeDetailClient {
 
     private final WebClient webClient;
 
-    public ClientRecipeDetailResponse fetchRecipeDetails(String videoId, String fileUri, String mimeType)
-            throws RecipeException {
+    public ClientRecipeDetailResponse fetch(String videoId, String fileUri, String mimeType) throws RecipeException {
         try {
             ClientRecipeDetailRequest request = ClientRecipeDetailRequest.from(videoId, fileUri, mimeType);
 

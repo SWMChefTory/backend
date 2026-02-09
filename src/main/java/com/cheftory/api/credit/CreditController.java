@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/credit")
 public class CreditController {
 
-    private final CreditService creditService;
+    private final CreditService service;
 
     @GetMapping("/balance")
     public CreditBalanceResponse getBalance(@UserPrincipal UUID userId) {
-        long balance = creditService.getBalance(userId);
+        long balance = service.getBalance(userId);
         return CreditBalanceResponse.from(balance);
     }
 }

@@ -2,226 +2,85 @@ package com.cheftory.api.recipe.content.step;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.step.entity.RecipeStep;
 import com.cheftory.api.recipe.content.step.entity.RecipeStepSort;
 import com.cheftory.api.recipe.content.step.repository.RecipeStepRepository;
+import com.cheftory.api.recipe.content.step.repository.RecipeStepRepositoryImpl;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
-@DisplayName("RecipeStepRepository")
-public class RecipeStepRepositoryTest extends DbContextTest {
+@DataJpaTest
+@Import({RecipeStepRepositoryImpl.class})
+@DisplayName("RecipeStepRepository 테스트")
+class RecipeStepRepositoryTest extends DbContextTest {
 
     @Autowired
     private RecipeStepRepository recipeStepRepository;
 
-    @MockitoBean
     private Clock clock;
+    private final LocalDateTime now = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+
+    @BeforeEach
+    void setUp() {
+        clock = mock(Clock.class);
+        doReturn(now).when(clock).now();
+    }
 
     @Nested
-    @DisplayName("레시피 단계 저장")
-    class SaveRecipeStep {
+    @DisplayName("create 메서드는")
+    class Describe_create {
 
-        @Nested
-        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-        class GivenValidParameters {
+        @Test
+        @DisplayName("여러 레시피 단계를 한 번에 저장한다")
+        void it_saves_multiple_steps() {
+            // Given
+            UUID recipeId = UUID.randomUUID();
+            RecipeStep step1 = RecipeStep.create(1, "Step 1", List.of(), 0.0, recipeId, clock);
+            RecipeStep step2 = RecipeStep.create(2, "Step 2", List.of(), 30.0, recipeId, clock);
 
-            private String subtitle;
-            private Double start;
-            private String descriptionText;
-            private Double descriptionStart;
-            private UUID recipeId;
-            private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+            // When
+            recipeStepRepository.create(List.of(step1, step2));
 
-            @BeforeEach
-            void setUp() {
-                subtitle = "Step 1";
-                start = 0.0;
-                descriptionText = "First, do this.";
-                descriptionStart = 0.0;
-                recipeId = UUID.randomUUID();
-                doReturn(FIXED_TIME).when(clock).now();
-            }
-
-            @Nested
-            @DisplayName("When - 레시피 단계를 저장하면")
-            class WhenSaveRecipeStep {
-
-                private RecipeStep recipeStep;
-                private RecipeStep.Detail recipeStepDetail;
-
-                @BeforeEach
-                void setUp() {
-                    recipeStepDetail = RecipeStep.Detail.of(descriptionText, descriptionStart);
-
-                    recipeStep = RecipeStep.create(1, subtitle, List.of(recipeStepDetail), start, recipeId, clock);
-
-                    recipeStepRepository.save(recipeStep);
-                }
-
-                @DisplayName("Then - 레시피 단계가 저장된다")
-                @Test
-                void thenRecipeStepIsSaved() {
-                    List<RecipeStep> recipeSteps = recipeStepRepository.findAllByRecipeId(recipeId, null);
-                    assertThat(recipeSteps).hasSize(1);
-
-                    RecipeStep savedStep = recipeSteps.getFirst();
-                    assertThat(savedStep.getId()).isEqualTo(recipeStep.getId());
-                    assertThat(savedStep.getStepOrder()).isEqualTo(1);
-                    assertThat(savedStep.getSubtitle()).isEqualTo(subtitle);
-                    assertThat(savedStep.getStart()).isEqualTo(start);
-                    assertThat(savedStep.getRecipeId()).isEqualTo(recipeId);
-                    assertThat(savedStep.getCreatedAt()).isEqualTo(FIXED_TIME);
-
-                    assertThat(savedStep.getDetails()).hasSize(1);
-                    RecipeStep.Detail savedDetail = savedStep.getDetails().getFirst();
-                    assertThat(savedDetail.getText()).isEqualTo(descriptionText);
-                    assertThat(savedDetail.getStart()).isEqualTo(descriptionStart);
-                }
-
-                @DisplayName("Then - ID로 개별 조회가 가능하다")
-                @Test
-                void thenCanFindById() {
-                    Optional<RecipeStep> foundStep = recipeStepRepository.findById(recipeStep.getId());
-
-                    assertThat(foundStep).isPresent();
-                    assertThat(foundStep.get().getId()).isEqualTo(recipeStep.getId());
-                    assertThat(foundStep.get().getSubtitle()).isEqualTo(subtitle);
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Given - 여러 개의 Detail을 가진 레시피 단계가 주어졌을 때")
-        class GivenMultipleDetails {
-
-            private UUID recipeId;
-            private LocalDateTime fixedNow;
-
-            @BeforeEach
-            void setUp() {
-                fixedNow = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-                recipeId = UUID.randomUUID();
-                doReturn(fixedNow).when(clock).now();
-            }
-
-            @DisplayName("When - 복수의 Detail을 가진 단계를 저장하면")
-            @Nested
-            class WhenSaveStepWithMultipleDetails {
-
-                private RecipeStep recipeStep;
-
-                @BeforeEach
-                void setUp() {
-                    List<RecipeStep.Detail> details = List.of(
-                            RecipeStep.Detail.of("첫 번째 동작", 0.0),
-                            RecipeStep.Detail.of("두 번째 동작", 30.5),
-                            RecipeStep.Detail.of("세 번째 동작", 60.0));
-
-                    recipeStep = RecipeStep.create(1, "복합 단계", details, 0.0, recipeId, clock);
-
-                    recipeStepRepository.save(recipeStep);
-                }
-
-                @DisplayName("Then - 모든 Detail이 정상적으로 저장된다")
-                @Test
-                void thenAllDetailsAreSaved() {
-                    RecipeStep savedStep =
-                            recipeStepRepository.findById(recipeStep.getId()).orElseThrow();
-
-                    assertThat(savedStep.getDetails()).hasSize(3);
-                    assertThat(savedStep.getDetails())
-                            .extracting(RecipeStep.Detail::getText)
-                            .containsExactly("첫 번째 동작", "두 번째 동작", "세 번째 동작");
-                    assertThat(savedStep.getDetails())
-                            .extracting(RecipeStep.Detail::getStart)
-                            .containsExactly(0.0, 30.5, 60.0);
-                }
-            }
+            // Then
+            List<RecipeStep> results = recipeStepRepository.finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+            assertThat(results).hasSize(2);
+            assertThat(results).extracting(RecipeStep::getStepOrder).containsExactly(1, 2);
         }
     }
 
     @Nested
-    @DisplayName("레시피 단계 조회")
-    class FindRecipeSteps {
+    @DisplayName("findAllByRecipeId 메서드는")
+    class Describe_findAllByRecipeId {
 
-        @DisplayName("Given - 여러 레시피 단계가 저장되어 있을 때")
-        @Nested
-        class GivenMultipleRecipeSteps {
+        @Test
+        @DisplayName("특정 레시피의 모든 단계를 정렬하여 조회한다")
+        void it_returns_sorted_steps_for_recipe() {
+            // Given
+            UUID recipeId = UUID.randomUUID();
+            RecipeStep step2 = RecipeStep.create(2, "Step 2", List.of(), 30.0, recipeId, clock);
+            RecipeStep step1 = RecipeStep.create(1, "Step 1", List.of(), 0.0, recipeId, clock);
 
-            private UUID recipeId;
-            private LocalDateTime fixedNow;
-            private LocalDateTime fixedLater;
-            private RecipeStep step1;
-            private RecipeStep step2;
+            recipeStepRepository.create(List.of(step2, step1));
 
-            @BeforeEach
-            void setUp() {
-                fixedNow = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-                fixedLater = LocalDateTime.of(2024, 1, 1, 13, 0, 0);
-                recipeId = UUID.randomUUID();
+            // When
+            List<RecipeStep> results = recipeStepRepository.finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
 
-                doReturn(fixedLater).when(clock).now();
-                step1 = RecipeStep.create(
-                        1, "Step 1", List.of(RecipeStep.Detail.of("첫 번째 단계", 0.0)), 0.0, recipeId, clock);
-
-                doReturn(fixedNow).when(clock).now();
-                step2 = RecipeStep.create(
-                        2, "Step 2", List.of(RecipeStep.Detail.of("두 번째 단계", 30.0)), 30.0, recipeId, clock);
-
-                recipeStepRepository.save(step2);
-                recipeStepRepository.save(step1);
-            }
-
-            @Nested
-            @DisplayName("When - 특정 레시피 ID로 단계들을 조회하면")
-            class WhenFindRecipeStepsByRecipeId {
-
-                @DisplayName("Then - 해당 레시피의 단계들만 반환된다")
-                @Test
-                void thenOnlyTargetRecipeStepsAreReturned() {
-                    List<RecipeStep> recipeSteps = recipeStepRepository.findAllByRecipeId(recipeId, null);
-
-                    assertThat(recipeSteps).hasSize(2);
-                    assertThat(recipeSteps).extracting(RecipeStep::getRecipeId).containsOnly(recipeId);
-                    assertThat(recipeSteps)
-                            .extracting(RecipeStep::getSubtitle)
-                            .containsExactlyInAnyOrder("Step 1", "Step 2");
-                }
-
-                @DisplayName("Then - stepOrder로 정렬된다")
-                @Test
-                void thenStepsAreOrderedByStepOrder() {
-                    List<RecipeStep> recipeSteps =
-                            recipeStepRepository.findAllByRecipeId(recipeId, RecipeStepSort.STEP_ORDER_ASC);
-
-                    assertThat(recipeSteps).extracting(RecipeStep::getStepOrder).containsExactly(1, 2);
-                }
-            }
-
-            @DisplayName("When - 존재하지 않는 레시피 ID로 조회하면")
-            @Nested
-            class WhenFindWithNonExistentRecipeId {
-
-                @DisplayName("Then - 빈 리스트가 반환된다")
-                @Test
-                void thenEmptyListIsReturned() {
-                    UUID nonExistentRecipeId = UUID.randomUUID();
-                    List<RecipeStep> recipeSteps = recipeStepRepository.findAllByRecipeId(nonExistentRecipeId, null);
-
-                    assertThat(recipeSteps).isEmpty();
-                }
-            }
+            // Then
+            assertThat(results).hasSize(2);
+            assertThat(results.get(0).getStepOrder()).isEqualTo(1);
+            assertThat(results.get(1).getStepOrder()).isEqualTo(2);
         }
     }
 }

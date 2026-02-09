@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recipes/{recipeId}")
 public class RecipeBookmarkController {
-    private final RecipeBookmarkService recipeBookmarkService;
-    private final RecipeBookmarkFacade recipeBookmarkFacade;
+    private final RecipeBookmarkService service;
+    private final RecipeBookmarkFacade facade;
 
     /**
      * 레시피 북마크 카테고리 수정
@@ -36,7 +36,7 @@ public class RecipeBookmarkController {
             @PathVariable @ExistsRecipeId UUID recipeId,
             @UserPrincipal UUID userId)
             throws RecipeBookmarkException {
-        recipeBookmarkService.categorize(userId, recipeId, request.categoryId());
+        service.categorize(userId, recipeId, request.categoryId());
         return SuccessOnlyResponse.create();
     }
 
@@ -50,7 +50,7 @@ public class RecipeBookmarkController {
     @DeleteMapping("/bookmark")
     public SuccessOnlyResponse delete(@PathVariable @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
             throws RecipeBookmarkException {
-        recipeBookmarkService.delete(userId, recipeId);
+        service.delete(userId, recipeId);
         return SuccessOnlyResponse.create();
     }
 
@@ -64,7 +64,7 @@ public class RecipeBookmarkController {
     @PostMapping("/bookmark")
     public SuccessOnlyResponse create(@PathVariable @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
             throws RecipeInfoException, RecipeBookmarkException, CreditException {
-        recipeBookmarkFacade.create(userId, recipeId);
+        facade.create(userId, recipeId);
         return SuccessOnlyResponse.create();
     }
 }

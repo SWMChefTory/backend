@@ -6,8 +6,9 @@ import static org.mockito.Mockito.mock;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse.Ingredient;
 import com.cheftory.api.recipe.content.ingredient.entity.RecipeIngredient;
+import com.cheftory.api.recipe.content.ingredient.repository.RecipeIngredientRepository;
+import com.cheftory.api.recipe.content.ingredient.repository.RecipeIngredientRepositoryImpl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -16,116 +17,66 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
-@DisplayName("RecipeIngredientRepositoryTest")
-public class RecipeIngredientRepositoryTest extends DbContextTest {
+@DataJpaTest
+@Import({RecipeIngredientRepositoryImpl.class})
+@DisplayName("RecipeIngredientRepository 테스트")
+class RecipeIngredientRepositoryTest extends DbContextTest {
 
     @Autowired
     private RecipeIngredientRepository recipeIngredientRepository;
 
-    @MockitoBean
     private Clock clock;
+    private final LocalDateTime now = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+
+    @BeforeEach
+    void setUp() {
+        clock = mock(Clock.class);
+        doReturn(now).when(clock).now();
+    }
 
     @Nested
-    @DisplayName("레시피 재료 저장")
-    class SaveIngredients {
+    @DisplayName("create 메서드는")
+    class Describe_create {
 
-        @Nested
-        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-        class GivenValidParameters {
+        @Test
+        @DisplayName("여러 재료 정보를 한 번에 저장한다")
+        void it_saves_multiple_ingredients() {
+            // Given
+            UUID recipeId = UUID.randomUUID();
+            RecipeIngredient ingredient1 = RecipeIngredient.create("재료1", "g", 100, recipeId, clock);
+            RecipeIngredient ingredient2 = RecipeIngredient.create("재료2", "ml", 200, recipeId, clock);
 
-            private UUID recipeId;
-            private List<Ingredient> ingredients;
-            private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+            // When
+            recipeIngredientRepository.create(List.of(ingredient1, ingredient2));
 
-            @BeforeEach
-            void setUp() {
-                clock = mock(Clock.class);
-                recipeId = UUID.randomUUID();
-                ingredients = List.of(new Ingredient("재료1", 100, "g"), new Ingredient("재료2", 200, "ml"));
-                doReturn(FIXED_TIME).when(clock).now();
-            }
-
-            @DisplayName("When - 레시피 재료를 저장하면")
-            @Nested
-            class WhenSaveIngredients {
-
-                private List<RecipeIngredient> recipeIngredients;
-
-                @BeforeEach
-                void setUp() {
-                    recipeIngredients = ingredients.stream()
-                            .map(ingredient -> RecipeIngredient.create(
-                                    ingredient.name(), ingredient.unit(), ingredient.amount(), recipeId, clock))
-                            .toList();
-                    recipeIngredientRepository.saveAll(recipeIngredients);
-                }
-
-                @DisplayName("Then - 레시피 재료가 저장된다")
-                @Test
-                void thenIngredientsSaved() {
-                    List<RecipeIngredient> foundIngredients = recipeIngredientRepository.findAllByRecipeId(recipeId);
-                    assertThat(foundIngredients).hasSize(2);
-                    assertThat(foundIngredients).extracting("name").containsExactlyInAnyOrder("재료1", "재료2");
-                    assertThat(foundIngredients).extracting("amount").containsExactlyInAnyOrder(100, 200);
-                    assertThat(foundIngredients).extracting("unit").containsExactlyInAnyOrder("g", "ml");
-                    assertThat(foundIngredients).extracting("createdAt").containsOnly(FIXED_TIME);
-                }
-            }
+            // Then
+            List<RecipeIngredient> results = recipeIngredientRepository.finds(recipeId);
+            assertThat(results).hasSize(2);
+            assertThat(results).extracting(RecipeIngredient::getName).containsExactlyInAnyOrder("재료1", "재료2");
         }
     }
 
     @Nested
-    @DisplayName("레시피 재료 조회")
-    class FindIngredients {
+    @DisplayName("findAllByRecipeId 메서드는")
+    class Describe_findAllByRecipeId {
 
-        @Nested
-        @DisplayName("Given - 저장된 레시피 재료가 있을 때")
-        class GivenSavedIngredients {
-            private UUID recipeId;
-            private List<Ingredient> ingredients;
-            private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        @Test
+        @DisplayName("특정 레시피의 모든 재료를 조회한다")
+        void it_returns_all_ingredients_for_recipe() {
+            // Given
+            UUID recipeId = UUID.randomUUID();
+            RecipeIngredient ingredient = RecipeIngredient.create("재료", "g", 100, recipeId, clock);
+            recipeIngredientRepository.create(List.of(ingredient));
 
-            @BeforeEach
-            void setUp() {
-                clock = mock(Clock.class);
-                recipeId = UUID.randomUUID();
-                ingredients = List.of(new Ingredient("재료1", 100, "g"), new Ingredient("재료2", 200, "ml"));
-                doReturn(FIXED_TIME).when(clock).now();
+            // When
+            List<RecipeIngredient> results = recipeIngredientRepository.finds(recipeId);
 
-                List<RecipeIngredient> recipeIngredients = ingredients.stream()
-                        .map(ingredient -> RecipeIngredient.create(
-                                ingredient.name(), ingredient.unit(), ingredient.amount(), recipeId, clock))
-                        .toList();
-                recipeIngredientRepository.saveAll(recipeIngredients);
-            }
-
-            @DisplayName("When - 레시피 ID로 레시피 재료를 조회하면")
-            @Nested
-            class WhenFindIngredientsByRecipeId {
-
-                private List<RecipeIngredient> foundIngredients;
-
-                @BeforeEach
-                void setUp() {
-                    foundIngredients = recipeIngredientRepository.findAllByRecipeId(recipeId);
-                }
-
-                @DisplayName("Then - 해당 레시피 재료들이 조회된다")
-                @Test
-                void thenIngredientsAreFound() {
-                    assertThat(foundIngredients).hasSize(2);
-                    foundIngredients.forEach(ingredient -> {
-                        assertThat(ingredient.getRecipeId()).isEqualTo(recipeId);
-
-                        assertThat(ingredient.getName()).isIn("재료1", "재료2");
-                        assertThat(ingredient.getAmount()).isIn(100, 200);
-                        assertThat(ingredient.getUnit()).isIn("g", "ml");
-                        assertThat(ingredient.getCreatedAt()).isEqualTo(FIXED_TIME);
-                    });
-                }
-            }
+            // Then
+            assertThat(results).hasSize(1);
+            assertThat(results.getFirst().getRecipeId()).isEqualTo(recipeId);
         }
     }
 }

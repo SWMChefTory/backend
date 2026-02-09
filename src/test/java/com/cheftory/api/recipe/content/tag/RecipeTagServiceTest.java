@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
+import com.cheftory.api.recipe.content.tag.repository.RecipeTagRepository;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -55,7 +56,7 @@ public class RecipeTagServiceTest {
 
                 @SuppressWarnings("unchecked")
                 ArgumentCaptor<List<RecipeTag>> captor = ArgumentCaptor.forClass(List.class);
-                verify(recipeTagRepository).saveAll(captor.capture());
+                verify(recipeTagRepository).create(captor.capture());
 
                 List<RecipeTag> capturedTags = captor.getValue();
                 assertThat(capturedTags).hasSize(3);
@@ -77,7 +78,7 @@ public class RecipeTagServiceTest {
 
                 @SuppressWarnings("unchecked")
                 ArgumentCaptor<List<RecipeTag>> captor = ArgumentCaptor.forClass(List.class);
-                verify(recipeTagRepository).saveAll(captor.capture());
+                verify(recipeTagRepository).create(captor.capture());
 
                 List<RecipeTag> capturedTags = captor.getValue();
                 assertThat(capturedTags).isEmpty();
@@ -100,7 +101,7 @@ public class RecipeTagServiceTest {
                 List<RecipeTag> mockTags =
                         List.of(createMockRecipeTag("한식", recipeId), createMockRecipeTag("매운맛", recipeId));
 
-                doReturn(mockTags).when(recipeTagRepository).findAllByRecipeId(recipeId);
+                doReturn(mockTags).when(recipeTagRepository).finds(recipeId);
 
                 List<RecipeTag> result = recipeTagService.gets(recipeId);
 
@@ -108,7 +109,7 @@ public class RecipeTagServiceTest {
                 assertThat(result).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛");
                 assertThat(result).allMatch(tag -> tag.getRecipeId().equals(recipeId));
 
-                verify(recipeTagRepository).findAllByRecipeId(recipeId);
+                verify(recipeTagRepository).finds(recipeId);
             }
         }
 
@@ -120,12 +121,12 @@ public class RecipeTagServiceTest {
             @DisplayName("When - 레시피 태그를 조회하면 빈 목록을 반환한다")
             void thenReturnEmptyList() {
                 UUID nonExistentRecipeId = UUID.randomUUID();
-                doReturn(Collections.emptyList()).when(recipeTagRepository).findAllByRecipeId(nonExistentRecipeId);
+                doReturn(Collections.emptyList()).when(recipeTagRepository).finds(nonExistentRecipeId);
 
                 List<RecipeTag> result = recipeTagService.gets(nonExistentRecipeId);
 
                 assertThat(result).isEmpty();
-                verify(recipeTagRepository).findAllByRecipeId(nonExistentRecipeId);
+                verify(recipeTagRepository).finds(nonExistentRecipeId);
             }
         }
     }
@@ -146,15 +147,27 @@ public class RecipeTagServiceTest {
                     createMockRecipeTag("매운맛", recipeId1),
                     createMockRecipeTag("양식", recipeId2));
 
-            doReturn(mockTags).when(recipeTagRepository).findAllByRecipeIdIn(recipeIds);
+            doReturn(mockTags).when(recipeTagRepository).finds(recipeIds);
 
-            List<RecipeTag> result = recipeTagService.getIn(recipeIds);
+            List<RecipeTag> result = recipeTagService.gets(recipeIds);
 
             assertThat(result).hasSize(3);
             assertThat(result).extracting(RecipeTag::getRecipeId).containsOnly(recipeId1, recipeId2);
             assertThat(result).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛", "양식");
 
-            verify(recipeTagRepository).findAllByRecipeIdIn(recipeIds);
+            verify(recipeTagRepository).finds(recipeIds);
+        }
+
+        @Test
+        @DisplayName("Given - 빈 레시피 ID 목록이 주어졌을 때 빈 목록을 반환한다")
+        void shouldReturnEmptyListWhenEmptyIdsProvided() {
+            List<UUID> emptyIds = Collections.emptyList();
+            doReturn(Collections.emptyList()).when(recipeTagRepository).finds(emptyIds);
+
+            List<RecipeTag> result = recipeTagService.gets(emptyIds);
+
+            assertThat(result).isEmpty();
+            verify(recipeTagRepository).finds(emptyIds);
         }
     }
 

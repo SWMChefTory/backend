@@ -115,7 +115,7 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
     }
 
     @Override
-    public RecipeBookmark get(UUID userId, UUID recipeId) throws RecipeBookmarkException {
+    public RecipeBookmark find(UUID userId, UUID recipeId) throws RecipeBookmarkException {
         return repository
                 .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE)
                 .orElseThrow(() -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND));
@@ -174,12 +174,12 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
     }
 
     @Override
-    public List<RecipeBookmark> gets(UUID userId, List<UUID> recipeIds) {
+    public List<RecipeBookmark> finds(UUID userId, List<UUID> recipeIds) {
         return repository.findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeBookmarkStatus.ACTIVE);
     }
 
     @Override
-    public List<RecipeBookmark> gets(UUID recipeId) {
+    public List<RecipeBookmark> finds(UUID recipeId) {
         return repository.findAllByRecipeIdAndStatus(recipeId, RecipeBookmarkStatus.ACTIVE);
     }
 

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RecipeCategoryService {
 
-    private final RecipeCategoryRepository recipeCategoryRepository;
+    private final RecipeCategoryRepository repository;
     private final Clock clock;
 
     /**
@@ -29,7 +29,7 @@ public class RecipeCategoryService {
      */
     public UUID create(String name, UUID userId) throws RecipeCategoryException {
         RecipeCategory recipeCategory = RecipeCategory.create(clock, name, userId);
-        return recipeCategoryRepository.create(recipeCategory);
+        return repository.create(recipeCategory);
     }
 
     /**
@@ -40,7 +40,7 @@ public class RecipeCategoryService {
      * @throws RecipeCategoryException 카테고리를 찾을 수 없을 때 RECIPE_CATEGORY_NOT_FOUND
      */
     public void delete(UUID userId, UUID recipeCategoryId) throws RecipeCategoryException {
-        recipeCategoryRepository.delete(userId, recipeCategoryId);
+        repository.delete(userId, recipeCategoryId);
     }
 
     /**
@@ -50,7 +50,7 @@ public class RecipeCategoryService {
      * @return 레시피 카테고리 목록
      */
     public List<RecipeCategory> getUsers(UUID userId) {
-        return recipeCategoryRepository.gets(userId);
+        return repository.gets(userId);
     }
 
     /**
@@ -60,6 +60,6 @@ public class RecipeCategoryService {
      * @return 존재 여부
      */
     public boolean exists(UUID recipeCategoryId) {
-        return recipeCategoryRepository.exists(recipeCategoryId);
+        return repository.exists(recipeCategoryId);
     }
 }

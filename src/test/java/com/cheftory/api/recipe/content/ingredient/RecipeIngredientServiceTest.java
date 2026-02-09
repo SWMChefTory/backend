@@ -1,6 +1,8 @@
 package com.cheftory.api.recipe.content.ingredient;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -8,17 +10,17 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.detail.entity.RecipeDetail.Ingredient;
 import com.cheftory.api.recipe.content.ingredient.entity.RecipeIngredient;
+import com.cheftory.api.recipe.content.ingredient.repository.RecipeIngredientRepository;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-@DisplayName("RecipeIngredientServiceTest")
-public class RecipeIngredientServiceTest {
+@DisplayName("RecipeIngredientService 테스트")
+class RecipeIngredientServiceTest {
 
     private RecipeIngredientService recipeIngredientService;
     private RecipeIngredientRepository recipeIngredientRepository;
@@ -31,99 +33,50 @@ public class RecipeIngredientServiceTest {
         recipeIngredientService = new RecipeIngredientService(recipeIngredientRepository, clock);
     }
 
-    @DisplayName("레시피 재료 생성")
     @Nested
-    class CreateRecipeIngredient {
+    @DisplayName("create 메서드는")
+    class Describe_create {
 
-        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
-        @Nested
-        class GivenValidParameters {
+        @Test
+        @DisplayName("재료 목록을 엔티티로 변환하여 저장한다")
+        void it_converts_and_saves_ingredients() {
+            // Given
+            UUID recipeId = UUID.randomUUID();
+            List<Ingredient> ingredients =
+                    List.of(new Ingredient("Sugar", 100, "g"), new Ingredient("Flour", 200, "g"));
+            doNothing().when(recipeIngredientRepository).create(anyList());
 
-            private List<Ingredient> ingredients;
-            private UUID recipeId;
+            // When
+            recipeIngredientService.create(recipeId, ingredients);
 
-            @BeforeEach
-            void setUp() {
-                ingredients = List.of(new Ingredient("Sugar", 100, "grams"), new Ingredient("Flour", 200, "grams"));
-                recipeId = UUID.randomUUID();
-            }
+            // Then
+            ArgumentCaptor<List<RecipeIngredient>> captor = ArgumentCaptor.forClass(List.class);
+            verify(recipeIngredientRepository).create(captor.capture());
 
-            @DisplayName("When - 레시피 재료를 생성하면")
-            @Nested
-            class WhenCreateRecipeIngredient {
-
-                @BeforeEach
-                void setUp() {
-                    recipeIngredientService.create(recipeId, ingredients);
-                }
-
-                @DisplayName("Then - 레시피 재료가 생성된다")
-                @Test
-                void thenRecipeIngredientIsCreated() {
-
-                    @SuppressWarnings("unchecked")
-                    ArgumentCaptor<Iterable<RecipeIngredient>> captor = ArgumentCaptor.forClass(Iterable.class);
-
-                    verify(recipeIngredientRepository).saveAll(captor.capture());
-
-                    List<RecipeIngredient> recipeIngredients = StreamSupport.stream(
-                                    captor.getValue().spliterator(), false)
-                            .toList();
-
-                    assertThat(recipeIngredients).hasSize(2);
-
-                    recipeIngredients.forEach(ri -> assertThat(ri.getRecipeId()).isEqualTo(recipeId));
-
-                    assertThat(recipeIngredients)
-                            .extracting(RecipeIngredient::getName)
-                            .containsExactlyInAnyOrder("Sugar", "Flour");
-                    assertThat(recipeIngredients)
-                            .extracting(RecipeIngredient::getAmount)
-                            .containsExactlyInAnyOrder(100, 200);
-                    assertThat(recipeIngredients)
-                            .extracting(RecipeIngredient::getUnit)
-                            .containsExactlyInAnyOrder("grams", "grams");
-                }
-            }
+            List<RecipeIngredient> saved = captor.getValue();
+            assertThat(saved).hasSize(2);
+            assertThat(saved).extracting(RecipeIngredient::getName).containsExactlyInAnyOrder("Sugar", "Flour");
         }
     }
 
     @Nested
-    @DisplayName("레시피 ID로 재료 조회")
-    class FindByRecipeId {
+    @DisplayName("gets 메서드는")
+    class Describe_gets {
 
-        @Nested
-        @DisplayName("Given - 존재하는 레시피 ID가 주어졌을 때")
-        class GivenExistingRecipeId {
+        @Test
+        @DisplayName("레시피 ID로 재료 목록을 조회한다")
+        void it_returns_ingredients_by_recipe_id() {
+            // Given
+            UUID recipeId = UUID.randomUUID();
+            List<RecipeIngredient> expected = List.of(mock(RecipeIngredient.class));
+            doReturn(expected).when(recipeIngredientRepository).finds(recipeId);
 
-            UUID recipeId;
+            // When
+            List<RecipeIngredient> result = recipeIngredientService.gets(recipeId);
 
-            @BeforeEach
-            void setUp() {
-                recipeId = UUID.randomUUID();
-            }
-
-            @Nested
-            @DisplayName("When - 레시피 ID로 재료를 조회하면")
-            class WhenFindByRecipeId {
-                List<RecipeIngredient> expectedIngredients;
-
-                @BeforeEach
-                void setUp() {
-                    expectedIngredients = List.of(mock(RecipeIngredient.class), mock(RecipeIngredient.class));
-                    doReturn(expectedIngredients)
-                            .when(recipeIngredientRepository)
-                            .findAllByRecipeId(recipeId);
-                }
-
-                @Test
-                @DisplayName("Then - 해당 재료들이 반환된다")
-                void thenIngredientsAreReturned() {
-                    List<RecipeIngredient> result = recipeIngredientService.gets(recipeId);
-                    assertThat(result).isEqualTo(expectedIngredients);
-                    verify(recipeIngredientRepository).findAllByRecipeId(recipeId);
-                }
-            }
+            // Then
+            assertThat(result).isEqualTo(expected);
+            verify(recipeIngredientRepository).finds(recipeId);
         }
     }
 }

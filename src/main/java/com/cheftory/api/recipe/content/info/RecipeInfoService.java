@@ -12,6 +12,7 @@ import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -20,16 +21,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class RecipeInfoService {
     private final RecipeInfoRepository repository;
     private final Clock clock;
-    private final I18nTranslator i18nTranslator;
-
-    public RecipeInfoService(RecipeInfoRepository repository, Clock clock, I18nTranslator i18nTranslator) {
-        this.repository = repository;
-        this.clock = clock;
-        this.i18nTranslator = i18nTranslator;
-    }
+    private final I18nTranslator translator;
 
     /**
      * 성공 상태의 레시피 정보 조회
@@ -173,7 +169,7 @@ public class RecipeInfoService {
      * @throws CursorException 커서 처리 중 예외 발생 시
      */
     public CursorPage<RecipeInfo> getCuisines(RecipeCuisineType type, String cursor) throws CursorException {
-        String tag = i18nTranslator.translate(type.messageKey());
+        String tag = translator.translate(type.messageKey());
         boolean first = (cursor == null || cursor.isBlank());
         return first ? repository.cusineFirst(tag) : repository.cuisineKeyset(tag, cursor);
     }

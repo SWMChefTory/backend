@@ -22,18 +22,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/account")
 public class AccountController {
 
-    private final AccountFacade accountFacade;
+    private final AccountFacade facade;
 
     @PostMapping("/login/oauth")
     public LoginResponse loginWithOAuth(@RequestBody LoginRequest request) throws AuthException, UserException {
-        Account account = accountFacade.login(request.idToken(), request.provider());
+        Account account = facade.login(request.idToken(), request.provider());
         return LoginResponse.from(account);
     }
 
     @PostMapping("/signup/oauth")
     public LoginResponse signupWithOAuth(@RequestBody SignupRequest request)
             throws AuthException, UserException, CreditException {
-        Account account = accountFacade.signup(
+        Account account = facade.signup(
                 request.idToken(),
                 request.provider(),
                 request.nickname(),
@@ -47,13 +47,13 @@ public class AccountController {
 
     @PostMapping("/logout")
     public SuccessOnlyResponse logout(@RequestBody LogoutRequest request) throws AuthException {
-        accountFacade.logout(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+        facade.logout(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
         return SuccessOnlyResponse.create();
     }
 
     @DeleteMapping
     public SuccessOnlyResponse delete(@RequestBody LogoutRequest request) throws AuthException, UserException {
-        accountFacade.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+        facade.delete(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
         return SuccessOnlyResponse.create();
     }
 }
