@@ -43,8 +43,7 @@ public class OptimisticRetryExecutor {
 
     @Recover
     public <T, E extends Exception> T recover(
-            Throwable e, ThrowingSupplier<T, E> action, java.util.function.Function<Throwable, E> onExhausted)
-            throws E {
+            Throwable e, ThrowingSupplier<T, E> action, Function<Throwable, E> onExhausted) throws E {
 
         if (e instanceof OptimisticLockingFailureException) {
             log.warn("optimistic retry exhausted", e);
@@ -57,7 +56,7 @@ public class OptimisticRetryExecutor {
 
     @Recover
     public <E extends Exception> void recover(
-            Throwable e, ThrowingRunnable<E> action, java.util.function.Function<Throwable, E> onExhausted) throws E {
+            Throwable e, ThrowingRunnable<E> action, Function<Throwable, E> onExhausted) throws E {
 
         if (e instanceof OptimisticLockingFailureException) {
             log.warn("optimistic retry exhausted", e);

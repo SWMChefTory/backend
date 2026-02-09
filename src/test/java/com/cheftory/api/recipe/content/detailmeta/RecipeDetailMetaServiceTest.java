@@ -3,21 +3,22 @@ package com.cheftory.api.recipe.content.detailmeta;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaRepository;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaErrorCode;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaException;
+import com.cheftory.api.recipe.content.detailMeta.repository.RecipeDetailMetaRepository;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -65,8 +66,7 @@ public class RecipeDetailMetaServiceTest {
                 description = "맛있는 김치찌개 만들기";
                 savedMeta = mock(RecipeDetailMeta.class);
 
-                when(recipeDetailMetaRepository.save(any(RecipeDetailMeta.class)))
-                        .thenReturn(savedMeta);
+                doNothing().when(recipeDetailMetaRepository).create(any(RecipeDetailMeta.class));
             }
 
             @DisplayName("When - 레시피 상세 메타를 생성하면")
@@ -81,7 +81,7 @@ public class RecipeDetailMetaServiceTest {
 
                     // then
                     ArgumentCaptor<RecipeDetailMeta> captor = ArgumentCaptor.forClass(RecipeDetailMeta.class);
-                    verify(recipeDetailMetaRepository).save(captor.capture());
+                    verify(recipeDetailMetaRepository).create(captor.capture());
 
                     RecipeDetailMeta capturedMeta = captor.getValue();
                     assertThat(capturedMeta).isNotNull();
@@ -110,8 +110,7 @@ public class RecipeDetailMetaServiceTest {
                 servings = 1;
                 description = "간단한 계란찜";
 
-                when(recipeDetailMetaRepository.save(any(RecipeDetailMeta.class)))
-                        .thenReturn(mock(RecipeDetailMeta.class));
+                doNothing().when(recipeDetailMetaRepository).create(any(RecipeDetailMeta.class));
             }
 
             @Test
@@ -122,7 +121,7 @@ public class RecipeDetailMetaServiceTest {
 
                 // then
                 ArgumentCaptor<RecipeDetailMeta> captor = ArgumentCaptor.forClass(RecipeDetailMeta.class);
-                verify(recipeDetailMetaRepository).save(captor.capture());
+                verify(recipeDetailMetaRepository).create(captor.capture());
 
                 RecipeDetailMeta capturedMeta = captor.getValue();
                 assertThat(capturedMeta.getCookTime()).isEqualTo(5);
@@ -143,11 +142,11 @@ public class RecipeDetailMetaServiceTest {
             private RecipeDetailMeta expectedMeta;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeDetailMetaException {
                 recipeId = UUID.randomUUID();
                 expectedMeta = createMockRecipeDetailMeta(recipeId, 30, 2, "김치찌개");
 
-                when(recipeDetailMetaRepository.findByRecipeId(recipeId)).thenReturn(Optional.of(expectedMeta));
+                doReturn(expectedMeta).when(recipeDetailMetaRepository).get(recipeId);
             }
 
             @Test
@@ -163,7 +162,7 @@ public class RecipeDetailMetaServiceTest {
                 assertThat(result.getServings()).isEqualTo(2);
                 assertThat(result.getDescription()).isEqualTo("김치찌개");
 
-                verify(recipeDetailMetaRepository).findByRecipeId(recipeId);
+                verify(recipeDetailMetaRepository).get(recipeId);
             }
         }
 
@@ -173,9 +172,11 @@ public class RecipeDetailMetaServiceTest {
             private UUID recipeId;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeDetailMetaException {
                 recipeId = UUID.randomUUID();
-                when(recipeDetailMetaRepository.findByRecipeId(recipeId)).thenReturn(Optional.empty());
+                doThrow(new RecipeDetailMetaException(RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND))
+                        .when(recipeDetailMetaRepository)
+                        .get(recipeId);
             }
 
             @Test
@@ -210,7 +211,7 @@ public class RecipeDetailMetaServiceTest {
                         createMockRecipeDetailMeta(recipeId2, 15, 1, "계란찜"),
                         createMockRecipeDetailMeta(recipeId3, 45, 4, "불고기"));
 
-                when(recipeDetailMetaRepository.findAllByRecipeIdIn(recipeIds)).thenReturn(expectedMetas);
+                when(recipeDetailMetaRepository.gets(recipeIds)).thenReturn(expectedMetas);
             }
 
             @Test
@@ -228,7 +229,7 @@ public class RecipeDetailMetaServiceTest {
                 assertThat(result).extracting(RecipeDetailMeta::getCookTime).containsExactlyInAnyOrder(30, 15, 45);
                 assertThat(result).extracting(RecipeDetailMeta::getServings).containsExactlyInAnyOrder(2, 1, 4);
 
-                verify(recipeDetailMetaRepository).findAllByRecipeIdIn(recipeIds);
+                verify(recipeDetailMetaRepository).gets(recipeIds);
             }
         }
 
@@ -240,7 +241,7 @@ public class RecipeDetailMetaServiceTest {
             @BeforeEach
             void setUp() {
                 recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-                when(recipeDetailMetaRepository.findAllByRecipeIdIn(recipeIds)).thenReturn(Collections.emptyList());
+                when(recipeDetailMetaRepository.gets(recipeIds)).thenReturn(Collections.emptyList());
             }
 
             @Test
@@ -251,7 +252,7 @@ public class RecipeDetailMetaServiceTest {
 
                 // then
                 assertThat(result).isEmpty();
-                verify(recipeDetailMetaRepository).findAllByRecipeIdIn(recipeIds);
+                verify(recipeDetailMetaRepository).gets(recipeIds);
             }
         }
 
@@ -263,8 +264,7 @@ public class RecipeDetailMetaServiceTest {
             @BeforeEach
             void setUp() {
                 emptyRecipeIds = Collections.emptyList();
-                when(recipeDetailMetaRepository.findAllByRecipeIdIn(emptyRecipeIds))
-                        .thenReturn(Collections.emptyList());
+                when(recipeDetailMetaRepository.gets(emptyRecipeIds)).thenReturn(Collections.emptyList());
             }
 
             @Test
@@ -275,7 +275,7 @@ public class RecipeDetailMetaServiceTest {
 
                 // then
                 assertThat(result).isEmpty();
-                verify(recipeDetailMetaRepository).findAllByRecipeIdIn(emptyRecipeIds);
+                verify(recipeDetailMetaRepository).gets(emptyRecipeIds);
             }
         }
     }

@@ -18,9 +18,9 @@ import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkStatus;
 import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkJpaRepository;
-import com.cheftory.api.recipe.content.info.RecipeInfoRepository;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
+import com.cheftory.api.recipe.content.info.repository.RecipeInfoJpaRepository;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaRepository;
 import com.cheftory.api.recipe.content.youtubemeta.client.VideoInfoClient;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
@@ -57,7 +57,7 @@ class RecipeInfoValidationBatchConfigTest {
     private RecipeYoutubeMetaRepository youtubeMetaRepository;
 
     @Autowired
-    private RecipeInfoRepository recipeInfoRepository;
+    private RecipeInfoJpaRepository recipeInfoJpaRepository;
 
     @Autowired
     private RecipeBookmarkJpaRepository recipeBookmarkJpaRepository;
@@ -79,13 +79,13 @@ class RecipeInfoValidationBatchConfigTest {
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             recipeBookmarkJpaRepository.deleteAll();
             youtubeMetaRepository.deleteAll();
-            recipeInfoRepository.deleteAll();
+            recipeInfoJpaRepository.deleteAll();
         }
 
         try (var ignored = MarketContext.with(new MarketContext.Info(GLOBAL, "US"))) {
             recipeBookmarkJpaRepository.deleteAll();
             youtubeMetaRepository.deleteAll();
-            recipeInfoRepository.deleteAll();
+            recipeInfoJpaRepository.deleteAll();
         }
     }
 
@@ -315,7 +315,7 @@ class RecipeInfoValidationBatchConfigTest {
             long blockedMeta = youtubeMetaRepository.findAll().stream()
                     .filter(m -> m.getStatus() == YoutubeMetaStatus.BLOCKED)
                     .count();
-            long blockedRecipe = recipeInfoRepository.findAll().stream()
+            long blockedRecipe = recipeInfoJpaRepository.findAll().stream()
                     .filter(r -> r.getRecipeStatus() == RecipeStatus.BLOCKED)
                     .count();
             long blockedBookmark = recipeBookmarkJpaRepository.findAll().stream()
@@ -345,7 +345,7 @@ class RecipeInfoValidationBatchConfigTest {
     }
 
     private void assertRecipeStatus(UUID recipeId, RecipeStatus expectedStatus) {
-        var recipe = recipeInfoRepository.findById(recipeId).orElseThrow();
+        var recipe = recipeInfoJpaRepository.findById(recipeId).orElseThrow();
         assertThat(recipe.getRecipeStatus()).isEqualTo(expectedStatus);
     }
 
@@ -362,7 +362,7 @@ class RecipeInfoValidationBatchConfigTest {
      */
     private UUID createRecipe(long creditCost, String market) {
         RecipeInfo recipeInfo = RecipeInfo.create(clock);
-        UUID recipeId = recipeInfoRepository.save(recipeInfo).getId();
+        UUID recipeId = recipeInfoJpaRepository.save(recipeInfo).getId();
 
         jdbcTemplate.update(
                 """

@@ -13,10 +13,10 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.exception.CheftoryException;
+import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
-import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkUnCategorizedCount;
 import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
@@ -42,11 +42,8 @@ import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCod
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
-import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
-import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.dto.FullRecipe;
 import com.cheftory.api.recipe.dto.RecipeBookmarkOverview;
-import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoRecommendType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeOverview;
@@ -167,16 +164,19 @@ class RecipeFacadeTest {
             doReturn(Collections.emptyList()).when(recipeTagService).gets(recipeId);
             doReturn(Collections.emptyList()).when(recipeBriefingService).gets(recipeId);
             doReturn(mockYoutubeMeta(recipeId)).when(recipeYoutubeMetaService).get(recipeId);
+            doReturn(true).when(recipeBookmarkService).exist(userId, recipeId);
             doReturn(mockBookmark(recipeId, userId)).when(recipeBookmarkService).get(userId, recipeId);
 
             FullRecipe result = sut.getFullRecipe(recipeId, userId);
 
             assertThat(result).isNotNull();
             verify(recipeInfoService).getSuccess(recipeId);
+            verify(recipeInfoService).increaseCount(recipeId);
+            verify(recipeRankService).logEvent(userId, recipeId, RankingEventType.VIEW);
         }
 
         @Test
-        @DisplayName("RecipeInfo not found면 RECIPE_INFO_NOT_FOUND로 변환된다")
+        @DisplayName("RecipeInfo not found면 RECIPE_NOT_FOUND로 변환된다")
         void shouldMapNotFoundToRecipeInfoNotFound() throws RecipeInfoException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
@@ -191,7 +191,7 @@ class RecipeFacadeTest {
         }
 
         @Test
-        @DisplayName("DetailMeta not found면 RECIPE_INFO_NOT_FOUND로 변환된다")
+        @DisplayName("DetailMeta not found면 RECIPE_NOT_FOUND로 변환된다")
         void shouldMapDetailMetaNotFoundToRecipeInfoNotFound() throws RecipeInfoException, RecipeDetailMetaException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
@@ -231,9 +231,8 @@ class RecipeFacadeTest {
     class GetRecipeOverview {
 
         @Test
-        @DisplayName("detailMeta가 null이어도 overview를 반환한다")
-        void shouldReturnOverviewWithNullDetailMeta()
-                throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
+        @DisplayName("정상적으로 개요를 반환한다")
+        void shouldReturnOverview() throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 
@@ -241,7 +240,7 @@ class RecipeFacadeTest {
                     .when(recipeInfoService)
                     .getSuccess(recipeId);
             doReturn(mockYoutubeMeta(recipeId)).when(recipeYoutubeMetaService).get(recipeId);
-            doReturn(null).when(recipeDetailMetaService).get(recipeId);
+            doReturn(mockDetailMeta(recipeId)).when(recipeDetailMetaService).get(recipeId);
             doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).gets(recipeId);
             doReturn(false).when(recipeBookmarkService).exist(userId, recipeId);
 
@@ -249,12 +248,12 @@ class RecipeFacadeTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getRecipeId()).isEqualTo(recipeId);
-            assertThat(result.getIsViewed()).isFalse();
+            verify(recipeInfoService).increaseCount(recipeId);
         }
     }
 
     @Nested
-    @DisplayName("최근/카테고리/미분류 북마크 조회")
+    @DisplayName("최근/카테고리 북마크 조회")
     class BookmarkOverviews {
 
         @Test
@@ -270,7 +269,8 @@ class RecipeFacadeTest {
             doReturn(bookmarks).when(recipeBookmarkService).getRecents(userId, cursor);
             doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
                     .when(recipeInfoService)
-                    .getValidRecipes(anyList());
+                    .gets(anyList());
+            doReturn(Collections.emptyList()).when(recipeInfoService).getProgresses(anyList());
             doReturn(List.of(mockYoutubeMeta(recipeId)))
                     .when(recipeYoutubeMetaService)
                     .getByRecipes(anyList());
@@ -285,69 +285,6 @@ class RecipeFacadeTest {
             assertThat(result.nextCursor()).isEqualTo(nextCursor);
             verify(recipeBookmarkService).getRecents(userId, cursor);
         }
-
-        @Test
-        @DisplayName("커서 기반 카테고리 북마크를 반환한다")
-        void shouldReturnCategorizedBookmarksWithCursor() throws CursorException {
-            UUID userId = UUID.randomUUID();
-            UUID categoryId = UUID.randomUUID();
-            String cursor = "cursor-1";
-            UUID recipeId = UUID.randomUUID();
-            String nextCursor = "cursor-2";
-
-            CursorPage<RecipeBookmark> bookmarks = CursorPage.of(List.of(mockBookmark(recipeId, userId)), nextCursor);
-
-            doReturn(bookmarks).when(recipeBookmarkService).getCategorized(userId, categoryId, cursor);
-            doReturn(List.of(mockRecipe(recipeId, RecipeStatus.SUCCESS)))
-                    .when(recipeInfoService)
-                    .getValidRecipes(anyList());
-            doReturn(List.of(mockYoutubeMeta(recipeId)))
-                    .when(recipeYoutubeMetaService)
-                    .getByRecipes(anyList());
-            doReturn(List.of(mockDetailMeta(recipeId)))
-                    .when(recipeDetailMetaService)
-                    .getIn(anyList());
-            doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(anyList());
-
-            CursorPage<RecipeBookmarkOverview> result = sut.getCategorized(userId, categoryId, cursor);
-
-            assertThat(result.items()).hasSize(1);
-            assertThat(result.nextCursor()).isEqualTo(nextCursor);
-            verify(recipeBookmarkService).getCategorized(userId, categoryId, cursor);
-        }
-    }
-
-    @Nested
-    @DisplayName("카테고리별 레시피 개수 조회")
-    class RecipeCategoryCounts {
-
-        @Test
-        @DisplayName("카테고리별/미분류 카운트를 반환한다")
-        void shouldReturnCategoryCounts() {
-            UUID userId = UUID.randomUUID();
-            UUID categoryId1 = UUID.randomUUID();
-            UUID categoryId2 = UUID.randomUUID();
-
-            RecipeCategory c1 = mockCategory(categoryId1, "한식");
-            RecipeCategory c2 = mockCategory(categoryId2, "양식");
-
-            RecipeBookmarkCategorizedCount cc1 = mockCategorizedCount(categoryId1, 5);
-            RecipeBookmarkCategorizedCount cc2 = mockCategorizedCount(categoryId2, 3);
-
-            doReturn(List.of(c1, c2)).when(recipeCategoryService).getUsers(userId);
-            doReturn(List.of(cc1, cc2))
-                    .when(recipeBookmarkService)
-                    .countByCategories(List.of(categoryId1, categoryId2));
-            doReturn(RecipeBookmarkUnCategorizedCount.of(2))
-                    .when(recipeBookmarkService)
-                    .countUncategorized(userId);
-
-            com.cheftory.api.recipe.dto.RecipeCategoryCounts result = sut.getUserCategoryCounts(userId);
-
-            assertThat(result).isNotNull();
-            assertThat(result.getCategorizedCounts()).hasSize(2);
-            assertThat(result.getUncategorizedCount()).isEqualTo(2);
-        }
     }
 
     @Nested
@@ -355,15 +292,15 @@ class RecipeFacadeTest {
     class DeleteRecipeCategory {
 
         @Test
-        @DisplayName("카테고리 삭제 시 unCategorize 후 delete가 호출된다")
+        @DisplayName("카테고리 삭제 시 delete 후 unCategorize가 호출된다")
         void shouldDeleteCategory() throws RecipeBookmarkException, RecipeCategoryException {
             UUID categoryId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 
             sut.deleteCategory(userId, categoryId);
 
-            verify(recipeBookmarkService).unCategorize(categoryId);
             verify(recipeCategoryService).delete(userId, categoryId);
+            verify(recipeBookmarkService).unCategorize(categoryId);
         }
     }
 
@@ -378,8 +315,6 @@ class RecipeFacadeTest {
             RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
 
             RecipeProgress p1 = mock(RecipeProgress.class);
-            doReturn(RecipeProgressStep.READY).when(p1).getStep();
-            doReturn(RecipeProgressDetail.READY).when(p1).getDetail();
 
             doReturn(List.of(p1)).when(recipeProgressService).gets(recipeId);
             doReturn(recipeInfo).when(recipeInfoService).get(recipeId);
@@ -389,42 +324,6 @@ class RecipeFacadeTest {
             assertThat(result).isNotNull();
             verify(recipeProgressService).gets(recipeId);
             verify(recipeInfoService).get(recipeId);
-        }
-    }
-
-    @Nested
-    @DisplayName("음식 종류별 레시피 조회")
-    class GetCuisineRecipes {
-
-        @Test
-        @DisplayName("커서 기반 cuisine 조회 시 overview를 만들어 반환한다")
-        void shouldReturnCuisineRecipesWithCursor() throws CheftoryException {
-            String cursor = "cursor-1";
-            String nextCursor = "cursor-2";
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-
-            RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
-            CursorPage<UUID> recipeIds = CursorPage.of(List.of(recipeId), nextCursor);
-
-            doReturn(recipeIds).when(recipeRankService).getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
-            doReturn(List.of(recipeInfo)).when(recipeInfoService).gets(List.of(recipeId));
-
-            doReturn(List.of(mockYoutubeMeta(recipeId)))
-                    .when(recipeYoutubeMetaService)
-                    .getByRecipes(List.of(recipeId));
-            doReturn(List.of(mockDetailMeta(recipeId)))
-                    .when(recipeDetailMetaService)
-                    .getIn(List.of(recipeId));
-            doReturn(List.of(mockTag(recipeId, "한식"))).when(recipeTagService).getIn(List.of(recipeId));
-            doReturn(List.of()).when(recipeBookmarkService).gets(List.of(recipeId), userId);
-
-            CursorPage<RecipeOverview> result = sut.getCuisineRecipes(RecipeCuisineType.KOREAN, userId, cursor);
-
-            assertThat(result.items()).hasSize(1);
-            assertThat(result.nextCursor()).isEqualTo(nextCursor);
-            verify(recipeRankService).getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
-            verify(recipeInfoService).gets(List.of(recipeId));
         }
     }
 
@@ -475,7 +374,7 @@ class RecipeFacadeTest {
                     .getRecipeIds(RankingType.CHEF, cursor);
 
             RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
-            doReturn(List.of(recipeInfo)).when(recipeInfoService).getValidRecipes(List.of(recipeId));
+            doReturn(List.of(recipeInfo)).when(recipeInfoService).gets(List.of(recipeId));
 
             doReturn(List.of(mockYoutubeMeta(recipeId)))
                     .when(recipeYoutubeMetaService)
@@ -512,6 +411,7 @@ class RecipeFacadeTest {
         doReturn(LocalDateTime.now()).when(recipeInfo).getCreatedAt();
         doReturn(LocalDateTime.now()).when(recipeInfo).getUpdatedAt();
         doReturn(0).when(recipeInfo).getViewCount();
+        doReturn(1L).when(recipeInfo).getCreditCost();
         return recipeInfo;
     }
 

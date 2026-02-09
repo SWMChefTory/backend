@@ -56,7 +56,7 @@ public class RecipeRankServiceTest {
             private String latestKey;
 
             @BeforeEach
-            void setUp() throws CheftoryException {
+            void setUp() {
                 rankingType = RankingType.TRENDING;
                 UUID recipeId1 = UUID.randomUUID();
                 UUID recipeId2 = UUID.randomUUID();
@@ -74,7 +74,7 @@ public class RecipeRankServiceTest {
 
                 @Test
                 @DisplayName("Then - 올바른 순서로 레시피 순위가 저장되어야 한다")
-                void thenShouldSaveRecipeRankingsInCorrectOrder() throws CheftoryException {
+                void thenShouldSaveRecipeRankingsInCorrectOrder() {
                     recipeRankService.updateRecipes(rankingType, recipeIds);
 
                     verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(0), 1);
@@ -95,7 +95,7 @@ public class RecipeRankServiceTest {
             private String latestKey;
 
             @BeforeEach
-            void setUp() throws CheftoryException {
+            void setUp() {
                 rankingType = RankingType.CHEF;
                 UUID recipeId1 = UUID.randomUUID();
                 UUID recipeId2 = UUID.randomUUID();
@@ -114,7 +114,7 @@ public class RecipeRankServiceTest {
 
                 @Test
                 @DisplayName("Then - 올바른 순서로 셰프 레시피 순위가 저장되어야 한다")
-                void thenShouldSaveChefRecipeRankingsInCorrectOrder() throws CheftoryException {
+                void thenShouldSaveChefRecipeRankingsInCorrectOrder() {
                     recipeRankService.updateRecipes(rankingType, recipeIds);
 
                     verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(0), 1);

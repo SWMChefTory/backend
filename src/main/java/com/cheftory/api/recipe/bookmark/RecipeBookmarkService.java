@@ -30,7 +30,7 @@ public class RecipeBookmarkService {
      * @param userId 사용자 ID
      * @param recipeId 레시피 ID
      * @return 생성 성공 여부
-     * @throws RecipeBookmarkException 이미 북마크가 존재하는 경우
+     * @throws RecipeBookmarkException 북마크 생성 중 예외 발생 시
      */
     public boolean create(UUID userId, UUID recipeId) throws RecipeBookmarkException {
         try {

@@ -33,7 +33,7 @@ public class RecipeBookmarkController {
     @PutMapping("/categories")
     public SuccessOnlyResponse updateCategory(
             @RequestBody @Valid RecipeBookmarkRequest.UpdateCategory request,
-            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId,
+            @PathVariable @ExistsRecipeId UUID recipeId,
             @UserPrincipal UUID userId)
             throws RecipeBookmarkException {
         recipeBookmarkService.categorize(userId, recipeId, request.categoryId());
@@ -48,8 +48,7 @@ public class RecipeBookmarkController {
      * @return 성공 응답
      */
     @DeleteMapping("/bookmark")
-    public SuccessOnlyResponse delete(
-            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
+    public SuccessOnlyResponse delete(@PathVariable @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
             throws RecipeBookmarkException {
         recipeBookmarkService.delete(userId, recipeId);
         return SuccessOnlyResponse.create();
@@ -63,8 +62,7 @@ public class RecipeBookmarkController {
      * @return 성공 응답
      */
     @PostMapping("/bookmark")
-    public SuccessOnlyResponse create(
-            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
+    public SuccessOnlyResponse create(@PathVariable @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
             throws RecipeInfoException, RecipeBookmarkException, CreditException {
         recipeBookmarkFacade.create(userId, recipeId);
         return SuccessOnlyResponse.create();

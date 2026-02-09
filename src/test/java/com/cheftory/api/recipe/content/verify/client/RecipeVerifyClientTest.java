@@ -81,29 +81,6 @@ class RecipeVerifyClientTest {
         }
 
         @Test
-        @DisplayName("VERIFY_003 오류면 SERVER_ERROR 예외가 발생한다")
-        void shouldThrowServerErrorForVerify003() {
-            String videoId = "invalid-video-id";
-
-            String errorResponseBody =
-                    """
-          {
-            "error_code": "VERIFY_003",
-            "error_message": "not cook"
-          }
-          """;
-
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(400)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(errorResponseBody));
-
-            RecipeVerifyException exception =
-                    assertThrows(RecipeVerifyException.class, () -> recipeVerifyClient.verifyVideo(videoId));
-            assertThat(exception.getError()).isEqualTo(RecipeVerifyErrorCode.SERVER_ERROR);
-        }
-
-        @Test
         @DisplayName("서버 오류면 SERVER_ERROR 예외가 발생한다")
         void shouldThrowServerError() {
             String videoId = "server-error-id";

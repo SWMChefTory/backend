@@ -54,6 +54,7 @@ import com.cheftory.api.recipe.rank.RecipeRankService;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
@@ -152,7 +153,8 @@ public class RecipeFacade {
         List<UUID> recipeIds =
                 bookmarks.stream().map(RecipeBookmark::getRecipeId).toList();
 
-        Map<UUID, RecipeInfo> recipeMap = recipeInfoService.getValidRecipes(recipeIds).stream()
+        Map<UUID, RecipeInfo> recipeMap = Stream.concat(
+                        recipeInfoService.gets(recipeIds).stream(), recipeInfoService.getProgresses(recipeIds).stream())
                 .collect(Collectors.toMap(RecipeInfo::getId, Function.identity()));
 
         Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.getByRecipes(recipeIds).stream()
@@ -310,7 +312,7 @@ public class RecipeFacade {
                 .map(RecipeCompleteChallenge::getRecipeId)
                 .toList();
 
-        List<RecipeOverview> fetched = makeOverviews(recipeInfoService.getValidRecipes(recipeIds), userId);
+        List<RecipeOverview> fetched = makeOverviews(recipeInfoService.gets(recipeIds), userId);
 
         Map<UUID, RecipeOverview> map =
                 fetched.stream().collect(Collectors.toMap(RecipeOverview::getRecipeId, Function.identity()));
@@ -326,7 +328,7 @@ public class RecipeFacade {
 
         List<UUID> rankedIds = rankedIdsPage.items();
 
-        List<RecipeInfo> fetched = recipeInfoService.getValidRecipes(rankedIds);
+        List<RecipeInfo> fetched = recipeInfoService.gets(rankedIds);
 
         Map<UUID, RecipeInfo> map = fetched.stream().collect(Collectors.toMap(RecipeInfo::getId, Function.identity()));
 
