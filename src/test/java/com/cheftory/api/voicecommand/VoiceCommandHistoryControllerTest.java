@@ -99,7 +99,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             class WhenCreatingVoiceCommand {
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws VoiceCommandHistoryException {
                     doReturn(true).when(userService).exists(any(UUID.class));
                     doNothing()
                             .when(voiceCommandHistoryservice)
@@ -115,7 +115,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - 음성 명령 기록을 성공적으로 생성한다")
-                public void thenShouldCreateVoiceCommandHistory() {
+                public void thenShouldCreateVoiceCommandHistory() throws VoiceCommandHistoryException {
                     var response = given().contentType(ContentType.JSON)
                             .body(request)
                             .post("/papi/v1/voice-command")
@@ -220,10 +220,9 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             @Nested
             @DisplayName("When - 음성 명령을 생성할 때")
             class WhenCreatingVoiceCommand {
-
                 @Test
                 @DisplayName("Then - Bad Request를 반환한다")
-                public void thenShouldReturnBadRequest() {
+                public void thenShouldReturnBadRequest() throws Exception {
                     given().contentType(ContentType.JSON)
                             .body(request)
                             .post("/papi/v1/voice-command")
@@ -252,7 +251,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             private Map<String, Object> request;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws VoiceCommandHistoryException {
                 testBaseIntent = "testBaseIntent";
                 testIntent = "testIntent";
                 userId = generateUserId();
@@ -289,7 +288,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - Bad Request를 반환한다")
-                public void thenShouldReturnBadRequest() {
+                public void thenShouldReturnBadRequest() throws VoiceCommandHistoryException {
                     var response = given().contentType(ContentType.JSON)
                             .body(request)
                             .post("/papi/v1/voice-command")
@@ -323,7 +322,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
             private Map<String, Object> request;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws VoiceCommandHistoryException {
                 testBaseIntent = "testBaseIntent";
                 testIntent = "testIntent";
                 userId = generateUserId();
@@ -360,7 +359,7 @@ public class VoiceCommandHistoryControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - Bad Request를 반환한다")
-                public void thenShouldReturnBadRequest() {
+                public void thenShouldReturnBadRequest() throws VoiceCommandHistoryException {
                     var response = given().contentType(ContentType.JSON)
                             .body(request)
                             .post("/papi/v1/voice-command")

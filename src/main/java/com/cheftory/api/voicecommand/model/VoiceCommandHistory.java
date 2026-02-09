@@ -2,6 +2,7 @@ package com.cheftory.api.voicecommand.model;
 
 import com.cheftory.api.voicecommand.enums.IntentModel;
 import com.cheftory.api.voicecommand.enums.STTModel;
+import com.cheftory.api.voicecommand.exception.VoiceCommandHistoryException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -55,7 +56,8 @@ public class VoiceCommandHistory {
             String result,
             UUID userId,
             Integer start,
-            Integer end) {
+            Integer end)
+            throws VoiceCommandHistoryException {
         return new VoiceCommandHistory(
                 UUID.randomUUID(),
                 STTModel.fromValue(sttModel),

@@ -14,6 +14,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.security.UserArgumentResolver;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
@@ -73,7 +74,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 유저 정보를 반환한다")
-        void shouldReturnUserInfo() {
+        void shouldReturnUserInfo() throws UserException {
 
             User user = User.create(
                     "nickname", Gender.MALE, validDateOfBirth, Provider.APPLE, "apple-sub-123", true, clock);
@@ -107,7 +108,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("실패 - 존재하지 않는 유저일 경우 400를 반환한다")
-        void shouldThrowUserNotFound_whenUserDoesNotExist() {
+        void shouldThrowUserNotFound_whenUserDoesNotExist() throws UserException {
 
             doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
                     .when(userService)
@@ -139,7 +140,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 닉네임 수정")
-        void shouldUpdateNicknameOnly() {
+        void shouldUpdateNicknameOnly() throws UserException {
 
             User user = User.create(newNickname, oldGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
@@ -182,7 +183,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 성별 수정")
-        void shouldUpdateGenderOnly() {
+        void shouldUpdateGenderOnly() throws UserException {
             User user = User.create(oldNickname, newGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
             doReturn(user).when(userService).update(fixedUserId, oldNickname, newGender, oldBirth);
@@ -224,7 +225,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 성별 수정(NULL)")
-        void shouldUpdateGenderToNULL() {
+        void shouldUpdateGenderToNULL() throws UserException {
             User user = User.create(oldNickname, null, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
             doReturn(user).when(userService).update(fixedUserId, oldNickname, null, oldBirth);
@@ -266,7 +267,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 생년월일 수정")
-        void shouldUpdateBirthOnly() {
+        void shouldUpdateBirthOnly() throws UserException {
             User user = User.create(oldNickname, oldGender, newBirth, Provider.APPLE, "apple-sub-123", false, clock);
 
             doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, newBirth);
@@ -308,7 +309,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 생년월일 수정(NULL)")
-        void shouldUpdateBirthToNULL() {
+        void shouldUpdateBirthToNULL() throws UserException {
             User user = User.create(oldNickname, oldGender, null, Provider.APPLE, "apple-sub-123", false, clock);
 
             doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, null);
@@ -369,7 +370,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("실패 - 유저가 없으면 USER_NOT_FOUND 에러를 반환한다")
-        void shouldReturnUserNotFound() {
+        void shouldReturnUserNotFound() throws UserException, CreditException {
             doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
                     .when(userService)
                     .tutorial(fixedUserId);
@@ -386,7 +387,7 @@ public class UserControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("실패 - 이미 완료된 경우 TUTORIAL_ALREADY_FINISHED 에러를 반환한다")
-        void shouldReturnTutorialAlreadyFinished() {
+        void shouldReturnTutorialAlreadyFinished() throws UserException, CreditException {
             doThrow(new UserException(UserErrorCode.TUTORIAL_ALREADY_FINISHED))
                     .when(userService)
                     .tutorial(fixedUserId);

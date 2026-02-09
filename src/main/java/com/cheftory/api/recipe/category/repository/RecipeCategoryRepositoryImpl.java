@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 레시피 카테고리 Repository 구현체
+ */
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -38,6 +41,6 @@ public class RecipeCategoryRepositoryImpl implements RecipeCategoryRepository {
 
     @Override
     public boolean exists(UUID recipeCategoryId) {
-        return repository.existsByIdAndStatus(recipeCategoryId,RecipeCategoryStatus.ACTIVE);
+        return repository.existsByIdAndStatus(recipeCategoryId, RecipeCategoryStatus.ACTIVE);
     }
 }

@@ -17,7 +17,7 @@ public enum STTModel {
         this.value = value;
     }
 
-    public static STTModel fromValue(String value) {
+    public static STTModel fromValue(String value) throws VoiceCommandHistoryException {
         return Arrays.stream(values())
                 .filter(model -> model.value.equals(value))
                 .findFirst()

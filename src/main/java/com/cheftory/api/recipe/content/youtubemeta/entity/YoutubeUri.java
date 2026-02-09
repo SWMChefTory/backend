@@ -20,7 +20,7 @@ public class YoutubeUri {
     private String videoId;
     private URI normalizedUrl;
 
-    public static YoutubeUri from(URI uri) {
+    public static YoutubeUri from(URI uri) throws YoutubeMetaException {
         UriComponents u = UriComponentsBuilder.fromUri(uri).build();
         String id = extractId(u);
 
@@ -35,7 +35,7 @@ public class YoutubeUri {
         return new YoutubeUri(id, normalized);
     }
 
-    private static String extractId(UriComponents url) {
+    private static String extractId(UriComponents url) throws YoutubeMetaException {
         String host = url.getHost();
         if (Objects.isNull(host) || host.isBlank()) {
             throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL);
@@ -50,7 +50,7 @@ public class YoutubeUri {
         throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_INVALID);
     }
 
-    private static String extractIdFromSharedUrl(UriComponents url) {
+    private static String extractIdFromSharedUrl(UriComponents url) throws YoutubeMetaException {
         List<String> pathSegments = url.getPathSegments();
 
         if (pathSegments.isEmpty()) {
@@ -65,7 +65,7 @@ public class YoutubeUri {
         return videoId;
     }
 
-    private static String extractIdFromGeneralUrl(UriComponents url) {
+    private static String extractIdFromGeneralUrl(UriComponents url) throws YoutubeMetaException {
         String path = url.getPath();
         if (Objects.isNull(path) || path.isBlank()) {
             throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL);

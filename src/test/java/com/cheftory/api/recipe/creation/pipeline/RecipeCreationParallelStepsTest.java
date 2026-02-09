@@ -8,6 +8,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+
+import com.cheftory.api.recipe.exception.RecipeException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +18,7 @@ class RecipeCreationParallelStepsTest {
 
     @Test
     @DisplayName("모든 step이 executor를 통해 실행된다")
-    void shouldRunAllSteps() {
+    void shouldRunAllSteps() throws RecipeException {
         Executor directExecutor = Runnable::run;
         RecipeCreationPipelineStep step1 = mock(RecipeCreationPipelineStep.class);
         RecipeCreationPipelineStep step2 = mock(RecipeCreationPipelineStep.class);

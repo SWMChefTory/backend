@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.creation.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -8,6 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api.recipe.content.briefing.RecipeBriefingService;
+import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingErrorCode;
+import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
@@ -69,7 +72,7 @@ class RecipeCreationBriefingStepTest {
 
         @Test
         @DisplayName("성공 시 briefing 생성과 progress가 기록된다")
-        void shouldCreateBriefingAndUpdateProgress() {
+        void shouldCreateBriefingAndUpdateProgress() throws RecipeException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
@@ -91,7 +94,7 @@ class RecipeCreationBriefingStepTest {
 
         @Test
         @DisplayName("예외 발생 시 progress를 failed로 기록한다")
-        void shouldFailProgressWhenExceptionThrown() {
+        void shouldFailProgressWhenExceptionThrown() throws RecipeBriefingException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");
@@ -100,13 +103,13 @@ class RecipeCreationBriefingStepTest {
             RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
                     RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
 
-            doThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL))
+            doThrow(new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL))
                     .when(recipeBriefingService)
-                    .create(videoId, recipeId);
+                    .create(any(), any());
 
             assertThatThrownBy(() -> sut.run(context))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                    .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
 
             verify(recipeProgressService).failed(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
         }

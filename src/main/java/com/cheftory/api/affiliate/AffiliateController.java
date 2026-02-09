@@ -1,5 +1,6 @@
 package com.cheftory.api.affiliate;
 
+import com.cheftory.api.affiliate.coupang.exception.CoupangException;
 import com.cheftory.api.affiliate.dto.AffiliateSearchResponse;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class AffiliateController {
     private final AffiliateService affiliateService;
 
     @GetMapping("/search/coupang")
-    public AffiliateSearchResponse searchProducts(@NotBlank @RequestParam String keyword) {
+    public AffiliateSearchResponse searchProducts(@NotBlank @RequestParam String keyword) throws CoupangException {
         return AffiliateSearchResponse.from(affiliateService.searchCoupangProducts(keyword));
     }
 }

@@ -8,6 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cheftory.api.recipe.content.step.RecipeStepService;
+import com.cheftory.api.recipe.content.step.exception.RecipeStepErrorCode;
+import com.cheftory.api.recipe.content.step.exception.RecipeStepException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
@@ -69,7 +71,7 @@ class RecipeCreationInstructionStepTest {
 
         @Test
         @DisplayName("성공 시 step 생성과 progress가 기록된다")
-        void shouldCreateStepsAndUpdateProgress() {
+        void shouldCreateStepsAndUpdateProgress() throws RecipeException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
@@ -89,7 +91,7 @@ class RecipeCreationInstructionStepTest {
 
         @Test
         @DisplayName("예외 발생 시 progress를 failed로 기록한다")
-        void shouldFailProgressWhenExceptionThrown() {
+        void shouldFailProgressWhenExceptionThrown() throws RecipeStepException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");
@@ -99,11 +101,11 @@ class RecipeCreationInstructionStepTest {
                     RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
 
             when(recipeStepService.create(recipeId, fileUri, mimeType))
-                    .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
+                    .thenThrow(new RecipeStepException(RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL));
 
             assertThatThrownBy(() -> sut.run(context))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                    .isInstanceOf(RecipeStepException.class)
+                    .hasFieldOrPropertyWithValue("error", RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
 
             verify(recipeProgressService).failed(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
         }

@@ -29,7 +29,7 @@ public class RecipeInfoService {
     private final I18nTranslator i18nTranslator;
     private final CountIdCursorCodec countIdCursorCodec;
 
-    public RecipeInfo getSuccess(UUID recipeId) {
+    public RecipeInfo getSuccess(UUID recipeId) throws RecipeInfoException {
 
         RecipeInfo recipeInfo = recipeInfoRepository
                 .findById(recipeId)
@@ -99,7 +99,7 @@ public class RecipeInfoService {
         };
     }
 
-    public RecipeInfo success(UUID recipeId) {
+    public RecipeInfo success(UUID recipeId) throws RecipeInfoException {
         RecipeInfo recipeInfo = recipeInfoRepository
                 .findById(recipeId)
                 .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
@@ -107,7 +107,7 @@ public class RecipeInfoService {
         return recipeInfoRepository.save(recipeInfo);
     }
 
-    public RecipeInfo failed(UUID recipeId) {
+    public RecipeInfo failed(UUID recipeId) throws RecipeInfoException {
         RecipeInfo recipeInfo = recipeInfoRepository
                 .findById(recipeId)
                 .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
@@ -115,7 +115,7 @@ public class RecipeInfoService {
         return recipeInfoRepository.save(recipeInfo);
     }
 
-    public void block(UUID recipeId) {
+    public void block(UUID recipeId) throws RecipeInfoException {
         RecipeInfo recipeInfo = recipeInfoRepository
                 .findById(recipeId)
                 .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
@@ -127,7 +127,7 @@ public class RecipeInfoService {
         return recipeInfoRepository.existsById(recipeId);
     }
 
-    public RecipeInfo get(UUID recipeId) {
+    public RecipeInfo get(UUID recipeId) throws RecipeInfoException {
         return recipeInfoRepository
                 .findById(recipeId)
                 .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));

@@ -52,7 +52,7 @@ class UserShareRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("일일 제한 횟수를 초과하면 예외를 던진다")
-        void it_throws_exception_when_limit_exceeded() {
+        void it_throws_exception_when_limit_exceeded() throws UserShareException {
             UUID userId = UUID.randomUUID();
             UserShare created = userShareRepository.create(userId, clock);
 
@@ -68,7 +68,7 @@ class UserShareRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("데이터가 존재하지 않으면 예외를 던진다")
-        void it_throws_exception_when_not_exists() {
+        void it_throws_exception_when_not_exists() throws Exception {
             assertThatThrownBy(() -> userShareRepository.shareTx(UUID.randomUUID(), DAILY_SHARE_LIMIT))
                     .isInstanceOf(UserShareException.class)
                     .extracting("error")
@@ -77,7 +77,7 @@ class UserShareRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("정상적으로 공유 횟수를 증가시킨다")
-        void it_increases_share_count_successfully() {
+        void it_increases_share_count_successfully() throws UserShareException {
             UUID userId = UUID.randomUUID();
             UserShare created = userShareRepository.create(userId, clock);
 
@@ -91,10 +91,9 @@ class UserShareRepositoryTest extends DbContextTest {
     @Nested
     @DisplayName("compensateTx 메서드는")
     class Describe_compensateTx {
-
         @Test
         @DisplayName("데이터가 존재하지 않으면 예외를 던진다")
-        void it_throws_exception_when_not_exists() {
+        void it_throws_exception_when_not_exists() throws UserShareException {
             assertThatThrownBy(() -> userShareRepository.compensateTx(
                             UUID.randomUUID(), clock.now().toLocalDate()))
                     .isInstanceOf(UserShareException.class)
@@ -104,7 +103,7 @@ class UserShareRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("정상적으로 공유 횟수를 감소시킨다")
-        void it_decreases_share_count_successfully() {
+        void it_decreases_share_count_successfully() throws UserShareException {
             UUID userId = UUID.randomUUID();
             UserShare created = userShareRepository.create(userId, clock);
             userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
@@ -123,7 +122,7 @@ class UserShareRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("새로운 UserShare를 생성한다")
-        void it_creates_new_user_share() {
+        void it_creates_new_user_share() throws UserShareException {
             UUID userId = UUID.randomUUID();
 
             UserShare result = userShareRepository.create(userId, clock);
@@ -135,7 +134,7 @@ class UserShareRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("같은 날짜에 이미 존재하면 기존 데이터를 조회하여 반환한다")
-        void it_returns_existing_user_share_when_already_exists() {
+        void it_returns_existing_user_share_when_already_exists() throws UserShareException {
             UUID userId = UUID.randomUUID();
             UserShare first = userShareRepository.create(userId, clock);
             userShareRepository.shareTx(first.getId(), DAILY_SHARE_LIMIT);

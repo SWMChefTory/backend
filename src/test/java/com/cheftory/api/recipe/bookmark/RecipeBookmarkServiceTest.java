@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
@@ -59,7 +60,7 @@ public class RecipeBookmarkServiceTest {
 
             @Test
             @DisplayName("Then - create가 호출되고 true를 반환해야 한다")
-            void thenShouldCallCreateAndReturnTrue() {
+            void thenShouldCallCreateAndReturnTrue() throws RecipeBookmarkException {
                 doReturn(true).when(repository).create(any(RecipeBookmark.class));
 
                 boolean result = service.create(userId, recipeId);
@@ -88,7 +89,7 @@ public class RecipeBookmarkServiceTest {
             }
 
             @Test
-            void create_duplicate_existingActive_returnsTrue() {
+            void create_duplicate_existingActive_returnsTrue() throws RecipeBookmarkException {
                 doThrow(new RecipeBookmarkException(
                                 com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkErrorCode
                                         .RECIPE_BOOKMARK_ALREADY_EXISTS))
@@ -106,7 +107,7 @@ public class RecipeBookmarkServiceTest {
             }
 
             @Test
-            void create_duplicate_recreateFails_propagatesException() {
+            void create_duplicate_recreateFails_propagatesException() throws RecipeBookmarkException {
                 RecipeBookmarkException exception = new RecipeBookmarkException(
                         com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND);
                 doThrow(exception).when(repository).create(any(RecipeBookmark.class));
@@ -130,7 +131,7 @@ public class RecipeBookmarkServiceTest {
 
         @Test
         @DisplayName("cursor가 비어 있으면 최근 북마크 첫 페이지를 조회한다")
-        void shouldGetRecentsFirstPageWithCursor() {
+        void shouldGetRecentsFirstPageWithCursor() throws CursorException {
             UUID userId = UUID.randomUUID();
             List<RecipeBookmark> bookmarks = List.of(mock(RecipeBookmark.class), mock(RecipeBookmark.class));
 
@@ -147,7 +148,7 @@ public class RecipeBookmarkServiceTest {
 
         @Test
         @DisplayName("cursor가 있으면 최근 북마크 keyset을 조회한다")
-        void shouldGetRecentsKeysetWithCursor() {
+        void shouldGetRecentsKeysetWithCursor() throws CursorException {
             UUID userId = UUID.randomUUID();
             String cursor = "cursor";
 
@@ -163,7 +164,7 @@ public class RecipeBookmarkServiceTest {
 
         @Test
         @DisplayName("커서 기반 카테고리 조회는 keyset을 사용한다")
-        void shouldGetCategorizedKeysetWithCursor() {
+        void shouldGetCategorizedKeysetWithCursor() throws CursorException {
             UUID userId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
             String cursor = "cursor";
@@ -203,14 +204,14 @@ public class RecipeBookmarkServiceTest {
                     private RecipeBookmark realRecipeBookmark;
 
                     @BeforeEach
-                    void beforeEach() {
+                    void beforeEach() throws RecipeBookmarkException {
                         realRecipeBookmark = mock(RecipeBookmark.class);
                         doReturn(realRecipeBookmark).when(repository).get(userId, recipeId);
                     }
 
                     @Test
                     @DisplayName("Then - get 메서드는 레시피 북마크를 반환해야 한다")
-                    public void thenShouldReturnCorrectRecipeBookmark() {
+                    public void thenShouldReturnCorrectRecipeBookmark() throws RecipeBookmarkException {
                         RecipeBookmark status = service.get(userId, recipeId);
 
                         assertThat(status).isNotNull();
@@ -247,7 +248,7 @@ public class RecipeBookmarkServiceTest {
 
                     @Test
                     @DisplayName("Then - 카테고리가 올바르게 변경되어야 한다")
-                    public void thenShouldChangeCategoryCorrectly() {
+                    public void thenShouldChangeCategoryCorrectly() throws RecipeBookmarkException {
                         service.categorize(userId, recipeId, newCategoryId);
 
                         verify(repository).categorize(userId, recipeId, newCategoryId);
@@ -277,7 +278,7 @@ public class RecipeBookmarkServiceTest {
 
                     @Test
                     @DisplayName("Then - 카테고리를 가진 모든 레시피 북마크의 카테고리가 비워져야 한다")
-                    public void thenShouldEmptyAllRecipeBookmarkCategories() {
+                    public void thenShouldEmptyAllRecipeBookmarkCategories() throws RecipeBookmarkException {
                         service.unCategorize(categoryId);
 
                         verify(repository).unCategorize(categoryId);
@@ -517,7 +518,7 @@ public class RecipeBookmarkServiceTest {
 
                     @Test
                     @DisplayName("Then - 레시피 북마크가 삭제되어야 한다")
-                    public void thenShouldDeleteRecipeBookmark() {
+                    public void thenShouldDeleteRecipeBookmark() throws RecipeBookmarkException {
                         service.delete(userId, recipeId);
 
                         verify(repository).delete(userId, recipeId, clock);

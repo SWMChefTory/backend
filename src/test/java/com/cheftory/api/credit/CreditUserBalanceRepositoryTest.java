@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api.credit.entity.CreditUserBalance;
+import com.cheftory.api.credit.exception.CreditException;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +29,7 @@ class CreditUserBalanceRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("새 balance 저장 후 findById로 조회된다")
-        void save_then_find() {
+        void save_then_find() throws CreditException {
             UUID userId = UUID.randomUUID();
             CreditUserBalance saved = balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
 
@@ -41,7 +42,7 @@ class CreditUserBalanceRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("apply 후 저장하면 balance가 반영된다")
-        void apply_then_save() {
+        void apply_then_save() throws CreditException {
             UUID userId = UUID.randomUUID();
             CreditUserBalance balance = CreditUserBalance.create(userId);
             balance.apply(123L);
@@ -60,7 +61,7 @@ class CreditUserBalanceRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("동일 row를 서로 다른 버전으로 저장하면 OptimisticLock 예외가 난다")
-        void optimistic_lock_conflict() {
+        void optimistic_lock_conflict() throws CreditException {
             UUID userId = UUID.randomUUID();
             balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
             em.clear();

@@ -18,7 +18,7 @@ class RecipeInfoCuisineTypeTest {
 
         @Test
         @DisplayName("대문자 문자열로 유효한 타입을 변환한다")
-        void shouldConvertValidTypeFromUppercaseString() {
+        void shouldConvertValidTypeFromUppercaseString() throws RecipeException {
             RecipeCuisineType result = RecipeCuisineType.fromString("KOREAN");
 
             assertThat(result).isEqualTo(RecipeCuisineType.KOREAN);
@@ -26,7 +26,7 @@ class RecipeInfoCuisineTypeTest {
 
         @Test
         @DisplayName("소문자 문자열로 유효한 타입을 변환한다")
-        void shouldConvertValidTypeFromLowercaseString() {
+        void shouldConvertValidTypeFromLowercaseString() throws RecipeException {
             RecipeCuisineType result = RecipeCuisineType.fromString("korean");
 
             assertThat(result).isEqualTo(RecipeCuisineType.KOREAN);
@@ -34,7 +34,7 @@ class RecipeInfoCuisineTypeTest {
 
         @Test
         @DisplayName("혼합 대소문자 문자열로 유효한 타입을 변환한다")
-        void shouldConvertValidTypeFromMixedCaseString() {
+        void shouldConvertValidTypeFromMixedCaseString() throws RecipeException {
             RecipeCuisineType result = RecipeCuisineType.fromString("KoReAn");
 
             assertThat(result).isEqualTo(RecipeCuisineType.KOREAN);
@@ -42,7 +42,7 @@ class RecipeInfoCuisineTypeTest {
 
         @Test
         @DisplayName("모든 유효한 타입을 변환할 수 있다")
-        void shouldConvertAllValidTypes() {
+        void shouldConvertAllValidTypes() throws RecipeException {
             assertThat(RecipeCuisineType.fromString("KOREAN")).isEqualTo(RecipeCuisineType.KOREAN);
             assertThat(RecipeCuisineType.fromString("SNACK")).isEqualTo(RecipeCuisineType.SNACK);
             assertThat(RecipeCuisineType.fromString("CHINESE")).isEqualTo(RecipeCuisineType.CHINESE);
@@ -56,7 +56,7 @@ class RecipeInfoCuisineTypeTest {
 
         @Test
         @DisplayName("존재하지 않는 타입 문자열은 예외를 던진다")
-        void shouldThrowExceptionForInvalidTypeString() {
+        void shouldThrowExceptionForInvalidTypeString() throws Exception {
             assertThatThrownBy(() -> RecipeCuisineType.fromString("INVALID"))
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("error", RecipeErrorCode.INVALID_CUISINE_TYPE);
@@ -78,7 +78,7 @@ class RecipeInfoCuisineTypeTest {
 
         @Test
         @DisplayName("공백이 포함된 문자열은 정상적으로 변환된다")
-        void shouldConvertStringWithSpaces() {
+        void shouldConvertStringWithSpaces() throws RecipeException {
             assertThat(RecipeCuisineType.fromString("KOREAN ")).isEqualTo(RecipeCuisineType.KOREAN);
         }
     }

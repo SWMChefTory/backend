@@ -4,6 +4,7 @@ import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.CursorPages;
 import com.cheftory.api._common.cursor.RankCursor;
 import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
@@ -30,7 +31,7 @@ public class RecipeRankService {
     private static final Integer PAGE_SIZE = 10;
     private static final Duration TTL = Duration.ofDays(2);
 
-    public void updateRecipes(RankingType type, List<UUID> recipeIds) {
+    public void updateRecipes(RankingType type, List<UUID> recipeIds) throws CheftoryException {
         String newKey = rankingKeyGenerator.generateKey(type);
 
         IntStream.range(0, recipeIds.size())
@@ -41,7 +42,7 @@ public class RecipeRankService {
         recipeRankRepository.saveLatest(rankingKeyGenerator.getLatestKey(type), newKey);
     }
 
-    public CursorPage<UUID> getRecipeIds(RankingType type, String cursor) {
+    public CursorPage<UUID> getRecipeIds(RankingType type, String cursor) throws CheftoryException {
         final int limit = PAGE_SIZE;
         final int fetch = limit + 1;
         final boolean first = (cursor == null || cursor.isBlank());
@@ -64,12 +65,13 @@ public class RecipeRankService {
                 rows, limit, lastItem -> rankCursorCodec.encode(new RankCursor(rankingKey, startRank + limit - 1)));
     }
 
-    public CursorPage<UUID> getCuisineRecipes(UUID userId, RecipeCuisineType type, String cursor) {
+    public CursorPage<UUID> getCuisineRecipes(UUID userId, RecipeCuisineType type, String cursor)
+            throws CheftoryException {
         final int limit = PAGE_SIZE;
         return recipeRankingPort.recommend(userId, toSurface(type), RankingItemType.RECIPE, cursor, limit);
     }
 
-    public void logEvent(UUID userId, UUID recipeId, RankingEventType eventType) {
+    public void logEvent(UUID userId, UUID recipeId, RankingEventType eventType) throws CheftoryException {
         recipeRankingPort.logEvent(userId, RankingItemType.RECIPE, recipeId, eventType, null);
     }
 

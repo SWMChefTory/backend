@@ -6,12 +6,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.util.UUID;
+
+import com.cheftory.api.recipe.exception.RecipeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -88,7 +91,7 @@ class RecipeCreationPipelineTest {
 
         @Test
         @DisplayName("파이프라인 단계가 순서대로 실행되고 마지막에 cleanup이 호출된다")
-        void shouldRunPipelineInOrderAndCleanup() {
+        void shouldRunPipelineInOrderAndCleanup() throws RecipeException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
@@ -114,7 +117,7 @@ class RecipeCreationPipelineTest {
 
         @Test
         @DisplayName("파이프라인 도중 예외가 발생해도 cleanup이 호출된다")
-        void shouldCleanupEvenWhenExceptionThrown() {
+        void shouldCleanupEvenWhenExceptionThrown() throws RecipeException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");

@@ -24,6 +24,8 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.cheftory.api.search.exception.SearchException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,7 +60,7 @@ class RecipeSearchFacadeTest {
 
     @Test
     @DisplayName("커서 기반 검색 결과를 반환한다")
-    void shouldSearchRecipesWithCursor() {
+    void shouldSearchRecipesWithCursor() throws SearchException {
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
         String cursor = "cursor-1";

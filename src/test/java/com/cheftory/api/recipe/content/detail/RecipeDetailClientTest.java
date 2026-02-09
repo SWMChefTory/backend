@@ -6,6 +6,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailRequest;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
+import com.cheftory.api.recipe.content.step.exception.RecipeStepErrorCode;
+import com.cheftory.api.recipe.content.step.exception.RecipeStepException;
+import com.cheftory.api.recipe.exception.RecipeErrorCode;
+import com.cheftory.api.recipe.exception.RecipeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
@@ -128,11 +132,9 @@ class RecipeDetailClientTest {
 
                 // When & Then
                 assertThatThrownBy(() -> recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
-                        .isInstanceOf(WebClientResponseException.class)
-                        .satisfies(exception -> {
-                            WebClientResponseException webClientException = (WebClientResponseException) exception;
-                            assertThat(webClientException.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                        });
+                    .isInstanceOf(RecipeException.class)
+                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+
 
                 // 요청 검증
                 RecordedRequest recordedRequest = mockWebServer.takeRequest();

@@ -1,6 +1,7 @@
 package com.cheftory.api.search;
 
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.history.SearchHistoryService;
 import com.cheftory.api.search.query.SearchQueryScope;
 import com.cheftory.api.search.query.SearchQueryService;
@@ -15,7 +16,8 @@ public class SearchFacade {
     private final SearchQueryService searchQueryService;
     private final SearchHistoryService searchHistoryService;
 
-    public CursorPage<SearchQuery> search(SearchQueryScope scope, UUID userId, String keyword, String cursor) {
+    public CursorPage<SearchQuery> search(SearchQueryScope scope, UUID userId, String keyword, String cursor)
+            throws SearchException {
         if (!keyword.isBlank()) searchHistoryService.create(userId, keyword);
         return searchQueryService.searchByKeyword(scope, keyword, cursor);
     }

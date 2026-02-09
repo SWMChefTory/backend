@@ -1,5 +1,6 @@
 package com.cheftory.api.search.autocomplete;
 
+import com.cheftory.api.search.exception.SearchException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,8 @@ public class AutocompleteController {
     @GetMapping("/search/autocomplete")
     public AutocompletesResponse getAutocomplete(
             @RequestParam("query") String query,
-            @RequestParam(value = "scope", defaultValue = "RECIPE") AutocompleteScope scope) {
+            @RequestParam(value = "scope", defaultValue = "RECIPE") AutocompleteScope scope)
+            throws SearchException {
         List<Autocomplete> autocompletes = autocompleteService.autocomplete(scope, query);
         return AutocompletesResponse.from(autocompletes);
     }

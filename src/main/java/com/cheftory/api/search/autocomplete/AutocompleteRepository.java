@@ -6,6 +6,7 @@ import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.FieldValue;
@@ -32,7 +33,8 @@ public class AutocompleteRepository {
     private static final String FIELD_MARKET = "market";
     private static final String FIELD_COUNT = "count";
 
-    public List<Autocomplete> searchAutocomplete(AutocompleteScope scope, String keyword, int limit) {
+    public List<Autocomplete> searchAutocomplete(AutocompleteScope scope, String keyword, int limit)
+            throws SearchException {
         try {
             SearchRequest request = buildRequest(scope, keyword, limit);
             SearchResponse<Autocomplete> response = openSearchClient.search(request, Autocomplete.class);
@@ -95,6 +97,7 @@ public class AutocompleteRepository {
                         .must(m -> m.matchAll(ma -> ma))));
     }
 
+    @SneakyThrows
     private String currentMarketKey() {
         Market market = MarketContext.required().market();
         return market.name().toLowerCase();

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api.recipe.content.verify.client.RecipeVerifyClient;
 import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientResponse;
+import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ class RecipeVerifyServiceTest {
 
     @Test
     @DisplayName("verify는 client 결과를 그대로 반환한다")
-    void shouldReturnClientResponse() {
+    void shouldReturnClientResponse() throws RecipeVerifyException {
         String videoId = "sample-video-id";
         RecipeVerifyClientResponse response = new RecipeVerifyClientResponse("s3://bucket/file.mp4", "video/mp4");
 

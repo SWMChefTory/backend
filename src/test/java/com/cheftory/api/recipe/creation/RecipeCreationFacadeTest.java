@@ -10,19 +10,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCode;
+import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
@@ -77,7 +82,7 @@ class RecipeCreationFacadeTest {
 
         @Test
         @DisplayName("기존 레시피가 있고 User 요청이며 북마크가 생성되면 credit을 차감한다")
-        void shouldUseExistingRecipeAndSpendCredit() {
+        void shouldUseExistingRecipeAndSpendCredit() throws RecipeException, CreditException {
             URI uri = URI.create("https://youtube.com/watch?v=test");
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
@@ -100,7 +105,7 @@ class RecipeCreationFacadeTest {
 
         @Test
         @DisplayName("기존 레시피가 있고 User 요청이지만 북마크 생성이 실패하면 credit을 차감하지 않는다")
-        void shouldNotSpendWhenBookmarkNotCreated() {
+        void shouldNotSpendWhenBookmarkNotCreated() throws CreditException, RecipeException {
             URI uri = URI.create("https://youtube.com/watch?v=test");
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
@@ -123,7 +128,7 @@ class RecipeCreationFacadeTest {
 
         @Test
         @DisplayName("기존 레시피가 있고 Crawler 요청이면 북마크/credit 없이 기존 레시피를 반환한다")
-        void shouldUseExistingRecipeWithoutBookmarkForCrawler() {
+        void shouldUseExistingRecipeWithoutBookmarkForCrawler() throws RecipeException, CreditException {
             URI uri = URI.create("https://youtube.com/watch?v=test");
             UUID recipeId = UUID.randomUUID();
             long creditCost = 100L;
@@ -144,11 +149,11 @@ class RecipeCreationFacadeTest {
 
         @Test
         @DisplayName("유튜브 메타가 BANNED이면 RECIPE_BANNED 예외를 던진다")
-        void shouldThrowWhenYoutubeMetaBanned() {
+        void shouldThrowWhenYoutubeMetaBanned() throws YoutubeMetaException {
             URI uri = URI.create("https://youtube.com/watch?v=banned");
             UUID userId = UUID.randomUUID();
 
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED))
+            doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED))
                     .when(recipeYoutubeMetaService)
                     .getByUrl(uri);
 
@@ -159,11 +164,11 @@ class RecipeCreationFacadeTest {
 
         @Test
         @DisplayName("알 수 없는 RecipeException이면 RECIPE_CREATE_FAIL 예외를 던진다")
-        void shouldThrowCreateFailForUnknownRecipeException() {
+        void shouldThrowCreateFailForUnknownRecipeException() throws YoutubeMetaException {
             URI uri = URI.create("https://youtube.com/watch?v=blocked");
             UUID userId = UUID.randomUUID();
 
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED))
+            doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED))
                     .when(recipeYoutubeMetaService)
                     .getByUrl(uri);
 
@@ -179,7 +184,7 @@ class RecipeCreationFacadeTest {
 
         @Test
         @DisplayName("유튜브 메타가 없으면 새 레시피를 생성하고 async 생성 프로세스를 시작한다")
-        void shouldCreateNewRecipeAndStartAsync() {
+        void shouldCreateNewRecipeAndStartAsync() throws RecipeException, CreditException {
             URI uri = URI.create("https://youtube.com/watch?v=new");
             UUID userId = UUID.randomUUID();
 
@@ -188,7 +193,7 @@ class RecipeCreationFacadeTest {
             long creditCost = 77L;
             RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
 
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
+            doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
                     .when(recipeYoutubeMetaService)
                     .getByUrl(uri);
 
@@ -211,7 +216,7 @@ class RecipeCreationFacadeTest {
 
         @Test
         @DisplayName("새 레시피 생성 중 identify progressing이면 기존 레시피를 조회해 사용한다")
-        void shouldUseExistingRecipeWhenIdentifyProgressing() {
+        void shouldUseExistingRecipeWhenIdentifyProgressing() throws RecipeException, CreditException {
             URI uri = URI.create("https://youtube.com/watch?v=concurrent");
             UUID userId = UUID.randomUUID();
 
@@ -222,13 +227,13 @@ class RecipeCreationFacadeTest {
             RecipeYoutubeMeta meta = mockYoutubeMeta(recipeId);
             RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
 
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
+            doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
                     .when(recipeYoutubeMetaService)
                     .getByUrl(uri);
 
             doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
 
-            doThrow(new RecipeException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING))
+            doThrow(new RecipeIdentifyException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING))
                     .when(recipeCreationTxService)
                     .createWithIdentifyWithVideoInfo(videoInfo);
 
@@ -246,7 +251,7 @@ class RecipeCreationFacadeTest {
 
         @Test
         @DisplayName("기존 레시피 조회 시 RECIPE_FAILED면 새 레시피 생성으로 넘어간다")
-        void shouldCreateNewRecipeWhenRecipeFailed() {
+        void shouldCreateNewRecipeWhenRecipeFailed() throws RecipeException, CreditException {
             URI uri = URI.create("https://youtube.com/watch?v=failed");
             UUID userId = UUID.randomUUID();
 
@@ -258,7 +263,7 @@ class RecipeCreationFacadeTest {
             YoutubeVideoInfo videoInfo = mockVideoInfo("new_video_id");
 
             doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
-            doThrow(new RecipeException(RecipeInfoErrorCode.RECIPE_FAILED))
+            doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_FAILED))
                     .when(recipeInfoService)
                     .getSuccess(recipeId);
 
@@ -286,7 +291,7 @@ class RecipeCreationFacadeTest {
         return recipeInfo;
     }
 
-    private YoutubeVideoInfo mockVideoInfo(String videoId) {
+    private YoutubeVideoInfo mockVideoInfo(String videoId) throws YoutubeMetaException {
         URI uri = UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=" + videoId)
                 .build()
                 .toUri();

@@ -1,5 +1,6 @@
 package com.cheftory.api.auth.dto;
 
+import com.cheftory.api.auth.exception.AuthException;
 import com.cheftory.api.auth.model.AuthTokens;
 import com.cheftory.api.auth.util.BearerAuthorizationUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,7 +17,7 @@ public record TokenReissueResponse(
      * @param authTokens 액세스 토큰과 리프레시 토큰
      * @return TokenReissueResponse 인스턴스
      */
-    public static TokenReissueResponse from(AuthTokens authTokens) {
+    public static TokenReissueResponse from(AuthTokens authTokens) throws AuthException {
         return new TokenReissueResponse(
                 BearerAuthorizationUtils.addPrefix(authTokens.accessToken()),
                 BearerAuthorizationUtils.addPrefix(authTokens.refreshToken()));

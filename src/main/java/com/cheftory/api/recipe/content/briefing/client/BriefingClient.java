@@ -19,7 +19,7 @@ public class BriefingClient {
         this.webClient = webClient;
     }
 
-    public BriefingClientResponse fetchBriefing(String videoId) {
+    public BriefingClientResponse fetchBriefing(String videoId) throws RecipeBriefingException {
         Objects.requireNonNull(videoId, "videoId는 null일 수 없습니다.");
 
         log.debug("브리핑 생성 요청 - videoId: {}", videoId);

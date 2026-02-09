@@ -88,7 +88,7 @@ class RecipeIdentifyRepositoryTest extends DbContextTest {
 
                 @Test
                 @DisplayName("Then - 유니크 제약 위반(DataIntegrityViolationException)")
-                void thenUniqueViolation() {
+                void thenUniqueViolation() throws Exception {
                     assertThrows(DataIntegrityViolationException.class, () -> {
                         repository.save(RecipeIdentify.create(url, clock));
                         repository.flush();

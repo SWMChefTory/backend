@@ -90,7 +90,7 @@ class RecipeCreationDetailStepTest {
 
         @Test
         @DisplayName("성공 시 detail과 progress가 순서대로 기록된다")
-        void shouldCreateDetailAndProgress() {
+        void shouldCreateDetailAndProgress() throws RecipeException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
@@ -127,7 +127,7 @@ class RecipeCreationDetailStepTest {
 
         @Test
         @DisplayName("예외 발생 시 progress를 failed로 기록한다")
-        void shouldFailProgressWhenExceptionThrown() {
+        void shouldFailProgressWhenExceptionThrown() throws RecipeException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");

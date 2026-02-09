@@ -1,24 +1,31 @@
 package com.cheftory.api.recipe;
 
 import com.cheftory.api._common.PocOnly;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkUnCategorizedCount;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
 import com.cheftory.api.recipe.challenge.RecipeChallengeService;
 import com.cheftory.api.recipe.challenge.RecipeCompleteChallenge;
+import com.cheftory.api.recipe.challenge.exception.RecipeChallengeException;
 import com.cheftory.api.recipe.content.briefing.RecipeBriefingService;
 import com.cheftory.api.recipe.content.briefing.entity.RecipeBriefing;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaErrorCode;
+import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipe.content.ingredient.entity.RecipeIngredient;
 import com.cheftory.api.recipe.content.step.RecipeStepService;
@@ -28,6 +35,7 @@ import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.dto.FullRecipe;
@@ -73,7 +81,7 @@ public class RecipeFacade {
     /**
      * 레시피 상세 정보를 조회합니다. * 레시피가 존재하지 않으면 예외를 던집니다. * 레시피가 실패 상태이면 예외를 던집니다. 레시피가 성공 상태이면 조회수를 증가시킵니다.
      */
-    public FullRecipe getFullRecipe(UUID recipeId, UUID userId) {
+    public FullRecipe getFullRecipe(UUID recipeId, UUID userId) throws CheftoryException {
         try {
             RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
             recipeInfoService.increaseCount(recipeId);
@@ -93,7 +101,7 @@ public class RecipeFacade {
             return FullRecipe.notOwned(
                     steps, ingredients, detailMeta, progresses, tags, youtubeMeta, recipe, briefings);
 
-        } catch (RecipeException e) {
+        } catch (CheftoryException e) {
             if (e.getError() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND
                     || e.getError() == RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND) {
                 throw new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND);
@@ -105,7 +113,8 @@ public class RecipeFacade {
         }
     }
 
-    public RecipeOverview getRecipeOverview(UUID recipeId, UUID userId) {
+    public RecipeOverview getRecipeOverview(UUID recipeId, UUID userId)
+            throws RecipeInfoException, YoutubeMetaException, RecipeDetailMetaException {
         RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
         recipeInfoService.increaseCount(recipeId);
         RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
@@ -116,14 +125,15 @@ public class RecipeFacade {
         return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
     }
 
-    public CursorPage<RecipeBookmarkOverview> getCategorized(UUID userId, UUID recipeCategoryId, String cursor) {
+    public CursorPage<RecipeBookmarkOverview> getCategorized(UUID userId, UUID recipeCategoryId, String cursor)
+            throws CursorException {
         CursorPage<RecipeBookmark> bookmarks = recipeBookmarkService.getCategorized(userId, recipeCategoryId, cursor);
 
         List<RecipeBookmarkOverview> items = makeBookmarkOverviews(bookmarks.items());
         return CursorPage.of(items, bookmarks.nextCursor());
     }
 
-    public CursorPage<RecipeBookmarkOverview> getRecents(UUID userId, String cursor) {
+    public CursorPage<RecipeBookmarkOverview> getRecents(UUID userId, String cursor) throws CursorException {
         CursorPage<RecipeBookmark> bookmarks = recipeBookmarkService.getRecents(userId, cursor);
 
         List<RecipeBookmarkOverview> items = makeBookmarkOverviews(bookmarks.items());
@@ -240,19 +250,19 @@ public class RecipeFacade {
         return RecipeCategoryCounts.of(uncategorizedCount.getCount(), categoriesWithCount);
     }
 
-    public void deleteCategory(UUID userId, UUID categoryId) {
+    public void deleteCategory(UUID userId, UUID categoryId) throws RecipeCategoryException, RecipeBookmarkException {
         recipeCategoryService.delete(userId, categoryId);
         recipeBookmarkService.unCategorize(categoryId);
     }
 
-    public RecipeProgressStatus getRecipeProgress(UUID recipeId) {
+    public RecipeProgressStatus getRecipeProgress(UUID recipeId) throws RecipeInfoException {
         List<RecipeProgress> progresses = recipeProgressService.gets(recipeId);
         RecipeInfo recipe = recipeInfoService.get(recipeId);
         return RecipeProgressStatus.of(recipe, progresses);
     }
 
     @Transactional
-    public void blockRecipe(UUID recipeId) {
+    public void blockRecipe(UUID recipeId) throws RecipeException {
         try {
             recipeYoutubeMetaService.block(recipeId);
             recipeInfoService.block(recipeId);
@@ -266,7 +276,8 @@ public class RecipeFacade {
         }
     }
 
-    public CursorPage<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, String cursor) {
+    public CursorPage<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, String cursor)
+            throws CheftoryException {
         CursorPage<UUID> recipeIds = recipeRankService.getCuisineRecipes(userId, type, cursor);
         List<RecipeInfo> recipes = recipeInfoService.gets(recipeIds.items());
 
@@ -275,7 +286,8 @@ public class RecipeFacade {
     }
 
     public CursorPage<RecipeOverview> getRecommendRecipes(
-            RecipeInfoRecommendType type, UUID userId, String cursor, RecipeInfoVideoQuery query) {
+            RecipeInfoRecommendType type, UUID userId, String cursor, RecipeInfoVideoQuery query)
+            throws CheftoryException {
         CursorPage<RecipeInfo> recipesPage =
                 switch (type) {
                     case POPULAR -> recipeInfoService.getPopulars(cursor, query);
@@ -289,7 +301,7 @@ public class RecipeFacade {
 
     @PocOnly(until = "2025-12-31")
     public Pair<List<RecipeCompleteChallenge>, CursorPage<RecipeOverview>> getChallengeRecipes(
-            UUID challengeId, UUID userId, String cursor) {
+            UUID challengeId, UUID userId, String cursor) throws RecipeChallengeException, CursorException {
         CursorPage<RecipeCompleteChallenge> overviews =
                 recipeChallengeService.getChallengeRecipes(userId, challengeId, cursor);
 
@@ -309,7 +321,7 @@ public class RecipeFacade {
         return Pair.of(challengeOverviews, CursorPage.of(ordered, overviews.nextCursor()));
     }
 
-    private CursorPage<RecipeInfo> getRankingRecipes(RankingType rankingType, String cursor) {
+    private CursorPage<RecipeInfo> getRankingRecipes(RankingType rankingType, String cursor) throws CheftoryException {
         CursorPage<UUID> rankedIdsPage = recipeRankService.getRecipeIds(rankingType, cursor);
 
         List<UUID> rankedIds = rankedIdsPage.items();

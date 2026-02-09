@@ -76,45 +76,45 @@ public class VideoInfoClientTest {
                 void setUp() {
                     String responseBody =
                             """
-              {
-                "items": [
-                  {
-                    "snippet": {
-                      "title": "맛있는 김치찌개 만들기",
-                      "channelTitle": "맛있는 집밥 채널",
-                      "thumbnails": {
-                        "default": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg",
-                          "width": 120,
-                          "height": 90
-                        },
-                        "medium": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-                          "width": 320,
-                          "height": 180
-                        },
-                        "high": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-                          "width": 480,
-                          "height": 360
-                        },
-                        "maxres": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-                          "width": 1280,
-                          "height": 720
-                        }
-                      }
-                    },
-                    "contentDetails": {
-                      "duration": "PT10M30S"
-                    },
-                    "status": {
-                      "embeddable": true
-                    }
-                  }
-                ]
-              }
-              """;
+								{
+								  "items": [
+								    {
+								      "snippet": {
+								        "title": "맛있는 김치찌개 만들기",
+								        "channelTitle": "맛있는 집밥 채널",
+								        "thumbnails": {
+								          "default": {
+								            "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg",
+								            "width": 120,
+								            "height": 90
+								          },
+								          "medium": {
+								            "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+								            "width": 320,
+								            "height": 180
+								          },
+								          "high": {
+								            "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+								            "width": 480,
+								            "height": 360
+								          },
+								          "maxres": {
+								            "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+								            "width": 1280,
+								            "height": 720
+								          }
+								        }
+								      },
+								      "contentDetails": {
+								        "duration": "PT10M30S"
+								      },
+								      "status": {
+								        "embeddable": true
+								      }
+								    }
+								  ]
+								}
+								""";
 
                     mockWebServer.enqueue(new MockResponse()
                             .setResponseCode(200)
@@ -129,7 +129,7 @@ public class VideoInfoClientTest {
 
                 @Test
                 @DisplayName("Then - 비디오 정보가 정상적으로 반환되고 channelId가 없으면 NORMAL 타입이다")
-                void thenReturnsYoutubeVideoInfoAsNormal() throws InterruptedException {
+                void thenReturnsYoutubeVideoInfoAsNormal() throws InterruptedException, YoutubeMetaException {
                     YoutubeVideoInfo result = videoInfoClient.fetchVideoInfo(youtubeUri);
 
                     assertThat(result).isNotNull();
@@ -158,12 +158,11 @@ public class VideoInfoClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
-              {
-                "items": []
-              }
-              """;
+                    String responseBody = """
+								{
+								  "items": []
+								}
+								""";
 
                     mockWebServer.enqueue(new MockResponse()
                             .setResponseCode(200)
@@ -175,7 +174,7 @@ public class VideoInfoClientTest {
 
                 @Test
                 @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_FOUND)을 던진다")
-                void thenThrowsYoutubeMetaException() {
+                void thenThrowsYoutubeMetaException() throws Exception {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
@@ -190,25 +189,25 @@ public class VideoInfoClientTest {
                 void setUp() {
                     String responseBody =
                             """
-              {
-                "items": [
-                  {
-                    "snippet": {
-                      "title": "제목 없는 영상",
-                      "thumbnails": {
-                        "maxres": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
-                        }
-                      }
-                    },
-                    "contentDetails": {},
-                    "status": {
-                      "embeddable": true
-                    }
-                  }
-                ]
-              }
-              """;
+								{
+								  "items": [
+								    {
+								      "snippet": {
+								        "title": "제목 없는 영상",
+								        "thumbnails": {
+								          "maxres": {
+								            "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+								          }
+								        }
+								      },
+								      "contentDetails": {},
+								      "status": {
+								        "embeddable": true
+								      }
+								    }
+								  ]
+								}
+								""";
 
                     mockWebServer.enqueue(new MockResponse()
                             .setResponseCode(200)
@@ -220,7 +219,7 @@ public class VideoInfoClientTest {
 
                 @Test
                 @DisplayName("Then - YoutubeMetaException(DURATION_NOT_FOUND)을 던진다")
-                void thenThrowsYoutubeMetaException() {
+                void thenThrowsYoutubeMetaException() throws Exception {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue(
@@ -236,27 +235,27 @@ public class VideoInfoClientTest {
                 void setUp() {
                     String responseBody =
                             """
-              {
-                "items": [
-                  {
-                    "snippet": {
-                      "title": "임베드 불가 영상",
-                      "thumbnails": {
-                        "maxres": {
-                          "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
-                        }
-                      }
-                    },
-                    "contentDetails": {
-                      "duration": "PT10M30S"
-                    },
-                    "status": {
-                      "embeddable": false
-                    }
-                  }
-                ]
-              }
-              """;
+								{
+								  "items": [
+								    {
+								      "snippet": {
+								        "title": "임베드 불가 영상",
+								        "thumbnails": {
+								          "maxres": {
+								            "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+								          }
+								        }
+								      },
+								      "contentDetails": {
+								        "duration": "PT10M30S"
+								      },
+								      "status": {
+								        "embeddable": false
+								      }
+								    }
+								  ]
+								}
+								""";
 
                     mockWebServer.enqueue(new MockResponse()
                             .setResponseCode(200)
@@ -268,7 +267,7 @@ public class VideoInfoClientTest {
 
                 @Test
                 @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_EMBEDDABLE)을 던진다")
-                void thenThrowsYoutubeMetaException() {
+                void thenThrowsYoutubeMetaException() throws Exception {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue(
@@ -357,7 +356,7 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("Shorts 플레이리스트에 존재하는 비디오는 SHORTS 타입으로 반환한다")
-        void returnsShortsTypeWhenVideoInShortsPlaylist() throws InterruptedException {
+        void returnsShortsTypeWhenVideoInShortsPlaylist() throws InterruptedException, YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -426,7 +425,7 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("Shorts 플레이리스트에 없고 60초를 초과하는 비디오는 NORMAL 타입으로 반환한다")
-        void returnsNormalTypeWhenVideoNotInShortsPlaylistAndOverSixtySeconds() {
+        void returnsNormalTypeWhenVideoNotInShortsPlaylistAndOverSixtySeconds() throws YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -477,7 +476,7 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("channelId가 UC로 시작하지 않으면 NORMAL 타입으로 반환한다")
-        void returnsNormalTypeWhenChannelIdNotStartsWithUC() {
+        void returnsNormalTypeWhenChannelIdNotStartsWithUC() throws YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -517,7 +516,8 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("플레이리스트 조회 실패 시 예외를 로그하고 NORMAL 타입으로 반환한다 (5분 영상)")
-        void returnsNormalTypeWhenPlaylistCheckFailsAndOverSixtySeconds() throws InterruptedException {
+        void returnsNormalTypeWhenPlaylistCheckFailsAndOverSixtySeconds()
+                throws InterruptedException, YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -564,7 +564,7 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("channelId가 null이고 60초를 초과하면 NORMAL 타입으로 반환한다")
-        void returnsNormalTypeWhenChannelIdIsNullAndOverSixtySeconds() {
+        void returnsNormalTypeWhenChannelIdIsNullAndOverSixtySeconds() throws YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -603,7 +603,7 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("Shorts 플레이리스트에 없지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-        void returnsShortsTypeWhenNotInPlaylistButUnderSixtySeconds() {
+        void returnsShortsTypeWhenNotInPlaylistButUnderSixtySeconds() throws YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -654,7 +654,8 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("플레이리스트 조회 실패했지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-        void returnsShortsTypeWhenPlaylistCheckFailsButUnderSixtySeconds() throws InterruptedException {
+        void returnsShortsTypeWhenPlaylistCheckFailsButUnderSixtySeconds()
+						throws InterruptedException, YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -701,7 +702,7 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("60초 정확히인 경우 SHORTS 타입으로 반환한다 (경계값)")
-        void returnsShortsTypeWhenExactlySixtySeconds() {
+        void returnsShortsTypeWhenExactlySixtySeconds() throws YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -752,7 +753,7 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("channelId가 null이고 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-        void returnsShortsTypeWhenChannelIdIsNullButUnderSixtySeconds() {
+        void returnsShortsTypeWhenChannelIdIsNullButUnderSixtySeconds() throws YoutubeMetaException {
             String videoResponseBody =
                     """
           {
@@ -791,7 +792,7 @@ public class VideoInfoClientTest {
 
         @Test
         @DisplayName("channelId가 UC로 시작하지 않지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
-        void returnsShortsTypeWhenChannelIdNotStartsWithUCButUnderSixtySeconds() {
+        void returnsShortsTypeWhenChannelIdNotStartsWithUCButUnderSixtySeconds() throws YoutubeMetaException {
             String videoResponseBody =
                     """
           {

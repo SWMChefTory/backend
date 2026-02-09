@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import org.springframework.retry.ExhaustedRetryException;
+
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.cursor.CursorErrorCode;
@@ -15,6 +17,7 @@ import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkStatus;
 import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkErrorCode;
 import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
+import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkJpaRepository;
 import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkRepository;
 import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkRepositoryImpl;
 import java.time.LocalDateTime;
@@ -38,7 +41,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
     private RecipeBookmarkRepository recipeBookmarkRepository;
 
     @Autowired
-    private com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkJpaRepository recipeBookmarkJpaRepository;
+    private RecipeBookmarkJpaRepository recipeBookmarkJpaRepository;
 
     @MockitoBean
     private Clock clock;
@@ -54,7 +57,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("레시피 북마크가 저장된다")
-        void shouldSaveRecipeBookmark() {
+        void shouldSaveRecipeBookmark() throws RecipeBookmarkException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
             when(clock.now()).thenReturn(LocalDateTime.now());
@@ -74,7 +77,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("삭제된 북마크를 재생성한다")
-        void shouldRecreateDeletedBookmark() {
+        void shouldRecreateDeletedBookmark() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
 
@@ -91,7 +94,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("활성 북마크 재생성 시 false를 반환한다")
-        void shouldReturnFalseWhenBookmarkActive() {
+        void shouldReturnFalseWhenBookmarkActive() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
 
@@ -122,7 +125,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("북마크가 존재하면 true를 반환한다")
-        void shouldReturnTrueWhenBookmarkExists() {
+        void shouldReturnTrueWhenBookmarkExists() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
 
@@ -152,7 +155,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("북마크에 카테고리를 설정한다")
-        void shouldSetCategory() {
+        void shouldSetCategory() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
@@ -186,7 +189,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("카테고리별 북마크의 카테고리를 해제한다")
-        void shouldUnsetCategory() {
+        void shouldUnsetCategory() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
@@ -208,7 +211,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("북마크를 삭제한다")
-        void shouldDeleteBookmark() {
+        void shouldDeleteBookmark() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
 
@@ -241,7 +244,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("여러 북마크를 일괄 삭제한다")
-        void shouldDeleteMultipleBookmarks() {
+        void shouldDeleteMultipleBookmarks() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
@@ -280,7 +283,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("레시피별 북마크를 차단한다")
-        void shouldBlockBookmarksByRecipe() {
+        void shouldBlockBookmarksByRecipe() throws RecipeBookmarkException {
             UUID userId1 = UUID.randomUUID();
             UUID userId2 = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
@@ -322,7 +325,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("최근 북마크 첫 페이지를 조회한다")
-        void shouldFindRecentsFirst() {
+        void shouldFindRecentsFirst() throws RecipeBookmarkException, CursorException {
             UUID userId = UUID.randomUUID();
             when(clock.now())
                     .thenReturn(
@@ -377,13 +380,13 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("삭제 대상 ID가 비어있으면 삭제 쿼리를 수행하지 않는다")
-        void shouldSkipDeleteWhenIdsEmpty() {
+        void shouldSkipDeleteWhenIdsEmpty() throws Exception {
             recipeBookmarkRepository.deletes(List.of(), clock);
         }
 
         @Test
         @DisplayName("카테고리별 최근 북마크 첫 페이지를 조회한다")
-        void shouldFindCategorizedFirst() {
+        void shouldFindCategorizedFirst() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
 
@@ -411,7 +414,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("카테고리별 북마크 개수를 조회한다")
-        void shouldCountByCategories() {
+        void shouldCountByCategories() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID categoryId1 = UUID.randomUUID();
             UUID categoryId2 = UUID.randomUUID();
@@ -437,7 +440,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("미분류 북마크 개수를 조회한다")
-        void shouldCountUncategorized() {
+        void shouldCountUncategorized() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
 
@@ -463,7 +466,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("레시피 ID 목록으로 사용자의 북마크 목록을 조회한다")
-        void shouldGetByRecipeIds() {
+        void shouldGetByRecipeIds() throws RecipeBookmarkException {
             UUID userId = UUID.randomUUID();
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
@@ -484,7 +487,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("레시피 ID로 모든 사용자의 북마크 목록을 조회한다")
-        void shouldGetByRecipeId() {
+        void shouldGetByRecipeId() throws RecipeBookmarkException {
             UUID userId1 = UUID.randomUUID();
             UUID userId2 = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();

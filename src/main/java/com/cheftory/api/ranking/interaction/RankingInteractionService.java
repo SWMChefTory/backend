@@ -1,6 +1,7 @@
 package com.cheftory.api.ranking.interaction;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
@@ -44,8 +45,8 @@ public class RankingInteractionService {
         rankingImpressionRepository.saveAll(impressions);
     }
 
-    public void logEvent(
-            UUID userId, RankingItemType itemType, UUID itemId, RankingEventType eventType, UUID requestId) {
+    public void logEvent(UUID userId, RankingItemType itemType, UUID itemId, RankingEventType eventType, UUID requestId)
+            throws CheftoryException {
         rankingEventRepository.save(RankingEvent.create(userId, itemType, itemId, eventType, requestId, clock));
 
         if (eventType == RankingEventType.VIEW) {
@@ -61,7 +62,7 @@ public class RankingInteractionService {
         }
     }
 
-    public List<UUID> getRecentSeeds(UUID userId, RankingItemType itemType, int limit) {
+    public List<UUID> getRecentSeeds(UUID userId, RankingItemType itemType, int limit) throws CheftoryException {
         String recentKey = rankingInteractionKeyGenerator.recentViewsKey(userId, itemType);
         return rankingInteractionRepository.getLatest(recentKey, limit);
     }

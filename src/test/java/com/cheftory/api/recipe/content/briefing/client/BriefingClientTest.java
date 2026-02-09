@@ -78,7 +78,7 @@ public class BriefingClientTest {
 
                 @DisplayName("Then - 브리핑 응답이 성공적으로 반환된다")
                 @Test
-                void shouldReturnBriefingResponseSuccessfully() throws InterruptedException {
+                void shouldReturnBriefingResponseSuccessfully() throws InterruptedException, RecipeBriefingException {
                     BriefingClientResponse result = briefingClient.fetchBriefing(videoId);
 
                     assertThat(result).isNotNull();
@@ -115,7 +115,7 @@ public class BriefingClientTest {
 
                 @DisplayName("Then - 빈 브리핑 목록이 반환된다")
                 @Test
-                void shouldReturnEmptyBriefingList() {
+                void shouldReturnEmptyBriefingList() throws RecipeBriefingException {
                     BriefingClientResponse result = briefingClient.fetchBriefing(videoId);
 
                     assertThat(result).isNotNull();
@@ -131,10 +131,9 @@ public class BriefingClientTest {
             @Nested
             @DisplayName("When - 브리핑을 조회하면")
             class WhenFetchBriefing {
-
-                @DisplayName("Then - NullPointerException이 발생한다")
                 @Test
-                void shouldThrowNullPointerException() {
+                @DisplayName("Then - NullPointerException이 발생한다")
+                void shouldThrowNullPointerException() throws Exception {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(null))
                             .isInstanceOf(NullPointerException.class)
                             .hasMessage("videoId는 null일 수 없습니다.");
@@ -165,9 +164,9 @@ public class BriefingClientTest {
                             .setBody("{\"error\":\"Internal Server Error\"}"));
                 }
 
-                @DisplayName("Then - RecipeBriefingException이 발생한다")
                 @Test
-                void shouldThrowBriefingException() {
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
+                void shouldThrowBriefingException() throws Exception {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
                             .isInstanceOf(RecipeBriefingException.class)
                             .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
@@ -186,9 +185,9 @@ public class BriefingClientTest {
                             .setBody("{\"error\":\"Bad Request\"}"));
                 }
 
-                @DisplayName("Then - RecipeBriefingException이 발생한다")
                 @Test
-                void shouldThrowBriefingException() {
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
+                void shouldThrowBriefingException() throws Exception {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
                             .isInstanceOf(RecipeBriefingException.class)
                             .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
@@ -205,9 +204,9 @@ public class BriefingClientTest {
                     mockWebServer.shutdown();
                 }
 
-                @DisplayName("Then - RecipeBriefingException이 발생한다")
                 @Test
-                void shouldThrowBriefingException() {
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
+                void shouldThrowBriefingException() throws Exception {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
                             .isInstanceOf(RecipeBriefingException.class)
                             .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
@@ -234,10 +233,9 @@ public class BriefingClientTest {
             @Nested
             @DisplayName("When - 브리핑을 조회하면")
             class WhenFetchBriefing {
-
-                @DisplayName("Then - RecipeBriefingException이 발생한다")
                 @Test
-                void shouldThrowBriefingException() {
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
+                void shouldThrowBriefingException() throws Exception {
                     assertThatThrownBy(() -> briefingClient.fetchBriefing(videoId))
                             .isInstanceOf(RecipeBriefingException.class)
                             .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.RankCursor;
 import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
@@ -54,7 +55,7 @@ public class RecipeRankServiceTest {
             private String latestKey;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws CheftoryException {
                 rankingType = RankingType.TRENDING;
                 UUID recipeId1 = UUID.randomUUID();
                 UUID recipeId2 = UUID.randomUUID();
@@ -72,7 +73,7 @@ public class RecipeRankServiceTest {
 
                 @Test
                 @DisplayName("Then - 올바른 순서로 레시피 순위가 저장되어야 한다")
-                void thenShouldSaveRecipeRankingsInCorrectOrder() {
+                void thenShouldSaveRecipeRankingsInCorrectOrder() throws CheftoryException {
                     recipeRankService.updateRecipes(rankingType, recipeIds);
 
                     verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(0), 1);
@@ -93,7 +94,7 @@ public class RecipeRankServiceTest {
             private String latestKey;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws CheftoryException {
                 rankingType = RankingType.CHEF;
                 UUID recipeId1 = UUID.randomUUID();
                 UUID recipeId2 = UUID.randomUUID();
@@ -112,7 +113,7 @@ public class RecipeRankServiceTest {
 
                 @Test
                 @DisplayName("Then - 올바른 순서로 셰프 레시피 순위가 저장되어야 한다")
-                void thenShouldSaveChefRecipeRankingsInCorrectOrder() {
+                void thenShouldSaveChefRecipeRankingsInCorrectOrder() throws CheftoryException {
                     recipeRankService.updateRecipes(rankingType, recipeIds);
 
                     verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(0), 1);
@@ -131,7 +132,7 @@ public class RecipeRankServiceTest {
 
         @Test
         @DisplayName("커서 기반 첫 페이지를 조회한다")
-        void shouldGetRecipeIdsWithCursorFirst() {
+        void shouldGetRecipeIdsWithCursorFirst() throws CheftoryException {
             RankingType rankingType = RankingType.TRENDING;
             String latestKey = "trendRecipe:latest";
             String rankingKey = "trendRecipe:ranking:20240101120000";
@@ -165,7 +166,7 @@ public class RecipeRankServiceTest {
 
         @Test
         @DisplayName("커서 기반 다음 페이지를 조회한다")
-        void shouldGetRecipeIdsWithCursorNext() {
+        void shouldGetRecipeIdsWithCursorNext() throws CheftoryException {
             RankingType rankingType = RankingType.CHEF;
             RankCursor decoded = new RankCursor("chefRecipe:ranking:20240101120000", 10);
 
@@ -184,7 +185,7 @@ public class RecipeRankServiceTest {
 
     @Test
     @DisplayName("cuisine 추천은 추천 포트를 호출한다")
-    void shouldRecommendCuisineRecipes() {
+    void shouldRecommendCuisineRecipes() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         String cursor = "cursor";
         CursorPage<UUID> expected = CursorPage.of(List.of(UUID.randomUUID()), "next-cursor");

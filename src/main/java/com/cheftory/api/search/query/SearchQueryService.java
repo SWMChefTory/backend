@@ -8,6 +8,7 @@ import com.cheftory.api._common.cursor.ScoreIdCursorCodec;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +29,8 @@ public class SearchQueryService {
     private final I18nTranslator i18nTranslator;
     private static final int CURSOR_PAGE_SIZE = 20;
 
-    public CursorPage<SearchQuery> searchByKeyword(SearchQueryScope scope, String text, String cursor) {
+    public CursorPage<SearchQuery> searchByKeyword(SearchQueryScope scope, String text, String cursor)
+            throws SearchException {
         boolean first = (cursor == null || cursor.isBlank());
         Pageable pageable = PageRequest.of(0, CURSOR_PAGE_SIZE + 1);
 
@@ -55,7 +57,7 @@ public class SearchQueryService {
         return hit.score() != null ? hit.score() : 0.0;
     }
 
-    public String openPitForCandidates() {
+    public String openPitForCandidates() throws SearchException {
         return searchQueryRepository.createPitId();
     }
 
@@ -63,7 +65,7 @@ public class SearchQueryService {
         searchQueryRepository.closePit(pitId);
     }
 
-    public List<SearchQuery> mgetSearchQueries(List<String> ids) {
+    public List<SearchQuery> mgetSearchQueries(List<String> ids) throws SearchException {
         return searchQueryRepository.mgetSearchQueries(ids);
     }
 
@@ -73,7 +75,8 @@ public class SearchQueryService {
             int size,
             PersonalizationProfile profile,
             String pitId,
-            String cursor) {
+            String cursor)
+            throws SearchException {
 
         boolean first = (cursor == null || cursor.isBlank());
         Pageable pageable = PageRequest.of(0, size + 1);

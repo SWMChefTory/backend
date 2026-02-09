@@ -1,5 +1,6 @@
 package com.cheftory.api.voicecommand;
 
+import com.cheftory.api.voicecommand.exception.VoiceCommandHistoryException;
 import com.cheftory.api.voicecommand.model.VoiceCommandHistory;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,8 @@ public class VoiceCommandHistoryService {
             String sttModel,
             String intentModel,
             Integer start,
-            Integer end) {
+            Integer end)
+            throws VoiceCommandHistoryException {
         VoiceCommandHistory voiceCommandHistory =
                 VoiceCommandHistory.create(sttModel, transcribe, intentModel, result, userId, start, end);
         voiceCommandHistoryRepository.save(voiceCommandHistory);

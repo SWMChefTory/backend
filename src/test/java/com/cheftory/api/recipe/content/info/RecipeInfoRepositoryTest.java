@@ -373,9 +373,9 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                             List.of(), List.of(RecipeStatus.IN_PROGRESS, RecipeStatus.SUCCESS));
                 }
 
-                @DisplayName("Then - 빈 목록이 반환된다")
                 @Test
-                void thenReturnsEmptyList() {
+                @DisplayName("Then - 빈 목록이 반환된다")
+                void thenReturnsEmptyList() throws Exception {
                     assertThat(recipeInfos).isEmpty();
                 }
             }
@@ -496,9 +496,9 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                     foundRecipeInfos = recipeInfoRepository.findAllByIdIn(List.of());
                 }
 
-                @DisplayName("Then - 빈 목록이 반환된다")
                 @Test
-                void thenReturnsEmptyList() {
+                @DisplayName("Then - 빈 목록이 반환된다")
+                void thenReturnsEmptyList() throws Exception {
                     assertThat(foundRecipeInfos).isEmpty();
                 }
             }

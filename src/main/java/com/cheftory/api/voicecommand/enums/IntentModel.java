@@ -17,7 +17,7 @@ public enum IntentModel {
         this.value = value;
     }
 
-    public static IntentModel fromValue(String value) {
+    public static IntentModel fromValue(String value) throws VoiceCommandHistoryException {
         return Arrays.stream(values())
                 .filter(model -> model.value.equals(value))
                 .findFirst()

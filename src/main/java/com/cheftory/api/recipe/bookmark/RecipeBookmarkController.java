@@ -2,7 +2,10 @@ package com.cheftory.api.recipe.bookmark;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.bookmark.dto.RecipeBookmarkRequest;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.info.validator.ExistsRecipeId;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -31,7 +34,8 @@ public class RecipeBookmarkController {
     public SuccessOnlyResponse updateCategory(
             @RequestBody @Valid RecipeBookmarkRequest.UpdateCategory request,
             @PathVariable("recipeId") @ExistsRecipeId UUID recipeId,
-            @UserPrincipal UUID userId) {
+            @UserPrincipal UUID userId)
+            throws RecipeBookmarkException {
         recipeBookmarkService.categorize(userId, recipeId, request.categoryId());
         return SuccessOnlyResponse.create();
     }
@@ -45,7 +49,8 @@ public class RecipeBookmarkController {
      */
     @DeleteMapping("/bookmark")
     public SuccessOnlyResponse delete(
-            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
+            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
+            throws RecipeBookmarkException {
         recipeBookmarkService.delete(userId, recipeId);
         return SuccessOnlyResponse.create();
     }
@@ -59,7 +64,8 @@ public class RecipeBookmarkController {
      */
     @PostMapping("/bookmark")
     public SuccessOnlyResponse create(
-            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
+            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
+            throws RecipeInfoException, RecipeBookmarkException, CreditException {
         recipeBookmarkFacade.create(userId, recipeId);
         return SuccessOnlyResponse.create();
     }

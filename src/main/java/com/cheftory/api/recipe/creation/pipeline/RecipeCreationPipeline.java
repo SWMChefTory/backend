@@ -3,6 +3,7 @@ package com.cheftory.api.recipe.creation.pipeline;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
+import com.cheftory.api.recipe.exception.RecipeException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -20,7 +21,7 @@ public class RecipeCreationPipeline {
     private final RecipeCreationCleanupStep recipeCreationCleanupStep;
     private final AsyncTaskExecutor recipeCreateExecutor;
 
-    public void run(RecipeCreationExecutionContext context) {
+    public void run(RecipeCreationExecutionContext context) throws RecipeException {
         recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.READY, RecipeProgressDetail.READY);
 
         RecipeCreationExecutionContext updated = recipeCreationVerifyStep.run(context);

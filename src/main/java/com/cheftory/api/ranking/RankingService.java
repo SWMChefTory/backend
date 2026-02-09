@@ -3,6 +3,7 @@ package com.cheftory.api.ranking;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.RankingCursor;
 import com.cheftory.api._common.cursor.RankingCursorCodec;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.candidate.RankingCandidateService;
 import com.cheftory.api.ranking.interaction.RankingInteractionService;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
@@ -27,7 +28,8 @@ public class RankingService {
     private final RankingCursorCodec rankingCursorCodec;
 
     public CursorPage<UUID> recommend(
-            UUID userId, RankingSurfaceType surfaceType, RankingItemType itemType, String cursor, int pageSize) {
+            UUID userId, RankingSurfaceType surfaceType, RankingItemType itemType, String cursor, int pageSize)
+            throws CheftoryException {
 
         boolean first = (cursor == null || cursor.isBlank());
 
@@ -107,7 +109,8 @@ public class RankingService {
                 hasNext ? rankingCursorCodec.encode(new RankingCursor(requestId, page.nextCursor())) : null);
     }
 
-    public void event(UUID userId, RankingItemType itemType, UUID itemId, RankingEventType eventType, UUID requestId) {
+    public void event(UUID userId, RankingItemType itemType, UUID itemId, RankingEventType eventType, UUID requestId)
+            throws CheftoryException {
         rankingInteractionService.logEvent(userId, itemType, itemId, eventType, requestId);
     }
 }

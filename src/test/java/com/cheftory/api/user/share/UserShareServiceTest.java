@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.share.entity.UserShare;
+import com.cheftory.api.user.share.exception.UserShareException;
 import com.cheftory.api.user.share.port.UserShareCreditPort;
 import com.cheftory.api.user.share.repository.UserShareRepository;
 import java.time.LocalDate;
@@ -46,7 +47,7 @@ class UserShareServiceTest {
 
         @Test
         @DisplayName("성공적으로 공유하면 크레딧을 지급하고 횟수를 반환한다")
-        void it_grants_credit_and_returns_count() {
+        void it_grants_credit_and_returns_count() throws UserShareException, CreditException {
             // given
             when(clock.now()).thenReturn(now);
 
@@ -68,7 +69,7 @@ class UserShareServiceTest {
 
         @Test
         @DisplayName("크레딧 지급에 실패하면 보상 트랜잭션을 실행하고 예외를 던진다")
-        void it_compensates_when_credit_grant_fails() {
+        void it_compensates_when_credit_grant_fails() throws UserShareException, CreditException {
             // given
             when(clock.now()).thenReturn(now);
 
@@ -90,7 +91,7 @@ class UserShareServiceTest {
 
         @Test
         @DisplayName("보상 트랜잭션까지 실패하더라도 원래의 CreditException을 던진다")
-        void it_throws_original_exception_even_if_compensation_fails() {
+        void it_throws_original_exception_even_if_compensation_fails() throws UserShareException, CreditException {
             // given
             when(clock.now()).thenReturn(now);
 
@@ -103,7 +104,7 @@ class UserShareServiceTest {
 
             CreditException creditException = mock(CreditException.class);
             doThrow(creditException).when(userShareCreditPort).grantUserShare(userId, 1);
-            doThrow(new CreditException(null)).when(userShareRepository).compensateTx(createdShare.getId(), today);
+            doThrow(new UserShareException(null)).when(userShareRepository).compensateTx(createdShare.getId(), today);
 
             // when & then
             assertThrows(CreditException.class, () -> userShareService.share(userId));

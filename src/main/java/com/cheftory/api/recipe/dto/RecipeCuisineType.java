@@ -20,7 +20,7 @@ public enum RecipeCuisineType {
         return "recipe.cuisine." + name().toLowerCase();
     }
 
-    public static RecipeCuisineType fromString(String type) {
+    public static RecipeCuisineType fromString(String type) throws RecipeException {
         try {
             return valueOf(type.trim().toUpperCase());
         } catch (Exception e) {

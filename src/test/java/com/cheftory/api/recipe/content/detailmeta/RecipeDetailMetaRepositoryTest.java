@@ -196,9 +196,9 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
                     foundMeta = recipeDetailMetaRepository.findByRecipeId(nonExistentRecipeId);
                 }
 
-                @DisplayName("Then - 빈 Optional이 반환된다")
                 @Test
-                void thenEmptyOptionalIsReturned() {
+                @DisplayName("Then - 빈 Optional이 반환된다")
+                void thenEmptyOptionalIsReturned() throws Exception {
                     assertThat(foundMeta).isEmpty();
                 }
             }
@@ -277,9 +277,9 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
                     foundMetas = recipeDetailMetaRepository.findAllByRecipeIdIn(emptyRecipeIds);
                 }
 
-                @DisplayName("Then - 빈 목록이 반환된다")
                 @Test
-                void thenEmptyListIsReturned() {
+                @DisplayName("Then - 빈 목록이 반환된다")
+                void thenEmptyListIsReturned() throws Exception {
                     assertThat(foundMetas).isEmpty();
                 }
             }

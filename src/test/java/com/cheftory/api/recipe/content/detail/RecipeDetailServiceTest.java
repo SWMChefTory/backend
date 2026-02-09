@@ -10,6 +10,8 @@ import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
 import com.cheftory.api.recipe.content.detail.entity.RecipeDetail;
 import java.util.List;
+
+import com.cheftory.api.recipe.exception.RecipeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -41,7 +43,7 @@ public class RecipeDetailServiceTest {
             private RecipeDetail expectedRecipeDetail;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeException {
                 videoId = "sample-video-id";
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
@@ -68,7 +70,7 @@ public class RecipeDetailServiceTest {
 
                 @Test
                 @DisplayName("Then - 상세 정보가 정상적으로 반환된다")
-                void thenReturnsRecipeDetail() {
+                void thenReturnsRecipeDetail() throws RecipeException {
                     // when
                     RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
 
@@ -100,7 +102,7 @@ public class RecipeDetailServiceTest {
             private RecipeDetail simpleRecipeDetail;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeException {
                 videoId = "simple-recipe-id";
                 fileUri = "s3://bucket/simple.mp4";
                 mimeType = "video/mp4";
@@ -120,7 +122,7 @@ public class RecipeDetailServiceTest {
 
             @Test
             @DisplayName("When - 간단한 레시피를 조회하면 Then - 간단한 정보가 반환된다")
-            void whenGetSimpleRecipe_thenReturnsSimpleDetail() {
+            void whenGetSimpleRecipe_thenReturnsSimpleDetail() throws RecipeException {
                 // when
                 RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
 
@@ -146,7 +148,7 @@ public class RecipeDetailServiceTest {
             private RecipeDetail emptyIngredientsRecipe;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeException {
                 videoId = "empty-ingredients-id";
                 fileUri = "s3://bucket/empty.mp4";
                 mimeType = "video/mp4";
@@ -161,7 +163,7 @@ public class RecipeDetailServiceTest {
 
             @Test
             @DisplayName("When - 빈 재료 목록 레시피를 조회하면 Then - 빈 재료 목록이 반환된다")
-            void whenGetEmptyIngredientsRecipe_thenReturnsEmptyIngredients() {
+            void whenGetEmptyIngredientsRecipe_thenReturnsEmptyIngredients() throws RecipeException {
                 // when
                 RecipeDetail result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
 

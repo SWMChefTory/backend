@@ -3,6 +3,7 @@ package com.cheftory.api.recipe.content.youtubemeta.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class YoutubeVideoResponseTest {
 
     @Test
     @DisplayName("getThumbnailUri()는 maxres 썸네일 URL을 반환한다")
-    void getThumbnailUriReturnsMaxresUrl() {
+    void getThumbnailUriReturnsMaxresUrl() throws YoutubeMetaException {
         YoutubeVideoResponse.ThumbnailInfo maxres =
                 new YoutubeVideoResponse.ThumbnailInfo("https://i.ytimg.com/vi/test/maxresdefault.jpg", 1280, 720);
         YoutubeVideoResponse.Thumbnails thumbnails = new YoutubeVideoResponse.Thumbnails(null, null, null, maxres);
@@ -54,7 +55,7 @@ class YoutubeVideoResponseTest {
 
     @Test
     @DisplayName("getThumbnailUri()는 maxres가 없으면 high 썸네일 URL을 반환한다")
-    void getThumbnailUriReturnsHighUrlWhenMaxresMissing() {
+    void getThumbnailUriReturnsHighUrlWhenMaxresMissing() throws YoutubeMetaException {
         YoutubeVideoResponse.ThumbnailInfo high =
                 new YoutubeVideoResponse.ThumbnailInfo("https://i.ytimg.com/vi/test/hqdefault.jpg", 480, 360);
         YoutubeVideoResponse.Thumbnails thumbnails = new YoutubeVideoResponse.Thumbnails(null, null, high, null);

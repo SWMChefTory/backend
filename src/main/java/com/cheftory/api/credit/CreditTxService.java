@@ -21,7 +21,7 @@ public class CreditTxService {
     private final Clock clock;
 
     @Transactional
-    public void grantTx(Credit credit) {
+    public void grantTx(Credit credit) throws CreditException {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
         if (alreadyProcessed(
@@ -35,7 +35,7 @@ public class CreditTxService {
     }
 
     @Transactional
-    public void spendTx(Credit credit) {
+    public void spendTx(Credit credit) throws CreditException {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
         if (alreadyProcessed(
@@ -60,15 +60,18 @@ public class CreditTxService {
         }
     }
 
-    private CreditUserBalance loadOrCreateBalance(UUID userId) {
-        return balanceRepository.findById(userId).orElseGet(() -> {
-            try {
-                return balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
-            } catch (DataIntegrityViolationException e) {
-                return balanceRepository
-                        .findById(userId)
-                        .orElseThrow(() -> new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT));
-            }
-        });
+    private CreditUserBalance loadOrCreateBalance(UUID userId) throws CreditException {
+        var existing = balanceRepository.findById(userId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        try {
+            return balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
+        } catch (DataIntegrityViolationException e) {
+            return balanceRepository
+                    .findById(userId)
+                    .orElseThrow(() -> new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT));
+        }
     }
 }

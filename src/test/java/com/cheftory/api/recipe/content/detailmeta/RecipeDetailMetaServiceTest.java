@@ -152,7 +152,7 @@ public class RecipeDetailMetaServiceTest {
 
             @Test
             @DisplayName("When - 상세 메타를 조회하면 Then - 해당 메타가 반환된다")
-            void whenFindByRecipeId_thenReturnsMetaData() {
+            void whenFindByRecipeId_thenReturnsMetaData() throws RecipeDetailMetaException {
                 // when
                 RecipeDetailMeta result = recipeDetailMetaService.get(recipeId);
 
@@ -180,7 +180,7 @@ public class RecipeDetailMetaServiceTest {
 
             @Test
             @DisplayName("When - 상세 메타를 조회하면 Then - 예외가 발생한다")
-            void whenFindByRecipeId_thenReturnsEmptyOptional() {
+            void whenFindByRecipeId_thenReturnsEmptyOptional() throws Exception {
                 assertThatThrownBy(() -> recipeDetailMetaService.get(recipeId))
                         .isInstanceOf(RecipeDetailMetaException.class)
                         .hasFieldOrPropertyWithValue("error", RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND);

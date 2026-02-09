@@ -16,7 +16,7 @@ public class RecipeCreationFinalizeStep implements RecipeCreationPipelineStep {
     private final RecipeProgressService recipeProgressService;
 
     @Override
-    public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) {
+    public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) throws RecipeException {
         if (context.getMimeType() == null || context.getFileUri() == null) {
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }

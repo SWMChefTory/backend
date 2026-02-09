@@ -15,6 +15,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 
 import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Map;
@@ -77,14 +78,14 @@ public class RecipeInfoRecipeRecipeCategoryControllerTest extends RestDocsTest {
                 private UUID recipeCategoryId;
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws RecipeCategoryException {
                     recipeCategoryId = UUID.randomUUID();
                     doReturn(recipeCategoryId).when(recipeCategoryService).create("한식", userId);
                 }
 
                 @Test
                 @DisplayName("Then - 레시피 카테고리를 생성한다")
-                void thenShouldCreateRecipeCategory() {
+                void thenShouldCreateRecipeCategory() throws RecipeCategoryException {
                     var response = given().contentType(ContentType.JSON)
                             .attribute("userId", userId.toString())
                             .header("Authorization", "Bearer accessToken")

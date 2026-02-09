@@ -26,7 +26,7 @@ public class CoupangClient {
 
     private final CoupangPartnersProperties properties;
 
-    public CoupangProducts searchProducts(String keyword) {
+    public CoupangProducts searchProducts(String keyword) throws CoupangException {
         try {
             URI uri = UriComponentsBuilder.fromPath("/v2/providers/affiliate_open_api/apis/openapi/products/search")
                     .queryParam("keyword", keyword)

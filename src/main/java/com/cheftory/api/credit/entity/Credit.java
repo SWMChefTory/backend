@@ -1,6 +1,7 @@
 package com.cheftory.api.credit.entity;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.credit.exception.CreditException;
 import java.util.UUID;
 
 public record Credit(UUID userId, long amount, CreditReason reason, String idempotencyKey) {
@@ -30,11 +31,11 @@ public record Credit(UUID userId, long amount, CreditReason reason, String idemp
                 "share:" + userId + ":" + clock.now().toLocalDate().toString() + ":" + count);
     }
 
-    public void grantTo(CreditUserBalance balance) {
+    public void grantTo(CreditUserBalance balance) throws CreditException {
         balance.apply(amount);
     }
 
-    public void spendFrom(CreditUserBalance balance) {
+    public void spendFrom(CreditUserBalance balance) throws CreditException {
         balance.apply(-amount);
     }
 }

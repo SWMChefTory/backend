@@ -10,6 +10,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 
+import com.cheftory.api.affiliate.coupang.exception.CoupangException;
 import com.cheftory.api.affiliate.model.CoupangProduct;
 import com.cheftory.api.affiliate.model.CoupangProducts;
 import com.cheftory.api.exception.GlobalExceptionHandler;
@@ -49,7 +50,7 @@ class AffiliateControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - 200과 상품 리스트를 반환한다")
-                void thenReturn200WithProducts() {
+                void thenReturn200WithProducts() throws CoupangException {
                     // given
                     CoupangProduct item = mock(CoupangProduct.class);
                     doReturn("Water").when(item).getKeyword();
@@ -128,7 +129,7 @@ class AffiliateControllerTest extends RestDocsTest {
 
             @Test
             @DisplayName("Then - 200과 빈 배열을 반환한다")
-            void thenReturn200WithEmptyArray() {
+            void thenReturn200WithEmptyArray() throws CoupangException {
                 // given
                 CoupangProducts emptyWrapper = mock(CoupangProducts.class);
                 doReturn(List.of()).when(emptyWrapper).getCoupangProducts();

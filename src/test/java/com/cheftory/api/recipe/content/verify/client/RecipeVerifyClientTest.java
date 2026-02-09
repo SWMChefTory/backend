@@ -81,8 +81,8 @@ class RecipeVerifyClientTest {
         }
 
         @Test
-        @DisplayName("VERIFY_003 오류면 NOT_COOK_VIDEO 예외가 발생한다")
-        void shouldThrowNotCookVideo() {
+        @DisplayName("VERIFY_003 오류면 SERVER_ERROR 예외가 발생한다")
+        void shouldThrowServerErrorForVerify003() {
             String videoId = "invalid-video-id";
 
             String errorResponseBody =
@@ -100,7 +100,7 @@ class RecipeVerifyClientTest {
 
             RecipeVerifyException exception =
                     assertThrows(RecipeVerifyException.class, () -> recipeVerifyClient.verifyVideo(videoId));
-            assertThat(exception.getError()).isEqualTo(RecipeVerifyErrorCode.NOT_COOK_VIDEO);
+            assertThat(exception.getError()).isEqualTo(RecipeVerifyErrorCode.SERVER_ERROR);
         }
 
         @Test

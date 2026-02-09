@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.SearchPage;
 import com.cheftory.api.search.query.SearchQueryService;
 import java.util.List;
@@ -30,7 +31,7 @@ class RankingCandidateSearchAdapterTest {
 
     @Test
     @DisplayName("openPit delegates to service")
-    void openPitDelegatesToService() {
+    void openPitDelegatesToService() throws SearchException {
         doReturn("pit-1").when(searchQueryService).openPitForCandidates();
 
         String result = adapter.openPit();
@@ -41,7 +42,7 @@ class RankingCandidateSearchAdapterTest {
 
     @Test
     @DisplayName("searchWithPit delegates to service")
-    void searchWithPitDelegatesToService() {
+    void searchWithPitDelegatesToService() throws SearchException {
         RankingSurfaceType surfaceType = RankingSurfaceType.CUISINE_KOREAN;
         RankingItemType itemType = RankingItemType.RECIPE;
         PersonalizationProfile profile = new PersonalizationProfile(List.of("kimchi"), List.of("channel"));

@@ -8,7 +8,7 @@ import java.util.List;
 
 public record YoutubeVideoResponse(List<Item> items) {
 
-    public String getThumbnailUri() {
+    public String getThumbnailUri() throws YoutubeMetaException {
         Thumbnails thumbnails = items.getFirst().snippet().thumbnails();
         if (thumbnails == null) {
             throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_THUMBNAIL_NOT_FOUND);

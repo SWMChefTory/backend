@@ -8,7 +8,7 @@ public enum RecipeInfoRecommendType {
     TRENDING,
     CHEF;
 
-    public static RecipeInfoRecommendType fromString(String type) {
+    public static RecipeInfoRecommendType fromString(String type) throws RecipeException {
         try {
             return RecipeInfoRecommendType.valueOf(type.toUpperCase());
         } catch (Exception e) {

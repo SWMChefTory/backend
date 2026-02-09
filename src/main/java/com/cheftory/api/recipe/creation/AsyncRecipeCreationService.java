@@ -1,10 +1,13 @@
 package com.cheftory.api.recipe.creation;
 
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
 import com.cheftory.api.recipe.creation.pipeline.RecipeCreationExecutionContext;
@@ -35,7 +38,8 @@ public class AsyncRecipeCreationService {
     private final RecipeCreationPipeline recipeCreationPipeline;
 
     @Async("recipeCreateExecutor")
-    public void create(UUID recipeId, long creditCost, String videoId, URI videoUrl) {
+    public void create(UUID recipeId, long creditCost, String videoId, URI videoUrl)
+            throws RecipeInfoException, YoutubeMetaException {
         try {
             recipeCreationPipeline.run(RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl));
 
@@ -61,23 +65,29 @@ public class AsyncRecipeCreationService {
         }
     }
 
-    private void bannedRecipe(UUID recipeId, long creditCost) {
+    private void bannedRecipe(UUID recipeId, long creditCost) throws YoutubeMetaException, RecipeInfoException {
         recipeYoutubeMetaService.ban(recipeId);
         cleanup(recipeId, creditCost);
     }
 
-    private void failedRecipe(UUID recipeId, long creditCost) {
+    private void failedRecipe(UUID recipeId, long creditCost) throws RecipeInfoException {
         recipeYoutubeMetaService.failed(recipeId);
         cleanup(recipeId, creditCost);
     }
 
-    private void cleanup(UUID recipeId, long creditCost) {
+    private void cleanup(UUID recipeId, long creditCost) throws RecipeInfoException {
         recipeInfoService.failed(recipeId);
         recipeProgressService.failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
         List<RecipeBookmark> bookmarks = recipeBookmarkService.gets(recipeId);
         recipeBookmarkService.deletes(
                 bookmarks.stream().map(RecipeBookmark::getId).toList());
 
-        bookmarks.forEach(h -> creditPort.refundRecipeCreate(h.getUserId(), recipeId, creditCost));
+        bookmarks.forEach(h -> {
+            try {
+                creditPort.refundRecipeCreate(h.getUserId(), recipeId, creditCost);
+            } catch (CreditException e) {
+                log.warn("refund failed. recipeId={}, cost={}", recipeId, creditCost, e);
+            }
+        });
     }
 }

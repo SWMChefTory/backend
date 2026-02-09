@@ -2,6 +2,7 @@ package com.cheftory.api.recipe.rank;
 
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
+import com.cheftory.api.exception.CheftoryException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
@@ -12,15 +13,15 @@ public class RankingKeyGenerator {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final String DELIMITER = ":";
 
-    public String generateKey(RankingType type) {
+    public String generateKey(RankingType type) throws CheftoryException {
         return buildKey(getTypePrefix(type), "ranking", getCurrentTimestamp());
     }
 
-    public String getLatestKey(RankingType type) {
+    public String getLatestKey(RankingType type) throws CheftoryException {
         return buildKey(getTypePrefix(type), "latest");
     }
 
-    private String buildKey(String... parts) {
+    private String buildKey(String... parts) throws CheftoryException {
         Market market = MarketContext.required().market();
 
         return new StringBuilder(market.name().toLowerCase())

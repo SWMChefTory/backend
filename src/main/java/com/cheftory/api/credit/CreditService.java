@@ -28,17 +28,17 @@ public class CreditService {
     }
 
     @Retryable(retryFor = ObjectOptimisticLockingFailureException.class, maxAttempts = 5)
-    public void grant(Credit credit) {
+    public void grant(Credit credit) throws CreditException {
         creditTxService.grantTx(credit);
     }
 
     @Retryable(retryFor = ObjectOptimisticLockingFailureException.class, maxAttempts = 5)
-    public void spend(Credit credit) {
+    public void spend(Credit credit) throws CreditException {
         creditTxService.spendTx(credit);
     }
 
     @Recover
-    public void recover(ObjectOptimisticLockingFailureException e, Credit credit) {
+    public void recover(ObjectOptimisticLockingFailureException e, Credit credit) throws CreditException {
         log.warn(
                 "Credit optimistic lock retry exhausted. userId={}, reason={}, amount={}, key={}",
                 credit.userId(),

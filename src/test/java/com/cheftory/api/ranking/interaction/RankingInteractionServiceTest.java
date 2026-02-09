@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.ranking.RankingItemType;
 import java.time.Duration;
@@ -46,7 +47,7 @@ class RankingInteractionServiceTest {
 
         @Test
         @DisplayName("should save event and update recent views for VIEW event")
-        void shouldSaveEventAndUpdateRecentViewsForViewEvent() {
+        void shouldSaveEventAndUpdateRecentViewsForViewEvent() throws CheftoryException {
             UUID userId = UUID.randomUUID();
             UUID itemId = UUID.randomUUID();
             UUID requestId = UUID.randomUUID();
@@ -79,7 +80,7 @@ class RankingInteractionServiceTest {
 
         @Test
         @DisplayName("should only save event for non-VIEW event")
-        void shouldOnlySaveEventForNonViewEvent() {
+        void shouldOnlySaveEventForNonViewEvent() throws CheftoryException {
             UUID userId = UUID.randomUUID();
             UUID itemId = UUID.randomUUID();
             UUID requestId = UUID.randomUUID();
@@ -100,7 +101,7 @@ class RankingInteractionServiceTest {
 
         @Test
         @DisplayName("should return recent seeds")
-        void shouldReturnRecentSeeds() {
+        void shouldReturnRecentSeeds() throws CheftoryException {
             UUID userId = UUID.randomUUID();
             String recentKey = "recent:key";
             List<UUID> expected = List.of(UUID.randomUUID(), UUID.randomUUID());

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.credit.entity.CreditReason;
+import com.cheftory.api.credit.exception.CreditException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +31,7 @@ class UserCreditAdapterTest {
 
     @Test
     @DisplayName("grantUserShare - 공유 크레딧 지급을 CreditService에 위임한다")
-    void grantUserShare_shouldDelegateToCreditService() {
+    void grantUserShare_shouldDelegateToCreditService() throws CreditException {
         // given
         UUID userId = UUID.randomUUID();
         int count = 1;
@@ -49,7 +50,7 @@ class UserCreditAdapterTest {
 
     @Test
     @DisplayName("grantUserTutorial - 튜토리얼 크레딧 지급을 CreditService에 위임한다")
-    void grantUserTutorial_shouldDelegateToCreditService() {
+    void grantUserTutorial_shouldDelegateToCreditService() throws CreditException {
         // given
         UUID userId = UUID.randomUUID();
 

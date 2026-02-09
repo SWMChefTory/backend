@@ -2,10 +2,7 @@ package com.cheftory.api.recipe.challenge;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.PocOnly;
-import com.cheftory.api._common.cursor.CursorPage;
-import com.cheftory.api._common.cursor.CursorPages;
-import com.cheftory.api._common.cursor.ViewedAtCursor;
-import com.cheftory.api._common.cursor.ViewedAtCursorCodec;
+import com.cheftory.api._common.cursor.*;
 import com.cheftory.api.recipe.challenge.exception.RecipeChallengeErrorCode;
 import com.cheftory.api.recipe.challenge.exception.RecipeChallengeException;
 import java.util.List;
@@ -36,7 +33,7 @@ public class RecipeChallengeService {
     private final Clock clock;
     private final ViewedAtCursorCodec viewedAtCursorCodec;
 
-    public Challenge getUser(UUID userId) {
+    public Challenge getUser(UUID userId) throws RecipeChallengeException {
         var now = clock.now();
 
         List<Challenge> challenges = challengeRepository.findOngoing(now);
@@ -62,7 +59,8 @@ public class RecipeChallengeService {
         return challengeMap.get(challengeId);
     }
 
-    public CursorPage<RecipeCompleteChallenge> getChallengeRecipes(UUID userId, UUID challengeId, String cursor) {
+    public CursorPage<RecipeCompleteChallenge> getChallengeRecipes(UUID userId, UUID challengeId, String cursor)
+            throws RecipeChallengeException, CursorException {
         Pageable pageable = PageRequest.of(0, CHALLENGE_PAGE_SIZE, CHALLENGE_SORT);
         Pageable probe = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize() + 1, pageable.getSort());
         boolean first = (cursor == null || cursor.isBlank());
@@ -105,7 +103,7 @@ public class RecipeChallengeService {
         return CursorPage.of(items, page.nextCursor());
     }
 
-    private List<RecipeChallenge> keyset(UUID challengeId, String cursor, Pageable probe) {
+    private List<RecipeChallenge> keyset(UUID challengeId, String cursor, Pageable probe) throws CursorException {
         ViewedAtCursor p = viewedAtCursorCodec.decode(cursor);
         return recipeChallengeRepository.findChallengeKeyset(challengeId, p.lastViewedAt(), p.lastId(), probe);
     }

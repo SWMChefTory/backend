@@ -12,6 +12,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
 import com.cheftory.api._common.security.UserArgumentResolver;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.user.share.exception.UserShareErrorCode;
 import com.cheftory.api.user.share.exception.UserShareException;
@@ -59,7 +60,7 @@ public class UserShareControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 공유 횟수를 반환한다")
-        void shouldReturnShareCount() {
+        void shouldReturnShareCount() throws CreditException, UserShareException {
 
             doReturn(1).when(userShareService).share(fixedUserId);
 
@@ -81,7 +82,7 @@ public class UserShareControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("실패 - 일일 공유 제한을 초과하면 에러를 반환한다")
-        void shouldReturnLimitExceededError() {
+        void shouldReturnLimitExceededError() throws CreditException, UserShareException {
             doThrow(new UserShareException(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED))
                     .when(userShareService)
                     .share(fixedUserId);

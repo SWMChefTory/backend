@@ -18,7 +18,7 @@ public class RecipeDetailMetaService {
     private final RecipeDetailMetaRepository recipeDetailMetaRepository;
     private final Clock clock;
 
-    public RecipeDetailMeta get(UUID recipeId) {
+    public RecipeDetailMeta get(UUID recipeId) throws RecipeDetailMetaException {
         return recipeDetailMetaRepository
                 .findByRecipeId(recipeId)
                 .orElseThrow(() -> new RecipeDetailMetaException(RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND));

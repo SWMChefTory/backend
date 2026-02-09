@@ -53,7 +53,7 @@ public class VoiceCommandHistoryTest {
                 private VoiceCommandHistory voiceCommandHistory;
 
                 @BeforeEach
-                void beforeEach() {
+                void beforeEach() throws VoiceCommandHistoryException {
                     voiceCommandHistory = VoiceCommandHistory.create(
                             sttModel, transcribe, intentGPT4Model, result, userId, start, end);
                 }
@@ -81,7 +81,7 @@ public class VoiceCommandHistoryTest {
                 private VoiceCommandHistory voiceCommandHistory;
 
                 @BeforeEach
-                void beforeEach() {
+                void beforeEach() throws VoiceCommandHistoryException {
                     voiceCommandHistory = VoiceCommandHistory.create(
                             sttModel, transcribe, intentNLUModel, result, userId, start, end);
                 }
@@ -126,10 +126,9 @@ public class VoiceCommandHistoryTest {
             @Nested
             @DisplayName("When - 음성 명령 기록을 생성한다면")
             class WhenCreatingVoiceCommandHistory {
-
                 @Test
                 @DisplayName("Then - STT 모델 예외가 발생해야 한다")
-                public void thenShouldThrowSttModelException() {
+                public void thenShouldThrowSttModelException() throws Exception {
                     assertThatThrownBy(() -> VoiceCommandHistory.create(
                                     invalidSttModel, transcribe, validIntentModel, result, userId, start, end))
                             .isInstanceOf(VoiceCommandHistoryException.class)
@@ -168,10 +167,9 @@ public class VoiceCommandHistoryTest {
             @Nested
             @DisplayName("When - 음성 명령 기록을 생성한다면")
             class WhenCreatingVoiceCommandHistory {
-
                 @Test
                 @DisplayName("Then - Intent 모델 예외가 발생해야 한다")
-                public void thenShouldThrowIntentModelException() {
+                public void thenShouldThrowIntentModelException() throws Exception {
                     assertThatThrownBy(() -> VoiceCommandHistory.create(
                                     validSttModel, transcribe, invalidIntentModel, result, userId, start, end))
                             .isInstanceOf(VoiceCommandHistoryException.class)

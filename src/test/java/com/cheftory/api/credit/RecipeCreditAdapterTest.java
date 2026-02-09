@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api.credit.entity.CreditReason;
+import com.cheftory.api.credit.exception.CreditException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,7 @@ class RecipeCreditAdapterTest {
 
     @Test
     @DisplayName("spendRecipeCreate - 레시피 생성 크레딧 차감을 CreditService에 위임한다")
-    void spendRecipeCreate_shouldDelegateToCreditService() {
+    void spendRecipeCreate_shouldDelegateToCreditService() throws CreditException {
         // given
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
@@ -43,7 +44,7 @@ class RecipeCreditAdapterTest {
 
     @Test
     @DisplayName("refundRecipeCreate - 레시피 생성 크레딧 환불을 CreditService에 위임한다")
-    void refundRecipeCreate_shouldDelegateToCreditService() {
+    void refundRecipeCreate_shouldDelegateToCreditService() throws CreditException {
         // given
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();

@@ -2,6 +2,7 @@ package com.cheftory.api.ranking.personalization;
 
 import static java.util.Objects.requireNonNull;
 
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class RankingPersonalizationService {
 
     private final RankingPersonalizationSearchPort rankingPersonalizationSearchPort;
 
-    public PersonalizationProfile aggregateProfile(List<UUID> seedIds) {
+    public PersonalizationProfile aggregateProfile(List<UUID> seedIds) throws SearchException {
         List<String> ids = seedIds.stream().map(UUID::toString).toList();
         List<SearchQuery> seedDocs = rankingPersonalizationSearchPort.mgetSearchQueries(ids);
 

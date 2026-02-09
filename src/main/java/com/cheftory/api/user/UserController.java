@@ -2,6 +2,7 @@ package com.cheftory.api.user;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.user.dto.UserRequest;
 import com.cheftory.api.user.dto.UserResponse;
@@ -29,7 +30,7 @@ public class UserController {
      * @throws UserException 유저를 찾을 수 없을 때 USER_NOT_FOUND
      */
     @GetMapping("/me")
-    public UserResponse getUser(@UserPrincipal UUID userId) {
+    public UserResponse getUser(@UserPrincipal UUID userId) throws UserException {
         User user = userService.get(userId);
         return UserResponse.from(user);
     }
@@ -42,7 +43,8 @@ public class UserController {
      * @return 수정된 유저 정보 응답 DTO
      */
     @PatchMapping("/me")
-    public UserResponse updateUser(@UserPrincipal UUID userId, @RequestBody UserRequest.Update request) {
+    public UserResponse updateUser(@UserPrincipal UUID userId, @RequestBody UserRequest.Update request)
+            throws UserException {
         User user = userService.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
         return UserResponse.from(user);
     }
@@ -57,7 +59,7 @@ public class UserController {
      * @throws CheftoryException 크레딧 지급 실패 시 튜토리얼 상태 복구 후 예외 전파
      */
     @PostMapping("/tutorial")
-    public SuccessOnlyResponse tutorial(@UserPrincipal UUID userId) {
+    public SuccessOnlyResponse tutorial(@UserPrincipal UUID userId) throws UserException, CreditException {
         userService.tutorial(userId);
         return SuccessOnlyResponse.create();
     }

@@ -42,7 +42,7 @@ class UserServiceTest {
 
             @Test
             @DisplayName("Then - 유저 정보를 반환해야 한다")
-            void thenShouldReturnUser() {
+            void thenShouldReturnUser() throws UserException {
                 User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
                 when(userRepository.find(Provider.KAKAO, "sub")).thenReturn(user);
 
@@ -81,7 +81,7 @@ class UserServiceTest {
 
         @Test
         @DisplayName("이미 존재하는 유저면 예외를 던진다")
-        void throws_when_user_already_exists() {
+        void throws_when_user_already_exists() throws UserException {
             when(userRepository.exist(Provider.KAKAO, "sub")).thenReturn(true);
 
             UserException ex = assertThrows(
@@ -94,7 +94,7 @@ class UserServiceTest {
 
         @Test
         @DisplayName("정상적으로 유저를 생성한다")
-        void creates_user_successfully() {
+        void creates_user_successfully() throws UserException {
             when(userRepository.exist(Provider.KAKAO, "sub")).thenReturn(false);
 
             User user =
@@ -141,7 +141,7 @@ class UserServiceTest {
 
             @Test
             @DisplayName("Then - 유저 정보를 반환해야 한다")
-            void thenShouldReturnUser() {
+            void thenShouldReturnUser() throws UserException {
                 User user = User.create("nick", Gender.MALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
                 UUID userId = UUID.randomUUID();
                 when(userRepository.find(userId)).thenReturn(user);
@@ -171,7 +171,7 @@ class UserServiceTest {
 
             @Test
             @DisplayName("닉네임 수정")
-            void updateNicknameOnly() {
+            void updateNicknameOnly() throws UserException {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
@@ -186,7 +186,7 @@ class UserServiceTest {
 
             @Test
             @DisplayName("성별 수정")
-            void updateGenderOnly() {
+            void updateGenderOnly() throws UserException {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
@@ -201,7 +201,7 @@ class UserServiceTest {
 
             @Test
             @DisplayName("성별 수정 (NULL)")
-            void clearGenderToNull() {
+            void clearGenderToNull() throws UserException {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
@@ -216,7 +216,7 @@ class UserServiceTest {
 
             @Test
             @DisplayName("생년월일 수정")
-            void updateBirthOnly() {
+            void updateBirthOnly() throws UserException {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
@@ -231,7 +231,7 @@ class UserServiceTest {
 
             @Test
             @DisplayName("생년월일 수정 (NULL)")
-            void clearBirthToNull() {
+            void clearBirthToNull() throws UserException {
                 User user = User.create(oldNickname, oldGender, oldBirth, Provider.KAKAO, "sub", true, clock);
                 UUID id = UUID.randomUUID();
                 doReturn(user).when(userRepository).find(id);
@@ -258,7 +258,7 @@ class UserServiceTest {
 
             @Test
             @DisplayName("Then - 유저 상태를 DELETED로 변경해야 한다")
-            void thenShouldMarkUserAsDeleted() {
+            void thenShouldMarkUserAsDeleted() throws UserException {
                 User user = User.create("nick", Gender.FEMALE, LocalDate.now(), Provider.KAKAO, "sub", true, clock);
                 when(userRepository.find(userId)).thenReturn(user);
 
@@ -277,7 +277,7 @@ class UserServiceTest {
 
         @Test
         @DisplayName("유저가 없으면 USER_NOT_FOUND 예외를 던진다")
-        void it_throws_when_user_not_found() {
+        void it_throws_when_user_not_found() throws CreditException, UserException {
             when(userRepository.exist(userId)).thenReturn(false);
 
             UserException ex = assertThrows(UserException.class, () -> userService.tutorial(userId));
@@ -289,7 +289,7 @@ class UserServiceTest {
 
         @Test
         @DisplayName("이미 완료된 경우 TUTORIAL_ALREADY_FINISHED 예외를 던진다")
-        void it_throws_when_already_completed() {
+        void it_throws_when_already_completed() throws UserException, CreditException {
             when(userRepository.exist(userId)).thenReturn(true);
             UserException exception = new UserException(UserErrorCode.TUTORIAL_ALREADY_FINISHED);
             doThrow(exception).when(userRepository).completeTutorial(eq(userId), any(Clock.class));
@@ -302,7 +302,7 @@ class UserServiceTest {
 
         @Test
         @DisplayName("완료 처리 후 크레딧을 지급한다")
-        void it_grants_credit_after_completion() {
+        void it_grants_credit_after_completion() throws CreditException, UserException {
             when(userRepository.exist(userId)).thenReturn(true);
 
             userService.tutorial(userId);
@@ -313,7 +313,7 @@ class UserServiceTest {
 
         @Test
         @DisplayName("크레딧 지급 실패 시 보상 처리 후 예외를 던진다")
-        void it_reverts_when_credit_grant_fails() {
+        void it_reverts_when_credit_grant_fails() throws CreditException, UserException {
             LocalDateTime now = LocalDateTime.of(2024, 1, 1, 0, 0);
             when(clock.now()).thenReturn(now);
             when(userRepository.exist(userId)).thenReturn(true);

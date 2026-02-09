@@ -61,19 +61,19 @@ class MarketIntegrationTest {
                 .allMatch(n -> n.startsWith("global")));
     }
 
-    @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    void async_without_marketContext_should_throw_unknown_region() {
-        var f = regionService.createAsync("x");
+  @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void async_without_marketContext_should_throw_unknown_region() {
+    var f = regionService.createAsync("x");
 
-        assertThatThrownBy(() -> f.get(3, TimeUnit.SECONDS))
-                .isInstanceOf(ExecutionException.class)
-                .hasCauseInstanceOf(CheftoryException.class)
-                .satisfies(ex -> {
-                    CheftoryException cause = (CheftoryException) ex.getCause();
-                    assertThat(cause.getError()).isEqualTo(GlobalErrorCode.UNKNOWN_REGION);
-                });
-    }
+    assertThatThrownBy(() -> f.get(3, TimeUnit.SECONDS))
+        .isInstanceOf(ExecutionException.class)
+        .hasRootCauseInstanceOf(CheftoryException.class)
+        .rootCause()
+        .isInstanceOfSatisfying(CheftoryException.class, ex ->
+            assertThat(ex.getError()).isEqualTo(GlobalErrorCode.UNKNOWN_REGION)
+        );
+  }
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)

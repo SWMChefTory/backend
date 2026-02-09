@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.search.exception.SearchException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +39,7 @@ public class AutocompleteServiceTest {
             private List<com.cheftory.api.search.autocomplete.Autocomplete> autocompletes;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 keyword = "김치";
 
                 com.cheftory.api.search.autocomplete.Autocomplete autocomplete1 =
@@ -75,7 +76,7 @@ public class AutocompleteServiceTest {
 
                 @Test
                 @DisplayName("Then - 자동완성 목록을 반환해야 한다")
-                void thenShouldReturnAutocompleteList() {
+                void thenShouldReturnAutocompleteList() throws SearchException {
                     List<com.cheftory.api.search.autocomplete.Autocomplete> result =
                             autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 
@@ -96,7 +97,7 @@ public class AutocompleteServiceTest {
             private String keyword;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 keyword = "존재하지않는검색어";
 
                 doReturn(List.of())
@@ -110,7 +111,7 @@ public class AutocompleteServiceTest {
 
                 @Test
                 @DisplayName("Then - 빈 목록을 반환해야 한다")
-                void thenShouldReturnEmptyList() {
+                void thenShouldReturnEmptyList() throws SearchException {
                     List<com.cheftory.api.search.autocomplete.Autocomplete> result =
                             autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 
@@ -129,7 +130,7 @@ public class AutocompleteServiceTest {
             private List<com.cheftory.api.search.autocomplete.Autocomplete> autocompletes;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 keyword = "파";
 
                 com.cheftory.api.search.autocomplete.Autocomplete autocomplete1 =
@@ -159,7 +160,7 @@ public class AutocompleteServiceTest {
 
                 @Test
                 @DisplayName("Then - 일치하는 자동완성 목록을 반환해야 한다")
-                void thenShouldReturnMatchingAutocompleteList() {
+                void thenShouldReturnMatchingAutocompleteList() throws SearchException {
                     List<com.cheftory.api.search.autocomplete.Autocomplete> result =
                             autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 
@@ -180,7 +181,7 @@ public class AutocompleteServiceTest {
             private List<com.cheftory.api.search.autocomplete.Autocomplete> autocompletes;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 keyword = "찌개";
 
                 // 기본 제한만큼의 결과만 반환
@@ -222,7 +223,7 @@ public class AutocompleteServiceTest {
 
                 @Test
                 @DisplayName("Then - 제한된 결과를 반환해야 한다")
-                void thenShouldReturnLimitedResults() {
+                void thenShouldReturnLimitedResults() throws SearchException {
                     List<com.cheftory.api.search.autocomplete.Autocomplete> result =
                             autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 

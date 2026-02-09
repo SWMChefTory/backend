@@ -74,7 +74,7 @@ class RecipeInfoServiceTest {
 
                 @Test
                 @DisplayName("Then - 레시피가 BLOCKED 상태로 변경되고 저장된다")
-                void thenMarkBlockedAndSave() {
+                void thenMarkBlockedAndSave() throws RecipeInfoException {
                     service.block(recipeId);
 
                     verify(recipeInfoRepository).findById(recipeId);
@@ -140,7 +140,7 @@ class RecipeInfoServiceTest {
 
                 @Test
                 @DisplayName("Then - 레시피가 반환되고 조회수가 증가한다")
-                void thenReturnRecipeAndIncreaseCount() {
+                void thenReturnRecipeAndIncreaseCount() throws RecipeInfoException {
                     RecipeInfo result = service.getSuccess(recipeId);
 
                     assertThat(result).isEqualTo(recipeInfo);
@@ -338,7 +338,7 @@ class RecipeInfoServiceTest {
 
                 @Test
                 @DisplayName("Then - 레시피가 성공 상태로 변경되고 저장된다")
-                void thenMarkSuccessAndSave() {
+                void thenMarkSuccessAndSave() throws RecipeInfoException {
                     RecipeInfo result = service.success(recipeId);
 
                     assertThat(result).isEqualTo(recipeInfo);
@@ -405,7 +405,7 @@ class RecipeInfoServiceTest {
 
                 @Test
                 @DisplayName("Then - 레시피가 실패 상태로 변경되고 저장된다")
-                void thenMarkFailedAndSave() {
+                void thenMarkFailedAndSave() throws RecipeInfoException {
                     RecipeInfo result = service.failed(recipeId);
 
                     assertThat(result).isEqualTo(recipeInfo);

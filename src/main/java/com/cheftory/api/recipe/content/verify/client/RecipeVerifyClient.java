@@ -20,7 +20,7 @@ public class RecipeVerifyClient {
         this.webClient = webClient;
     }
 
-    public RecipeVerifyClientResponse verifyVideo(String videoId) {
+    public RecipeVerifyClientResponse verifyVideo(String videoId) throws RecipeVerifyException {
         Objects.requireNonNull(videoId, "videoId는 null일 수 없습니다.");
 
         log.debug("영상 검증 요청 - videoId: {}", videoId);

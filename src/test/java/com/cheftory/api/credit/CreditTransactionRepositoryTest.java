@@ -44,7 +44,7 @@ class CreditTransactionRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("없는 idempotencyKey면 false")
-        void exists_false() {
+        void exists_false() throws Exception {
             assertThat(txRepository.existsByIdempotencyKey("nope-" + UUID.randomUUID()))
                     .isFalse();
         }

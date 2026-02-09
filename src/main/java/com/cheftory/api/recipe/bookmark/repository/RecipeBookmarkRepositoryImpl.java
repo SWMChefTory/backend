@@ -50,7 +50,7 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
                     }
                     return false;
                 },
-                () -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
+                (cause) -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
     }
 
     @Override
@@ -66,10 +66,11 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
                             .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE)
                             .orElseThrow(() ->
                                     new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND));
+
                     bookmark.updateRecipeCategoryId(categoryId);
                     repository.save(bookmark);
                 },
-                () -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
+                (cause) -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
     }
 
     @Override
@@ -78,10 +79,11 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
                 () -> {
                     List<RecipeBookmark> bookmarks =
                             repository.findByRecipeCategoryIdAndStatus(categoryId, RecipeBookmarkStatus.ACTIVE);
+
                     bookmarks.forEach(RecipeBookmark::emptyRecipeCategoryId);
                     repository.saveAll(bookmarks);
                 },
-                () -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
+                (cause) -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
     }
 
     @Override
@@ -182,6 +184,7 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
     }
 
     private CursorPage<RecipeBookmark> toCursorPage(List<RecipeBookmark> bookmarks, Pageable pageable) {
+
         return CursorPages.of(
                 bookmarks,
                 pageable.getPageSize(),

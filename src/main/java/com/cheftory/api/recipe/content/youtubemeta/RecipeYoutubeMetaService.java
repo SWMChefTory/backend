@@ -29,7 +29,7 @@ public class RecipeYoutubeMetaService {
         recipeYoutubeMetaRepository.save(youtubeMeta);
     }
 
-    public void ban(UUID recipeId) {
+    public void ban(UUID recipeId) throws YoutubeMetaException {
         RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaRepository
                 .findByRecipeId(recipeId)
                 .orElseThrow(() -> new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND));
@@ -44,7 +44,7 @@ public class RecipeYoutubeMetaService {
         });
     }
 
-    public RecipeYoutubeMeta getByUrl(URI uri) {
+    public RecipeYoutubeMeta getByUrl(URI uri) throws YoutubeMetaException {
         YoutubeUri youtubeUri = YoutubeUri.from(uri);
         List<RecipeYoutubeMeta> metas = recipeYoutubeMetaRepository.findAllByVideoUri(youtubeUri.getNormalizedUrl());
 
@@ -68,12 +68,12 @@ public class RecipeYoutubeMetaService {
         return actives.getFirst();
     }
 
-    public YoutubeVideoInfo getVideoInfo(URI uri) {
+    public YoutubeVideoInfo getVideoInfo(URI uri) throws YoutubeMetaException {
         YoutubeUri youtubeUri = YoutubeUri.from(uri);
         return videoInfoClient.fetchVideoInfo(youtubeUri);
     }
 
-    public RecipeYoutubeMeta get(UUID recipeId) {
+    public RecipeYoutubeMeta get(UUID recipeId) throws YoutubeMetaException {
         return recipeYoutubeMetaRepository
                 .findByRecipeId(recipeId)
                 .orElseThrow(() -> new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND));
@@ -83,7 +83,7 @@ public class RecipeYoutubeMetaService {
         return recipeYoutubeMetaRepository.findAllByRecipeIdIn(recipeIds);
     }
 
-    public void block(UUID recipeId) {
+    public void block(UUID recipeId) throws YoutubeMetaException {
         RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaRepository
                 .findByRecipeId(recipeId)
                 .orElseThrow(() -> new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND));
@@ -96,7 +96,7 @@ public class RecipeYoutubeMetaService {
         }
     }
 
-    private void validateAllActive(List<RecipeYoutubeMeta> metas) {
+    private void validateAllActive(List<RecipeYoutubeMeta> metas) throws YoutubeMetaException {
         if (metas.stream().anyMatch(RecipeYoutubeMeta::isBanned)) {
             throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED);
         }

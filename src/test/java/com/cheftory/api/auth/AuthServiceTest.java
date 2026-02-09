@@ -14,6 +14,7 @@ import com.cheftory.api.auth.model.AuthTokens;
 import com.cheftory.api.auth.repository.LoginRepository;
 import com.cheftory.api.auth.verifier.AppleTokenVerifier;
 import com.cheftory.api.auth.verifier.GoogleTokenVerifier;
+import com.cheftory.api.auth.verifier.exception.VerificationException;
 import com.cheftory.api.user.entity.Provider;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -50,7 +51,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void extractProviderSubFromIdToken_withGoogle_shouldReturnSub() {
+    void extractProviderSubFromIdToken_withGoogle_shouldReturnSub() throws VerificationException, AuthException {
         doReturn("google-sub").when(googleVerifier).getSubFromToken(idToken);
 
         String result = authService.extractProviderSubFromIdToken(idToken, Provider.GOOGLE);
@@ -59,7 +60,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void extractProviderSubFromIdToken_withApple_shouldReturnSub() {
+    void extractProviderSubFromIdToken_withApple_shouldReturnSub() throws VerificationException, AuthException {
         doReturn("apple-sub").when(appleVerifier).getSubFromToken(idToken);
 
         String result = authService.extractProviderSubFromIdToken(idToken, Provider.APPLE);
@@ -68,7 +69,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void extractProviderSubFromIdToken_withInvalidToken_shouldThrow() {
+    void extractProviderSubFromIdToken_withInvalidToken_shouldThrow() throws VerificationException {
         com.cheftory.api.auth.verifier.exception.VerificationException verificationException =
                 new com.cheftory.api.auth.verifier.exception.VerificationException(
                         com.cheftory.api.auth.verifier.exception.VerificationErrorCode.UNKNOWN_ERROR);
@@ -100,7 +101,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void saveLoginSession_shouldSaveWithCorrectExpirationAndCreatedAt() {
+    void saveLoginSession_shouldSaveWithCorrectExpirationAndCreatedAt() throws AuthException {
         doReturn(fixedNow).when(clock).now();
 
         LocalDateTime expiredAt = fixedNow.plusDays(7);
@@ -119,7 +120,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void reissue_withInvalidToken_shouldThrow() {
+    void reissue_withInvalidToken_shouldThrow() throws AuthException {
         doThrow(new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN))
                 .when(jwtProvider)
                 .getUserId(refreshToken, AuthTokenType.REFRESH);
@@ -130,14 +131,14 @@ class AuthServiceTest {
     }
 
     @Test
-    void deleteRefreshToken_shouldDeleteLogin() {
+    void deleteRefreshToken_shouldDeleteLogin() throws AuthException {
         authService.deleteRefreshToken(userId, refreshToken);
 
         verify(loginRepository).delete(eq(userId), eq(refreshToken));
     }
 
     @Test
-    void deleteRefreshToken_shouldThrowWhenNotFound() {
+    void deleteRefreshToken_shouldThrowWhenNotFound() throws AuthException {
         AuthException exception = new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         doThrow(exception).when(loginRepository).delete(userId, refreshToken);
 

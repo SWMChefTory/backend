@@ -11,23 +11,18 @@ import com.cheftory.api.recipe.category.entity.RecipeCategory;
 import com.cheftory.api.recipe.category.entity.RecipeCategoryStatus;
 import com.cheftory.api.recipe.category.exception.RecipeCategoryErrorCode;
 import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
-import com.cheftory.api.recipe.category.repository.RecipeCategoryJpaRepository;
 import com.cheftory.api.recipe.category.repository.RecipeCategoryRepository;
 import com.cheftory.api.recipe.category.repository.RecipeCategoryRepositoryImpl;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.mockito.Mock;
 
 @DisplayName("RecipeCategoryRepository Tests")
 @DataJpaTest
@@ -48,14 +43,13 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
         doReturn(now).when(clock).now();
     }
 
-
     @Nested
     @DisplayName("카테고리 생성")
     class CreateRecipeCategory {
 
         @Test
         @DisplayName("카테고리를 생성한다")
-        void shouldCreateRecipeCategory() {
+        void shouldCreateRecipeCategory() throws RecipeCategoryException {
             UUID userId = UUID.randomUUID();
             String name = "테스트 카테고리";
 
@@ -94,7 +88,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("카테고리를 삭제한다")
-        void shouldDeleteRecipeCategory() {
+        void shouldDeleteRecipeCategory() throws RecipeCategoryException {
             UUID userId = UUID.randomUUID();
             String name = "테스트 카테고리";
 
@@ -102,7 +96,6 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
             UUID categoryId = recipeCategoryRepository.create(category);
 
             recipeCategoryRepository.delete(userId, categoryId);
-
         }
 
         @Test
@@ -119,7 +112,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("다른 사용자의 카테고리 삭제 시 예외를 던진다")
-        void shouldThrowExceptionWhenNotOwner() {
+        void shouldThrowExceptionWhenNotOwner() throws RecipeCategoryException {
             UUID userId1 = UUID.randomUUID();
             UUID userId2 = UUID.randomUUID();
 
@@ -134,7 +127,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("이미 삭제된 카테고리 삭제 시 예외를 던진다")
-        void shouldThrowExceptionWhenAlreadyDeleted() {
+        void shouldThrowExceptionWhenAlreadyDeleted() throws RecipeCategoryException {
             UUID userId = UUID.randomUUID();
             String name = "테스트 카테고리";
 
@@ -156,7 +149,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("사용자의 활성 카테고리 목록을 조회한다")
-        void shouldGetUserCategories() {
+        void shouldGetUserCategories() throws RecipeCategoryException {
             UUID userId = UUID.randomUUID();
             String name1 = "카테고리1";
             String name2 = "카테고리2";
@@ -178,7 +171,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("삭제된 카테고리는 목록에서 제외된다")
-        void shouldExcludeDeletedCategories() {
+        void shouldExcludeDeletedCategories() throws RecipeCategoryException {
             UUID userId = UUID.randomUUID();
             String name1 = "카테고리1";
             String name2 = "카테고리2";
@@ -204,7 +197,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("카테고리가 존재하면 true를 반환한다")
-        void shouldReturnTrueWhenCategoryExists() {
+        void shouldReturnTrueWhenCategoryExists() throws RecipeCategoryException {
             UUID userId = UUID.randomUUID();
             String name = "테스트 카테고리";
 
@@ -218,7 +211,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("삭제된 카테고리는 존재하지 않는 것으로 간주한다")
-        void shouldReturnFalseWhenCategoryDeleted() {
+        void shouldReturnFalseWhenCategoryDeleted() throws RecipeCategoryException {
             UUID userId = UUID.randomUUID();
             String name = "테스트 카테고리";
 

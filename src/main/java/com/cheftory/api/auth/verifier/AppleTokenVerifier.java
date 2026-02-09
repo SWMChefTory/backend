@@ -36,7 +36,7 @@ public class AppleTokenVerifier {
     private static long lastFetchTimeMillis = 0;
     private static final long CACHE_DURATION_MS = 60 * 60 * 1000;
 
-    private JWKSet getCachedJwkSet() {
+    private JWKSet getCachedJwkSet() throws VerificationException {
         long now = System.currentTimeMillis();
         if (cachedJwkSet.get() == null || now - lastFetchTimeMillis > CACHE_DURATION_MS) {
             try {

@@ -9,8 +9,10 @@ import static org.mockito.Mockito.when;
 
 import com.cheftory.api.credit.exception.CreditErrorCode;
 import com.cheftory.api.credit.exception.CreditException;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +44,8 @@ class RecipeBookmarkFacadeTest {
 
         @Test
         @DisplayName("북마크가 새로 생성되면 credit 차감을 시도한다")
-        void shouldSpendCreditWhenBookmarkCreated() {
+        void shouldSpendCreditWhenBookmarkCreated()
+                throws RecipeInfoException, RecipeBookmarkException, CreditException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             long creditCost = 100L;
@@ -62,7 +65,8 @@ class RecipeBookmarkFacadeTest {
 
         @Test
         @DisplayName("이미 북마크가 존재하면 credit 차감을 하지 않는다")
-        void shouldNotSpendCreditWhenBookmarkAlreadyExists() {
+        void shouldNotSpendCreditWhenBookmarkAlreadyExists()
+                throws RecipeInfoException, RecipeBookmarkException, CreditException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             long creditCost = 100L;
@@ -79,8 +83,9 @@ class RecipeBookmarkFacadeTest {
         }
 
         @Test
-        @DisplayName("credit 부족이면 북마크 삭제 후 CREDIT_INSUFFICIENT를 던진다")
-        void shouldDeleteBookmarkAndThrowCreditInsufficient() {
+        @DisplayName("credit 부족이면 CREDIT_INSUFFICIENT를 던진다")
+        void shouldThrowCreditInsufficient()
+                throws CreditException, RecipeBookmarkException, RecipeInfoException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             long creditCost = 100L;
@@ -98,13 +103,12 @@ class RecipeBookmarkFacadeTest {
             assertThatThrownBy(() -> sut.create(userId, recipeId))
                     .isInstanceOf(CreditException.class)
                     .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_INSUFFICIENT);
-
-            verify(recipeBookmarkService).delete(userId, recipeId);
         }
 
         @Test
-        @DisplayName("credit 동시성 충돌이면 북마크 삭제 후 CREDIT_CONCURRENCY_CONFLICT를 던진다")
-        void shouldDeleteBookmarkAndThrowConcurrencyConflict() {
+        @DisplayName("credit 동시성 충돌이면 CREDIT_CONCURRENCY_CONFLICT를 던진다")
+        void shouldThrowConcurrencyConflict()
+                throws CreditException, RecipeBookmarkException, RecipeInfoException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             long creditCost = 100L;
@@ -122,8 +126,6 @@ class RecipeBookmarkFacadeTest {
             assertThatThrownBy(() -> sut.create(userId, recipeId))
                     .isInstanceOf(CreditException.class)
                     .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
-
-            verify(recipeBookmarkService).delete(userId, recipeId);
         }
     }
 }

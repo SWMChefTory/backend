@@ -29,7 +29,7 @@ class UserShareTest {
 
         @Test
         @DisplayName("제한 횟수 미만이면 횟수를 1 증가시킨다")
-        void it_increases_count() {
+        void it_increases_count() throws UserShareException {
             // given
             when(clock.now()).thenReturn(LocalDateTime.now());
             UserShare userShare = UserShare.create(userId, sharedAt, clock);
@@ -43,7 +43,7 @@ class UserShareTest {
 
         @Test
         @DisplayName("제한 횟수에 도달하면 예외를 던진다")
-        void it_throws_exception_when_at_limit() {
+        void it_throws_exception_when_at_limit() throws UserShareException {
             // given
             when(clock.now()).thenReturn(LocalDateTime.now());
             UserShare userShare = UserShare.create(userId, sharedAt, clock);
@@ -63,7 +63,7 @@ class UserShareTest {
 
         @Test
         @DisplayName("횟수가 0보다 크면 1 감소시킨다")
-        void it_decreases_count() {
+        void it_decreases_count() throws UserShareException {
             // given
             when(clock.now()).thenReturn(LocalDateTime.now());
             UserShare userShare = UserShare.create(userId, sharedAt, clock);

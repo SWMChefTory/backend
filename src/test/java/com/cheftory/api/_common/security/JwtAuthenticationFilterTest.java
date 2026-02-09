@@ -44,7 +44,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void 유효한_Bearer_토큰이_주어지면_인증_컨텍스트를_설정하고_filterChain을_호출한다() throws ServletException, IOException {
+    void 유효한_Bearer_토큰이_주어지면_인증_컨텍스트를_설정하고_filterChain을_호출한다() throws ServletException, IOException, AuthException {
         // Arrange
         UUID userId = UUID.randomUUID();
         String validJwt = "valid.jwt.token";
@@ -80,7 +80,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void 유효하지_않은_토큰이_주어지면_요청_속성에_예외를_설정하고_filterChain을_호출한다() throws ServletException, IOException {
+    void 유효하지_않은_토큰이_주어지면_요청_속성에_예외를_설정하고_filterChain을_호출한다() throws ServletException, IOException, AuthException {
         // Arrange
         String invalidJwt = "invalid.jwt.token";
         request.addHeader("Authorization", "Bearer " + invalidJwt);
@@ -120,7 +120,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void 토큰_검증_중_예외가_발생하면_요청_속성에_예외를_설정하고_filterChain을_호출한다() throws ServletException, IOException {
+    void 토큰_검증_중_예외가_발생하면_요청_속성에_예외를_설정하고_filterChain을_호출한다() throws ServletException, IOException, AuthException {
         // Arrange
         String jwt = "jwt.token";
         request.addHeader("Authorization", "Bearer " + jwt);

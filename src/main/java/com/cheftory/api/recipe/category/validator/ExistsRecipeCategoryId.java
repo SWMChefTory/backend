@@ -8,6 +8,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * 레시피 카테고리 ID 존재 여부 검증 어노테이션
+ */
 @Documented
 @Constraint(validatedBy = RecipeCategoryIdValidator.class)
 @Target({ElementType.FIELD})

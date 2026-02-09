@@ -8,6 +8,7 @@ import static org.mockito.Mockito.*;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.entity.CreditUserBalance;
+import com.cheftory.api.credit.exception.CreditException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,7 +45,7 @@ class CreditTxServiceTest {
 
         @Test
         @DisplayName("balance가 없으면 생성 후 amount를 더하고 balance를 저장한다")
-        void createsBalanceAndGrants() {
+        void createsBalanceAndGrants() throws CreditException {
             UUID userId = UUID.randomUUID();
             Credit credit = Credit.signupBonus(userId);
 
@@ -65,7 +66,7 @@ class CreditTxServiceTest {
 
         @Test
         @DisplayName("멱등키가 이미 처리된 경우(tx save에서 DIVE + exists=true) balance 변경 없이 return 한다")
-        void idempotencySkipsBalanceUpdate() {
+        void idempotencySkipsBalanceUpdate() throws CreditException {
             UUID userId = UUID.randomUUID();
             Credit credit = Credit.signupBonus(userId);
 
@@ -88,7 +89,7 @@ class CreditTxServiceTest {
 
         @Test
         @DisplayName("tx save에서 DIVE가 났지만 exists=false면 예외를 다시 던진다")
-        void idempotencyRethrowsIfNotActuallyProcessed() {
+        void idempotencyRethrowsIfNotActuallyProcessed() throws CreditException {
             UUID userId = UUID.randomUUID();
             Credit credit = Credit.signupBonus(userId);
 
@@ -109,7 +110,7 @@ class CreditTxServiceTest {
 
         @Test
         @DisplayName("saveAndFlush 레이스로 DIVE가 나면 다시 findById로 가져와서 진행한다")
-        void loadOrCreateBalanceRaceCondition() {
+        void loadOrCreateBalanceRaceCondition() throws CreditException {
             UUID userId = UUID.randomUUID();
             Credit credit = Credit.signupBonus(userId);
 
@@ -139,7 +140,7 @@ class CreditTxServiceTest {
 
         @Test
         @DisplayName("기존 balance에서 amount를 차감하고 balance를 저장한다")
-        void spendsFromExistingBalance() {
+        void spendsFromExistingBalance() throws CreditException {
             UUID userId = UUID.randomUUID();
 
             CreditUserBalance balance = CreditUserBalance.create(userId);

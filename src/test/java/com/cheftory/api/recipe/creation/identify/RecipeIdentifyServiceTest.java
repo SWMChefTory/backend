@@ -52,7 +52,7 @@ class RecipeIdentifyServiceTest {
 
                 @Test
                 @DisplayName("Then - 엔티티가 저장되고 반환된다")
-                void thenSavedAndReturned() {
+                void thenSavedAndReturned() throws RecipeIdentifyException {
                     RecipeIdentify entity = RecipeIdentify.create(url, clock);
                     when(repository.save(any(RecipeIdentify.class))).thenReturn(entity);
 

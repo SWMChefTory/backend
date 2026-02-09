@@ -139,8 +139,9 @@ public class UserService {
      * 유저 삭제 (DELETED 상태로 변경)
      *
      * @param userId 유저 ID
+     * @throws UserException 유저를 찾을 수 없을 때 USER_NOT_FOUND
      */
-    public void delete(UUID userId) {
+    public void delete(UUID userId) throws UserException {
         userRepository.delete(userId, clock);
     }
 

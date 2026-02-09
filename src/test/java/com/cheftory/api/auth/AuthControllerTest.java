@@ -63,7 +63,7 @@ public class AuthControllerTest extends RestDocsTest {
             private String validToken;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException {
                 userId = generateUserId();
                 validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.token";
 
@@ -74,7 +74,7 @@ public class AuthControllerTest extends RestDocsTest {
 
             @Test
             @DisplayName("사용자 ID를 성공적으로 반환한다")
-            void shouldReturnUserId() {
+            void shouldReturnUserId() throws AuthException {
                 var response = given().contentType(ContentType.JSON)
                         .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(validToken))
                         .when()
@@ -100,7 +100,7 @@ public class AuthControllerTest extends RestDocsTest {
             private String invalidToken;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException {
                 invalidToken = "invalid.malformed.token";
 
                 doThrow(new AuthException(AuthErrorCode.INVALID_TOKEN))
@@ -110,7 +110,7 @@ public class AuthControllerTest extends RestDocsTest {
 
             @Test
             @DisplayName("400 Bad Request 에러를 반환한다")
-            void shouldReturnBadRequestError() {
+            void shouldReturnBadRequestError() throws AuthException {
                 var response = given().contentType(ContentType.JSON)
                         .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(invalidToken))
                         .when()
@@ -161,7 +161,7 @@ public class AuthControllerTest extends RestDocsTest {
             private String expiredToken;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException {
                 expiredToken = "expired.jwt.token";
 
                 doThrow(new AuthException(AuthErrorCode.EXPIRED_TOKEN))
@@ -171,7 +171,7 @@ public class AuthControllerTest extends RestDocsTest {
 
             @Test
             @DisplayName("400 Bad Request 에러를 반환한다")
-            void shouldReturnBadRequestError() {
+            void shouldReturnBadRequestError() throws AuthException {
                 var response = given().contentType(ContentType.JSON)
                         .header(HttpHeaders.AUTHORIZATION, BearerAuthorizationUtils.addPrefix(expiredToken))
                         .when()
@@ -205,7 +205,7 @@ public class AuthControllerTest extends RestDocsTest {
             private AuthTokens tokens;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException {
                 rawRefreshToken = "valid-refresh-token";
                 bearerToken = BearerAuthorizationUtils.addPrefix(rawRefreshToken);
                 tokens = new AuthTokens("new-access-token", "new-refresh-token");
@@ -246,7 +246,7 @@ public class AuthControllerTest extends RestDocsTest {
             private String bearerToken;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException {
                 rawRefreshToken = "invalid-refresh-token";
                 bearerToken = "Bearer " + rawRefreshToken;
 

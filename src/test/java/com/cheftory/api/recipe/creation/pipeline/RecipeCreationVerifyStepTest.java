@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 
 import com.cheftory.api.recipe.content.verify.RecipeVerifyService;
 import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientResponse;
+import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
+import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
@@ -54,7 +56,7 @@ class RecipeCreationVerifyStepTest {
 
         @Test
         @DisplayName("성공 시 verify를 호출하고 fileUri, mimeType을 포함한 context를 반환한다")
-        void shouldVerifyAndReturnUpdatedContext() {
+        void shouldVerifyAndReturnUpdatedContext() throws RecipeVerifyException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-123";
             URI videoUrl = URI.create("https://youtu.be/video-123");
@@ -82,18 +84,18 @@ class RecipeCreationVerifyStepTest {
 
         @Test
         @DisplayName("예외 발생 시 progress를 failed로 기록하고 예외를 전파한다")
-        void shouldFailProgressWhenExceptionThrown() {
+        void shouldFailProgressWhenExceptionThrown() throws RecipeVerifyException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
             RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
 
             when(recipeVerifyService.verify(videoId))
-                    .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
+                    .thenThrow(new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR));
 
             assertThatThrownBy(() -> sut.run(context))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                    .hasFieldOrPropertyWithValue("error", RecipeVerifyErrorCode.SERVER_ERROR);
 
             verify(recipeProgressService).failed(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
             verify(recipeVerifyService).verify(videoId);

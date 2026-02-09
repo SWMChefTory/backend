@@ -11,6 +11,7 @@ import com.cheftory.api.recipe.content.step.client.RecipeStepClient;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsResponse;
 import com.cheftory.api.recipe.content.step.entity.RecipeStep;
 import com.cheftory.api.recipe.content.step.entity.RecipeStepSort;
+import com.cheftory.api.recipe.content.step.exception.RecipeStepException;
 import com.cheftory.api.recipe.content.step.repository.RecipeStepRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -66,7 +67,7 @@ public class RecipeStepServiceTest {
                 private ClientRecipeStepsResponse clientResponse;
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws RecipeStepException {
                     subtitle = "Step 1";
                     start = 1.0;
                     descriptionText = "Chop the onions.";
@@ -90,7 +91,7 @@ public class RecipeStepServiceTest {
 
                 @DisplayName("Then - 레시피 단계들이 생성된다")
                 @Test
-                void thenRecipeStepsCreated() {
+                void thenRecipeStepsCreated() throws RecipeStepException {
                     recipeStepService.create(recipeId, fileUri, mimeType);
                     verify(recipeStepClient).fetchRecipeSteps(fileUri, mimeType);
                     verify(clientResponse).toRecipeSteps(recipeId, clock);

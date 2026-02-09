@@ -1,5 +1,6 @@
 package com.cheftory.api._common.region;
 
+import com.cheftory.api.exception.CheftoryException;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
@@ -21,7 +22,7 @@ public abstract class MarketScope {
     private String countryCode;
 
     @PrePersist
-    protected void onCreate() {
+    protected void onCreate() throws CheftoryException {
         this.countryCode = MarketContext.required().countryCode();
     }
 }

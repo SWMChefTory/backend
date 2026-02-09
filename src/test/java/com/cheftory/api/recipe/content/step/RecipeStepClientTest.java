@@ -6,6 +6,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.cheftory.api.recipe.content.step.client.RecipeStepClient;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsRequest;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsResponse;
+import com.cheftory.api.recipe.content.step.exception.RecipeStepErrorCode;
+import com.cheftory.api.recipe.content.step.exception.RecipeStepException;
+import com.cheftory.api.recipe.exception.RecipeErrorCode;
+import com.cheftory.api.recipe.exception.RecipeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
@@ -109,21 +113,20 @@ class RecipeStepClientTest {
         }
 
         @Test
-        @DisplayName("서버 에러 시 WebClientResponseException이 발생한다")
+        @DisplayName("서버 에러 시 RecipeStepException으로 래핑되고 cause는 WebClientResponseException이다")
         void shouldThrowWebClientResponseExceptionOnServerError() throws InterruptedException {
             String fileUri = "s3://bucket/file.mp4";
             String mimeType = "video/mp4";
 
             mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(HttpStatus.BAD_REQUEST.value())
-                    .setBody("{\"error\":\"Invalid request\"}"));
+                .setResponseCode(HttpStatus.BAD_REQUEST.value())
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"error\":\"Invalid request\"}"));
 
             assertThatThrownBy(() -> recipeStepClient.fetchRecipeSteps(fileUri, mimeType))
-                    .isInstanceOf(WebClientResponseException.class)
-                    .satisfies(exception -> {
-                        WebClientResponseException webClientException = (WebClientResponseException) exception;
-                        assertThat(webClientException.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                    });
+                .isInstanceOf(RecipeStepException.class)
+                .hasFieldOrPropertyWithValue("error", RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
+
 
             RecordedRequest recordedRequest = mockWebServer.takeRequest();
             assertThat(recordedRequest.getMethod()).isEqualTo("POST");

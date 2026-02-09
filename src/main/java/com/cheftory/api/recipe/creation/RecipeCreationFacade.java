@@ -37,7 +37,7 @@ public class RecipeCreationFacade {
     private final RecipeCreditPort creditPort;
     private final RecipeCreationTxService recipeCreationTxService;
 
-    public UUID createBookmark(RecipeCreationTarget target) {
+    public UUID createBookmark(RecipeCreationTarget target) throws RecipeException, CreditException {
         try {
             UUID recipeId = recipeYoutubeMetaService.getByUrl(target.uri()).getRecipeId();
             RecipeInfo recipeInfo = recipeInfoService.getSuccess(recipeId);
@@ -63,7 +63,7 @@ public class RecipeCreationFacade {
         }
     }
 
-    private UUID createNewRecipe(RecipeCreationTarget target) {
+    private UUID createNewRecipe(RecipeCreationTarget target) throws RecipeException, CreditException {
         try {
             YoutubeVideoInfo videoInfo = recipeYoutubeMetaService.getVideoInfo(target.uri());
             RecipeInfo recipeInfo = recipeCreationTxService.createWithIdentifyWithVideoInfo(videoInfo);
@@ -90,7 +90,8 @@ public class RecipeCreationFacade {
         }
     }
 
-    private void createBookmark(RecipeCreationTarget target, RecipeInfo recipeInfo) {
+    private void createBookmark(RecipeCreationTarget target, RecipeInfo recipeInfo)
+            throws RecipeException, CreditException {
         switch (target) {
             case RecipeCreationTarget.User user -> {
                 UUID userId = user.userId();

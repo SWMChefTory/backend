@@ -10,22 +10,28 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkUnCategorizedCount;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
 import com.cheftory.api.recipe.challenge.RecipeChallengeService;
 import com.cheftory.api.recipe.content.briefing.RecipeBriefingService;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaErrorCode;
+import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipe.content.step.RecipeStepService;
 import com.cheftory.api.recipe.content.tag.RecipeTagService;
@@ -33,6 +39,7 @@ import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
@@ -111,7 +118,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("정상 차단 흐름")
-        void shouldBlockRecipe() {
+        void shouldBlockRecipe() throws RecipeException {
             UUID recipeId = UUID.randomUUID();
 
             sut.blockRecipe(recipeId);
@@ -123,10 +130,10 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("차단되지 않은 영상이면 RECIPE_NOT_BLOCKED_VIDEO로 변환된다")
-        void shouldThrowNotBlockedVideo() {
+        void shouldThrowNotBlockedVideo() throws YoutubeMetaException, RecipeInfoException {
             UUID recipeId = UUID.randomUUID();
 
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO))
+            doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO))
                     .when(recipeYoutubeMetaService)
                     .block(recipeId);
 
@@ -146,7 +153,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("성공 레시피면 FullRecipe를 반환한다")
-        void shouldReturnFullRecipe() {
+        void shouldReturnFullRecipe() throws CheftoryException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 
@@ -170,11 +177,11 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("RecipeInfo not found면 RECIPE_INFO_NOT_FOUND로 변환된다")
-        void shouldMapNotFoundToRecipeInfoNotFound() {
+        void shouldMapNotFoundToRecipeInfoNotFound() throws RecipeInfoException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 
-            doThrow(new RecipeException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND))
+            doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND))
                     .when(recipeInfoService)
                     .getSuccess(recipeId);
 
@@ -185,7 +192,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("DetailMeta not found면 RECIPE_INFO_NOT_FOUND로 변환된다")
-        void shouldMapDetailMetaNotFoundToRecipeInfoNotFound() {
+        void shouldMapDetailMetaNotFoundToRecipeInfoNotFound() throws RecipeInfoException, RecipeDetailMetaException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 
@@ -194,7 +201,7 @@ class RecipeFacadeTest {
                     .getSuccess(recipeId);
             doReturn(Collections.emptyList()).when(recipeStepService).gets(recipeId);
             doReturn(Collections.emptyList()).when(recipeIngredientService).gets(recipeId);
-            doThrow(new RecipeException(RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND))
+            doThrow(new RecipeDetailMetaException(RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND))
                     .when(recipeDetailMetaService)
                     .get(recipeId);
 
@@ -205,32 +212,17 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("Recipe failed면 RECIPE_FAILED로 변환된다")
-        void shouldMapFailedToRecipeFailed() {
+        void shouldMapFailedToRecipeFailed() throws RecipeInfoException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 
-            doThrow(new RecipeException(RecipeInfoErrorCode.RECIPE_FAILED))
+            doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_FAILED))
                     .when(recipeInfoService)
                     .getSuccess(recipeId);
 
             assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_FAILED);
-        }
-
-        @Test
-        @DisplayName("그 외 예외는 그대로 전파한다")
-        void shouldPropagateOtherExceptions() {
-            UUID recipeId = UUID.randomUUID();
-            UUID userId = UUID.randomUUID();
-
-            doThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL))
-                    .when(recipeInfoService)
-                    .getSuccess(recipeId);
-
-            assertThatThrownBy(() -> sut.getFullRecipe(recipeId, userId))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
     }
 
@@ -240,7 +232,8 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("detailMeta가 null이어도 overview를 반환한다")
-        void shouldReturnOverviewWithNullDetailMeta() {
+        void shouldReturnOverviewWithNullDetailMeta()
+						throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 
@@ -266,7 +259,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("커서 기반 최근 북마크를 반환한다")
-        void shouldReturnRecentBookmarksWithCursor() {
+        void shouldReturnRecentBookmarksWithCursor() throws CursorException {
             UUID userId = UUID.randomUUID();
             String cursor = "cursor-1";
             UUID recipeId = UUID.randomUUID();
@@ -295,7 +288,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("커서 기반 카테고리 북마크를 반환한다")
-        void shouldReturnCategorizedBookmarksWithCursor() {
+        void shouldReturnCategorizedBookmarksWithCursor() throws CursorException {
             UUID userId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
             String cursor = "cursor-1";
@@ -363,7 +356,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("카테고리 삭제 시 unCategorize 후 delete가 호출된다")
-        void shouldDeleteCategory() {
+        void shouldDeleteCategory() throws RecipeBookmarkException, RecipeCategoryException {
             UUID categoryId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 
@@ -380,7 +373,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("진행 상황과 레시피를 조합해 반환한다")
-        void shouldReturnRecipeProgressStatus() {
+        void shouldReturnRecipeProgressStatus() throws RecipeInfoException {
             UUID recipeId = UUID.randomUUID();
             RecipeInfo recipeInfo = mockRecipe(recipeId, RecipeStatus.SUCCESS);
 
@@ -405,7 +398,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("커서 기반 cuisine 조회 시 overview를 만들어 반환한다")
-        void shouldReturnCuisineRecipesWithCursor() {
+        void shouldReturnCuisineRecipesWithCursor() throws CheftoryException {
             String cursor = "cursor-1";
             String nextCursor = "cursor-2";
             UUID userId = UUID.randomUUID();
@@ -441,7 +434,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("커서 기반 POPULAR 타입은 getPopulars를 호출한다")
-        void shouldReturnPopularRecipesWithCursor() {
+        void shouldReturnPopularRecipesWithCursor() throws CheftoryException {
             String cursor = "cursor-1";
             String nextCursor = "cursor-2";
             UUID userId = UUID.randomUUID();
@@ -471,7 +464,7 @@ class RecipeFacadeTest {
 
         @Test
         @DisplayName("커서 기반 CHEF 타입은 랭킹 기반으로 조회한다")
-        void shouldReturnChefRecipesWithCursor() {
+        void shouldReturnChefRecipesWithCursor() throws CheftoryException {
             String cursor = "cursor-1";
             String nextCursor = "cursor-2";
             UUID userId = UUID.randomUUID();

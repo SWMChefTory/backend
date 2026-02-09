@@ -11,10 +11,9 @@ import org.junit.jupiter.api.Test;
 
 @DisplayName("CreditUserBalance Entity")
 class CreditUserBalanceTest {
-
     @Test
     @DisplayName("create - userId가 null이면 CREDIT_INVALID_USER 예외")
-    void create_shouldThrowWhenUserIdNull() {
+    void create_shouldThrowWhenUserIdNull() throws Exception {
         assertThatThrownBy(() -> CreditUserBalance.create(null))
                 .isInstanceOf(CreditException.class)
                 .satisfies(ex -> {
@@ -25,7 +24,7 @@ class CreditUserBalanceTest {
 
     @Test
     @DisplayName("apply - 잔액이 음수가 되면 CREDIT_INSUFFICIENT 예외")
-    void apply_shouldThrowWhenBalanceNegative() {
+    void apply_shouldThrowWhenBalanceNegative() throws CreditException {
         UUID userId = UUID.randomUUID();
         CreditUserBalance balance = CreditUserBalance.create(userId);
 
@@ -39,7 +38,7 @@ class CreditUserBalanceTest {
 
     @Test
     @DisplayName("apply - 정상적으로 증감된다")
-    void apply_shouldUpdateBalance() {
+    void apply_shouldUpdateBalance() throws CreditException {
         UUID userId = UUID.randomUUID();
         CreditUserBalance balance = CreditUserBalance.create(userId);
 

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api.voicecommand.enums.IntentModel;
 import com.cheftory.api.voicecommand.enums.STTModel;
+import com.cheftory.api.voicecommand.exception.VoiceCommandHistoryException;
 import com.cheftory.api.voicecommand.model.VoiceCommandHistory;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +38,7 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
             private VoiceCommandHistory voiceCommandHistory;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws VoiceCommandHistoryException {
                 userId = UUID.randomUUID();
                 baseIntent = "testBaseIntent";
                 intent = "testIntent";
@@ -105,7 +106,7 @@ public class VoiceCommandHistoryRepositoryTest extends DbContextTest {
             private VoiceCommandHistory savedVoiceCommandHistory;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws VoiceCommandHistoryException {
                 userId = UUID.randomUUID();
                 baseIntent = "testBaseIntent";
                 intent = "testIntent";

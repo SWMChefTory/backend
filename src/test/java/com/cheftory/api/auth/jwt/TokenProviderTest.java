@@ -81,7 +81,7 @@ class TokenProviderTest {
     }
 
     @Test
-    void getUserIdFromToken_withValidAccessToken_shouldReturnUserId() {
+    void getUserIdFromToken_withValidAccessToken_shouldReturnUserId() throws AuthException {
         String token = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
         UUID extractedUserId = tokenProvider.getUserId(token, AuthTokenType.ACCESS);
@@ -120,7 +120,7 @@ class TokenProviderTest {
     }
 
     @Test
-    void getExpiration_withValidToken_shouldReturnExpirationDateTime() {
+    void getExpiration_withValidToken_shouldReturnExpirationDateTime() throws AuthException {
         String token = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
         LocalDateTime expiration = tokenProvider.getExpiration(token);
@@ -130,7 +130,7 @@ class TokenProviderTest {
     }
 
     @Test
-    void getExpiration_withRefreshToken_shouldReturnExpirationDateTime() {
+    void getExpiration_withRefreshToken_shouldReturnExpirationDateTime() throws AuthException {
         String refreshToken = tokenProvider.createToken(userId, AuthTokenType.REFRESH);
 
         LocalDateTime expiration = tokenProvider.getExpiration(refreshToken);
@@ -149,7 +149,7 @@ class TokenProviderTest {
     }
 
     @Test
-    void getUserIdFromToken_and_getExpiration_shouldUseSameExpirationTime() {
+    void getUserIdFromToken_and_getExpiration_shouldUseSameExpirationTime() throws AuthException {
         String token = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
 
         UUID extractedUserId = tokenProvider.getUserId(token, AuthTokenType.ACCESS);
@@ -179,7 +179,7 @@ class TokenProviderTest {
     }
 
     @Test
-    void tokenExpiration_shouldMatchConfiguredExpiration() {
+    void tokenExpiration_shouldMatchConfiguredExpiration() throws AuthException {
         String accessToken = tokenProvider.createToken(userId, AuthTokenType.ACCESS);
         String refreshToken = tokenProvider.createToken(userId, AuthTokenType.REFRESH);
 

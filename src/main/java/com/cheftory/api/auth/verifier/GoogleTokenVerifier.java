@@ -41,7 +41,7 @@ public class GoogleTokenVerifier {
         return subNode.asText();
     }
 
-    private JsonNode getPayload(String idToken) {
+    private JsonNode getPayload(String idToken) throws VerificationException {
         try {
             URI uri = UriComponentsBuilder.fromUriString("https://oauth2.googleapis.com/tokeninfo")
                     .queryParam("id_token", idToken)

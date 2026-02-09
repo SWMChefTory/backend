@@ -12,6 +12,7 @@ import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.dto.RecipeOverview;
+import com.cheftory.api.search.exception.SearchException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class RecipeSearchFacade {
     private final RecipeTagService recipeTagService;
     private final RecipeInfoService recipeInfoService;
 
-    public CursorPage<RecipeOverview> searchRecipes(String query, UUID userId, String cursor) {
+    public CursorPage<RecipeOverview> searchRecipes(String query, UUID userId, String cursor) throws SearchException {
         CursorPage<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, cursor);
 
         List<RecipeInfo> recipes = recipeInfoService.gets(recipeIdsPage.items());

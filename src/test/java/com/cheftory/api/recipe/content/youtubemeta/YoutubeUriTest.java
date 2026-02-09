@@ -25,7 +25,7 @@ class YoutubeUriTest {
 
         @DisplayName("When - from 호출")
         @Test
-        void thenReturnsNormalizedAndId() {
+        void thenReturnsNormalizedAndId() throws YoutubeMetaException {
             YoutubeUri result = YoutubeUri.from(general);
 
             assertThat(result.getVideoId()).isEqualTo(ID);
@@ -41,7 +41,7 @@ class YoutubeUriTest {
 
         @DisplayName("When - from 호출")
         @Test
-        void thenReturnsNormalizedAndId() {
+        void thenReturnsNormalizedAndId() throws YoutubeMetaException {
             YoutubeUri result = YoutubeUri.from(shortUrl);
 
             assertThat(result.getVideoId()).isEqualTo(ID);
@@ -58,7 +58,7 @@ class YoutubeUriTest {
 
         @DisplayName("When - from 호출")
         @Test
-        void thenStripsExtrasAndKeepsOnlyV() {
+        void thenStripsExtrasAndKeepsOnlyV() throws YoutubeMetaException {
             YoutubeUri result = YoutubeUri.from(withParams);
 
             assertThat(result.getVideoId()).isEqualTo(ID);

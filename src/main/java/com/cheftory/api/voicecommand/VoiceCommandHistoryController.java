@@ -2,6 +2,7 @@ package com.cheftory.api.voicecommand;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api.voicecommand.dto.VoiceCommandHistoryCreateRequest;
+import com.cheftory.api.voicecommand.exception.VoiceCommandHistoryException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,8 @@ public class VoiceCommandHistoryController {
     private final VoiceCommandHistoryService voiceCommandHistoryService;
 
     @PostMapping("")
-    public SuccessOnlyResponse createVoiceCommandHistory(@Valid @RequestBody VoiceCommandHistoryCreateRequest request) {
+    public SuccessOnlyResponse createVoiceCommandHistory(@Valid @RequestBody VoiceCommandHistoryCreateRequest request)
+            throws VoiceCommandHistoryException {
         voiceCommandHistoryService.create(
                 request.transcribe(),
                 request.result(),

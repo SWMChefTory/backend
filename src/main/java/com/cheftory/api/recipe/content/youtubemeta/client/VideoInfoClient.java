@@ -30,7 +30,7 @@ public class VideoInfoClient {
         this.webClient = webClient;
     }
 
-    public YoutubeVideoInfo fetchVideoInfo(YoutubeUri youtubeUri) {
+    public YoutubeVideoInfo fetchVideoInfo(YoutubeUri youtubeUri) throws YoutubeMetaException {
         String videoId = youtubeUri.getVideoId();
 
         try {

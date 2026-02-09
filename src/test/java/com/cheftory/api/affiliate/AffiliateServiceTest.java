@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api.affiliate.coupang.CoupangClient;
+import com.cheftory.api.affiliate.coupang.exception.CoupangException;
 import com.cheftory.api.affiliate.model.CoupangProduct;
 import com.cheftory.api.affiliate.model.CoupangProducts;
 import java.util.List;
@@ -61,7 +62,7 @@ class AffiliateServiceTest {
 
                 @Test
                 @DisplayName("Then - CoupangClient의 응답을 그대로 반환한다")
-                void thenReturnProductList() {
+                void thenReturnProductList() throws CoupangException {
                     doReturn(coupangProducts).when(coupangClient).searchProducts("Water");
 
                     CoupangProducts products = service.searchCoupangProducts("Water");

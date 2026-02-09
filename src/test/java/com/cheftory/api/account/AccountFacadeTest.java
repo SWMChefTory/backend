@@ -12,15 +12,19 @@ import com.cheftory.api._common.Clock;
 import com.cheftory.api.account.model.Account;
 import com.cheftory.api.auth.AuthService;
 import com.cheftory.api.auth.entity.AuthTokenType;
+import com.cheftory.api.auth.exception.AuthException;
 import com.cheftory.api.auth.model.AuthTokens;
 import com.cheftory.api.credit.CreditService;
 import com.cheftory.api.credit.entity.Credit;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.UserService;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
 import java.time.LocalDate;
 import java.util.UUID;
+
+import com.cheftory.api.user.exception.UserException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,7 +64,7 @@ class AccountFacadeTest {
 
     @Test
     @DisplayName("login: providerSub 추출 -> 유저 조회 -> 토큰 발급 -> 세션 저장 -> Account 반환")
-    void login_shouldReturnAccount() {
+    void login_shouldReturnAccount() throws AuthException, UserException, CreditException {
         doReturn(providerSub).when(authService).extractProviderSubFromIdToken(idToken, provider);
         doReturn(user).when(userService).get(provider, providerSub);
         doReturn(authTokens).when(authService).createAuthToken(userId);
@@ -80,7 +84,7 @@ class AccountFacadeTest {
 
     @Test
     @DisplayName("signup: 유저 생성 -> 토큰 발급/세션 저장 -> 가입 보너스 크레딧 지급 -> Account 반환")
-    void signup_shouldReturnAccount_andGrantSignupBonus() {
+    void signup_shouldReturnAccount_andGrantSignupBonus() throws AuthException, CreditException, UserException {
         doReturn(providerSub).when(authService).extractProviderSubFromIdToken(idToken, provider);
         doReturn(user).when(userService).create(nickname, gender, dob, provider, providerSub, true, true, false);
 
@@ -102,7 +106,7 @@ class AccountFacadeTest {
 
     @Test
     @DisplayName("logout: refreshToken에서 userId 추출 후 refreshToken 삭제")
-    void logout_shouldDeleteRefreshToken() {
+    void logout_shouldDeleteRefreshToken() throws AuthException, UserException {
         doReturn(userId).when(authService).extractUserIdFromToken("refresh-token", AuthTokenType.REFRESH);
         doNothing().when(authService).deleteRefreshToken(userId, "refresh-token");
 
@@ -114,7 +118,7 @@ class AccountFacadeTest {
 
     @Test
     @DisplayName("delete: refreshToken 삭제 후 유저 삭제")
-    void delete_shouldDeleteRefreshTokenAndUser() {
+    void delete_shouldDeleteRefreshTokenAndUser() throws AuthException, UserException {
         doReturn(userId).when(authService).extractUserIdFromToken("refresh-token", AuthTokenType.REFRESH);
         doNothing().when(authService).deleteRefreshToken(userId, "refresh-token");
         doNothing().when(userService).delete(userId);

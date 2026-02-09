@@ -10,13 +10,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.verify.RecipeVerifyService;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
 import com.cheftory.api.recipe.creation.pipeline.RecipeCreationExecutionContext;
@@ -27,6 +30,8 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+
+import com.cheftory.api.recipe.exception.RecipeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -93,7 +98,7 @@ class AsyncRecipeCreationServiceTest {
 
                 @Test
                 @DisplayName("Then - 파이프라인이 실행되고 identify가 삭제된다")
-                void thenPipelineRunAndIdentifyDeleted() {
+                void thenPipelineRunAndIdentifyDeleted() throws RecipeException {
                     sut.create(recipeId, creditCost, videoId, videoUrl);
 
                     verify(recipeCreationPipeline).run(any(RecipeCreationExecutionContext.class));
@@ -126,7 +131,7 @@ class AsyncRecipeCreationServiceTest {
                 private URI videoUrl;
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws RecipeException {
                     recipeId = UUID.randomUUID();
                     creditCost = 100L;
                     videoId = "not-cook";
@@ -145,7 +150,7 @@ class AsyncRecipeCreationServiceTest {
 
                     @Test
                     @DisplayName("Then - 실패 처리되고 ban 처리된다")
-                    void thenFailedAndBanProcessed() {
+                    void thenFailedAndBanProcessed() throws RecipeInfoException, YoutubeMetaException, CreditException {
                         sut.create(recipeId, creditCost, videoId, videoUrl);
 
                         verify(recipeInfoService).failed(recipeId);
@@ -175,7 +180,7 @@ class AsyncRecipeCreationServiceTest {
                 private URI videoUrl;
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws RecipeException {
                     recipeId = UUID.randomUUID();
                     creditCost = 100L;
                     videoId = "no-meta";
@@ -194,7 +199,8 @@ class AsyncRecipeCreationServiceTest {
 
                     @Test
                     @DisplayName("Then - 실패 처리만 되고 ban 처리는 되지 않는다")
-                    void thenOnlyFailedProcessedWithoutBan() {
+                    void thenOnlyFailedProcessedWithoutBan()
+												throws RecipeInfoException, YoutubeMetaException, CreditException {
                         sut.create(recipeId, creditCost, videoId, videoUrl);
 
                         verify(recipeInfoService).failed(recipeId);
@@ -225,7 +231,7 @@ class AsyncRecipeCreationServiceTest {
                 private URI videoUrl;
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws RecipeException {
                     recipeId = UUID.randomUUID();
                     creditCost = 100L;
                     videoId = "boom";
@@ -244,7 +250,8 @@ class AsyncRecipeCreationServiceTest {
 
                     @Test
                     @DisplayName("Then - 실패 처리되고 식별자가 삭제된다")
-                    void thenFailedProcessedAndIdentifierDeleted() {
+                    void thenFailedProcessedAndIdentifierDeleted()
+												throws RecipeInfoException, YoutubeMetaException, CreditException {
                         sut.create(recipeId, creditCost, videoId, videoUrl);
 
                         verify(recipeInfoService).failed(recipeId);
@@ -281,7 +288,7 @@ class AsyncRecipeCreationServiceTest {
             private RecipeBookmark bookmark2;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeException {
                 recipeId = UUID.randomUUID();
                 creditCost = 77L;
                 videoId = "fail-with-histories";
@@ -306,7 +313,7 @@ class AsyncRecipeCreationServiceTest {
 
             @Test
             @DisplayName("Then - 삭제된 북마크 수만큼 환불이 지급된다")
-            void thenRefundGrantedForEachBookmark() {
+            void thenRefundGrantedForEachBookmark() throws RecipeInfoException, CreditException, YoutubeMetaException {
                 sut.create(recipeId, creditCost, videoId, videoUrl);
 
                 verify(recipeInfoService).failed(recipeId);

@@ -3,6 +3,7 @@ package com.cheftory.api._common;
 import com.cheftory.api._common.region.MarketContext;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class I18nTranslator {
     private final MessageSource messageSource;
 
+    @SneakyThrows
     public String translate(String key) {
         String countryCode = MarketContext.required().countryCode();
         Locale locale = localeFromCountryCode(countryCode);

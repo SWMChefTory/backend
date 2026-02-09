@@ -25,7 +25,8 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
             @NonNull MethodParameter parameter,
             ModelAndViewContainer mavContainer,
             @NonNull NativeWebRequest webRequest,
-            WebDataBinderFactory binderFactory) {
+            WebDataBinderFactory binderFactory)
+            throws AuthException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 

@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.rank;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
+import com.cheftory.api.exception.CheftoryException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +17,13 @@ public class RecipeRankController {
     private final RecipeRankService recipeRankService;
 
     @PutMapping("/papi/v1/recipes/trending/{recipeIds}")
-    public SuccessOnlyResponse updateTrendingRecipes(@PathVariable List<UUID> recipeIds) {
+    public SuccessOnlyResponse updateTrendingRecipes(@PathVariable List<UUID> recipeIds) throws CheftoryException {
         recipeRankService.updateRecipes(RankingType.TRENDING, recipeIds);
         return SuccessOnlyResponse.create();
     }
 
     @PutMapping("/papi/v1/recipes/chef/{recipeIds}")
-    public SuccessOnlyResponse updateChefRecipes(@PathVariable List<UUID> recipeIds) {
+    public SuccessOnlyResponse updateChefRecipes(@PathVariable List<UUID> recipeIds) throws CheftoryException {
         recipeRankService.updateRecipes(RankingType.CHEF, recipeIds);
         return SuccessOnlyResponse.create();
     }

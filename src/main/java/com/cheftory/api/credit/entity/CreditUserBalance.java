@@ -31,12 +31,12 @@ public class CreditUserBalance {
     @Column(nullable = false)
     private long version;
 
-    public static CreditUserBalance create(UUID userId) {
+    public static CreditUserBalance create(UUID userId) throws CreditException {
         if (userId == null) throw new CreditException(CreditErrorCode.CREDIT_INVALID_USER);
         return new CreditUserBalance(userId, 0L, 0L);
     }
 
-    public void apply(long delta) {
+    public void apply(long delta) throws CreditException {
         long next = this.balance + delta;
         if (next < 0) {
             throw new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT);

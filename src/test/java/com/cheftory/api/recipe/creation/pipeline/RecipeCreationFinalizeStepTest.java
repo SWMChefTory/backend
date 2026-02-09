@@ -8,6 +8,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
@@ -69,7 +71,7 @@ class RecipeCreationFinalizeStepTest {
 
         @Test
         @DisplayName("성공 시 recipeInfo 성공 처리와 progress가 기록된다")
-        void shouldFinalizeRecipe() {
+        void shouldFinalizeRecipe() throws RecipeException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-456";
             URI videoUrl = URI.create("https://youtu.be/video-456");
@@ -91,7 +93,7 @@ class RecipeCreationFinalizeStepTest {
 
         @Test
         @DisplayName("예외 발생 시 progress를 failed로 기록한다")
-        void shouldFailProgressWhenExceptionThrown() {
+        void shouldFailProgressWhenExceptionThrown() throws RecipeInfoException {
             UUID recipeId = UUID.randomUUID();
             String videoId = "video-789";
             URI videoUrl = URI.create("https://youtu.be/video-789");
@@ -100,13 +102,13 @@ class RecipeCreationFinalizeStepTest {
             RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
                     RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
 
-            doThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL))
+            doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND))
                     .when(recipeInfoService)
                     .success(recipeId);
 
             assertThatThrownBy(() -> sut.run(context))
                     .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                    .hasFieldOrPropertyWithValue("error", RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
 
             verify(recipeProgressService).failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
         }

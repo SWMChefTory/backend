@@ -43,7 +43,7 @@ public class UserShareRepositoryImpl implements UserShareRepository {
                     userShare.increase(limit);
                     return userShareJpaRepository.save(userShare);
                 },
-                () -> new UserShareException(UserShareErrorCode.USER_SHARE_CREATE_FAIL));
+                (cause) -> new UserShareException(UserShareErrorCode.USER_SHARE_CREATE_FAIL));
     }
 
     /**
@@ -66,7 +66,7 @@ public class UserShareRepositoryImpl implements UserShareRepository {
                     userShare.decrease();
                     userShareJpaRepository.save(userShare);
                 },
-                () -> new UserShareException(UserShareErrorCode.USER_SHARE_CREATE_FAIL));
+                (cause) -> new UserShareException(UserShareErrorCode.USER_SHARE_CREATE_FAIL));
     }
 
     /**

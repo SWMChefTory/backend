@@ -1,8 +1,10 @@
 package com.cheftory.api.recipe.bookmark;
 
 import com.cheftory.api.credit.exception.CreditException;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,15 +29,11 @@ public class RecipeBookmarkFacade {
      * @param recipeId 레시피 ID
      * @throws CreditException 크레딧 차감 실패 시
      */
-    public void create(UUID userId, UUID recipeId) {
+    public void create(UUID userId, UUID recipeId)
+            throws CreditException, RecipeBookmarkException, RecipeInfoException {
         RecipeInfo recipeInfo = recipeInfoService.get(recipeId);
-        try {
-            boolean created = recipeBookmarkService.create(userId, recipeInfo.getId());
-            if (!created) return;
-            creditPort.spendRecipeCreate(userId, recipeId, recipeInfo.getCreditCost());
-        } catch (CreditException e) {
-            recipeBookmarkService.delete(userId, recipeId);
-            throw e;
-        }
+        boolean created = recipeBookmarkService.create(userId, recipeInfo.getId());
+        if (!created) return;
+        creditPort.spendRecipeCreate(userId, recipeId, recipeInfo.getCreditCost());
     }
 }

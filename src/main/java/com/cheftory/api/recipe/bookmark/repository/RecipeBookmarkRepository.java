@@ -113,7 +113,7 @@ public interface RecipeBookmarkRepository {
      * @param userId 사용자 ID
      * @return 페이징된 북마크 목록 (첫 페이지)
      */
-    CursorPage<RecipeBookmark> keysetRecentsFirst(UUID userId);
+    CursorPage<RecipeBookmark> keysetRecentsFirst(UUID userId) throws CursorException;
 
     /**
      * 카테고리별 레시피 북마크 목록 조회 (커서 기반 페이징)
@@ -124,8 +124,7 @@ public interface RecipeBookmarkRepository {
      * @return 페이징된 북마크 목록
      * @throws CursorException 유효하지 않은 커서일 때
      */
-    CursorPage<RecipeBookmark> keysetCategorized(UUID userId, UUID categoryId, String cursor)
-            throws CursorException;
+    CursorPage<RecipeBookmark> keysetCategorized(UUID userId, UUID categoryId, String cursor) throws CursorException;
 
     /**
      * 카테고리별 레시피 북마크 첫 페이지 조회

@@ -43,7 +43,7 @@ public class RecipeInfoRecipeCategoryTest {
                 private RecipeCategory recipeCategory;
 
                 @BeforeEach
-                void beforeEach() {
+                void beforeEach() throws RecipeCategoryException {
                     recipeCategory = RecipeCategory.create(clock, categoryName, userId);
                 }
 
@@ -77,10 +77,9 @@ public class RecipeInfoRecipeCategoryTest {
             @Nested
             @DisplayName("When - 레시피 카테고리를 생성한다면")
             class WhenCreatingRecipeInfoRecipeCategory {
-
                 @Test
                 @DisplayName("Then - 예외가 발생해야 한다")
-                void thenShouldThrowException() {
+                void thenShouldThrowException() throws Exception {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, emptyCategoryName, userId))
                             .isInstanceOfSatisfying(RecipeCategoryException.class, ex -> assertThat(ex.getError())
                                     .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
@@ -106,10 +105,9 @@ public class RecipeInfoRecipeCategoryTest {
             @Nested
             @DisplayName("When - 레시피 카테고리를 생성한다면")
             class WhenCreatingRecipeInfoRecipeCategory {
-
                 @Test
                 @DisplayName("Then - 예외가 발생해야 한다")
-                void thenShouldThrowException() {
+                void thenShouldThrowException() throws Exception {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, nullCategoryName, userId))
                             .isInstanceOfSatisfying(RecipeCategoryException.class, ex -> assertThat(ex.getError())
                                     .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
@@ -135,10 +133,9 @@ public class RecipeInfoRecipeCategoryTest {
             @Nested
             @DisplayName("When - 레시피 카테고리를 생성한다면")
             class WhenCreatingRecipeInfoRecipeCategory {
-
                 @Test
                 @DisplayName("Then - 예외가 발생해야 한다")
-                void thenShouldThrowException() {
+                void thenShouldThrowException() throws Exception {
                     assertThatThrownBy(() -> RecipeCategory.create(clock, blankCategoryName, userId))
                             .isInstanceOfSatisfying(RecipeCategoryException.class, ex -> assertThat(ex.getError())
                                     .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY));
@@ -161,7 +158,7 @@ public class RecipeInfoRecipeCategoryTest {
             private Clock clock;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeCategoryException {
                 categoryName = "한식";
                 userId = UUID.randomUUID();
                 clock = new Clock();
@@ -179,7 +176,7 @@ public class RecipeInfoRecipeCategoryTest {
 
                 @Test
                 @DisplayName("Then - 레시피 카테고리 상태가 삭제됨으로 변경되어야 한다")
-                void thenShouldChangeStatusToDeleted() {
+                void thenShouldChangeStatusToDeleted() throws Exception {
                     assertThat(recipeCategory.getStatus()).isEqualTo(RecipeCategoryStatus.DELETED);
                 }
 
@@ -204,7 +201,7 @@ public class RecipeInfoRecipeCategoryTest {
             private Clock clock;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeCategoryException {
                 categoryName = "한식";
                 userId = UUID.randomUUID();
                 clock = new Clock();
@@ -223,7 +220,7 @@ public class RecipeInfoRecipeCategoryTest {
 
                 @Test
                 @DisplayName("Then - 상태는 여전히 삭제됨이어야 한다")
-                void thenShouldRemainDeleted() {
+                void thenShouldRemainDeleted() throws Exception {
                     assertThat(recipeCategory.getStatus()).isEqualTo(RecipeCategoryStatus.DELETED);
                 }
             }

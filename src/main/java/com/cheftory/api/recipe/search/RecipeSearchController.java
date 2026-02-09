@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.search;
 
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.search.exception.SearchException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,8 @@ public class RecipeSearchController {
     public SearchedRecipesResponse searchRecipes(
             @RequestParam("query") String query,
             @RequestParam(required = false) String cursor,
-            @UserPrincipal UUID userId) {
+            @UserPrincipal UUID userId)
+            throws SearchException {
         return SearchedRecipesResponse.from(recipeSearchFacade.searchRecipes(query, userId, cursor));
     }
 }

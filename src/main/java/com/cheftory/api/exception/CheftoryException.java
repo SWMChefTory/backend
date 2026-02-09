@@ -1,6 +1,6 @@
 package com.cheftory.api.exception;
 
-public class CheftoryException extends RuntimeException {
+public class CheftoryException extends Exception {
     private final Error error;
 
     public CheftoryException(Error error) {

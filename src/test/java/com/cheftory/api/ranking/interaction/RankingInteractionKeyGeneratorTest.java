@@ -3,6 +3,7 @@ package com.cheftory.api.ranking.interaction;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cheftory.api._common.MarketContextTestExtension;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingItemType;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +29,7 @@ class RankingInteractionKeyGeneratorTest {
 
         @Test
         @DisplayName("should include market, item type, and user id")
-        void shouldIncludeMarketItemTypeAndUserId() {
+        void shouldIncludeMarketItemTypeAndUserId() throws CheftoryException {
             UUID userId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
             String key = keyGenerator.recentViewsKey(userId, RankingItemType.RECIPE);
@@ -43,7 +44,7 @@ class RankingInteractionKeyGeneratorTest {
 
         @Test
         @DisplayName("should include market, item type, and user id")
-        void shouldIncludeMarketItemTypeAndUserId() {
+        void shouldIncludeMarketItemTypeAndUserId() throws CheftoryException {
             UUID userId = UUID.fromString("987fcdeb-51a2-43d1-b789-123456789abc");
 
             String key = keyGenerator.seenKey(userId, RankingItemType.RECIPE);

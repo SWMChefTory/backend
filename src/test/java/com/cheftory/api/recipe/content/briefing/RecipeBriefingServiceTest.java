@@ -50,7 +50,7 @@ public class RecipeBriefingServiceTest {
             private List<RecipeBriefing> recipeBriefings;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeBriefingException {
                 videoId = "valid-video-id";
                 recipeId = UUID.randomUUID();
 
@@ -68,7 +68,7 @@ public class RecipeBriefingServiceTest {
 
                 @Test
                 @DisplayName("Then - 브리핑이 성공적으로 생성된다")
-                void thenCreatesBriefingSuccessfully() {
+                void thenCreatesBriefingSuccessfully() throws RecipeBriefingException {
                     recipeBriefingService.create(videoId, recipeId);
 
                     verify(briefingClient).fetchBriefing(videoId);
@@ -86,7 +86,7 @@ public class RecipeBriefingServiceTest {
             private UUID recipeId;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeBriefingException {
                 videoId = "error-video-id";
                 recipeId = UUID.randomUUID();
 
@@ -99,14 +99,14 @@ public class RecipeBriefingServiceTest {
             @DisplayName("When - 레시피 브리핑을 생성하면")
             class WhenCreateRecipeBriefing {
 
-                @Test
-                @DisplayName("Then - RuntimeException이 발생한다")
-                void thenThrowsRuntimeException() {
-                    assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
-                            .isInstanceOf(RuntimeException.class);
+            @Test
+            @DisplayName("Then - RecipeBriefingException이 발생한다")
+            void thenThrowsRecipeBriefingException() throws RecipeBriefingException {
+                assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
+                        .isInstanceOf(RecipeBriefingException.class);
 
-                    verify(briefingClient).fetchBriefing(videoId);
-                }
+                verify(briefingClient).fetchBriefing(videoId);
+            }
             }
         }
 
@@ -120,7 +120,7 @@ public class RecipeBriefingServiceTest {
             private List<RecipeBriefing> recipeBriefings;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeBriefingException {
                 videoId = "valid-video-id";
                 recipeId = UUID.randomUUID();
 
@@ -140,7 +140,7 @@ public class RecipeBriefingServiceTest {
 
                 @Test
                 @DisplayName("Then - RuntimeException이 발생한다")
-                void thenThrowsRuntimeException() {
+                void thenThrowsRuntimeException() throws RecipeBriefingException {
                     assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
                             .isInstanceOf(RuntimeException.class);
 

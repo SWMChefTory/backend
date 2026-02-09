@@ -19,7 +19,7 @@ public class RecipeIdentifyService {
     private final RecipeIdentifyRepository recipeIdentifyRepository;
     private final Clock clock;
 
-    public RecipeIdentify create(URI url) {
+    public RecipeIdentify create(URI url) throws RecipeIdentifyException {
         try {
             RecipeIdentify recipeIdentify = RecipeIdentify.create(url, clock);
             return recipeIdentifyRepository.save(recipeIdentify);

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api.affiliate.coupang.CoupangClient;
+import com.cheftory.api.affiliate.coupang.exception.CoupangException;
 import com.cheftory.api.affiliate.model.CoupangProduct;
 import com.cheftory.api.affiliate.model.CoupangProducts;
 import java.util.List;
@@ -71,7 +72,7 @@ class AffiliateCacheTest {
 
         @Test
         @DisplayName("캐시 키가 저장된다")
-        void shouldSaveCacheKeyInRedis() {
+        void shouldSaveCacheKeyInRedis() throws CoupangException {
             String cacheName = "coupangSearchCache";
             String keyword = "사과";
 
@@ -100,7 +101,7 @@ class AffiliateCacheTest {
 
     @Test
     @DisplayName("캐시된 데이터를 조회할 수 있다")
-    void shouldRetrieveCachedDataFromCache_withDoReturnOnly() {
+    void shouldRetrieveCachedDataFromCache_withDoReturnOnly() throws CoupangException {
         // Given
         String cacheName = "coupangSearchCache";
         String keyword = "배";
@@ -142,7 +143,7 @@ class AffiliateCacheTest {
 
     @Test
     @DisplayName("여러 키워드를 각각 캐시할 수 있다")
-    void shouldCacheMultipleKeywords() {
+    void shouldCacheMultipleKeywords() throws CoupangException {
         // Given
         String keyword1 = "포도";
         String keyword2 = "딸기";
@@ -185,7 +186,7 @@ class AffiliateCacheTest {
 
         @Test
         @DisplayName("캐시를 삭제할 수 있다")
-        void shouldEvictCache() {
+        void shouldEvictCache() throws CoupangException {
             // Given
             String keyword = "망고";
 
@@ -210,7 +211,7 @@ class AffiliateCacheTest {
 
         @Test
         @DisplayName("전체 캐시를 삭제할 수 있다")
-        void shouldClearAllCache() {
+        void shouldClearAllCache() throws CoupangException {
             // Given
             String keyword1 = "키위";
             String keyword2 = "복숭아";
@@ -250,7 +251,7 @@ class AffiliateCacheTest {
 
         @Test
         @DisplayName("캐시에 TTL이 설정된다")
-        void shouldSetTTLOnCache() {
+        void shouldSetTTLOnCache() throws CoupangException {
             // Given
             String keyword = "바나나";
             CoupangProduct p = mock(CoupangProduct.class);
@@ -315,7 +316,7 @@ class AffiliateCacheTest {
 
             @Test
             @DisplayName("빈 문자열 키워드를 캐시할 수 있다")
-            void shouldCacheEmptyKeyword() {
+            void shouldCacheEmptyKeyword() throws CoupangException {
                 String keyword = "";
 
                 CoupangProduct p = mock(CoupangProduct.class);
@@ -334,7 +335,7 @@ class AffiliateCacheTest {
 
             @Test
             @DisplayName("매우 긴 키워드를 캐시할 수 있다")
-            void shouldCacheVeryLongKeyword() {
+            void shouldCacheVeryLongKeyword() throws CoupangException {
                 String keyword = "a".repeat(1000);
 
                 CoupangProduct p = mock(CoupangProduct.class);

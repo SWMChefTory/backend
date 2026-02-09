@@ -1,6 +1,7 @@
 package com.cheftory.api.account.dto;
 
 import com.cheftory.api.account.model.Account;
+import com.cheftory.api.auth.exception.AuthException;
 import com.cheftory.api.auth.util.BearerAuthorizationUtils;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.User;
@@ -32,7 +33,7 @@ public record LoginResponse(
         }
     }
 
-    public static LoginResponse from(Account account) {
+    public static LoginResponse from(Account account) throws AuthException {
         return new LoginResponse(
                 BearerAuthorizationUtils.addPrefix(account.getAccessToken()),
                 BearerAuthorizationUtils.addPrefix(account.getRefreshToken()),

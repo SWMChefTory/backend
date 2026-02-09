@@ -41,10 +41,9 @@ class MarketControllerTest extends RestDocsTest {
         @Nested
         @DisplayName("Given - MarketContext가 설정된 경우")
         class GivenMarketContextPresent {
-
             @Test
             @DisplayName("Then - market과 country_code를 반환한다")
-            void thenReturnsMarketInfo() {
+            void thenReturnsMarketInfo() throws Exception {
                 try (var ignored = with(new MarketContext.Info(Market.KOREA, "KR"))) {
                     given().contentType(ContentType.JSON)
                             .when()
@@ -63,7 +62,7 @@ class MarketControllerTest extends RestDocsTest {
 
             @AfterEach
             void clearContext() {
-                MarketContext.with(null);
+                with(null);
             }
 
             @Test

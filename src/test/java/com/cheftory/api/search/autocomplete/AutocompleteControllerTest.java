@@ -16,6 +16,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.List;
@@ -53,7 +54,7 @@ public class AutocompleteControllerTest extends RestDocsTest {
             private List<Autocomplete> autocompletes;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 query = "김치";
 
                 Autocomplete autocomplete1 = mock(Autocomplete.class);
@@ -77,7 +78,7 @@ public class AutocompleteControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - 자동완성 목록을 성공적으로 반환해야 한다")
-                void thenShouldReturnAutocompleteList() {
+                void thenShouldReturnAutocompleteList() throws SearchException {
                     var response = given().contentType(ContentType.JSON)
                             .param("query", query)
                             .get("/api/v1/search/autocomplete")
@@ -114,7 +115,7 @@ public class AutocompleteControllerTest extends RestDocsTest {
             private String query;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 query = "존재하지않는검색어";
                 doReturn(List.of())
                         .when(autocompleteService)
@@ -127,7 +128,7 @@ public class AutocompleteControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - 빈 목록을 반환해야 한다")
-                void thenShouldReturnEmptyList() {
+                void thenShouldReturnEmptyList() throws SearchException {
                     given().contentType(ContentType.JSON)
                             .param("query", query)
                             .get("/api/v1/search/autocomplete")
@@ -148,7 +149,7 @@ public class AutocompleteControllerTest extends RestDocsTest {
             private List<Autocomplete> autocompletes;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 query = "파";
 
                 Autocomplete autocomplete1 = mock(Autocomplete.class);
@@ -170,7 +171,7 @@ public class AutocompleteControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - 일치하는 자동완성 목록을 반환해야 한다")
-                void thenShouldReturnMatchingAutocompleteList() {
+                void thenShouldReturnMatchingAutocompleteList() throws SearchException {
                     var response = given().contentType(ContentType.JSON)
                             .param("query", query)
                             .get("/api/v1/search/autocomplete")

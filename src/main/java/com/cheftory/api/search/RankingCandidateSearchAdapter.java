@@ -4,6 +4,7 @@ import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.candidate.RankingCandidateSearchPort;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.SearchPage;
 import com.cheftory.api.search.query.SearchQueryService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class RankingCandidateSearchAdapter implements RankingCandidateSearchPort
     private final SearchQueryService searchQueryService;
 
     @Override
-    public String openPit() {
+    public String openPit() throws SearchException {
         return searchQueryService.openPitForCandidates();
     }
 
@@ -27,7 +28,8 @@ public class RankingCandidateSearchAdapter implements RankingCandidateSearchPort
             int size,
             PersonalizationProfile profile,
             String pitId,
-            String cursor) {
+            String cursor)
+            throws SearchException {
         return searchQueryService.searchCandidatesWithPit(surfaceType, itemType, size, profile, pitId, cursor);
     }
 

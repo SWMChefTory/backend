@@ -9,6 +9,7 @@ import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
@@ -45,7 +46,7 @@ public class SearchQueryRepository {
 
     private final OpenSearchClient openSearchClient;
 
-    public String createPitId() {
+    public String createPitId() throws SearchException {
         try {
             return openSearchClient
                     .createPit(CreatePitRequest.of(p -> p.index(INDEX).keepAlive(PIT_KEEP_ALIVE)))
@@ -65,12 +66,13 @@ public class SearchQueryRepository {
     }
 
     public List<Hit<SearchQuery>> searchByKeywordCursorFirst(
-            SearchQueryScope scope, String keyword, String anchorNowIso, String pitId, Pageable pageable) {
+            SearchQueryScope scope, String keyword, String anchorNowIso, String pitId, Pageable pageable)
+            throws SearchException {
         Query q = buildFunctionScoreQuery(scope, keyword, anchorNowIso);
         return searchHits(cursorTemplateRequest(pitId, pageable, q, null, null), keyword);
     }
 
-    public List<SearchQuery> mgetSearchQueries(List<String> ids) {
+    public List<SearchQuery> mgetSearchQueries(List<String> ids) throws SearchException {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
@@ -112,7 +114,8 @@ public class SearchQueryRepository {
             String pitId,
             double lastScore,
             String lastId,
-            Pageable pageable) {
+            Pageable pageable)
+            throws SearchException {
         Query q = buildFunctionScoreQuery(scope, keyword, anchorNowIso);
         return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId), keyword);
     }
@@ -123,7 +126,8 @@ public class SearchQueryRepository {
             String anchorNowIso,
             String pitId,
             PersonalizationProfile profile,
-            Pageable pageable) {
+            Pageable pageable)
+            throws SearchException {
         Query q = buildCandidatesFunctionScoreQuery(scope, label, anchorNowIso, profile);
         return searchHits(cursorTemplateRequest(pitId, pageable, q, null, null), "candidates");
     }
@@ -136,7 +140,8 @@ public class SearchQueryRepository {
             PersonalizationProfile profile,
             double lastScore,
             String lastId,
-            Pageable pageable) {
+            Pageable pageable)
+            throws SearchException {
         Query q = buildCandidatesFunctionScoreQuery(scope, label, anchorNowIso, profile);
         return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId), "candidates");
     }
@@ -231,7 +236,7 @@ public class SearchQueryRepository {
                 List.of(FieldValue.of(v -> v.doubleValue(afterScore)), FieldValue.of(v -> v.stringValue(afterId))));
     }
 
-    private List<Hit<SearchQuery>> searchHits(SearchRequest request, String keywordForLog) {
+    private List<Hit<SearchQuery>> searchHits(SearchRequest request, String keywordForLog) throws SearchException {
         try {
             return openSearchClient.search(request, SearchQuery.class).hits().hits();
         } catch (Exception e) {
@@ -240,6 +245,7 @@ public class SearchQueryRepository {
         }
     }
 
+    @SneakyThrows
     private String currentMarketKey() {
         Market market = MarketContext.required().market();
         return market.name().toLowerCase();
