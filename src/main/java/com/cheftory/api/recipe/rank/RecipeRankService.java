@@ -31,7 +31,7 @@ public class RecipeRankService {
     private static final Integer PAGE_SIZE = 10;
     private static final Duration TTL = Duration.ofDays(2);
 
-    public void updateRecipes(RankingType type, List<UUID> recipeIds) throws CheftoryException {
+    public void updateRecipes(RankingType type, List<UUID> recipeIds) {
         String newKey = rankingKeyGenerator.generateKey(type);
 
         IntStream.range(0, recipeIds.size())

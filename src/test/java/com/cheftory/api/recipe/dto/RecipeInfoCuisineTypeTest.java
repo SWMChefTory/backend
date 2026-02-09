@@ -56,7 +56,7 @@ class RecipeInfoCuisineTypeTest {
 
         @Test
         @DisplayName("존재하지 않는 타입 문자열은 예외를 던진다")
-        void shouldThrowExceptionForInvalidTypeString() throws Exception {
+        void shouldThrowExceptionForInvalidTypeString() {
             assertThatThrownBy(() -> RecipeCuisineType.fromString("INVALID"))
                     .isInstanceOf(RecipeException.class)
                     .hasFieldOrPropertyWithValue("error", RecipeErrorCode.INVALID_CUISINE_TYPE);

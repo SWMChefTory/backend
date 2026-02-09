@@ -99,14 +99,14 @@ public class RecipeBriefingServiceTest {
             @DisplayName("When - 레시피 브리핑을 생성하면")
             class WhenCreateRecipeBriefing {
 
-            @Test
-            @DisplayName("Then - RecipeBriefingException이 발생한다")
-            void thenThrowsRecipeBriefingException() throws RecipeBriefingException {
-                assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
-                        .isInstanceOf(RecipeBriefingException.class);
+                @Test
+                @DisplayName("Then - RecipeBriefingException이 발생한다")
+                void thenThrowsRecipeBriefingException() throws RecipeBriefingException {
+                    assertThatThrownBy(() -> recipeBriefingService.create(videoId, recipeId))
+                            .isInstanceOf(RecipeBriefingException.class);
 
-                verify(briefingClient).fetchBriefing(videoId);
-            }
+                    verify(briefingClient).fetchBriefing(videoId);
+                }
             }
         }
 
@@ -296,8 +296,8 @@ public class RecipeBriefingServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getContent()).isEqualTo("정말 맛있는 요리입니다!");
-            assertThat(result.get(0).getRecipeId()).isEqualTo(recipeId);
+            assertThat(result.getFirst().getContent()).isEqualTo("정말 맛있는 요리입니다!");
+            assertThat(result.getFirst().getRecipeId()).isEqualTo(recipeId);
         }
     }
 }

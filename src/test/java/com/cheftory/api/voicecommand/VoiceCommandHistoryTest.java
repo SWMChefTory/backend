@@ -128,7 +128,7 @@ public class VoiceCommandHistoryTest {
             class WhenCreatingVoiceCommandHistory {
                 @Test
                 @DisplayName("Then - STT 모델 예외가 발생해야 한다")
-                public void thenShouldThrowSttModelException() throws Exception {
+                public void thenShouldThrowSttModelException() {
                     assertThatThrownBy(() -> VoiceCommandHistory.create(
                                     invalidSttModel, transcribe, validIntentModel, result, userId, start, end))
                             .isInstanceOf(VoiceCommandHistoryException.class)
@@ -169,7 +169,7 @@ public class VoiceCommandHistoryTest {
             class WhenCreatingVoiceCommandHistory {
                 @Test
                 @DisplayName("Then - Intent 모델 예외가 발생해야 한다")
-                public void thenShouldThrowIntentModelException() throws Exception {
+                public void thenShouldThrowIntentModelException() {
                     assertThatThrownBy(() -> VoiceCommandHistory.create(
                                     validSttModel, transcribe, invalidIntentModel, result, userId, start, end))
                             .isInstanceOf(VoiceCommandHistoryException.class)

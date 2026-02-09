@@ -107,7 +107,7 @@ public class VoiceCommandHistoryServiceTest {
             class WhenCreatingVoiceCommandHistory {
                 @Test
                 @DisplayName("Then - 예외가 발생해야 한다")
-                public void thenShouldThrowException() throws Exception {
+                public void thenShouldThrowException() {
                     assertThatThrownBy(() -> voiceCommandHistoryService.create(
                                     baseIntent, intent, userId, invalidSttModel, intentModel, start, end))
                             .isInstanceOf(VoiceCommandHistoryException.class);
@@ -143,7 +143,7 @@ public class VoiceCommandHistoryServiceTest {
             class WhenCreatingVoiceCommandHistory {
                 @Test
                 @DisplayName("Then - 예외가 발생해야 한다")
-                public void thenShouldThrowException() throws Exception {
+                public void thenShouldThrowException() {
                     assertThatThrownBy(() -> voiceCommandHistoryService.create(
                                     baseIntent, intent, userId, sttModel, invalidIntentModel, start, end))
                             .isInstanceOf(VoiceCommandHistoryException.class);

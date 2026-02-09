@@ -12,8 +12,5 @@ public record RecipeCategoryRequest() {
      * 레시피 카테고리 생성 요청
      */
     public record Create(
-            /**
-             * 카테고리 이름
-             */
             @JsonProperty("name") @NotNull @NotBlank String name) {}
 }

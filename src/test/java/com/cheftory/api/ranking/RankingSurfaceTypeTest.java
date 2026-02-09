@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 class RankingSurfaceTypeTest {
     @Test
     @DisplayName("messageKey should use cuisine prefix")
-    void messageKeyShouldUseCuisinePrefix() throws Exception {
+    void messageKeyShouldUseCuisinePrefix() {
         assertThat(RankingSurfaceType.CUISINE_KOREAN.messageKey()).isEqualTo("recipe.cuisine.korean");
     }
 }

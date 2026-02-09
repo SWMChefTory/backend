@@ -68,7 +68,7 @@ class UserShareRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("데이터가 존재하지 않으면 예외를 던진다")
-        void it_throws_exception_when_not_exists() throws Exception {
+        void it_throws_exception_when_not_exists() {
             assertThatThrownBy(() -> userShareRepository.shareTx(UUID.randomUUID(), DAILY_SHARE_LIMIT))
                     .isInstanceOf(UserShareException.class)
                     .extracting("error")
@@ -93,7 +93,7 @@ class UserShareRepositoryTest extends DbContextTest {
     class Describe_compensateTx {
         @Test
         @DisplayName("데이터가 존재하지 않으면 예외를 던진다")
-        void it_throws_exception_when_not_exists() throws UserShareException {
+        void it_throws_exception_when_not_exists() {
             assertThatThrownBy(() -> userShareRepository.compensateTx(
                             UUID.randomUUID(), clock.now().toLocalDate()))
                     .isInstanceOf(UserShareException.class)

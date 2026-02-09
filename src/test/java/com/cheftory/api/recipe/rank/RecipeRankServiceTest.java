@@ -17,6 +17,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -136,7 +138,7 @@ public class RecipeRankServiceTest {
             RankingType rankingType = RankingType.TRENDING;
             String latestKey = "trendRecipe:latest";
             String rankingKey = "trendRecipe:ranking:20240101120000";
-            List<String> recipeIds = List.of(
+            List<String> recipeIds = Stream.of(
                             UUID.randomUUID(),
                             UUID.randomUUID(),
                             UUID.randomUUID(),
@@ -148,7 +150,6 @@ public class RecipeRankServiceTest {
                             UUID.randomUUID(),
                             UUID.randomUUID(),
                             UUID.randomUUID())
-                    .stream()
                     .map(UUID::toString)
                     .toList();
 

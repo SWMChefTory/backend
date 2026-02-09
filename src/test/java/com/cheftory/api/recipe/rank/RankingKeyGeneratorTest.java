@@ -4,10 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
+import com.cheftory.api.exception.CheftoryException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import com.cheftory.api.exception.CheftoryException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,7 @@ class RankingKeyGeneratorTest {
     class GenerateKey {
         @Test
         @DisplayName("TRENDING 랭킹 키를 생성해야 한다")
-        void shouldGenerateTrendingKey() throws Exception {
+        void shouldGenerateTrendingKey() {
             try (var ignored = MarketContext.with(new MarketContext.Info(Market.KOREA, "KR"))) {
                 String result = rankingKeyGenerator.generateKey(RankingType.TRENDING);
 
@@ -37,7 +36,7 @@ class RankingKeyGeneratorTest {
 
         @Test
         @DisplayName("CHEF 랭킹 키를 생성해야 한다")
-        void shouldGenerateChefKey() throws CheftoryException {
+        void shouldGenerateChefKey() {
             try (var ignored = MarketContext.with(new MarketContext.Info(Market.KOREA, "KR"))) {
                 String result = rankingKeyGenerator.generateKey(RankingType.CHEF);
 
@@ -52,7 +51,7 @@ class RankingKeyGeneratorTest {
     class GetLatestKey {
         @Test
         @DisplayName("TRENDING 최신 키를 반환해야 한다")
-        void shouldReturnTrendingLatestKey() throws Exception {
+        void shouldReturnTrendingLatestKey() {
             try (var ignored = MarketContext.with(new MarketContext.Info(Market.KOREA, "KR"))) {
                 String result = rankingKeyGenerator.getLatestKey(RankingType.TRENDING);
                 assertThat(result).isEqualTo("korea:trendRecipe:latest");
@@ -61,7 +60,7 @@ class RankingKeyGeneratorTest {
 
         @Test
         @DisplayName("CHEF 최신 키를 반환해야 한다")
-        void shouldReturnChefLatestKey() throws CheftoryException {
+        void shouldReturnChefLatestKey() {
             try (var ignored = MarketContext.with(new MarketContext.Info(Market.KOREA, "KR"))) {
                 String result = rankingKeyGenerator.getLatestKey(RankingType.CHEF);
                 assertThat(result).isEqualTo("korea:chefRecipe:latest");
@@ -74,7 +73,7 @@ class RankingKeyGeneratorTest {
     class KeyFormatValidation {
         @Test
         @DisplayName("생성된 키가 올바른 형식을 가져야 한다")
-        void generatedKeyShouldHaveCorrectFormat() throws Exception {
+        void generatedKeyShouldHaveCorrectFormat() {
             try (var ignored = MarketContext.with(new MarketContext.Info(Market.KOREA, "KR"))) {
                 String trendingKey = rankingKeyGenerator.generateKey(RankingType.TRENDING);
                 String chefKey = rankingKeyGenerator.generateKey(RankingType.CHEF);
@@ -86,7 +85,7 @@ class RankingKeyGeneratorTest {
 
         @Test
         @DisplayName("타임스탬프가 현재 시간(시 단위)과 일치해야 한다")
-        void timestampShouldMatchCurrentHour() throws CheftoryException {
+        void timestampShouldMatchCurrentHour() {
             try (var ignored = MarketContext.with(new MarketContext.Info(Market.KOREA, "KR"))) {
                 String currentHour = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
 

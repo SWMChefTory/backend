@@ -43,7 +43,7 @@ class MarketControllerTest extends RestDocsTest {
         class GivenMarketContextPresent {
             @Test
             @DisplayName("Then - market과 country_code를 반환한다")
-            void thenReturnsMarketInfo() throws Exception {
+            void thenReturnsMarketInfo() {
                 try (var ignored = with(new MarketContext.Info(Market.KOREA, "KR"))) {
                     given().contentType(ContentType.JSON)
                             .when()

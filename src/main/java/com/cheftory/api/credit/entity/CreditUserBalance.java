@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class CreditUserBalance {
 
     @Id
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
     private UUID userId;
 
     @Column(nullable = false)

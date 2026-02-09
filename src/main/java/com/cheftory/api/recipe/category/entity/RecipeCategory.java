@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-@Table(name = "recipe_category")
+@Table
 public class RecipeCategory extends MarketScope {
     @Id
     private UUID id;

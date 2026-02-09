@@ -21,10 +21,9 @@ import com.cheftory.api.user.UserService;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
 import com.cheftory.api.user.entity.User;
+import com.cheftory.api.user.exception.UserException;
 import java.time.LocalDate;
 import java.util.UUID;
-
-import com.cheftory.api.user.exception.UserException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

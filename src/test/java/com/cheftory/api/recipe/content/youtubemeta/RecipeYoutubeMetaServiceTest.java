@@ -114,7 +114,7 @@ public class RecipeYoutubeMetaServiceTest {
 
             @Test
             @DisplayName("Then - YOUTUBE_META_NOT_FOUND 예외가 발생한다")
-            void thenThrowNotFound() throws Exception {
+            void thenThrowNotFound() {
                 assertThatThrownBy(() -> recipeYoutubeMetaService.block(recipeId))
                         .isInstanceOf(YoutubeMetaException.class)
                         .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
@@ -129,7 +129,7 @@ public class RecipeYoutubeMetaServiceTest {
         private String title;
         private Integer videoSeconds;
         private URI youtubeThumbnailUrl;
-        private YoutubeUri youtubeUri = mock(YoutubeUri.class);
+        private final YoutubeUri youtubeUri = mock(YoutubeUri.class);
 
         @BeforeEach
         void setUp() {
@@ -388,7 +388,7 @@ public class RecipeYoutubeMetaServiceTest {
 
                 @Test
                 @DisplayName("Then - YoutubeMetaException 예외가 발생한다.")
-                void thenThrowYoutubeMetaException() throws Exception {
+                void thenThrowYoutubeMetaException() {
                     assertThatThrownBy(() -> recipeYoutubeMetaService.get(recipeId))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);
@@ -515,7 +515,7 @@ public class RecipeYoutubeMetaServiceTest {
                 class WhenBanMethod {
                     @Test
                     @DisplayName("Then - YoutubeMetaException 예외가 발생한다")
-                    void thenThrowYoutubeMetaException() throws Exception {
+                    void thenThrowYoutubeMetaException() {
                         assertThatThrownBy(() -> recipeYoutubeMetaService.ban(recipeId))
                                 .isInstanceOf(YoutubeMetaException.class)
                                 .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND);

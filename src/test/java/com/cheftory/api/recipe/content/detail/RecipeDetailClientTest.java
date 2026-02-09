@@ -6,8 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailRequest;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
-import com.cheftory.api.recipe.content.step.exception.RecipeStepErrorCode;
-import com.cheftory.api.recipe.content.step.exception.RecipeStepException;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +22,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @DisplayName("RecipeDetailClient 테스트")
 class RecipeDetailClientTest {
@@ -101,9 +98,9 @@ class RecipeDetailClientTest {
                 assertThat(actualResponse.cookTime()).isEqualTo(30);
                 assertThat(actualResponse.servings()).isEqualTo(4);
                 assertThat(actualResponse.ingredients()).hasSize(2);
-                assertThat(actualResponse.ingredients().get(0).name()).isEqualTo("재료1");
-                assertThat(actualResponse.ingredients().get(0).amount()).isEqualTo(2);
-                assertThat(actualResponse.ingredients().get(0).unit()).isEqualTo("개");
+                assertThat(actualResponse.ingredients().getFirst().name()).isEqualTo("재료1");
+                assertThat(actualResponse.ingredients().getFirst().amount()).isEqualTo(2);
+                assertThat(actualResponse.ingredients().getFirst().unit()).isEqualTo("개");
                 assertThat(actualResponse.tags()).containsExactly("태그1", "태그2");
 
                 // 요청 검증
@@ -132,9 +129,8 @@ class RecipeDetailClientTest {
 
                 // When & Then
                 assertThatThrownBy(() -> recipeDetailClient.fetchRecipeDetails(videoId, fileUri, mimeType))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
-
+                        .isInstanceOf(RecipeException.class)
+                        .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
                 // 요청 검증
                 RecordedRequest recordedRequest = mockWebServer.takeRequest();

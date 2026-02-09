@@ -139,7 +139,7 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
         class GivenSavedRecipeDetailMeta {
             private UUID recipeId;
             private RecipeDetailMeta savedMeta;
-            private LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+            private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
             @BeforeEach
             void setUp() {
@@ -198,7 +198,7 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
 
                 @Test
                 @DisplayName("Then - 빈 Optional이 반환된다")
-                void thenEmptyOptionalIsReturned() throws Exception {
+                void thenEmptyOptionalIsReturned() {
                     assertThat(foundMeta).isEmpty();
                 }
             }
@@ -279,7 +279,7 @@ public class RecipeDetailMetaRepositoryTest extends DbContextTest {
 
                 @Test
                 @DisplayName("Then - 빈 목록이 반환된다")
-                void thenEmptyListIsReturned() throws Exception {
+                void thenEmptyListIsReturned() {
                     assertThat(foundMetas).isEmpty();
                 }
             }

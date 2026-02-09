@@ -174,7 +174,7 @@ public class VideoInfoClientTest {
 
                 @Test
                 @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_FOUND)을 던진다")
-                void thenThrowsYoutubeMetaException() throws Exception {
+                void thenThrowsYoutubeMetaException() {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
@@ -219,7 +219,7 @@ public class VideoInfoClientTest {
 
                 @Test
                 @DisplayName("Then - YoutubeMetaException(DURATION_NOT_FOUND)을 던진다")
-                void thenThrowsYoutubeMetaException() throws Exception {
+                void thenThrowsYoutubeMetaException() {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue(
@@ -267,7 +267,7 @@ public class VideoInfoClientTest {
 
                 @Test
                 @DisplayName("Then - YoutubeMetaException(VIDEO_NOT_EMBEDDABLE)을 던진다")
-                void thenThrowsYoutubeMetaException() throws Exception {
+                void thenThrowsYoutubeMetaException() {
                     assertThatThrownBy(() -> videoInfoClient.fetchVideoInfo(youtubeUri))
                             .isInstanceOf(YoutubeMetaException.class)
                             .hasFieldOrPropertyWithValue(
@@ -655,7 +655,7 @@ public class VideoInfoClientTest {
         @Test
         @DisplayName("플레이리스트 조회 실패했지만 60초 이하인 경우 SHORTS 타입으로 반환한다 (폴백)")
         void returnsShortsTypeWhenPlaylistCheckFailsButUnderSixtySeconds()
-						throws InterruptedException, YoutubeMetaException {
+                throws InterruptedException, YoutubeMetaException {
             String videoResponseBody =
                     """
           {

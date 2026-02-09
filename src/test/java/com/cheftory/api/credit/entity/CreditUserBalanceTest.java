@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class CreditUserBalanceTest {
     @Test
     @DisplayName("create - userId가 null이면 CREDIT_INVALID_USER 예외")
-    void create_shouldThrowWhenUserIdNull() throws Exception {
+    void create_shouldThrowWhenUserIdNull() {
         assertThatThrownBy(() -> CreditUserBalance.create(null))
                 .isInstanceOf(CreditException.class)
                 .satisfies(ex -> {

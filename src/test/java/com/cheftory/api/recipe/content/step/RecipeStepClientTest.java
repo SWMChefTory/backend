@@ -8,8 +8,6 @@ import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsRequest;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsResponse;
 import com.cheftory.api.recipe.content.step.exception.RecipeStepErrorCode;
 import com.cheftory.api.recipe.content.step.exception.RecipeStepException;
-import com.cheftory.api.recipe.exception.RecipeErrorCode;
-import com.cheftory.api.recipe.exception.RecipeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
@@ -24,7 +22,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @DisplayName("RecipeStepClient 테스트")
 class RecipeStepClientTest {
@@ -119,14 +116,13 @@ class RecipeStepClientTest {
             String mimeType = "video/mp4";
 
             mockWebServer.enqueue(new MockResponse()
-                .setResponseCode(HttpStatus.BAD_REQUEST.value())
-                .setHeader("Content-Type", "application/json")
-                .setBody("{\"error\":\"Invalid request\"}"));
+                    .setResponseCode(HttpStatus.BAD_REQUEST.value())
+                    .setHeader("Content-Type", "application/json")
+                    .setBody("{\"error\":\"Invalid request\"}"));
 
             assertThatThrownBy(() -> recipeStepClient.fetchRecipeSteps(fileUri, mimeType))
-                .isInstanceOf(RecipeStepException.class)
-                .hasFieldOrPropertyWithValue("error", RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
-
+                    .isInstanceOf(RecipeStepException.class)
+                    .hasFieldOrPropertyWithValue("error", RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
 
             RecordedRequest recordedRequest = mockWebServer.takeRequest();
             assertThat(recordedRequest.getMethod()).isEqualTo("POST");
@@ -190,7 +186,7 @@ class RecipeStepClientTest {
             ClientRecipeStepsResponse actualResponse = recipeStepClient.fetchRecipeSteps(fileUri, mimeType);
 
             assertThat(actualResponse.steps()).hasSize(1);
-            ClientRecipeStepsResponse.Step step = actualResponse.steps().get(0);
+            ClientRecipeStepsResponse.Step step = actualResponse.steps().getFirst();
             assertThat(step.subtitle()).isEqualTo("특수 단계 & 테스트");
             assertThat(step.start()).isEqualTo(0.123);
             assertThat(step.descriptions()).hasSize(1);

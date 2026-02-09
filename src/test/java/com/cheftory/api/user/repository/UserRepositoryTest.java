@@ -41,7 +41,7 @@ class UserRepositoryTest extends DbContextTest {
 
     @Test
     @DisplayName("존재하지 않는 유저 ID로 조회하면 예외 발생")
-    void find_byNotFoundUserId_throwException() throws Exception {
+    void find_byNotFoundUserId_throwException() {
         assertThatThrownBy(() -> userRepository.find(UUID.randomUUID()))
                 .isInstanceOf(UserException.class)
                 .extracting("error")

@@ -49,7 +49,7 @@ class MarketIntegrationTest {
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    void async_create_should_be_isolated_by_market() throws Exception {
+    void async_create_should_be_isolated_by_market() {
         withMarket(Market.KOREA, "KR", () -> regionService.createAsync("korea").get(3, TimeUnit.SECONDS));
         withMarket(
                 Market.GLOBAL, "US", () -> regionService.createAsync("global").get(3, TimeUnit.SECONDS));
@@ -61,19 +61,18 @@ class MarketIntegrationTest {
                 .allMatch(n -> n.startsWith("global")));
     }
 
-  @Test
-  @Transactional(propagation = Propagation.NOT_SUPPORTED)
-  void async_without_marketContext_should_throw_unknown_region() {
-    var f = regionService.createAsync("x");
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void async_without_marketContext_should_throw_unknown_region() {
+        var f = regionService.createAsync("x");
 
-    assertThatThrownBy(() -> f.get(3, TimeUnit.SECONDS))
-        .isInstanceOf(ExecutionException.class)
-        .hasRootCauseInstanceOf(CheftoryException.class)
-        .rootCause()
-        .isInstanceOfSatisfying(CheftoryException.class, ex ->
-            assertThat(ex.getError()).isEqualTo(GlobalErrorCode.UNKNOWN_REGION)
-        );
-  }
+        assertThatThrownBy(() -> f.get(3, TimeUnit.SECONDS))
+                .isInstanceOf(ExecutionException.class)
+                .hasRootCauseInstanceOf(CheftoryException.class)
+                .rootCause()
+                .isInstanceOfSatisfying(CheftoryException.class, ex -> assertThat(ex.getError())
+                        .isEqualTo(GlobalErrorCode.UNKNOWN_REGION));
+    }
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)

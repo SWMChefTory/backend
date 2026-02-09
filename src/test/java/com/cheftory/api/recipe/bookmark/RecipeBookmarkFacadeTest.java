@@ -84,8 +84,7 @@ class RecipeBookmarkFacadeTest {
 
         @Test
         @DisplayName("credit 부족이면 CREDIT_INSUFFICIENT를 던진다")
-        void shouldThrowCreditInsufficient()
-                throws CreditException, RecipeBookmarkException, RecipeInfoException {
+        void shouldThrowCreditInsufficient() throws CreditException, RecipeBookmarkException, RecipeInfoException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             long creditCost = 100L;
@@ -107,8 +106,7 @@ class RecipeBookmarkFacadeTest {
 
         @Test
         @DisplayName("credit 동시성 충돌이면 CREDIT_CONCURRENCY_CONFLICT를 던진다")
-        void shouldThrowConcurrencyConflict()
-                throws CreditException, RecipeBookmarkException, RecipeInfoException {
+        void shouldThrowConcurrencyConflict() throws CreditException, RecipeBookmarkException, RecipeInfoException {
             UUID userId = UUID.randomUUID();
             UUID recipeId = UUID.randomUUID();
             long creditCost = 100L;

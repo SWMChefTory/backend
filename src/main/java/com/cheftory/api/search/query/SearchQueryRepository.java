@@ -41,8 +41,6 @@ public class SearchQueryRepository {
     private static final String FIELD_CHANNEL_TITLE = "channel_title";
 
     private static final String FIELD_CREATED_AT = "created_at";
-    private static final String DECAY_SCALE = "7d";
-    private static final double DECAY_VALUE = 0.5;
 
     private final OpenSearchClient openSearchClient;
 

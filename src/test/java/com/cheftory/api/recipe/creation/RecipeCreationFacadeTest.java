@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
-import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;

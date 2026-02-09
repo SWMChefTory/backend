@@ -19,21 +19,20 @@ public class RecipeDetailClient {
     private final WebClient webClient;
 
     public ClientRecipeDetailResponse fetchRecipeDetails(String videoId, String fileUri, String mimeType)
-				throws RecipeException {
+            throws RecipeException {
         try {
             ClientRecipeDetailRequest request = ClientRecipeDetailRequest.from(videoId, fileUri, mimeType);
 
             return webClient
-                .post()
-                .uri(uriBuilder -> uriBuilder.path("/meta/video").build())
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(ClientRecipeDetailResponse.class)
-                .block();
+                    .post()
+                    .uri(uriBuilder -> uriBuilder.path("/meta/video").build())
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(ClientRecipeDetailResponse.class)
+                    .block();
         } catch (Exception e) {
             log.warn(e.getMessage());
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
-
     }
 }

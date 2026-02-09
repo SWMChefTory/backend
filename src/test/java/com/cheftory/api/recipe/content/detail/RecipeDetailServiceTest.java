@@ -9,9 +9,8 @@ import static org.mockito.Mockito.when;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
 import com.cheftory.api.recipe.content.detail.entity.RecipeDetail;
-import java.util.List;
-
 import com.cheftory.api.recipe.exception.RecipeException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -79,9 +78,9 @@ public class RecipeDetailServiceTest {
                     assertThat(result).isEqualTo(expectedRecipeDetail);
                     assertThat(result.description()).isEqualTo("맛있는 김치찌개 만들기");
                     assertThat(result.ingredients()).hasSize(3);
-                    assertThat(result.ingredients().get(0).name()).isEqualTo("김치");
-                    assertThat(result.ingredients().get(0).amount()).isEqualTo(200);
-                    assertThat(result.ingredients().get(0).unit()).isEqualTo("g");
+                    assertThat(result.ingredients().getFirst().name()).isEqualTo("김치");
+                    assertThat(result.ingredients().getFirst().amount()).isEqualTo(200);
+                    assertThat(result.ingredients().getFirst().unit()).isEqualTo("g");
                     assertThat(result.tags()).containsExactly("한식", "찌개", "김치");
                     assertThat(result.servings()).isEqualTo(2);
                     assertThat(result.cookTime()).isEqualTo(30);

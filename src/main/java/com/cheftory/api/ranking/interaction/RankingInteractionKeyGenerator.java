@@ -28,9 +28,6 @@ public class RankingInteractionKeyGenerator {
 
     private String buildKey(String... parts) throws CheftoryException {
         Market market = MarketContext.required().market();
-        return new StringBuilder(market.name().toLowerCase())
-                .append(DELIMITER)
-                .append(String.join(DELIMITER, parts))
-                .toString();
+        return market.name().toLowerCase() + DELIMITER + String.join(DELIMITER, parts);
     }
 }

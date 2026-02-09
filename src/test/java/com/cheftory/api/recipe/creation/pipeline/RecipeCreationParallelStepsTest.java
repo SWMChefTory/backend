@@ -4,12 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.recipe.exception.RecipeException;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
-
-import com.cheftory.api.recipe.exception.RecipeException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

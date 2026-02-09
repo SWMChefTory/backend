@@ -233,7 +233,7 @@ class RecipeFacadeTest {
         @Test
         @DisplayName("detailMeta가 null이어도 overview를 반환한다")
         void shouldReturnOverviewWithNullDetailMeta()
-						throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
+                throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
             UUID recipeId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
 

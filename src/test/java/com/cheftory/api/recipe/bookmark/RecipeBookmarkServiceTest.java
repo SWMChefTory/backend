@@ -331,8 +331,8 @@ public class RecipeBookmarkServiceTest {
 
                         assertThat(result).hasSize(2);
 
-                        RecipeBookmarkCategorizedCount first = result.get(0);
-                        assertThat(first.getCategoryId()).isEqualTo(categoryIds.get(0));
+                        RecipeBookmarkCategorizedCount first = result.getFirst();
+                        assertThat(first.getCategoryId()).isEqualTo(categoryIds.getFirst());
                         assertThat(first.getCount()).isEqualTo(5);
 
                         RecipeBookmarkCategorizedCount second = result.get(1);

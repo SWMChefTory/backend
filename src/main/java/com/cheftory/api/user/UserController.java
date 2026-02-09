@@ -56,7 +56,7 @@ public class UserController {
      * @return 성공 메시지 응답 DTO
      * @throws UserException 유저를 찾을 수 없을 때 USER_NOT_FOUND
      * @throws UserException 이미 튜토리얼을 완료했을 때 TUTORIAL_ALREADY_FINISHED
-     * @throws CheftoryException 크레딧 지급 실패 시 튜토리얼 상태 복구 후 예외 전파
+     * @throws CreditException 크레딧 지급 실패 시 튜토리얼 상태 복구 후 예외 전파
      */
     @PostMapping("/tutorial")
     public SuccessOnlyResponse tutorial(@UserPrincipal UUID userId) throws UserException, CreditException {

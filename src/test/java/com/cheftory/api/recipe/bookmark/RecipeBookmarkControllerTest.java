@@ -27,7 +27,6 @@ import com.cheftory.api.recipe.category.exception.RecipeCategoryErrorCode;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
-import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Map;

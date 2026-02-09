@@ -228,7 +228,7 @@ public class AutocompleteServiceTest {
                             autocompleteService.autocomplete(AutocompleteScope.RECIPE, keyword);
 
                     assertThat(result).hasSize(5);
-                    assertThat(result.get(0).getText()).isEqualTo("김치찌개");
+                    assertThat(result.getFirst().getText()).isEqualTo("김치찌개");
                     verify(autocompleteRepository)
                             .searchAutocomplete(eq(AutocompleteScope.RECIPE), eq(keyword), eq(10));
                 }

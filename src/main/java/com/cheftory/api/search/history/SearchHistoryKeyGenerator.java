@@ -18,14 +18,6 @@ public class SearchHistoryKeyGenerator {
         Market market = MarketContext.required().market();
         String marketKey = market.name().toLowerCase();
 
-        return new StringBuilder()
-                .append(marketKey)
-                .append(SEP)
-                .append(PREFIX)
-                .append(SEP)
-                .append(scope.name().toLowerCase())
-                .append(SEP)
-                .append(userId)
-                .toString();
+        return marketKey + SEP + PREFIX + SEP + scope.name().toLowerCase() + SEP + userId;
     }
 }

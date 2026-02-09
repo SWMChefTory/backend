@@ -22,12 +22,12 @@ public class RecipeStepClient {
         ClientRecipeStepsRequest request = ClientRecipeStepsRequest.from(fileUri, mimeType);
         try {
             return webClient
-                .post()
-                .uri(uriBuilder -> uriBuilder.path("/steps/video").build())
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(ClientRecipeStepsResponse.class)
-                .block();
+                    .post()
+                    .uri(uriBuilder -> uriBuilder.path("/steps/video").build())
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(ClientRecipeStepsResponse.class)
+                    .block();
         } catch (Exception e) {
             log.warn("레시피 생성중 오류 발생", e);
             throw new RecipeStepException(RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);

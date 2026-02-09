@@ -22,26 +22,22 @@ public class RankingSnapshotService {
         return UUID.randomUUID();
     }
 
-    public void savePit(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType, String pitId)
-            throws CheftoryException {
+    public void savePit(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType, String pitId) {
         String cacheKey = keyGenerator.pitKey(requestId, surfaceType, itemType);
         snapshotRepository.saveString(cacheKey, pitId, PIT_TTL);
     }
 
-    public String getPit(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType)
-            throws CheftoryException {
+    public String getPit(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType) {
         String cacheKey = keyGenerator.pitKey(requestId, surfaceType, itemType);
         return snapshotRepository.getString(cacheKey);
     }
 
-    public void refreshPit(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType)
-            throws CheftoryException {
+    public void refreshPit(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType) {
         snapshotRepository.expire(keyGenerator.pitKey(requestId, surfaceType, itemType), PIT_TTL);
         snapshotRepository.expire(keyGenerator.impressionPosKey(requestId), POS_TTL);
     }
 
-    public void deletePit(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType)
-            throws CheftoryException {
+    public void deletePit(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType) {
         String cacheKey = keyGenerator.pitKey(requestId, surfaceType, itemType);
         snapshotRepository.delete(cacheKey);
     }

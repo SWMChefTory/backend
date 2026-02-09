@@ -22,7 +22,7 @@ public abstract class MarketScope {
     private String countryCode;
 
     @PrePersist
-    protected void onCreate() throws CheftoryException {
+    protected void onCreate() {
         this.countryCode = MarketContext.required().countryCode();
     }
 }

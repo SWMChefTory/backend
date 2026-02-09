@@ -35,7 +35,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
     @Mock
     private Clock clock;
 
-    private LocalDateTime now = LocalDateTime.now();
+    private final LocalDateTime now = LocalDateTime.now();
 
     @BeforeEach
     void setUp() {
@@ -187,7 +187,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
             var result = recipeCategoryRepository.gets(userId);
 
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getName()).isEqualTo(name1);
+            assertThat(result.getFirst().getName()).isEqualTo(name1);
         }
     }
 

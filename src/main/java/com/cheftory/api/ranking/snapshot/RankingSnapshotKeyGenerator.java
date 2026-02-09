@@ -13,20 +13,16 @@ public class RankingSnapshotKeyGenerator {
 
     private static final String DELIMITER = ":";
 
-    public String pitKey(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType)
-            throws CheftoryException {
+    public String pitKey(UUID requestId, RankingSurfaceType surfaceType, RankingItemType itemType) {
         return buildKey("ranking", "request", requestId.toString(), surfaceType.name(), itemType.name(), "pit");
     }
 
-    public String impressionPosKey(UUID requestId) throws CheftoryException {
+    public String impressionPosKey(UUID requestId) {
         return buildKey("ranking", "request", requestId.toString(), "impressionPos");
     }
 
-    private String buildKey(String... parts) throws CheftoryException {
+    private String buildKey(String... parts) {
         Market market = MarketContext.required().market();
-        return new StringBuilder(market.name().toLowerCase())
-                .append(DELIMITER)
-                .append(String.join(DELIMITER, parts))
-                .toString();
+        return market.name().toLowerCase() + DELIMITER + String.join(DELIMITER, parts);
     }
 }

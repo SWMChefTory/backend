@@ -309,11 +309,11 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
 
                     // 성공 상태와 진행 중 상태만 포함되어야 함
                     long successCount = notFailedRecipeInfos.stream()
-                            .filter(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS)
+                            .filter(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS)
                             .count();
                     long inProgressCount = notFailedRecipeInfos.stream()
                             .filter(recipe ->
-                                    (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS)
+                                    getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS)
                             .count();
 
                     assertThat(successCount).isEqualTo(2);
@@ -345,10 +345,10 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
 
                     // 성공 상태와 실패 상태만 포함되어야 함
                     long successCount = notInProgressRecipeInfos.stream()
-                            .filter(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS)
+                            .filter(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS)
                             .count();
                     long failedCount = notInProgressRecipeInfos.stream()
-                            .filter(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.FAILED)
+                            .filter(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.FAILED)
                             .count();
 
                     assertThat(successCount).isEqualTo(2);
@@ -431,12 +431,12 @@ public class RecipeInfoRepositoryTest extends DbContextTest {
                     // 각 상태가 모두 포함되는지 확인
                     boolean hasInProgress = foundRecipeInfos.stream()
                             .anyMatch(recipe ->
-                                    (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS);
+                                    getField(recipe, "recipeStatus") == RecipeStatus.IN_PROGRESS);
                     boolean hasSuccess = foundRecipeInfos.stream()
                             .anyMatch(
-                                    recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS);
+                                    recipe -> getField(recipe, "recipeStatus") == RecipeStatus.SUCCESS);
                     boolean hasFailed = foundRecipeInfos.stream()
-                            .anyMatch(recipe -> (RecipeStatus) getField(recipe, "recipeStatus") == RecipeStatus.FAILED);
+                            .anyMatch(recipe -> getField(recipe, "recipeStatus") == RecipeStatus.FAILED);
 
                     assertThat(hasInProgress).isTrue();
                     assertThat(hasSuccess).isTrue();

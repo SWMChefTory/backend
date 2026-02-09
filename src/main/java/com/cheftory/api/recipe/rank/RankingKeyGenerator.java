@@ -13,21 +13,18 @@ public class RankingKeyGenerator {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final String DELIMITER = ":";
 
-    public String generateKey(RankingType type) throws CheftoryException {
+    public String generateKey(RankingType type) {
         return buildKey(getTypePrefix(type), "ranking", getCurrentTimestamp());
     }
 
-    public String getLatestKey(RankingType type) throws CheftoryException {
+    public String getLatestKey(RankingType type) {
         return buildKey(getTypePrefix(type), "latest");
     }
 
-    private String buildKey(String... parts) throws CheftoryException {
+    private String buildKey(String... parts) {
         Market market = MarketContext.required().market();
 
-        return new StringBuilder(market.name().toLowerCase())
-                .append(DELIMITER)
-                .append(String.join(DELIMITER, parts))
-                .toString();
+        return market.name().toLowerCase() + DELIMITER + String.join(DELIMITER, parts);
     }
 
     private String getTypePrefix(RankingType type) {

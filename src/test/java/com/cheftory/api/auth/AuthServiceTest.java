@@ -34,7 +34,6 @@ class AuthServiceTest {
 
     private final String idToken = "dummy-id-token";
     private final String refreshToken = "refresh-token";
-    private final String newRefreshToken = "new-refresh-token";
     private final String accessToken = "access-token";
     private final UUID userId = UUID.randomUUID();
     private final LocalDateTime fixedNow = LocalDateTime.of(2025, 1, 1, 0, 0);

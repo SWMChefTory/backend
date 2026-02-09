@@ -214,7 +214,7 @@ public class AutocompleteRepositoryTest {
 
             @Test
             @DisplayName("When - 자동완성을 검색하면 Then - count 순으로 정렬된 목록이 반환된다")
-            void whenSearchingAutocomplete_thenReturnsCountSortedList() throws IOException, SearchException {
+            void whenSearchingAutocomplete_thenReturnsCountSortedList() throws SearchException {
                 List<Autocomplete> result =
                         autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit);
 
@@ -244,7 +244,7 @@ public class AutocompleteRepositoryTest {
 
             @Test
             @DisplayName("When - 자동완성을 검색하면 Then - RuntimeException이 발생한다")
-            void whenSearchingAutocomplete_thenThrowsRuntimeException() throws Exception {
+            void whenSearchingAutocomplete_thenThrowsRuntimeException() {
                 assertThatThrownBy(() ->
                                 autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit))
                         .isInstanceOf(SearchException.class)
@@ -271,7 +271,7 @@ public class AutocompleteRepositoryTest {
 
             @Test
             @DisplayName("When - 자동완성을 검색하면 Then - RecipeSearchException이 발생한다")
-            void whenSearchingAutocomplete_thenThrowsRecipeSearchException() throws Exception {
+            void whenSearchingAutocomplete_thenThrowsRecipeSearchException() {
                 assertThatThrownBy(() ->
                                 autocompleteRepository.searchAutocomplete(AutocompleteScope.RECIPE, keyword, limit))
                         .isInstanceOf(SearchException.class)

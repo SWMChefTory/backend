@@ -27,11 +27,10 @@ import com.cheftory.api.recipe.creation.pipeline.RecipeCreationPipeline;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
+import com.cheftory.api.recipe.exception.RecipeException;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
-
-import com.cheftory.api.recipe.exception.RecipeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -200,7 +199,7 @@ class AsyncRecipeCreationServiceTest {
                     @Test
                     @DisplayName("Then - 실패 처리만 되고 ban 처리는 되지 않는다")
                     void thenOnlyFailedProcessedWithoutBan()
-												throws RecipeInfoException, YoutubeMetaException, CreditException {
+                            throws RecipeInfoException, YoutubeMetaException, CreditException {
                         sut.create(recipeId, creditCost, videoId, videoUrl);
 
                         verify(recipeInfoService).failed(recipeId);
@@ -251,7 +250,7 @@ class AsyncRecipeCreationServiceTest {
                     @Test
                     @DisplayName("Then - 실패 처리되고 식별자가 삭제된다")
                     void thenFailedProcessedAndIdentifierDeleted()
-												throws RecipeInfoException, YoutubeMetaException, CreditException {
+                            throws RecipeInfoException, YoutubeMetaException, CreditException {
                         sut.create(recipeId, creditCost, videoId, videoUrl);
 
                         verify(recipeInfoService).failed(recipeId);

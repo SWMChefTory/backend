@@ -17,13 +17,13 @@ public class RecipeRankController {
     private final RecipeRankService recipeRankService;
 
     @PutMapping("/papi/v1/recipes/trending/{recipeIds}")
-    public SuccessOnlyResponse updateTrendingRecipes(@PathVariable List<UUID> recipeIds) throws CheftoryException {
+    public SuccessOnlyResponse updateTrendingRecipes(@PathVariable List<UUID> recipeIds) {
         recipeRankService.updateRecipes(RankingType.TRENDING, recipeIds);
         return SuccessOnlyResponse.create();
     }
 
     @PutMapping("/papi/v1/recipes/chef/{recipeIds}")
-    public SuccessOnlyResponse updateChefRecipes(@PathVariable List<UUID> recipeIds) throws CheftoryException {
+    public SuccessOnlyResponse updateChefRecipes(@PathVariable List<UUID> recipeIds) {
         recipeRankService.updateRecipes(RankingType.CHEF, recipeIds);
         return SuccessOnlyResponse.create();
     }

@@ -180,7 +180,7 @@ public class RecipeDetailMetaServiceTest {
 
             @Test
             @DisplayName("When - 상세 메타를 조회하면 Then - 예외가 발생한다")
-            void whenFindByRecipeId_thenReturnsEmptyOptional() throws Exception {
+            void whenFindByRecipeId_thenReturnsEmptyOptional() {
                 assertThatThrownBy(() -> recipeDetailMetaService.get(recipeId))
                         .isInstanceOf(RecipeDetailMetaException.class)
                         .hasFieldOrPropertyWithValue("error", RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND);

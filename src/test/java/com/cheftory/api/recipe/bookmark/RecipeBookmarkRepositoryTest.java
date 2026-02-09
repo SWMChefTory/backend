@@ -5,8 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import org.springframework.retry.ExhaustedRetryException;
-
 import com.cheftory.api.DbContextTest;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.cursor.CursorErrorCode;
@@ -380,7 +378,7 @@ public class RecipeBookmarkRepositoryTest extends DbContextTest {
 
         @Test
         @DisplayName("삭제 대상 ID가 비어있으면 삭제 쿼리를 수행하지 않는다")
-        void shouldSkipDeleteWhenIdsEmpty() throws Exception {
+        void shouldSkipDeleteWhenIdsEmpty() {
             recipeBookmarkRepository.deletes(List.of(), clock);
         }
 

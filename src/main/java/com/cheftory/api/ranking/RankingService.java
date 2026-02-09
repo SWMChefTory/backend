@@ -9,6 +9,7 @@ import com.cheftory.api.ranking.interaction.RankingInteractionService;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.ranking.personalization.RankingPersonalizationService;
 import com.cheftory.api.ranking.snapshot.RankingSnapshotService;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.SearchPage;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public class RankingService {
 
     public CursorPage<UUID> recommend(
             UUID userId, RankingSurfaceType surfaceType, RankingItemType itemType, String cursor, int pageSize)
-            throws CheftoryException {
+				throws CheftoryException {
 
         boolean first = (cursor == null || cursor.isBlank());
 
