@@ -65,7 +65,7 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
 
             Boolean embeddable = youtubeVideoResponse.getEmbeddable();
 
-            if (!embeddable) {
+            if (embeddable != null && !embeddable) {
                 throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
             }
 
