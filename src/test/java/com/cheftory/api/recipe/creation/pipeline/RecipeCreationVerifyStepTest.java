@@ -67,7 +67,7 @@ class RecipeCreationVerifyStepTest {
                 recipeId = UUID.randomUUID();
                 videoId = "video-123";
                 context =
-                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-123"));
+                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-123"), "test-title");
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
 
@@ -113,7 +113,7 @@ class RecipeCreationVerifyStepTest {
                 recipeId = UUID.randomUUID();
                 videoId = "video-456";
                 context =
-                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-456"));
+                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-456"), "test-title");
 
                 when(recipeVerifyService.verify(videoId))
                         .thenThrow(new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR));

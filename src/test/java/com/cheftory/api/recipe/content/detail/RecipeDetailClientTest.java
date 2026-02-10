@@ -94,7 +94,7 @@ class RecipeDetailClientTest {
                             .body(responseJson)
                             .build());
 
-                    actualResponse = recipeDetailClient.fetch(videoId, fileUri, mimeType);
+                    actualResponse = recipeDetailClient.fetch(videoId, fileUri, mimeType, null);
                 }
 
                 @Test
@@ -146,7 +146,7 @@ class RecipeDetailClientTest {
                 @Test
                 @DisplayName("Then - RecipeException이 발생한다")
                 void thenThrowsRecipeException() {
-                    assertThatThrownBy(() -> recipeDetailClient.fetch(videoId, fileUri, mimeType))
+                    assertThatThrownBy(() -> recipeDetailClient.fetch(videoId, fileUri, mimeType, null))
                             .isInstanceOf(RecipeException.class)
                             .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
                 }
@@ -193,7 +193,7 @@ class RecipeDetailClientTest {
                             .body(responseJson)
                             .build());
 
-                    actualResponse = recipeDetailClient.fetch(videoId, fileUri, mimeType);
+                    actualResponse = recipeDetailClient.fetch(videoId, fileUri, mimeType, null);
                 }
 
                 @Test

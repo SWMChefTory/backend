@@ -59,7 +59,9 @@ public record FullRecipeResponse(
                 fullRecipe.getRecipeProgresses().stream().map(Progress::from).toList(),
                 fullRecipe.getRecipeSteps().stream().map(Step::from).toList(),
                 fullRecipe.getRecipeBookmark() != null ? ViewStatus.from(fullRecipe.getRecipeBookmark()) : null,
-                fullRecipe.getRecipeDetailMeta() != null ? DetailMeta.from(fullRecipe.getRecipeDetailMeta()) : null,
+                fullRecipe.getRecipeDetailMeta() != null
+                        ? DetailMeta.from(fullRecipe.getRecipeDetailMeta(), fullRecipe.getRecipeYoutubeMeta().getTitle())
+                        : null,
                 fullRecipe.getRecipeTags().stream().map(Tag::from).toList(),
                 fullRecipe.getRecipeBriefings().stream().map(Briefing::from).toList(),
                 fullRecipe.getRecipe().getCreditCost());
@@ -68,11 +70,13 @@ public record FullRecipeResponse(
     /**
      * 상세 메타데이터 레코드
      *
+     * @param title 레시피 제목
      * @param description 설명
      * @param servings 인분
      * @param cookingTime 조리 시간 (분)
      */
     private record DetailMeta(
+            @JsonProperty("title") String title,
             @JsonProperty("description") String description,
             @JsonProperty("servings") Integer servings,
             @JsonProperty("cookingTime") Integer cookingTime) {
@@ -81,10 +85,15 @@ public record FullRecipeResponse(
          * RecipeDetailMeta로부터 변환
          *
          * @param detailMeta 상세 메타데이터 엔티티
+         * @param fallbackTitle fallback 제목 (유튜브 영상 제목)
          * @return 상세 메타데이터 레코드
          */
-        public static DetailMeta from(RecipeDetailMeta detailMeta) {
-            return new DetailMeta(detailMeta.getDescription(), detailMeta.getServings(), detailMeta.getCookTime());
+        public static DetailMeta from(RecipeDetailMeta detailMeta, String fallbackTitle) {
+            String title = detailMeta.getTitle();
+            if (title == null || title.isBlank()) {
+                title = fallbackTitle;
+            }
+            return new DetailMeta(title, detailMeta.getDescription(), detailMeta.getServings(), detailMeta.getCookTime());
         }
     }
 

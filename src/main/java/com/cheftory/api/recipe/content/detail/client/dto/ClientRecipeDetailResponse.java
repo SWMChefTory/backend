@@ -9,6 +9,7 @@ import java.util.List;
  *
  * <p>외부 레시피 상세 생성 API로부터 받은 상세 정보 응답을 담습니다.</p>
  *
+ * @param title AI 생성 레시피 제목
  * @param description 레시피 설명
  * @param ingredients 재료 목록
  * @param tags 태그 목록
@@ -16,12 +17,12 @@ import java.util.List;
  * @param cookTime 조리 시간 (분)
  */
 public record ClientRecipeDetailResponse(
+        @JsonProperty("title") String title,
         @JsonProperty("description") String description,
         @JsonProperty("ingredients") List<Ingredient> ingredients,
         @JsonProperty("tags") List<String> tags,
         @JsonProperty("servings") Integer servings,
         @JsonProperty("cook_time") Integer cookTime) {
-
     /**
      * 재료 정보 레코드
      *
@@ -43,6 +44,6 @@ public record ClientRecipeDetailResponse(
         List<RecipeDetail.Ingredient> recipeIngredients = this.ingredients.stream()
                 .map(ing -> RecipeDetail.Ingredient.of(ing.name, ing.amount, ing.unit))
                 .toList();
-        return RecipeDetail.of(this.description, recipeIngredients, this.tags, this.servings, this.cookTime);
+        return RecipeDetail.of(this.title, this.description, recipeIngredients, this.tags, this.servings, this.cookTime);
     }
 }

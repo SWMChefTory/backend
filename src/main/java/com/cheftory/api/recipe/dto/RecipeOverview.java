@@ -116,13 +116,14 @@ public class RecipeOverview {
             List<RecipeTag> tags,
             Boolean isViewed) {
 
+        String title = detailMeta == null ? null : detailMeta.getTitle();
         return new RecipeOverview(
                 recipe.getId(),
                 recipe.getRecipeStatus(),
                 recipe.getViewCount(),
                 recipe.getCreatedAt(),
                 recipe.getUpdatedAt(),
-                youtubeMeta.getTitle(),
+                (title != null && !title.isBlank()) ? title : youtubeMeta.getTitle(),
                 youtubeMeta.getChannelTitle(),
                 youtubeMeta.getVideoId(),
                 youtubeMeta.getVideoUri(),
