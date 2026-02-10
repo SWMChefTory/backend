@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.21] - 2026-02-09
+
+### Added
+- **낙관적 락 재시도 메커니즘**: 동시성 문제에 대한 회복성 강화를 위한 `OptimisticRetryExecutor` 클래스 도입
+  - 구성 가능한 maxAttempts 및 백오프 전략으로 선언적 재시도 지원
+  - 낙관적 락 실패가 발생할 수 있는 작업의 재시도 로직 중앙화
+- **커서 오류 처리**: 페이징에서 유효하지 않은 커서에 대한 구체적인 오류 처리를 제공하는 `CursorErrorCode` 및 `CursorException` 클래스 추가
+- **커서 기반 페이징 오류 처리 강화**: `ViewedAtCursorCodec`가 새로운 커서 예외 클래스를 활용하여 디코딩/인코딩 실패 시 정밀한 예외 발생
+- **테스트 커버리지 확대**: 리팩토링된 repository 구현체(`RecipeCategoryRepositoryImpl`, `RecipeBookmarkRepositoryImpl`)에 대한 포괄적인 단위 테스트 추가
+
+### Changed
+- **레시피 카테고리 Repository 리팩토링**: 직접적인 JPA repository에서 인터페이스 기반 설계(`RecipeCategoryRepository` + `RecipeCategoryRepositoryImpl`)로 리팩토링
+  - 데이터 접근 계층의 추상화 개선으로 유지보수성 강화
+  - Service 계층과 직접적인 JPA repository 사용의 결합도 감소
+- **레시피 카테고리 삭제 보안 강화**: `RecipeController`, `RecipeFacade`, `RecipeCategoryService`에서 레시피 카테고리 삭제 시 명시적으로 `userId`를 요구하도록 업데이트
+  - 카테고리의 소유자만 삭제를 시작할 수 있도록 보장
+  - 권한 없는 사용자의 카테고리 삭제 방지로 데이터 무결성 개선
+- **Repository 낙관적 재시도 통합**: `RecipeBookmarkRepositoryImpl` 및 `UserShareRepositoryImpl`가 새로운 `OptimisticRetryExecutor`를 활용하도록 업데이트
+  - repository 메서드에서 직접적인 @Retryable 어노테이션 제거로 관심사의 분리 개선
+  - 일관적인 재시도 동작 보장
+- **커서 예외 시그니처 정확화**: `keysetRecents` 및 `keysetCategorized` 메서드의 throws 절을 `RecipeBookmarkException`에서 `CursorException`으로 변경
+  - 실제로 발생하는 예외와 메서드 시그니처 일치로 오류 처리 정확성 개선
+  - RecipeBookmarkRepository, RecipeBookmarkService, RecipeFacade의 해당 메서드 업데이트
+
+### Technical
+- **Javadoc 문서화**: recipe.bookmark 및 recipe.category 패키지 내의 클래스, 인터페이스, 열거형, 메서드에 다수의 Javadoc 주석 추가
+  - 코드 가독성 및 유지보수성 대폭 향상
+  - 향후 개발 및 협업 효율성 증가
+
+---
+
 ## [Unreleased]
 
 ### Added
