@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.MarketContextTestExtension;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.io.IOException;
 import java.util.List;
@@ -55,7 +56,7 @@ public class SearchQueryRepositoryTest {
 
         @Test
         @DisplayName("createPitId - PIT id를 반환한다")
-        void createPitIdReturnsPitId() throws IOException {
+        void createPitIdReturnsPitId() throws IOException, SearchException {
             CreatePitResponse response = org.mockito.Mockito.mock(CreatePitResponse.class);
             doReturn("pit-1").when(response).pitId();
             doReturn(response).when(openSearchClient).createPit(any(CreatePitRequest.class));
@@ -87,7 +88,7 @@ public class SearchQueryRepositoryTest {
 
         @Test
         @DisplayName("When - 커서 첫 페이지를 조회하면 Then - PIT 기반 검색 요청이 생성된다")
-        void whenSearchingFirstCursor_thenCreatesPitRequest() throws IOException {
+        void whenSearchingFirstCursor_thenCreatesPitRequest() throws IOException, SearchException {
             String keyword = "김치찌개";
             Pageable pageable = PageRequest.of(0, 2);
 
@@ -118,7 +119,7 @@ public class SearchQueryRepositoryTest {
 
         @Test
         @DisplayName("When - 커서 keyset을 조회하면 Then - search_after가 포함된다")
-        void whenSearchingCursorKeyset_thenUsesSearchAfter() throws IOException {
+        void whenSearchingCursorKeyset_thenUsesSearchAfter() throws IOException, SearchException {
             String keyword = "김치찌개";
             Pageable pageable = PageRequest.of(0, 2);
 
@@ -152,7 +153,7 @@ public class SearchQueryRepositoryTest {
 
         @Test
         @DisplayName("ids로 문서를 조회한다")
-        void mgetReturnsSources() throws IOException {
+        void mgetReturnsSources() throws IOException, SearchException {
             SearchQuery query1 =
                     SearchQuery.builder().id("id-1").searchText("kimchi").build();
             SearchQuery query2 =
@@ -183,7 +184,7 @@ public class SearchQueryRepositoryTest {
 
         @Test
         @DisplayName("첫 페이지는 PIT 기반 검색 요청을 만든다")
-        void searchCandidatesCursorFirstCreatesPitRequest() throws IOException {
+        void searchCandidatesCursorFirstCreatesPitRequest() throws IOException, SearchException {
             Pageable pageable = PageRequest.of(0, 2);
             PersonalizationProfile profile = new PersonalizationProfile(List.of("kimchi"), List.of("channel"));
 
@@ -214,7 +215,7 @@ public class SearchQueryRepositoryTest {
 
         @Test
         @DisplayName("keyset 조회는 search_after가 포함된다")
-        void searchCandidatesCursorKeysetUsesSearchAfter() throws IOException {
+        void searchCandidatesCursorKeysetUsesSearchAfter() throws IOException, SearchException {
             Pageable pageable = PageRequest.of(0, 2);
             PersonalizationProfile profile = new PersonalizationProfile(List.of("kimchi"), List.of("channel"));
 

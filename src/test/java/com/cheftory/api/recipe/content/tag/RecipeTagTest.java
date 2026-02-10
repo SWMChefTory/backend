@@ -13,21 +13,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("RecipeTagTest")
+@DisplayName("RecipeTag 엔티티")
 public class RecipeTagTest {
 
     @Nested
-    @DisplayName("레시피 태그 생성")
-    class CreateRecipeTag {
+    @DisplayName("레시피 태그 생성 (create)")
+    class Create {
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
         class GivenValidParameters {
-
-            private String tag;
-            private UUID recipeId;
-            private Clock clock;
-            private LocalDateTime now;
+            String tag;
+            UUID recipeId;
+            Clock clock;
+            LocalDateTime now;
 
             @BeforeEach
             void setUp() {
@@ -39,19 +38,18 @@ public class RecipeTagTest {
             }
 
             @Nested
-            @DisplayName("When - 레시피 태그를 생성하면")
-            class WhenCreateRecipeTag {
-
-                private RecipeTag recipeTag;
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                RecipeTag recipeTag;
 
                 @BeforeEach
                 void setUp() {
                     recipeTag = RecipeTag.create(tag, recipeId, clock);
                 }
 
-                @DisplayName("Then - 레시피 태그가 생성된다")
                 @Test
-                void thenRecipeTagIsCreated() {
+                @DisplayName("Then - 레시피 태그가 올바르게 생성된다")
+                void thenCreatedCorrectly() {
                     assertThat(recipeTag).isNotNull();
                     assertThat(recipeTag.getId()).isNotNull();
                     assertThat(recipeTag.getTag()).isEqualTo(tag);

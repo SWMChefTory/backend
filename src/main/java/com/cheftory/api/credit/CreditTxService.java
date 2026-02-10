@@ -12,6 +12,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 크레딧 트랜잭션 서비스.
+ * 크레딧 지급 및 사용 트랜잭션을 처리하고 멱등성을 보장합니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class CreditTxService {
@@ -20,8 +24,14 @@ public class CreditTxService {
     private final CreditTransactionRepository transactionRepository;
     private final Clock clock;
 
+    /**
+     * 크레딧 지급 트랜잭션을 실행합니다.
+     *
+     * @param credit 지급할 크레딧 정보
+     * @throws CreditException 크레딧 관련 예외 발생 시
+     */
     @Transactional
-    public void grantTx(Credit credit) {
+    public void grantTx(Credit credit) throws CreditException {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
         if (alreadyProcessed(
@@ -34,8 +44,14 @@ public class CreditTxService {
         balanceRepository.save(balance);
     }
 
+    /**
+     * 크레딧 사용 트랜잭션을 실행합니다.
+     *
+     * @param credit 사용할 크레딧 정보
+     * @throws CreditException 크레딧 관련 예외 발생 시
+     */
     @Transactional
-    public void spendTx(Credit credit) {
+    public void spendTx(Credit credit) throws CreditException {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
         if (alreadyProcessed(
@@ -60,15 +76,18 @@ public class CreditTxService {
         }
     }
 
-    private CreditUserBalance loadOrCreateBalance(UUID userId) {
-        return balanceRepository.findById(userId).orElseGet(() -> {
-            try {
-                return balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
-            } catch (DataIntegrityViolationException e) {
-                return balanceRepository
-                        .findById(userId)
-                        .orElseThrow(() -> new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT));
-            }
-        });
+    private CreditUserBalance loadOrCreateBalance(UUID userId) throws CreditException {
+        var existing = balanceRepository.findById(userId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        try {
+            return balanceRepository.saveAndFlush(CreditUserBalance.create(userId));
+        } catch (DataIntegrityViolationException e) {
+            return balanceRepository
+                    .findById(userId)
+                    .orElseThrow(() -> new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT));
+        }
     }
 }

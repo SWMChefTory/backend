@@ -10,19 +10,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCode;
+import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.dto.RecipeCreationTarget;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
@@ -72,204 +77,299 @@ class RecipeCreationFacadeTest {
     }
 
     @Nested
-    @DisplayName("기존 레시피 사용")
-    class UseExistingRecipe {
+    @DisplayName("북마크 생성 (createBookmark)")
+    class CreateBookmark {
 
-        @Test
-        @DisplayName("기존 레시피가 있고 User 요청이며 북마크가 생성되면 credit을 차감한다")
-        void shouldUseExistingRecipeAndSpendCredit() {
-            URI uri = URI.create("https://youtube.com/watch?v=test");
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 100L;
+        @Nested
+        @DisplayName("Given - 기존 레시피가 존재할 때")
+        class GivenExistingRecipe {
+            URI uri;
+            UUID userId;
+            UUID recipeId;
+            long creditCost;
+            RecipeYoutubeMeta meta;
+            RecipeInfo recipeInfo;
 
-            RecipeYoutubeMeta meta = mockYoutubeMeta(recipeId);
-            RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
+            @BeforeEach
+            void setUp() throws YoutubeMetaException, RecipeInfoException {
+                uri = URI.create("https://youtube.com/watch?v=test");
+                userId = UUID.randomUUID();
+                recipeId = UUID.randomUUID();
+                creditCost = 100L;
 
-            doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
-            doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
-            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
+                meta = mockYoutubeMeta(recipeId);
+                recipeInfo = mockRecipeInfo(recipeId, creditCost);
 
-            UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
+                doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
+                doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
+            }
 
-            assertThat(result).isEqualTo(recipeId);
-            verify(recipeBookmarkService).create(userId, recipeId);
-            verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
-            verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+            @Nested
+            @DisplayName("When - 사용자 요청이고 북마크가 생성되면")
+            class WhenUserRequestAndBookmarkCreated {
+
+                @BeforeEach
+                void setUp() throws RecipeBookmarkException {
+                    doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 크레딧을 차감하고 레시피 ID를 반환한다")
+                void thenSpendsCreditAndReturnsId() throws RecipeException, CreditException {
+                    UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
+
+                    assertThat(result).isEqualTo(recipeId);
+                    verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                }
+            }
+
+            @Nested
+            @DisplayName("When - 사용자 요청이고 북마크가 생성되지 않으면")
+            class WhenUserRequestAndBookmarkNotCreated {
+
+                @BeforeEach
+                void setUp() throws RecipeBookmarkException {
+                    doReturn(false).when(recipeBookmarkService).create(userId, recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 크레딧을 차감하지 않고 레시피 ID를 반환한다")
+                void thenDoesNotSpendCreditAndReturnsId() throws RecipeException, CreditException {
+                    UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
+
+                    assertThat(result).isEqualTo(recipeId);
+                    verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
+                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                }
+            }
+
+            @Nested
+            @DisplayName("When - 크롤러 요청이면")
+            class WhenCrawlerRequest {
+
+                @Test
+                @DisplayName("Then - 북마크/크레딧 처리 없이 레시피 ID를 반환한다")
+                void thenReturnsIdWithoutSideEffects() throws RecipeException, CreditException {
+                    UUID result = sut.createBookmark(new RecipeCreationTarget.Crawler(uri));
+
+                    assertThat(result).isEqualTo(recipeId);
+                    verify(recipeBookmarkService, never()).create(any(), any());
+                    verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
+                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                }
+            }
         }
 
-        @Test
-        @DisplayName("기존 레시피가 있고 User 요청이지만 북마크 생성이 실패하면 credit을 차감하지 않는다")
-        void shouldNotSpendWhenBookmarkNotCreated() {
-            URI uri = URI.create("https://youtube.com/watch?v=test");
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 100L;
+        @Nested
+        @DisplayName("Given - 유튜브 메타가 차단된 경우")
+        class GivenBannedMeta {
+            URI uri;
+            UUID userId;
 
-            RecipeYoutubeMeta meta = mockYoutubeMeta(recipeId);
-            RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
+            @BeforeEach
+            void setUp() throws YoutubeMetaException {
+                uri = URI.create("https://youtube.com/watch?v=banned");
+                userId = UUID.randomUUID();
+                doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED))
+                        .when(recipeYoutubeMetaService)
+                        .getByUrl(uri);
+            }
 
-            doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
-            doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
-            doReturn(false).when(recipeBookmarkService).create(userId, recipeId);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-            UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
-
-            assertThat(result).isEqualTo(recipeId);
-            verify(recipeBookmarkService).create(userId, recipeId);
-            verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
-            verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                @Test
+                @DisplayName("Then - RECIPE_BANNED 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> sut.createBookmark(new RecipeCreationTarget.User(uri, userId)))
+                            .isInstanceOf(RecipeException.class)
+                            .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_BANNED);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("기존 레시피가 있고 Crawler 요청이면 북마크/credit 없이 기존 레시피를 반환한다")
-        void shouldUseExistingRecipeWithoutBookmarkForCrawler() {
-            URI uri = URI.create("https://youtube.com/watch?v=test");
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 100L;
+        @Nested
+        @DisplayName("Given - 유튜브 메타가 블락된 경우")
+        class GivenBlockedMeta {
+            URI uri;
+            UUID userId;
 
-            RecipeYoutubeMeta meta = mockYoutubeMeta(recipeId);
-            RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
+            @BeforeEach
+            void setUp() throws YoutubeMetaException {
+                uri = URI.create("https://youtube.com/watch?v=blocked");
+                userId = UUID.randomUUID();
+                doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED))
+                        .when(recipeYoutubeMetaService)
+                        .getByUrl(uri);
+            }
 
-            doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
-            doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-            UUID result = sut.createBookmark(new RecipeCreationTarget.Crawler(uri));
-
-            assertThat(result).isEqualTo(recipeId);
-            verify(recipeBookmarkService, never()).create(any(), any());
-            verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
-            verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                @Test
+                @DisplayName("Then - RECIPE_CREATE_FAIL 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> sut.createBookmark(new RecipeCreationTarget.User(uri, userId)))
+                            .isInstanceOf(RecipeException.class)
+                            .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("유튜브 메타가 BANNED이면 RECIPE_BANNED 예외를 던진다")
-        void shouldThrowWhenYoutubeMetaBanned() {
-            URI uri = URI.create("https://youtube.com/watch?v=banned");
-            UUID userId = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 새 레시피를 생성해야 할 때")
+        class GivenNewRecipe {
+            URI uri;
+            UUID userId;
+            YoutubeVideoInfo videoInfo;
+            UUID recipeId;
+            long creditCost;
+            RecipeInfo recipeInfo;
 
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_BANNED))
-                    .when(recipeYoutubeMetaService)
-                    .getByUrl(uri);
+            @BeforeEach
+            void setUp() throws YoutubeMetaException {
+                uri = URI.create("https://youtube.com/watch?v=new");
+                userId = UUID.randomUUID();
+                videoInfo = mockVideoInfo("test_video_id");
+                recipeId = UUID.randomUUID();
+                creditCost = 77L;
+                recipeInfo = mockRecipeInfo(recipeId, creditCost);
 
-            assertThatThrownBy(() -> sut.createBookmark(new RecipeCreationTarget.User(uri, userId)))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_BANNED);
+                doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
+                        .when(recipeYoutubeMetaService)
+                        .getByUrl(uri);
+                doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
+            }
+
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @BeforeEach
+                void setUp() throws RecipeIdentifyException, RecipeBookmarkException {
+                    doReturn(recipeInfo).when(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
+                    doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 새 레시피를 생성하고 비동기 작업을 시작한다")
+                void thenCreatesAndStartsAsync() throws RecipeException, CreditException {
+                    UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
+
+                    assertThat(result).isEqualTo(recipeId);
+                    verify(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
+                    verify(recipeBookmarkService).create(userId, recipeId);
+                    verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+                    verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("알 수 없는 RecipeException이면 RECIPE_CREATE_FAIL 예외를 던진다")
-        void shouldThrowCreateFailForUnknownRecipeException() {
-            URI uri = URI.create("https://youtube.com/watch?v=blocked");
-            UUID userId = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 식별자 생성 중복 시")
+        class GivenIdentifyProgressing {
+            URI uri;
+            UUID userId;
+            YoutubeVideoInfo videoInfo;
+            UUID recipeId;
+            long creditCost;
+            RecipeYoutubeMeta meta;
+            RecipeInfo recipeInfo;
 
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_BLOCKED))
-                    .when(recipeYoutubeMetaService)
-                    .getByUrl(uri);
+            @BeforeEach
+            void setUp() throws YoutubeMetaException, RecipeIdentifyException, RecipeInfoException {
+                uri = URI.create("https://youtube.com/watch?v=concurrent");
+                userId = UUID.randomUUID();
+                videoInfo = mockVideoInfo("test_video_id");
+                recipeId = UUID.randomUUID();
+                creditCost = 50L;
+                meta = mockYoutubeMeta(recipeId);
+                recipeInfo = mockRecipeInfo(recipeId, creditCost);
 
-            assertThatThrownBy(() -> sut.createBookmark(new RecipeCreationTarget.User(uri, userId)))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
-        }
-    }
+                doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
+                        .when(recipeYoutubeMetaService)
+                        .getByUrl(uri);
+                doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
+                doThrow(new RecipeIdentifyException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING))
+                        .when(recipeCreationTxService)
+                        .createWithIdentifyWithVideoInfo(videoInfo);
 
-    @Nested
-    @DisplayName("새 레시피 생성")
-    class CreateNewRecipe {
+                doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
+                doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
+            }
 
-        @Test
-        @DisplayName("유튜브 메타가 없으면 새 레시피를 생성하고 async 생성 프로세스를 시작한다")
-        void shouldCreateNewRecipeAndStartAsync() {
-            URI uri = URI.create("https://youtube.com/watch?v=new");
-            UUID userId = UUID.randomUUID();
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-            YoutubeVideoInfo videoInfo = mockVideoInfo("test_video_id");
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 77L;
-            RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
+                @BeforeEach
+                void setUp() throws RecipeBookmarkException {
+                    doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
+                }
 
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
-                    .when(recipeYoutubeMetaService)
-                    .getByUrl(uri);
+                @Test
+                @DisplayName("Then - 기존 레시피를 사용한다")
+                void thenUsesExistingRecipe() throws RecipeException, CreditException {
+                    UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
-            doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
-            doReturn(recipeInfo).when(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
-            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
-
-            UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
-
-            assertThat(result).isEqualTo(recipeId);
-
-            verify(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
-            verify(recipeBookmarkService).create(userId, recipeId);
-            verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
-
-            verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri);
-
-            verify(recipeYoutubeMetaService, never()).create(any(), any());
-        }
-
-        @Test
-        @DisplayName("새 레시피 생성 중 identify progressing이면 기존 레시피를 조회해 사용한다")
-        void shouldUseExistingRecipeWhenIdentifyProgressing() {
-            URI uri = URI.create("https://youtube.com/watch?v=concurrent");
-            UUID userId = UUID.randomUUID();
-
-            YoutubeVideoInfo videoInfo = mockVideoInfo("test_video_id");
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 50L;
-
-            RecipeYoutubeMeta meta = mockYoutubeMeta(recipeId);
-            RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
-
-            doThrow(new RecipeException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_FOUND))
-                    .when(recipeYoutubeMetaService)
-                    .getByUrl(uri);
-
-            doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
-
-            doThrow(new RecipeException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING))
-                    .when(recipeCreationTxService)
-                    .createWithIdentifyWithVideoInfo(videoInfo);
-
-            doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
-            doReturn(recipeInfo).when(recipeInfoService).getSuccess(recipeId);
-            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
-
-            UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
-
-            assertThat(result).isEqualTo(recipeId);
-            verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
-            verify(recipeBookmarkService).create(userId, recipeId);
-            verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+                    assertThat(result).isEqualTo(recipeId);
+                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                    verify(recipeBookmarkService).create(userId, recipeId);
+                    verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("기존 레시피 조회 시 RECIPE_FAILED면 새 레시피 생성으로 넘어간다")
-        void shouldCreateNewRecipeWhenRecipeFailed() {
-            URI uri = URI.create("https://youtube.com/watch?v=failed");
-            UUID userId = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 기존 레시피가 실패 상태일 때")
+        class GivenFailedRecipe {
+            URI uri;
+            UUID userId;
+            UUID recipeId;
+            long creditCost;
+            RecipeYoutubeMeta meta;
+            YoutubeVideoInfo videoInfo;
+            RecipeInfo recipeInfo;
 
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 77L;
+            @BeforeEach
+            void setUp() throws YoutubeMetaException, RecipeInfoException {
+                uri = URI.create("https://youtube.com/watch?v=failed");
+                userId = UUID.randomUUID();
+                recipeId = UUID.randomUUID();
+                creditCost = 77L;
+                meta = mockYoutubeMeta(recipeId);
+                videoInfo = mockVideoInfo("new_video_id");
+                recipeInfo = mockRecipeInfo(recipeId, creditCost);
 
-            RecipeYoutubeMeta meta = mockYoutubeMeta(recipeId);
-            RecipeInfo recipeInfo = mockRecipeInfo(recipeId, creditCost);
-            YoutubeVideoInfo videoInfo = mockVideoInfo("new_video_id");
+                doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
+                doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_FAILED))
+                        .when(recipeInfoService)
+                        .getSuccess(recipeId);
+                doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
+            }
 
-            doReturn(meta).when(recipeYoutubeMetaService).getByUrl(uri);
-            doThrow(new RecipeException(RecipeInfoErrorCode.RECIPE_FAILED))
-                    .when(recipeInfoService)
-                    .getSuccess(recipeId);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-            doReturn(videoInfo).when(recipeYoutubeMetaService).getVideoInfo(uri);
-            doReturn(recipeInfo).when(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
-            doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
+                @BeforeEach
+                void setUp() throws RecipeIdentifyException, RecipeBookmarkException {
+                    doReturn(recipeInfo).when(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
+                    doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
+                }
 
-            UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
+                @Test
+                @DisplayName("Then - 새 레시피 생성을 진행한다")
+                void thenCreatesNewRecipe() throws RecipeException, CreditException {
+                    UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
-            assertThat(result).isEqualTo(recipeId);
-            verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri);
+                    assertThat(result).isEqualTo(recipeId);
+                    verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri);
+                }
+            }
         }
     }
 
@@ -286,7 +386,7 @@ class RecipeCreationFacadeTest {
         return recipeInfo;
     }
 
-    private YoutubeVideoInfo mockVideoInfo(String videoId) {
+    private YoutubeVideoInfo mockVideoInfo(String videoId) throws YoutubeMetaException {
         URI uri = UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=" + videoId)
                 .build()
                 .toUri();

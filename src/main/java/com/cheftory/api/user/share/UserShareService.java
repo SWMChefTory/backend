@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UserShareService {
 
-    private final UserShareRepository userShareRepository;
-    private final UserShareCreditPort userShareCreditPort;
+    private final UserShareRepository repository;
+    private final UserShareCreditPort creditPort;
     private final Clock clock;
     private static final int DAILY_SHARE_LIMIT = 3;
 
@@ -37,15 +37,15 @@ public class UserShareService {
      * @throws CreditException 크레딧 지급 실패 시
      */
     public int share(UUID userId) throws UserShareException, CreditException {
-        UserShare userShare = userShareRepository.create(userId, clock);
-        UserShare increased = userShareRepository.shareTx(userShare.getId(), DAILY_SHARE_LIMIT);
+        UserShare userShare = repository.create(userId, clock);
+        UserShare increased = repository.shareTx(userShare.getId(), DAILY_SHARE_LIMIT);
 
         try {
-            userShareCreditPort.grantUserShare(userId, increased.getCount());
+            creditPort.grantUserShare(userId, increased.getCount());
         } catch (CreditException e) {
             log.error("공유 크레딧 지급 실패. 보상 트랜잭션 실행: userId={}, count={}", userId, increased.getCount(), e);
             try {
-                userShareRepository.compensateTx(userShare.getId(), userShare.getSharedAt());
+                repository.compensateTx(userShare.getId(), userShare.getSharedAt());
             } catch (UserShareException ce) {
                 log.error("공유 보상 실패(수동/배치 재처리 필요): userId={}, sharedAt={}", userId, userShare.getSharedAt(), ce);
             }

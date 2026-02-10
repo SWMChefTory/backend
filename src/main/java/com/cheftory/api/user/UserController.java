@@ -2,7 +2,7 @@ package com.cheftory.api.user;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
-import com.cheftory.api.exception.CheftoryException;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.dto.UserRequest;
 import com.cheftory.api.user.dto.UserResponse;
 import com.cheftory.api.user.entity.User;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserService service;
 
     /**
      * 현재 로그인한 유저 정보 조회
@@ -29,8 +29,8 @@ public class UserController {
      * @throws UserException 유저를 찾을 수 없을 때 USER_NOT_FOUND
      */
     @GetMapping("/me")
-    public UserResponse getUser(@UserPrincipal UUID userId) {
-        User user = userService.get(userId);
+    public UserResponse getUser(@UserPrincipal UUID userId) throws UserException {
+        User user = service.get(userId);
         return UserResponse.from(user);
     }
 
@@ -42,8 +42,9 @@ public class UserController {
      * @return 수정된 유저 정보 응답 DTO
      */
     @PatchMapping("/me")
-    public UserResponse updateUser(@UserPrincipal UUID userId, @RequestBody UserRequest.Update request) {
-        User user = userService.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
+    public UserResponse updateUser(@UserPrincipal UUID userId, @RequestBody UserRequest.Update request)
+            throws UserException {
+        User user = service.update(userId, request.nickname(), request.gender(), request.dateOfBirth());
         return UserResponse.from(user);
     }
 
@@ -54,11 +55,11 @@ public class UserController {
      * @return 성공 메시지 응답 DTO
      * @throws UserException 유저를 찾을 수 없을 때 USER_NOT_FOUND
      * @throws UserException 이미 튜토리얼을 완료했을 때 TUTORIAL_ALREADY_FINISHED
-     * @throws CheftoryException 크레딧 지급 실패 시 튜토리얼 상태 복구 후 예외 전파
+     * @throws CreditException 크레딧 지급 실패 시 튜토리얼 상태 복구 후 예외 전파
      */
     @PostMapping("/tutorial")
-    public SuccessOnlyResponse tutorial(@UserPrincipal UUID userId) {
-        userService.tutorial(userId);
+    public SuccessOnlyResponse tutorial(@UserPrincipal UUID userId) throws UserException, CreditException {
+        service.tutorial(userId);
         return SuccessOnlyResponse.create();
     }
 }

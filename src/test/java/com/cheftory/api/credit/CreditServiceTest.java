@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.entity.CreditUserBalance;
+import com.cheftory.api.credit.exception.CreditException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +38,7 @@ class CreditServiceTest {
 
     @Test
     @DisplayName("getBalance - 있으면 balance 반환")
-    void getBalance_shouldReturnBalance() {
+    void getBalance_shouldReturnBalance() throws CreditException {
         UUID userId = UUID.randomUUID();
         CreditUserBalance entity = CreditUserBalance.create(userId);
         entity.apply(55);
@@ -51,7 +52,7 @@ class CreditServiceTest {
 
     @Test
     @DisplayName("grant - txService.grantTx 위임")
-    void grant_shouldDelegate() {
+    void grant_shouldDelegate() throws CreditException {
         Credit credit = Credit.signupBonus(UUID.randomUUID());
 
         creditService.grant(credit);
@@ -61,7 +62,7 @@ class CreditServiceTest {
 
     @Test
     @DisplayName("spend - txService.spendTx 위임")
-    void spend_shouldDelegate() {
+    void spend_shouldDelegate() throws CreditException {
         Credit credit = Credit.signupBonus(UUID.randomUUID());
 
         creditService.spend(credit);

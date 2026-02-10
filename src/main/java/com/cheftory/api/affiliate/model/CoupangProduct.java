@@ -6,6 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 쿠팡 파트너스 제품 정보를 담는 도메인 객체.
+ *
+ * <p>쿠팡 검색 API 응답을 변환하여 레시피와 연관된 제품 정보를 제공합니다.</p>
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

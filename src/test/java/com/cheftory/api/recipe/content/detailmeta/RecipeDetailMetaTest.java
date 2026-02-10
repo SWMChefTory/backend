@@ -13,23 +13,22 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("RecipeDetailMetaTest")
+@DisplayName("RecipeDetailMeta 엔티티")
 public class RecipeDetailMetaTest {
 
     @Nested
-    @DisplayName("레시피 상세 메타 생성")
-    class CreateRecipeDetailMeta {
+    @DisplayName("상세 메타 생성 (create)")
+    class Create {
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
         class GivenValidParameters {
-
-            private Integer cookingTime;
-            private Integer servings;
-            private String description;
-            private Clock clock;
-            private UUID recipeId;
-            private LocalDateTime now;
+            Integer cookingTime;
+            Integer servings;
+            String description;
+            Clock clock;
+            UUID recipeId;
+            LocalDateTime now;
 
             @BeforeEach
             void setUp() {
@@ -43,19 +42,18 @@ public class RecipeDetailMetaTest {
             }
 
             @Nested
-            @DisplayName("When - 레시피 상세 메타를 생성하면")
-            class WhenCreateRecipeDetailMeta {
-
-                private RecipeDetailMeta recipeDetailMeta;
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                RecipeDetailMeta recipeDetailMeta;
 
                 @BeforeEach
                 void setUp() {
                     recipeDetailMeta = RecipeDetailMeta.create(cookingTime, servings, description, clock, recipeId);
                 }
 
-                @DisplayName("Then - 레시피 상세 메타가 생성된다")
                 @Test
-                void thenRecipeDetailMetaIsCreated() {
+                @DisplayName("Then - 상세 메타가 올바르게 생성된다")
+                void thenCreatedCorrectly() {
                     assertThat(recipeDetailMeta).isNotNull();
                     assertThat(recipeDetailMeta.getId()).isNotNull();
                     assertThat(recipeDetailMeta.getCookTime()).isEqualTo(cookingTime);

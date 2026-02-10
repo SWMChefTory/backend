@@ -2,6 +2,7 @@ package com.cheftory.api._common.region;
 
 import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.exception.GlobalErrorCode;
+import lombok.SneakyThrows;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -11,6 +12,7 @@ public class MarketTenantIdentifierResolver implements CurrentTenantIdentifierRe
 
     public static final String BOOTSTRAP_TENANT = "BOOTSTRAP";
 
+    @SneakyThrows
     @Override
     public String resolveCurrentTenantIdentifier() {
         var info = MarketContext.currentOrNull();

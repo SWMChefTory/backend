@@ -2,7 +2,10 @@ package com.cheftory.api.recipe.bookmark;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
 import com.cheftory.api._common.security.UserPrincipal;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.recipe.bookmark.dto.RecipeBookmarkRequest;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.info.validator.ExistsRecipeId;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -16,8 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recipes/{recipeId}")
 public class RecipeBookmarkController {
-    private final RecipeBookmarkService recipeBookmarkService;
-    private final RecipeBookmarkFacade recipeBookmarkFacade;
+    private final RecipeBookmarkService service;
+    private final RecipeBookmarkFacade facade;
 
     /**
      * 레시피 북마크 카테고리 수정
@@ -30,9 +33,10 @@ public class RecipeBookmarkController {
     @PutMapping("/categories")
     public SuccessOnlyResponse updateCategory(
             @RequestBody @Valid RecipeBookmarkRequest.UpdateCategory request,
-            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId,
-            @UserPrincipal UUID userId) {
-        recipeBookmarkService.categorize(userId, recipeId, request.categoryId());
+            @PathVariable @ExistsRecipeId UUID recipeId,
+            @UserPrincipal UUID userId)
+            throws RecipeBookmarkException {
+        service.categorize(userId, recipeId, request.categoryId());
         return SuccessOnlyResponse.create();
     }
 
@@ -44,9 +48,9 @@ public class RecipeBookmarkController {
      * @return 성공 응답
      */
     @DeleteMapping("/bookmark")
-    public SuccessOnlyResponse delete(
-            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
-        recipeBookmarkService.delete(userId, recipeId);
+    public SuccessOnlyResponse delete(@PathVariable @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
+            throws RecipeBookmarkException {
+        service.delete(userId, recipeId);
         return SuccessOnlyResponse.create();
     }
 
@@ -58,9 +62,9 @@ public class RecipeBookmarkController {
      * @return 성공 응답
      */
     @PostMapping("/bookmark")
-    public SuccessOnlyResponse create(
-            @PathVariable("recipeId") @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId) {
-        recipeBookmarkFacade.create(userId, recipeId);
+    public SuccessOnlyResponse create(@PathVariable @ExistsRecipeId UUID recipeId, @UserPrincipal UUID userId)
+            throws RecipeInfoException, RecipeBookmarkException, CreditException {
+        facade.create(userId, recipeId);
         return SuccessOnlyResponse.create();
     }
 }

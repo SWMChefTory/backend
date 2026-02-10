@@ -95,7 +95,7 @@ public interface RecipeBookmarkRepository {
      * @return 조회된 북마크
      * @throws RecipeBookmarkException 북마크를 찾을 수 없을 때
      */
-    RecipeBookmark get(UUID userId, UUID recipeId) throws RecipeBookmarkException;
+    RecipeBookmark find(UUID userId, UUID recipeId) throws RecipeBookmarkException;
 
     /**
      * 최근 레시피 북마크 목록 조회 (커서 기반 페이징)
@@ -113,7 +113,7 @@ public interface RecipeBookmarkRepository {
      * @param userId 사용자 ID
      * @return 페이징된 북마크 목록 (첫 페이지)
      */
-    CursorPage<RecipeBookmark> keysetRecentsFirst(UUID userId);
+    CursorPage<RecipeBookmark> keysetRecentsFirst(UUID userId) throws CursorException;
 
     /**
      * 카테고리별 레시피 북마크 목록 조회 (커서 기반 페이징)
@@ -124,8 +124,7 @@ public interface RecipeBookmarkRepository {
      * @return 페이징된 북마크 목록
      * @throws CursorException 유효하지 않은 커서일 때
      */
-    CursorPage<RecipeBookmark> keysetCategorized(UUID userId, UUID categoryId, String cursor)
-            throws CursorException;
+    CursorPage<RecipeBookmark> keysetCategorized(UUID userId, UUID categoryId, String cursor) throws CursorException;
 
     /**
      * 카테고리별 레시피 북마크 첫 페이지 조회
@@ -159,7 +158,7 @@ public interface RecipeBookmarkRepository {
      * @param recipeIds 레시피 ID 목록
      * @return 북마크 목록
      */
-    List<RecipeBookmark> gets(UUID userId, List<UUID> recipeIds);
+    List<RecipeBookmark> finds(UUID userId, List<UUID> recipeIds);
 
     /**
      * 레시피 ID로 레시피 북마크 목록 조회
@@ -167,5 +166,5 @@ public interface RecipeBookmarkRepository {
      * @param recipeId 레시피 ID
      * @return 북마크 목록
      */
-    List<RecipeBookmark> gets(UUID recipeId);
+    List<RecipeBookmark> finds(UUID recipeId);
 }

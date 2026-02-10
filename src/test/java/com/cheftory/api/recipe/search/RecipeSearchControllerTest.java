@@ -19,6 +19,7 @@ import com.cheftory.api._common.security.UserArgumentResolver;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.dto.RecipeOverview;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.net.URI;
@@ -69,7 +70,7 @@ public class RecipeSearchControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("커서 기반 검색 결과를 반환한다")
-        void shouldReturnSearchResultsWithCursor() {
+        void shouldReturnSearchResultsWithCursor() throws SearchException {
             String query = "김치찌개";
             String cursor = "cursor-1";
             String nextCursor = "cursor-2";

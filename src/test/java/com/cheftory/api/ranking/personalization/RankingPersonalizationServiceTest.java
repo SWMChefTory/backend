@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +19,7 @@ class RankingPersonalizationServiceTest {
 
     @Test
     @DisplayName("aggregateProfile aggregates keywords and channels")
-    void aggregateProfileAggregatesKeywordsAndChannels() {
+    void aggregateProfileAggregatesKeywordsAndChannels() throws SearchException {
         RankingPersonalizationSearchPort searchPort = mock(RankingPersonalizationSearchPort.class);
         RankingPersonalizationService service = new RankingPersonalizationService(searchPort);
 
@@ -52,7 +53,7 @@ class RankingPersonalizationServiceTest {
 
     @Test
     @DisplayName("aggregateProfile throws when keywords are null")
-    void aggregateProfileThrowsWhenKeywordsNull() {
+    void aggregateProfileThrowsWhenKeywordsNull() throws SearchException {
         RankingPersonalizationSearchPort searchPort = mock(RankingPersonalizationSearchPort.class);
         RankingPersonalizationService service = new RankingPersonalizationService(searchPort);
 
@@ -68,7 +69,7 @@ class RankingPersonalizationServiceTest {
 
     @Test
     @DisplayName("aggregateProfile throws when channelTitle is null")
-    void aggregateProfileThrowsWhenChannelTitleNull() {
+    void aggregateProfileThrowsWhenChannelTitleNull() throws SearchException {
         RankingPersonalizationSearchPort searchPort = mock(RankingPersonalizationSearchPort.class);
         RankingPersonalizationService service = new RankingPersonalizationService(searchPort);
 

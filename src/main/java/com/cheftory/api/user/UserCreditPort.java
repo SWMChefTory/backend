@@ -1,5 +1,6 @@
 package com.cheftory.api.user;
 
+import com.cheftory.api.credit.exception.CreditException;
 import java.util.UUID;
 
 /**
@@ -13,5 +14,5 @@ public interface UserCreditPort {
      *
      * @param userId 유저 ID
      */
-    void grantUserTutorial(UUID userId);
+    void grantUserTutorial(UUID userId) throws CreditException;
 }

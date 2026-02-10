@@ -2,6 +2,8 @@ package com.cheftory.api.recipe.rank;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.cheftory.api.recipe.rank.repository.RecipeRankRepository;
+import com.cheftory.api.recipe.rank.repository.RecipeRankRepositoryImpl;
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
@@ -27,7 +29,7 @@ class RecipeRankRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        recipeRankRepository = new RecipeRankRepository(redisTemplate);
+        recipeRankRepository = new RecipeRankRepositoryImpl(redisTemplate);
 
         Assertions.assertNotNull(redisTemplate.getConnectionFactory());
         redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();

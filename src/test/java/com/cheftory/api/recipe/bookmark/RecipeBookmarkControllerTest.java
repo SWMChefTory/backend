@@ -19,12 +19,14 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 
 import com.cheftory.api._common.security.UserArgumentResolver;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.exception.RecipeCategoryErrorCode;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
-import com.cheftory.api.recipe.exception.RecipeErrorCode;
-import com.cheftory.api.recipe.exception.RecipeException;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.util.Map;
@@ -96,7 +98,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
             class WhenUpdatingRecipeBookmarkRecipeCategory {
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws RecipeBookmarkException {
                     doReturn(true).when(recipeCategoryService).exists(any(UUID.class));
                     doNothing()
                             .when(recipeBookmarkService)
@@ -106,7 +108,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - 레시피 북마크 카테고리를 업데이트한다 - 성공")
-                void thenShouldUpdateRecipeViewStatusCategory() {
+                void thenShouldUpdateRecipeViewStatusCategory() throws RecipeBookmarkException {
                     var response = given().contentType(ContentType.JSON)
                             .attribute("userId", userId)
                             .header("Authorization", "Bearer accessToken")
@@ -156,7 +158,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
 
             @Test
             @DisplayName("Then - 예외가 발생해야 한다")
-            void thenShouldThrowException() {
+            void thenShouldThrowException() throws Exception {
                 given().contentType(ContentType.JSON)
                         .attribute("userId", userId)
                         .header("Authorization", "Bearer accessToken")
@@ -188,7 +190,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
             private UUID userId;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeBookmarkException {
                 recipeId = UUID.randomUUID();
                 userId = UUID.randomUUID();
 
@@ -205,7 +207,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - 레시피 북마크를 삭제한다 - 성공")
-                void thenShouldDeleteRecipeViewStatus() {
+                void thenShouldDeleteRecipeViewStatus() throws RecipeBookmarkException {
                     given().contentType(ContentType.JSON)
                             .attribute("userId", userId)
                             .header("Authorization", "Bearer accessToken")
@@ -254,7 +256,8 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
 
                 @Test
                 @DisplayName("Then - 레시피 북마크를 생성한다 - 성공")
-                void thenShouldCreateRecipeBookmark() {
+                void thenShouldCreateRecipeBookmark()
+                        throws RecipeInfoException, RecipeBookmarkException, CreditException {
                     var response = given().contentType(ContentType.JSON)
                             .attribute("userId", userId)
                             .header("Authorization", "Bearer accessToken")
@@ -283,7 +286,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
             private UUID userId;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeInfoException, RecipeBookmarkException, CreditException {
                 recipeId = UUID.randomUUID();
                 userId = UUID.randomUUID();
 
@@ -291,14 +294,14 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 doReturn(true).when(recipeInfoService).exists(any(UUID.class));
-                doThrow(new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND))
+                doThrow(new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND))
                         .when(recipeBookmarkFacade)
                         .create(any(UUID.class), any(UUID.class));
             }
 
             @Test
             @DisplayName("Then - 예외가 발생해야 한다")
-            void thenShouldThrowException() {
+            void thenShouldThrowException() throws Exception {
                 given().contentType(ContentType.JSON)
                         .attribute("userId", userId)
                         .header("Authorization", "Bearer accessToken")
@@ -312,7 +315,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
                                 responsePreprocessor(),
                                 requestAccessTokenFields(),
                                 pathParameters(parameterWithName("recipeId").description("레시피 ID")),
-                                responseErrorFields(RecipeErrorCode.RECIPE_NOT_FOUND)));
+                                responseErrorFields(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND)));
             }
         }
     }

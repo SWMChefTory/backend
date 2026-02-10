@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.reponse.SuccessOnlyResponse;
+import com.cheftory.api.exception.CheftoryException;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,7 @@ public class RecipeRankControllerTest {
 
                 @Test
                 @DisplayName("Then - 성공 응답을 반환하고 RecipeRankService를 호출해야 한다")
-                void thenShouldReturnSuccessResponseAndCallService() {
+                void thenShouldReturnSuccessResponseAndCallService() throws CheftoryException {
                     SuccessOnlyResponse result = recipeRankController.updateTrendingRecipes(recipeIds);
 
                     assertThat(result).isNotNull();
@@ -73,7 +74,7 @@ public class RecipeRankControllerTest {
 
                 @Test
                 @DisplayName("Then - 성공 응답을 반환하고 RecipeRankService를 호출해야 한다")
-                void thenShouldReturnSuccessResponseAndCallService() {
+                void thenShouldReturnSuccessResponseAndCallService() throws CheftoryException {
                     SuccessOnlyResponse result = recipeRankController.updateTrendingRecipes(recipeIds);
 
                     assertThat(result).isNotNull();
@@ -107,7 +108,7 @@ public class RecipeRankControllerTest {
 
                 @Test
                 @DisplayName("Then - 성공 응답을 반환하고 RecipeRankService를 호출해야 한다")
-                void thenShouldReturnSuccessResponseAndCallService() {
+                void thenShouldReturnSuccessResponseAndCallService() throws CheftoryException {
                     SuccessOnlyResponse result = recipeRankController.updateChefRecipes(recipeIds);
 
                     assertThat(result).isNotNull();
@@ -134,7 +135,7 @@ public class RecipeRankControllerTest {
 
                 @Test
                 @DisplayName("Then - 성공 응답을 반환하고 RecipeRankService를 호출해야 한다")
-                void thenShouldReturnSuccessResponseAndCallService() {
+                void thenShouldReturnSuccessResponseAndCallService() throws CheftoryException {
                     SuccessOnlyResponse result = recipeRankController.updateChefRecipes(recipeIds);
 
                     assertThat(result).isNotNull();

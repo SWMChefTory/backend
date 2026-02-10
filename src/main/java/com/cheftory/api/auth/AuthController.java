@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthService service;
 
     /**
      * OAuth 액세스 토큰에서 유저 ID 추출
@@ -35,7 +35,7 @@ public class AuthController {
      */
     @PostMapping("/papi/v1/auth/extract-user-id")
     public UserIdResponse loginWithOAuth(@RequestHeader("Authorization") String accessToken) throws AuthException {
-        UUID userId = authService.extractUserIdFromToken(
+        UUID userId = service.extractUserIdFromToken(
                 BearerAuthorizationUtils.removePrefix(accessToken), AuthTokenType.ACCESS);
         return UserIdResponse.of(userId);
     }
@@ -50,7 +50,7 @@ public class AuthController {
      */
     @PostMapping("/api/v1/auth/token/reissue")
     public TokenReissueResponse reissueToken(@RequestBody TokenReissueRequest request) throws AuthException {
-        AuthTokens authTokens = authService.reissue(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
+        AuthTokens authTokens = service.reissue(BearerAuthorizationUtils.removePrefix(request.refreshToken()));
         return TokenReissueResponse.from(authTokens);
     }
 }

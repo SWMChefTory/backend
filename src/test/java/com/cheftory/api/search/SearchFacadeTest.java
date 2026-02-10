@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.history.SearchHistoryService;
 import com.cheftory.api.search.query.SearchQueryScope;
 import com.cheftory.api.search.query.SearchQueryService;
@@ -41,7 +42,7 @@ class SearchFacadeTest {
 
         @Test
         @DisplayName("Given - 유효한 검색어가 주어졌을 때 When - 커서로 검색한다면 Then - 커서 결과를 반환해야 한다")
-        void givenValidKeyword_whenSearchingWithCursor_thenShouldReturnCursorResults() {
+        void givenValidKeyword_whenSearchingWithCursor_thenShouldReturnCursorResults() throws SearchException {
             UUID userId = UUID.randomUUID();
             String keyword = "김치찌개";
             String cursor = "cursor-1";
@@ -65,7 +66,7 @@ class SearchFacadeTest {
 
         @Test
         @DisplayName("Given - 공백/빈 문자열 검색어가 주어졌을 때 When - 검색한다면 Then - 히스토리는 저장하지 않는다")
-        void givenBlankKeyword_whenSearching_thenShouldNotCreateHistory() {
+        void givenBlankKeyword_whenSearching_thenShouldNotCreateHistory() throws SearchException {
             UUID userId = UUID.randomUUID();
             String keyword = "   ";
             String cursor = null;

@@ -49,7 +49,7 @@ class MarketIntegrationTest {
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    void async_create_should_be_isolated_by_market() throws Exception {
+    void async_create_should_be_isolated_by_market() {
         withMarket(Market.KOREA, "KR", () -> regionService.createAsync("korea").get(3, TimeUnit.SECONDS));
         withMarket(
                 Market.GLOBAL, "US", () -> regionService.createAsync("global").get(3, TimeUnit.SECONDS));
@@ -68,11 +68,10 @@ class MarketIntegrationTest {
 
         assertThatThrownBy(() -> f.get(3, TimeUnit.SECONDS))
                 .isInstanceOf(ExecutionException.class)
-                .hasCauseInstanceOf(CheftoryException.class)
-                .satisfies(ex -> {
-                    CheftoryException cause = (CheftoryException) ex.getCause();
-                    assertThat(cause.getError()).isEqualTo(GlobalErrorCode.UNKNOWN_REGION);
-                });
+                .hasRootCauseInstanceOf(CheftoryException.class)
+                .rootCause()
+                .isInstanceOfSatisfying(CheftoryException.class, ex -> assertThat(ex.getError())
+                        .isEqualTo(GlobalErrorCode.UNKNOWN_REGION));
     }
 
     @Test

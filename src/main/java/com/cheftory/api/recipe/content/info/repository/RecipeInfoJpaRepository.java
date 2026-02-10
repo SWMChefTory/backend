@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.content.info;
+package com.cheftory.api.recipe.content.info.repository;
 
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
@@ -11,16 +11,17 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface RecipeInfoRepository extends JpaRepository<RecipeInfo, UUID> {
+/**
+ * 레시피 기본 정보 JPA Repository
+ */
+public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID> {
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("update RecipeInfo r set r.viewCount = r.viewCount + 1 where r.id = :id")
-    void increaseCount(UUID id);
+    void increaseCount(@Param("id") UUID id);
 
-    List<RecipeInfo> findRecipesByIdInAndRecipeStatusIn(List<UUID> recipeIds, List<RecipeStatus> statuses);
-
-    List<RecipeInfo> findAllByIdIn(List<UUID> ids);
+    List<RecipeInfo> findRecipesByIdInAndRecipeStatus(List<UUID> recipeIds, RecipeStatus statuses);
 
     @Query(
             """

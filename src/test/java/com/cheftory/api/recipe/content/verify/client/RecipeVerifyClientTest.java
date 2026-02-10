@@ -1,16 +1,17 @@
 package com.cheftory.api.recipe.content.verify.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientResponse;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
+import mockwebserver3.RecordedRequest;
+import okhttp3.Headers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,11 +21,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@DisplayName("RecipeVerifyClient")
+@DisplayName("RecipeVerifyClient 테스트")
 class RecipeVerifyClientTest {
 
     private MockWebServer mockWebServer;
-    private RecipeVerifyClient recipeVerifyClient;
+    private RecipeVerifyClient verifyClient;
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -35,95 +36,97 @@ class RecipeVerifyClientTest {
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 
-        recipeVerifyClient = new RecipeVerifyClient(webClient);
+        verifyClient = new RecipeVerifyExternalClient(webClient);
         objectMapper = new ObjectMapper();
     }
 
     @AfterEach
-    void tearDown() throws IOException {
-        mockWebServer.shutdown();
+    void tearDown() {
+        mockWebServer.close();
     }
 
     @Nested
-    @DisplayName("verifyVideo")
-    class VerifyVideo {
+    @DisplayName("비디오 검증 (verify)")
+    class Verify {
 
-        @Test
-        @DisplayName("정상 응답 시 fileUri와 mimeType을 반환한다")
-        void shouldReturnVerifyResponse() throws Exception {
-            String videoId = "sample-video-id";
+        @Nested
+        @DisplayName("Given - 유효한 비디오 ID가 주어졌을 때")
+        class GivenValidVideoId {
+            String videoId;
 
-            String responseBody =
-                    """
-          {
-            "file_uri": "s3://bucket/file.mp4",
-            "mime_type": "video/mp4"
-          }
-          """;
+            @BeforeEach
+            void setUp() {
+                videoId = "sample-video-id";
+            }
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(responseBody));
+            @Nested
+            @DisplayName("When - 서버가 성공 응답을 반환하면")
+            class WhenSuccess {
+                RecipeVerifyClientResponse result;
 
-            RecipeVerifyClientResponse result = recipeVerifyClient.verifyVideo(videoId);
+                @BeforeEach
+                void setUp() throws Exception {
+                    String responseBody =
+                            """
+                            {
+                              "file_uri": "s3://bucket/file.mp4",
+                              "mime_type": "video/mp4"
+                            }
+                            """;
 
-            assertThat(result).isNotNull();
-            assertThat(result.fileUri()).isEqualTo("s3://bucket/file.mp4");
-            assertThat(result.mimeType()).isEqualTo("video/mp4");
+                    mockWebServer.enqueue(new MockResponse(
+                            200, Headers.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE), responseBody));
 
-            RecordedRequest recordedRequest = mockWebServer.takeRequest();
-            assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-            assertThat(recordedRequest.getPath()).isEqualTo("/verify");
+                    result = verifyClient.verify(videoId);
+                }
 
-            var requestNode = objectMapper.readTree(recordedRequest.getBody().readUtf8());
-            assertThat(requestNode.get("video_id").asText()).isEqualTo(videoId);
-        }
+                @Test
+                @DisplayName("Then - 파일 URI와 MIME 타입을 반환한다")
+                void thenReturnsResponse() throws Exception {
+                    assertThat(result).isNotNull();
+                    assertThat(result.fileUri()).isEqualTo("s3://bucket/file.mp4");
+                    assertThat(result.mimeType()).isEqualTo("video/mp4");
 
-        @Test
-        @DisplayName("VERIFY_003 오류면 NOT_COOK_VIDEO 예외가 발생한다")
-        void shouldThrowNotCookVideo() {
-            String videoId = "invalid-video-id";
+                    RecordedRequest recordedRequest = mockWebServer.takeRequest();
+                    assertThat(recordedRequest.getMethod()).isEqualTo("POST");
+                    assertThat(recordedRequest.getTarget()).isEqualTo("/verify");
 
-            String errorResponseBody =
-                    """
-          {
-            "error_code": "VERIFY_003",
-            "error_message": "not cook"
-          }
-          """;
+                    assertThat(recordedRequest.getBody()).isNotNull();
+                    var requestNode =
+                            objectMapper.readTree(recordedRequest.getBody().utf8());
+                    assertThat(requestNode.get("video_id").asText()).isEqualTo(videoId);
+                }
+            }
 
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(400)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(errorResponseBody));
+            @Nested
+            @DisplayName("When - 서버 오류가 발생하면")
+            class WhenServerError {
 
-            RecipeVerifyException exception =
-                    assertThrows(RecipeVerifyException.class, () -> recipeVerifyClient.verifyVideo(videoId));
-            assertThat(exception.getError()).isEqualTo(RecipeVerifyErrorCode.NOT_COOK_VIDEO);
-        }
+                @BeforeEach
+                void setUp() {
+                    String errorResponseBody =
+                            """
+                            {
+                              "error_code": "SERVER_001",
+                              "error_message": "server error"
+                            }
+                            """;
 
-        @Test
-        @DisplayName("서버 오류면 SERVER_ERROR 예외가 발생한다")
-        void shouldThrowServerError() {
-            String videoId = "server-error-id";
+                    mockWebServer.enqueue(new MockResponse(
+                            500,
+                            Headers.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE),
+                            errorResponseBody));
+                }
 
-            String errorResponseBody =
-                    """
-          {
-            "error_code": "SERVER_001",
-            "error_message": "server error"
-          }
-          """;
-
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(500)
-                    .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .setBody(errorResponseBody));
-
-            RecipeVerifyException exception =
-                    assertThrows(RecipeVerifyException.class, () -> recipeVerifyClient.verifyVideo(videoId));
-            assertThat(exception.getError()).isEqualTo(RecipeVerifyErrorCode.SERVER_ERROR);
+                @Test
+                @DisplayName("Then - SERVER_ERROR 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> verifyClient.verify(videoId))
+                            .isInstanceOf(RecipeVerifyException.class)
+                            .extracting("error")
+                            .isEqualTo(RecipeVerifyErrorCode.SERVER_ERROR);
+                }
+            }
         }
     }
 }

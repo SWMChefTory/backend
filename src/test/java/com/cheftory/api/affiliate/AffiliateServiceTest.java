@@ -5,12 +5,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api.affiliate.coupang.CoupangClient;
+import com.cheftory.api.affiliate.coupang.exception.CoupangException;
 import com.cheftory.api.affiliate.model.CoupangProduct;
 import com.cheftory.api.affiliate.model.CoupangProducts;
 import java.util.List;
 import org.junit.jupiter.api.*;
 
-@DisplayName("AffiliateService")
+@DisplayName("AffiliateService 테스트")
 class AffiliateServiceTest {
 
     private AffiliateService service;
@@ -23,18 +24,19 @@ class AffiliateServiceTest {
     }
 
     @Nested
-    @DisplayName("searchCoupangProducts(keyword)")
+    @DisplayName("쿠팡 상품 검색 (searchCoupangProducts)")
     class SearchCoupangProducts {
 
         @Nested
-        @DisplayName("Given - CoupangClient가 정상 응답을 줄 때")
-        class GivenValidResponse {
-
-            private CoupangProducts coupangProducts;
-            private CoupangProduct coupangProduct;
+        @DisplayName("Given - 정상적인 검색어가 주어졌을 때")
+        class GivenValidKeyword {
+            String keyword;
+            CoupangProducts coupangProducts;
+            CoupangProduct coupangProduct;
 
             @BeforeEach
             void setUp() {
+                keyword = "Water";
                 coupangProducts = mock(CoupangProducts.class);
                 coupangProduct = mock(CoupangProduct.class);
                 doReturn("Water").when(coupangProduct).getKeyword();
@@ -56,20 +58,23 @@ class AffiliateServiceTest {
             }
 
             @Nested
-            @DisplayName("When - 1개 상품을 검색하면")
-            class WhenOneProduct {
+            @DisplayName("When - 검색을 요청하면")
+            class WhenSearching {
+                CoupangProducts result;
+
+                @BeforeEach
+                void setUp() throws CoupangException {
+                    doReturn(coupangProducts).when(coupangClient).searchProducts(keyword);
+                    result = service.searchCoupangProducts(keyword);
+                }
 
                 @Test
-                @DisplayName("Then - CoupangClient의 응답을 그대로 반환한다")
-                void thenReturnProductList() {
-                    doReturn(coupangProducts).when(coupangClient).searchProducts("Water");
+                @DisplayName("Then - 검색 결과를 반환한다")
+                void thenReturnsResult() throws CoupangException {
+                    assertThat(result).isNotNull();
+                    assertThat(result.getCoupangProducts()).hasSize(1);
 
-                    CoupangProducts products = service.searchCoupangProducts("Water");
-
-                    assertThat(products).isNotNull();
-                    assertThat(products.getCoupangProducts()).hasSize(1);
-
-                    var item = products.getCoupangProducts().getFirst();
+                    var item = result.getCoupangProducts().getFirst();
                     assertThat(item.getKeyword()).isEqualTo("Water");
                     assertThat(item.getRank()).isEqualTo(12);
                     assertThat(item.getIsRocket()).isTrue();
@@ -80,7 +85,7 @@ class AffiliateServiceTest {
                     assertThat(item.getProductPrice()).isEqualTo(15600);
                     assertThat(item.getProductUrl()).isEqualTo("https://link.coupang.com/re/AFFSDP?...");
 
-                    verify(coupangClient, times(1)).searchProducts(eq("Water"));
+                    verify(coupangClient, times(1)).searchProducts(eq(keyword));
                 }
             }
         }

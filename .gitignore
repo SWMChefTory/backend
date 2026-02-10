@@ -1,4 +1,5 @@
 HELP.md
+PR.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -37,6 +38,9 @@ out/
 ### VS Code ###
 .vscode/
 .sisyphus/
+
+### macOS ###
+.DS_Store
 
 ### 로컬 환경 설정 파일 무시 ###
 application-local.yml

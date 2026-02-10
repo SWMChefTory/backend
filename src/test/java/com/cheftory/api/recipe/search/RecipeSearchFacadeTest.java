@@ -20,6 +20,7 @@ import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.dto.RecipeOverview;
+import com.cheftory.api.search.exception.SearchException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,7 +59,7 @@ class RecipeSearchFacadeTest {
 
     @Test
     @DisplayName("커서 기반 검색 결과를 반환한다")
-    void shouldSearchRecipesWithCursor() {
+    void shouldSearchRecipesWithCursor() throws SearchException {
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
         String cursor = "cursor-1";
@@ -100,9 +101,9 @@ class RecipeSearchFacadeTest {
         RecipeBookmark bookmark = mock(RecipeBookmark.class);
         doReturn(recipeId).when(bookmark).getRecipeId();
 
-        doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).getByRecipes(List.of(recipeId));
+        doReturn(List.of(youtubeMeta)).when(recipeYoutubeMetaService).gets(List.of(recipeId));
         doReturn(List.of(detailMeta)).when(recipeDetailMetaService).getIn(List.of(recipeId));
-        doReturn(List.of(tag)).when(recipeTagService).getIn(List.of(recipeId));
+        doReturn(List.of(tag)).when(recipeTagService).gets(List.of(recipeId));
         doReturn(List.of(bookmark)).when(recipeBookmarkService).gets(List.of(recipeId), userId);
 
         CursorPage<RecipeOverview> result = recipeSearchFacade.searchRecipes("김치찌개", userId, cursor);

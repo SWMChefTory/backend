@@ -1,24 +1,31 @@
 package com.cheftory.api.recipe;
 
 import com.cheftory.api._common.PocOnly;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkUnCategorizedCount;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.category.RecipeCategoryService;
 import com.cheftory.api.recipe.category.entity.RecipeCategory;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
 import com.cheftory.api.recipe.challenge.RecipeChallengeService;
 import com.cheftory.api.recipe.challenge.RecipeCompleteChallenge;
+import com.cheftory.api.recipe.challenge.exception.RecipeChallengeException;
 import com.cheftory.api.recipe.content.briefing.RecipeBriefingService;
 import com.cheftory.api.recipe.content.briefing.entity.RecipeBriefing;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaErrorCode;
+import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.ingredient.RecipeIngredientService;
 import com.cheftory.api.recipe.content.ingredient.entity.RecipeIngredient;
 import com.cheftory.api.recipe.content.step.RecipeStepService;
@@ -28,6 +35,7 @@ import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.dto.FullRecipe;
@@ -46,12 +54,19 @@ import com.cheftory.api.recipe.rank.RecipeRankService;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 레시피 퍼사드.
+ *
+ * <p>레시피 관련 복합 작업을 조율합니다. 레시피 조회, 북마크, 카테고리, 랭킹 등
+ * 다양한 서비스를 조합하여 레시피 도메인의 비즈니스 로직을 처리합니다.</p>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -71,9 +86,17 @@ public class RecipeFacade {
     private final RecipeChallengeService recipeChallengeService;
 
     /**
-     * 레시피 상세 정보를 조회합니다. * 레시피가 존재하지 않으면 예외를 던집니다. * 레시피가 실패 상태이면 예외를 던집니다. 레시피가 성공 상태이면 조회수를 증가시킵니다.
+     * 레시피 전체 상세 정보를 조회합니다.
+     *
+     * <p>레시피가 존재하지 않거나 실패 상태이면 예외를 던집니다.
+     * 레시피가 성공 상태이면 조회수를 증가시키고 조회 이벤트를 로깅합니다.</p>
+     *
+     * @param recipeId 레시피 ID
+     * @param userId 사용자 ID
+     * @return 레시피 전체 정보 (스텝, 재료, 메타데이터, 태그, 브리핑 등)
+     * @throws CheftoryException 레시피를 찾을 수 없거나 실패 상태인 경우
      */
-    public FullRecipe getFullRecipe(UUID recipeId, UUID userId) {
+    public FullRecipe getFullRecipe(UUID recipeId, UUID userId) throws CheftoryException {
         try {
             RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
             recipeInfoService.increaseCount(recipeId);
@@ -93,7 +116,7 @@ public class RecipeFacade {
             return FullRecipe.notOwned(
                     steps, ingredients, detailMeta, progresses, tags, youtubeMeta, recipe, briefings);
 
-        } catch (RecipeException e) {
+        } catch (CheftoryException e) {
             if (e.getError() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND
                     || e.getError() == RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND) {
                 throw new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND);
@@ -105,7 +128,21 @@ public class RecipeFacade {
         }
     }
 
-    public RecipeOverview getRecipeOverview(UUID recipeId, UUID userId) {
+    /**
+     * 레시피 개요 정보를 조회합니다.
+     *
+     * <p>레시피 기본 정보, YouTube 메타데이터, 상세 메타데이터, 태그를 포함합니다.
+     * 조회 시 조회수를 증가시킵니다.</p>
+     *
+     * @param recipeId 레시피 ID
+     * @param userId 사용자 ID
+     * @return 레시피 개요 정보
+     * @throws RecipeInfoException 레시피 정보 조회 실패 시
+     * @throws YoutubeMetaException YouTube 메타데이터 조회 실패 시
+     * @throws RecipeDetailMetaException 상세 메타데이터 조회 실패 시
+     */
+    public RecipeOverview getRecipeOverview(UUID recipeId, UUID userId)
+            throws RecipeInfoException, YoutubeMetaException, RecipeDetailMetaException {
         RecipeInfo recipe = recipeInfoService.getSuccess(recipeId);
         recipeInfoService.increaseCount(recipeId);
         RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
@@ -116,14 +153,32 @@ public class RecipeFacade {
         return RecipeOverview.of(recipe, youtubeMeta, detailMeta, tags, isViewed);
     }
 
-    public CursorPage<RecipeBookmarkOverview> getCategorized(UUID userId, UUID recipeCategoryId, String cursor) {
+    /**
+     * 특정 카테고리의 북마크된 레시피 목록을 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @param recipeCategoryId 레시피 카테고리 ID
+     * @param cursor 페이징 커서
+     * @return 북마크된 레시피 개요 목록
+     * @throws CursorException 커서 디코딩 실패 시
+     */
+    public CursorPage<RecipeBookmarkOverview> getCategorized(UUID userId, UUID recipeCategoryId, String cursor)
+            throws CursorException {
         CursorPage<RecipeBookmark> bookmarks = recipeBookmarkService.getCategorized(userId, recipeCategoryId, cursor);
 
         List<RecipeBookmarkOverview> items = makeBookmarkOverviews(bookmarks.items());
         return CursorPage.of(items, bookmarks.nextCursor());
     }
 
-    public CursorPage<RecipeBookmarkOverview> getRecents(UUID userId, String cursor) {
+    /**
+     * 최근에 북마크한 레시피 목록을 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @param cursor 페이징 커서
+     * @return 최근 북마크한 레시피 개요 목록
+     * @throws CursorException 커서 디코딩 실패 시
+     */
+    public CursorPage<RecipeBookmarkOverview> getRecents(UUID userId, String cursor) throws CursorException {
         CursorPage<RecipeBookmark> bookmarks = recipeBookmarkService.getRecents(userId, cursor);
 
         List<RecipeBookmarkOverview> items = makeBookmarkOverviews(bookmarks.items());
@@ -142,17 +197,18 @@ public class RecipeFacade {
         List<UUID> recipeIds =
                 bookmarks.stream().map(RecipeBookmark::getRecipeId).toList();
 
-        Map<UUID, RecipeInfo> recipeMap = recipeInfoService.getValidRecipes(recipeIds).stream()
+        Map<UUID, RecipeInfo> recipeMap = Stream.concat(
+                        recipeInfoService.gets(recipeIds).stream(), recipeInfoService.getProgresses(recipeIds).stream())
                 .collect(Collectors.toMap(RecipeInfo::getId, Function.identity()));
 
-        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.getByRecipes(recipeIds).stream()
+        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.gets(recipeIds).stream()
                 .collect(Collectors.toMap(RecipeYoutubeMeta::getRecipeId, Function.identity(), (a, b) -> a));
 
         Map<UUID, RecipeDetailMeta> detailMetaMap = recipeDetailMetaService.getIn(recipeIds).stream()
                 .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
 
         Map<UUID, List<RecipeTag>> tagsMap =
-                recipeTagService.getIn(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+                recipeTagService.gets(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
         return bookmarks.stream()
                 .map(bookmark -> {
@@ -182,14 +238,14 @@ public class RecipeFacade {
     private List<RecipeOverview> makeOverviews(List<RecipeInfo> recipes, UUID userId) {
         List<UUID> recipeIds = recipes.stream().map(RecipeInfo::getId).toList();
 
-        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.getByRecipes(recipeIds).stream()
+        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.gets(recipeIds).stream()
                 .collect(Collectors.toMap(RecipeYoutubeMeta::getRecipeId, Function.identity()));
 
         Map<UUID, RecipeDetailMeta> detailMetaMap = recipeDetailMetaService.getIn(recipeIds).stream()
                 .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
 
         Map<UUID, List<RecipeTag>> tagsMap =
-                recipeTagService.getIn(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+                recipeTagService.gets(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
 
         Map<UUID, RecipeBookmark> recipeViewStatusMap = recipeBookmarkService.gets(recipeIds, userId).stream()
                 .collect(Collectors.toMap(RecipeBookmark::getRecipeId, Function.identity()));
@@ -222,6 +278,14 @@ public class RecipeFacade {
                 .toList();
     }
 
+    /**
+     * 사용자의 카테고리별 북마크 수를 조회합니다.
+     *
+     * <p>카테고리별 북마크 수와 미분류 북마크 수를 모두 포함합니다.</p>
+     *
+     * @param userId 사용자 ID
+     * @return 카테고리별 북마크 수 집계
+     */
     public RecipeCategoryCounts getUserCategoryCounts(UUID userId) {
         List<RecipeCategory> categories = recipeCategoryService.getUsers(userId);
         List<UUID> categoryIds = categories.stream().map(RecipeCategory::getId).toList();
@@ -240,19 +304,42 @@ public class RecipeFacade {
         return RecipeCategoryCounts.of(uncategorizedCount.getCount(), categoriesWithCount);
     }
 
-    public void deleteCategory(UUID userId, UUID categoryId) {
+    /**
+     * 사용자 카테고리를 삭제하고 관련 북마크의 카테고리를 해제합니다.
+     *
+     * @param userId 사용자 ID
+     * @param categoryId 삭제할 카테고리 ID
+     * @throws RecipeCategoryException 카테고리 삭제 실패 시
+     * @throws RecipeBookmarkException 북마크 카테고리 해제 실패 시
+     */
+    public void deleteCategory(UUID userId, UUID categoryId) throws RecipeCategoryException, RecipeBookmarkException {
         recipeCategoryService.delete(userId, categoryId);
         recipeBookmarkService.unCategorize(categoryId);
     }
 
-    public RecipeProgressStatus getRecipeProgress(UUID recipeId) {
+    /**
+     * 레시피 생성 진행 상태를 조회합니다.
+     *
+     * @param recipeId 레시피 ID
+     * @return 레시피 생성 진행 상태
+     * @throws RecipeInfoException 레시피 정보 조회 실패 시
+     */
+    public RecipeProgressStatus getRecipeProgress(UUID recipeId) throws RecipeInfoException {
         List<RecipeProgress> progresses = recipeProgressService.gets(recipeId);
         RecipeInfo recipe = recipeInfoService.get(recipeId);
         return RecipeProgressStatus.of(recipe, progresses);
     }
 
+    /**
+     * 레시피를 차단합니다.
+     *
+     * <p>YouTube 메타데이터, 레시피 정보, 북마크를 차단 상태로 변경합니다.</p>
+     *
+     * @param recipeId 차단할 레시피 ID
+     * @throws RecipeException 레시피 차단 실패 시
+     */
     @Transactional
-    public void blockRecipe(UUID recipeId) {
+    public void blockRecipe(UUID recipeId) throws RecipeException {
         try {
             recipeYoutubeMetaService.block(recipeId);
             recipeInfoService.block(recipeId);
@@ -266,7 +353,17 @@ public class RecipeFacade {
         }
     }
 
-    public CursorPage<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, String cursor) {
+    /**
+     * 요리 타입별 추천 레시피 목록을 조회합니다.
+     *
+     * @param type 요리 타입
+     * @param userId 사용자 ID
+     * @param cursor 페이징 커서
+     * @return 추천 레시피 개요 목록
+     * @throws CheftoryException 추천 조회 실패 시
+     */
+    public CursorPage<RecipeOverview> getCuisineRecipes(RecipeCuisineType type, UUID userId, String cursor)
+            throws CheftoryException {
         CursorPage<UUID> recipeIds = recipeRankService.getCuisineRecipes(userId, type, cursor);
         List<RecipeInfo> recipes = recipeInfoService.gets(recipeIds.items());
 
@@ -274,8 +371,21 @@ public class RecipeFacade {
         return CursorPage.of(items, recipeIds.nextCursor());
     }
 
+    /**
+     * 추천 타입별 레시피 목록을 조회합니다.
+     *
+     * <p>인기, 셰프 추천, 트렌딩 중 하나의 타입으로 레시피를 추천합니다.</p>
+     *
+     * @param type 추천 타입 (POPULAR, CHEF, TRENDING)
+     * @param userId 사용자 ID
+     * @param cursor 페이징 커서
+     * @param query 비디오 조회 쿼리 옵션
+     * @return 추천 레시피 개요 목록
+     * @throws CheftoryException 추천 조회 실패 시
+     */
     public CursorPage<RecipeOverview> getRecommendRecipes(
-            RecipeInfoRecommendType type, UUID userId, String cursor, RecipeInfoVideoQuery query) {
+            RecipeInfoRecommendType type, UUID userId, String cursor, RecipeInfoVideoQuery query)
+            throws CheftoryException {
         CursorPage<RecipeInfo> recipesPage =
                 switch (type) {
                     case POPULAR -> recipeInfoService.getPopulars(cursor, query);
@@ -287,9 +397,19 @@ public class RecipeFacade {
         return CursorPage.of(items, recipesPage.nextCursor());
     }
 
+    /**
+     * 챌린지에 포함된 레시피 목록과 완료 상태를 조회합니다.
+     *
+     * @param challengeId 챌린지 ID
+     * @param userId 사용자 ID
+     * @param cursor 페이징 커서
+     * @return 챌린지 완료 상태 목록과 레시피 개요 목록의 쌍
+     * @throws RecipeChallengeException 챌린지 조회 실패 시
+     * @throws CursorException 커서 디코딩 실패 시
+     */
     @PocOnly(until = "2025-12-31")
     public Pair<List<RecipeCompleteChallenge>, CursorPage<RecipeOverview>> getChallengeRecipes(
-            UUID challengeId, UUID userId, String cursor) {
+            UUID challengeId, UUID userId, String cursor) throws RecipeChallengeException, CursorException {
         CursorPage<RecipeCompleteChallenge> overviews =
                 recipeChallengeService.getChallengeRecipes(userId, challengeId, cursor);
 
@@ -298,7 +418,7 @@ public class RecipeFacade {
                 .map(RecipeCompleteChallenge::getRecipeId)
                 .toList();
 
-        List<RecipeOverview> fetched = makeOverviews(recipeInfoService.getValidRecipes(recipeIds), userId);
+        List<RecipeOverview> fetched = makeOverviews(recipeInfoService.gets(recipeIds), userId);
 
         Map<UUID, RecipeOverview> map =
                 fetched.stream().collect(Collectors.toMap(RecipeOverview::getRecipeId, Function.identity()));
@@ -309,12 +429,12 @@ public class RecipeFacade {
         return Pair.of(challengeOverviews, CursorPage.of(ordered, overviews.nextCursor()));
     }
 
-    private CursorPage<RecipeInfo> getRankingRecipes(RankingType rankingType, String cursor) {
+    private CursorPage<RecipeInfo> getRankingRecipes(RankingType rankingType, String cursor) throws CheftoryException {
         CursorPage<UUID> rankedIdsPage = recipeRankService.getRecipeIds(rankingType, cursor);
 
         List<UUID> rankedIds = rankedIdsPage.items();
 
-        List<RecipeInfo> fetched = recipeInfoService.getValidRecipes(rankedIds);
+        List<RecipeInfo> fetched = recipeInfoService.gets(rankedIds);
 
         Map<UUID, RecipeInfo> map = fetched.stream().collect(Collectors.toMap(RecipeInfo::getId, Function.identity()));
 

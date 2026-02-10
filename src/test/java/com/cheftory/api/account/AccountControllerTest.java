@@ -19,6 +19,7 @@ import com.cheftory.api.account.dto.LogoutRequest;
 import com.cheftory.api.account.model.Account;
 import com.cheftory.api.auth.exception.AuthErrorCode;
 import com.cheftory.api.auth.exception.AuthException;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.exception.GlobalErrorCode;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.user.entity.Gender;
@@ -70,7 +71,7 @@ public class AccountControllerTest extends RestDocsTest {
             private Provider provider;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException, UserException {
                 validIdToken = "valid-id-token";
                 provider = Provider.APPLE;
 
@@ -88,7 +89,7 @@ public class AccountControllerTest extends RestDocsTest {
 
             @Test
             @DisplayName("성공 - 액세스 토큰, 리프레시 토큰, 사용자 정보를 반환한다")
-            void shouldLoginWithOAuth() {
+            void shouldLoginWithOAuth() throws AuthException, UserException {
                 var response = given().contentType(ContentType.JSON)
                         .body(new LoginRequest(validIdToken, provider))
                         .when()
@@ -132,7 +133,7 @@ public class AccountControllerTest extends RestDocsTest {
             private Provider provider;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException, UserException {
                 invalidIdToken = "invalid-id-token";
                 provider = Provider.GOOGLE;
 
@@ -167,7 +168,7 @@ public class AccountControllerTest extends RestDocsTest {
             private Provider provider;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException, UserException {
                 idToken = "valid-but-unregistered-id-token";
                 provider = Provider.GOOGLE;
 
@@ -209,7 +210,7 @@ public class AccountControllerTest extends RestDocsTest {
             private Gender gender;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws AuthException, UserException, CreditException {
                 validToken = "valid-id-token";
                 provider = Provider.GOOGLE;
                 nickname = "cheftory";
@@ -323,7 +324,7 @@ public class AccountControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 로그아웃 처리")
-        void shouldLogoutSuccessfully() {
+        void shouldLogoutSuccessfully() throws AuthException {
             var request = new LogoutRequest(refreshToken);
 
             var response = given().contentType(ContentType.JSON)
@@ -358,7 +359,7 @@ public class AccountControllerTest extends RestDocsTest {
 
         @Test
         @DisplayName("성공 - 회원 탈퇴 처리")
-        void shouldDeleteAccountSuccessfully() {
+        void shouldDeleteAccountSuccessfully() throws AuthException, UserException {
             var request = new LogoutRequest(refreshToken);
 
             var response = given().contentType(ContentType.JSON)

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("Recipe Progress Service Test")
+@DisplayName("RecipeProgressService 테스트")
 public class RecipeProgressServiceTest {
 
     private RecipeProgressService recipeProgressService;
@@ -32,8 +32,8 @@ public class RecipeProgressServiceTest {
     }
 
     @Nested
-    @DisplayName("레시피 진행 상황 목록 조회")
-    class FindRecipeProgressList {
+    @DisplayName("레시피 진행 상황 목록 조회 (gets)")
+    class Gets {
 
         @Nested
         @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
@@ -48,7 +48,7 @@ public class RecipeProgressServiceTest {
 
             @Nested
             @DisplayName("When - 레시피 진행 상황 목록을 조회하면")
-            class WhenFindRecipeProgressList {
+            class WhenGetting {
 
                 private List<RecipeProgress> recipeProgress;
 
@@ -74,7 +74,7 @@ public class RecipeProgressServiceTest {
 
                 @DisplayName("Then - 해당 레시피의 진행 상황 목록이 반환된다")
                 @Test
-                void shouldReturnRecipeProgressList() {
+                void thenReturnsList() {
                     List<RecipeProgress> results = recipeProgressService.gets(recipeId);
                     assert results.size() == 2;
                     assert results.get(0).getStep() == RecipeProgressStep.READY;
@@ -83,7 +83,7 @@ public class RecipeProgressServiceTest {
 
                 @DisplayName("Then - Repository에서 정렬 파라미터와 함께 호출된다")
                 @Test
-                void shouldCallRepositoryWithSortParameter() {
+                void thenCallsRepositoryWithSort() {
                     recipeProgressService.gets(recipeId);
                     verify(recipeProgressRepository).findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
                 }
@@ -92,12 +92,12 @@ public class RecipeProgressServiceTest {
     }
 
     @Nested
-    @DisplayName("레시피 진행 상황 정렬 조회")
-    class FindRecipeProgressWithSort {
+    @DisplayName("레시피 진행 상황 정렬 조회 (gets)")
+    class GetsWithSort {
 
         @Nested
         @DisplayName("Given - 시간 순서가 다른 여러 레시피 진행 상황이 있을 때")
-        class GivenMultipleRecipeProgressWithDifferentTime {
+        class GivenMultipleProgress {
 
             private UUID recipeId;
             private List<RecipeProgress> sortedRecipeProgress;
@@ -140,11 +140,11 @@ public class RecipeProgressServiceTest {
 
             @Nested
             @DisplayName("When - 레시피 진행 상황 목록을 조회하면")
-            class WhenFindRecipeProgressList {
+            class WhenGetting {
 
                 @DisplayName("Then - createdAt 오름차순으로 정렬된 결과가 반환된다")
                 @Test
-                void shouldReturnRecipeProgressListSortedByCreatedAtAsc() {
+                void thenReturnsSortedList() {
                     List<RecipeProgress> results = recipeProgressService.gets(recipeId);
 
                     assert results.size() == 4;
@@ -161,8 +161,8 @@ public class RecipeProgressServiceTest {
     }
 
     @Nested
-    @DisplayName("레시피 진행 상황 시작")
-    class StartRecipeProgress {
+    @DisplayName("레시피 진행 상황 시작 (start)")
+    class Start {
 
         @Nested
         @DisplayName("Given - 유효한 입력 값이 주어졌을 때")
@@ -181,7 +181,7 @@ public class RecipeProgressServiceTest {
 
             @Nested
             @DisplayName("When - 레시피 진행 상황을 시작하면")
-            class WhenStartRecipeProgress {
+            class WhenStarting {
 
                 @BeforeEach
                 void setUp() {
@@ -192,7 +192,7 @@ public class RecipeProgressServiceTest {
 
                 @DisplayName("Then - 레시피 진행 상황이 RUNNING 상태로 생성된다")
                 @Test
-                void shouldStartRecipeProgress() {
+                void thenStartsProgress() {
                     recipeProgressService.start(recipeId, step, detail);
                     verify(recipeProgressRepository).save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
                 }
@@ -201,8 +201,8 @@ public class RecipeProgressServiceTest {
     }
 
     @Nested
-    @DisplayName("레시피 진행 상황 성공")
-    class SuccessRecipeProgress {
+    @DisplayName("레시피 진행 상황 성공 (success)")
+    class Success {
 
         @Nested
         @DisplayName("Given - 유효한 입력 값이 주어졌을 때")
@@ -221,7 +221,7 @@ public class RecipeProgressServiceTest {
 
             @Nested
             @DisplayName("When - 레시피 진행 상황을 성공으로 표시하면")
-            class WhenSuccessRecipeProgress {
+            class WhenSuccess {
 
                 @BeforeEach
                 void setUp() {
@@ -232,7 +232,7 @@ public class RecipeProgressServiceTest {
 
                 @DisplayName("Then - 레시피 진행 상황이 SUCCESS 상태로 생성된다")
                 @Test
-                void shouldSuccessRecipeProgress() {
+                void thenSucceedsProgress() {
                     recipeProgressService.success(recipeId, step, detail);
                     verify(recipeProgressRepository).save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
                 }
@@ -241,8 +241,8 @@ public class RecipeProgressServiceTest {
     }
 
     @Nested
-    @DisplayName("레시피 진행 상황 실패")
-    class FailedRecipeProgress {
+    @DisplayName("레시피 진행 상황 실패 (failed)")
+    class Failed {
 
         @Nested
         @DisplayName("Given - 유효한 입력 값이 주어졌을 때")
@@ -261,7 +261,7 @@ public class RecipeProgressServiceTest {
 
             @Nested
             @DisplayName("When - 레시피 진행 상황을 실패로 표시하면")
-            class WhenFailedRecipeProgress {
+            class WhenFailed {
 
                 @BeforeEach
                 void setUp() {
@@ -272,7 +272,7 @@ public class RecipeProgressServiceTest {
 
                 @DisplayName("Then - 레시피 진행 상황이 FAILED 상태로 생성된다")
                 @Test
-                void shouldFailedRecipeProgress() {
+                void thenFailsProgress() {
                     recipeProgressService.failed(recipeId, step, detail);
                     verify(recipeProgressRepository).save(org.mockito.ArgumentMatchers.any(RecipeProgress.class));
                 }

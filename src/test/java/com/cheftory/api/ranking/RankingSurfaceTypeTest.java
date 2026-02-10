@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 @DisplayName("RankingSurfaceType")
 class RankingSurfaceTypeTest {
-
     @Test
     @DisplayName("messageKey should use cuisine prefix")
     void messageKeyShouldUseCuisinePrefix() {

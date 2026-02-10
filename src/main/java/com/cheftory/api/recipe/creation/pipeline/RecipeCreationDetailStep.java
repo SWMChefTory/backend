@@ -23,7 +23,7 @@ public class RecipeCreationDetailStep implements RecipeCreationPipelineStep {
     private final RecipeProgressService recipeProgressService;
 
     @Override
-    public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) {
+    public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) throws RecipeException {
         if (context.getFileUri() == null || context.getMimeType() == null) {
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }

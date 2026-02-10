@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 유튜브 비디오 정보 Value Object
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,6 +23,17 @@ public class YoutubeVideoInfo {
     private Integer videoSeconds;
     private YoutubeMetaType videoType;
 
+    /**
+     * 유튜브 비디오 정보 생성
+     *
+     * @param youtubeUri 유튜브 URI 객체
+     * @param title 제목
+     * @param channelTitle 채널명
+     * @param thumbnailUrl 썸네일 URL
+     * @param videoSeconds 비디오 길이 (초)
+     * @param videoType 비디오 타입
+     * @return 유튜브 비디오 정보 객체
+     */
     public static YoutubeVideoInfo from(
             YoutubeUri youtubeUri,
             String title,

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
+import com.cheftory.api.recipe.content.tag.repository.RecipeTagRepository;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -37,124 +38,226 @@ public class RecipeTagServiceTest {
         recipeTagService = new RecipeTagService(recipeTagRepository, clock);
     }
 
-    @DisplayName("레시피 태그 생성")
     @Nested
-    class CreateRecipeTags {
+    @DisplayName("레시피 태그 생성 (create)")
+    class Create {
 
-        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
         @Nested
-        class GivenValidParameters {
+        @DisplayName("Given - 유효한 태그 목록이 주어졌을 때")
+        class GivenValidTags {
+            UUID recipeId;
+            List<String> tags;
 
-            @Test
-            @DisplayName("When - 레시피 태그를 생성하면 모든 태그가 저장된다")
-            void shouldCreateAllRecipeTags() {
-                UUID recipeId = UUID.randomUUID();
-                List<String> tags = List.of("한식", "매운맛", "간단요리");
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                tags = List.of("한식", "매운맛", "간단요리");
+            }
 
-                recipeTagService.create(recipeId, tags);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-                @SuppressWarnings("unchecked")
-                ArgumentCaptor<List<RecipeTag>> captor = ArgumentCaptor.forClass(List.class);
-                verify(recipeTagRepository).saveAll(captor.capture());
+                @BeforeEach
+                void setUp() {
+                    recipeTagService.create(recipeId, tags);
+                }
 
-                List<RecipeTag> capturedTags = captor.getValue();
-                assertThat(capturedTags).hasSize(3);
+                @Test
+                @DisplayName("Then - 모든 태그를 저장한다")
+                void thenSavesAllTags() {
+                    @SuppressWarnings("unchecked")
+                    ArgumentCaptor<List<RecipeTag>> captor = ArgumentCaptor.forClass(List.class);
+                    verify(recipeTagRepository).create(captor.capture());
 
-                for (RecipeTag tag : capturedTags) {
-                    assertThat(tag.getRecipeId()).isEqualTo(recipeId);
-                    assertThat(tag.getTag()).isIn("한식", "매운맛", "간단요리");
-                    assertThat(tag.getCreatedAt()).isEqualTo(fixedTime);
+                    List<RecipeTag> capturedTags = captor.getValue();
+                    assertThat(capturedTags).hasSize(3);
+
+                    for (RecipeTag tag : capturedTags) {
+                        assertThat(tag.getRecipeId()).isEqualTo(recipeId);
+                        assertThat(tag.getTag()).isIn("한식", "매운맛", "간단요리");
+                        assertThat(tag.getCreatedAt()).isEqualTo(fixedTime);
+                    }
                 }
             }
+        }
 
-            @Test
-            @DisplayName("When - 빈 태그 목록으로 생성하면 빈 목록이 저장된다")
-            void shouldSaveEmptyListWhenEmptyTagsProvided() {
-                UUID recipeId = UUID.randomUUID();
-                List<String> emptyTags = Collections.emptyList();
+        @Nested
+        @DisplayName("Given - 빈 태그 목록이 주어졌을 때")
+        class GivenEmptyTags {
+            UUID recipeId;
+            List<String> emptyTags;
 
-                recipeTagService.create(recipeId, emptyTags);
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                emptyTags = Collections.emptyList();
+            }
 
-                @SuppressWarnings("unchecked")
-                ArgumentCaptor<List<RecipeTag>> captor = ArgumentCaptor.forClass(List.class);
-                verify(recipeTagRepository).saveAll(captor.capture());
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-                List<RecipeTag> capturedTags = captor.getValue();
-                assertThat(capturedTags).isEmpty();
+                @BeforeEach
+                void setUp() {
+                    recipeTagService.create(recipeId, emptyTags);
+                }
+
+                @Test
+                @DisplayName("Then - 빈 목록을 저장한다")
+                void thenSavesEmptyList() {
+                    @SuppressWarnings("unchecked")
+                    ArgumentCaptor<List<RecipeTag>> captor = ArgumentCaptor.forClass(List.class);
+                    verify(recipeTagRepository).create(captor.capture());
+
+                    List<RecipeTag> capturedTags = captor.getValue();
+                    assertThat(capturedTags).isEmpty();
+                }
             }
         }
     }
 
-    @DisplayName("레시피 태그 조회")
     @Nested
-    class FindRecipeTags {
+    @DisplayName("레시피 태그 조회 (gets)")
+    class Gets {
 
-        @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
         @Nested
-        class GivenValidRecipeId {
+        @DisplayName("Given - 레시피 ID가 주어졌을 때")
+        class GivenRecipeId {
+            UUID recipeId;
+            List<RecipeTag> mockTags;
 
-            @Test
-            @DisplayName("When - 레시피 태그를 조회하면 해당 레시피의 태그 목록을 반환한다")
-            void thenReturnTagsForRecipe() {
-                UUID recipeId = UUID.randomUUID();
-                List<RecipeTag> mockTags =
-                        List.of(createMockRecipeTag("한식", recipeId), createMockRecipeTag("매운맛", recipeId));
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                mockTags = List.of(createMockRecipeTag("한식", recipeId), createMockRecipeTag("매운맛", recipeId));
+                doReturn(mockTags).when(recipeTagRepository).finds(recipeId);
+            }
 
-                doReturn(mockTags).when(recipeTagRepository).findAllByRecipeId(recipeId);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeTag> result;
 
-                List<RecipeTag> result = recipeTagService.gets(recipeId);
+                @BeforeEach
+                void setUp() {
+                    result = recipeTagService.gets(recipeId);
+                }
 
-                assertThat(result).hasSize(2);
-                assertThat(result).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛");
-                assertThat(result).allMatch(tag -> tag.getRecipeId().equals(recipeId));
+                @Test
+                @DisplayName("Then - 해당 레시피의 태그 목록을 반환한다")
+                void thenReturnsTags() {
+                    assertThat(result).hasSize(2);
+                    assertThat(result).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛");
+                    assertThat(result).allMatch(tag -> tag.getRecipeId().equals(recipeId));
 
-                verify(recipeTagRepository).findAllByRecipeId(recipeId);
+                    verify(recipeTagRepository).finds(recipeId);
+                }
             }
         }
 
+        @Nested
         @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
-        @Nested
-        class GivenNonExistentRecipeId {
+        class GivenNonExistentId {
+            UUID nonExistentRecipeId;
 
-            @Test
-            @DisplayName("When - 레시피 태그를 조회하면 빈 목록을 반환한다")
-            void thenReturnEmptyList() {
-                UUID nonExistentRecipeId = UUID.randomUUID();
-                doReturn(Collections.emptyList()).when(recipeTagRepository).findAllByRecipeId(nonExistentRecipeId);
+            @BeforeEach
+            void setUp() {
+                nonExistentRecipeId = UUID.randomUUID();
+                doReturn(Collections.emptyList()).when(recipeTagRepository).finds(nonExistentRecipeId);
+            }
 
-                List<RecipeTag> result = recipeTagService.gets(nonExistentRecipeId);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeTag> result;
 
-                assertThat(result).isEmpty();
-                verify(recipeTagRepository).findAllByRecipeId(nonExistentRecipeId);
+                @BeforeEach
+                void setUp() {
+                    result = recipeTagService.gets(nonExistentRecipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmptyList() {
+                    assertThat(result).isEmpty();
+                    verify(recipeTagRepository).finds(nonExistentRecipeId);
+                }
             }
         }
-    }
 
-    @DisplayName("여러 레시피의 태그 조회")
-    @Nested
-    class FindTagsForMultipleRecipes {
+        @Nested
+        @DisplayName("Given - 여러 레시피 ID가 주어졌을 때")
+        class GivenMultipleIds {
+            UUID recipeId1;
+            UUID recipeId2;
+            List<UUID> recipeIds;
+            List<RecipeTag> mockTags;
 
-        @Test
-        @DisplayName("Given - 여러 레시피 ID가 주어졌을 때 모든 레시피의 태그를 반환한다")
-        void shouldReturnTagsForMultipleRecipes() {
-            UUID recipeId1 = UUID.randomUUID();
-            UUID recipeId2 = UUID.randomUUID();
-            List<UUID> recipeIds = List.of(recipeId1, recipeId2);
+            @BeforeEach
+            void setUp() {
+                recipeId1 = UUID.randomUUID();
+                recipeId2 = UUID.randomUUID();
+                recipeIds = List.of(recipeId1, recipeId2);
 
-            List<RecipeTag> mockTags = List.of(
-                    createMockRecipeTag("한식", recipeId1),
-                    createMockRecipeTag("매운맛", recipeId1),
-                    createMockRecipeTag("양식", recipeId2));
+                mockTags = List.of(
+                        createMockRecipeTag("한식", recipeId1),
+                        createMockRecipeTag("매운맛", recipeId1),
+                        createMockRecipeTag("양식", recipeId2));
 
-            doReturn(mockTags).when(recipeTagRepository).findAllByRecipeIdIn(recipeIds);
+                doReturn(mockTags).when(recipeTagRepository).finds(recipeIds);
+            }
 
-            List<RecipeTag> result = recipeTagService.getIn(recipeIds);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeTag> result;
 
-            assertThat(result).hasSize(3);
-            assertThat(result).extracting(RecipeTag::getRecipeId).containsOnly(recipeId1, recipeId2);
-            assertThat(result).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛", "양식");
+                @BeforeEach
+                void setUp() {
+                    result = recipeTagService.gets(recipeIds);
+                }
 
-            verify(recipeTagRepository).findAllByRecipeIdIn(recipeIds);
+                @Test
+                @DisplayName("Then - 모든 레시피의 태그를 반환한다")
+                void thenReturnsAllTags() {
+                    assertThat(result).hasSize(3);
+                    assertThat(result).extracting(RecipeTag::getRecipeId).containsOnly(recipeId1, recipeId2);
+                    assertThat(result).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛", "양식");
+
+                    verify(recipeTagRepository).finds(recipeIds);
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 빈 레시피 ID 목록이 주어졌을 때")
+        class GivenEmptyIds {
+            List<UUID> emptyIds;
+
+            @BeforeEach
+            void setUp() {
+                emptyIds = Collections.emptyList();
+                doReturn(Collections.emptyList()).when(recipeTagRepository).finds(emptyIds);
+            }
+
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeTag> result;
+
+                @BeforeEach
+                void setUp() {
+                    result = recipeTagService.gets(emptyIds);
+                }
+
+                @Test
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmptyList() {
+                    assertThat(result).isEmpty();
+                    verify(recipeTagRepository).finds(emptyIds);
+                }
+            }
         }
     }
 
