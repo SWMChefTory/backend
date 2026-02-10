@@ -162,8 +162,8 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
                 return true;
             }
 
-            boolean embeddable = youtubeVideoResponse.getEmbeddable();
-            return !embeddable;
+            Boolean embeddable = youtubeVideoResponse.getEmbeddable();
+            return embeddable == null || !embeddable;
 
         } catch (WebClientException e) {
             log.warn("YouTube API 호출 실패 - videoId: {}", videoId, e);
