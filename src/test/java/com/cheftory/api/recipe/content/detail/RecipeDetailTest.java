@@ -47,7 +47,7 @@ class RecipeDetailTest {
 
                 @BeforeEach
                 void setUp() {
-                    recipeDetail = RecipeDetail.of(description, ingredients, tags, servings, cookTime);
+                    recipeDetail = RecipeDetail.of(null, description, ingredients, tags, servings, cookTime);
                 }
 
                 @Test
@@ -113,7 +113,7 @@ class RecipeDetailTest {
 
                 @BeforeEach
                 void setUp() {
-                    recipeDetail = RecipeDetail.of(description, ingredients, tags, servings, cookTime);
+                    recipeDetail = RecipeDetail.of(null, description, ingredients, tags, servings, cookTime);
                 }
 
                 @Test
@@ -158,7 +158,7 @@ class RecipeDetailTest {
 
                 @BeforeEach
                 void setUp() {
-                    recipeDetail = RecipeDetail.of(description, ingredients, tags, servings, cookTime);
+                    recipeDetail = RecipeDetail.of(null, description, ingredients, tags, servings, cookTime);
                 }
 
                 @Test

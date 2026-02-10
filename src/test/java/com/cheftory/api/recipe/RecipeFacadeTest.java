@@ -250,6 +250,66 @@ class RecipeFacadeTest {
             assertThat(result.getRecipeId()).isEqualTo(recipeId);
             verify(recipeInfoService).increaseCount(recipeId);
         }
+
+        @Test
+        @DisplayName("detailMeta title이 null이면 youtubeMeta title로 fallback")
+        void shouldFallbackToYoutubeTitleWhenDetailMetaTitleIsNull()
+                throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
+            UUID recipeId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+
+            doReturn(mockRecipe(recipeId, RecipeStatus.SUCCESS))
+                    .when(recipeInfoService)
+                    .getSuccess(recipeId);
+            doReturn(mockYoutubeMeta(recipeId, "YouTube Title")).when(recipeYoutubeMetaService).get(recipeId);
+            doReturn(mockDetailMetaWithTitle(recipeId, null)).when(recipeDetailMetaService).get(recipeId);
+            doReturn(List.of()).when(recipeTagService).gets(recipeId);
+            doReturn(false).when(recipeBookmarkService).exist(userId, recipeId);
+
+            RecipeOverview result = sut.getRecipeOverview(recipeId, userId);
+
+            assertThat(result.getVideoTitle()).isEqualTo("YouTube Title");
+        }
+
+        @Test
+        @DisplayName("detailMeta title이 빈 문자열이면 youtubeMeta title로 fallback")
+        void shouldFallbackToYoutubeTitleWhenDetailMetaTitleIsBlank()
+                throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
+            UUID recipeId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+
+            doReturn(mockRecipe(recipeId, RecipeStatus.SUCCESS))
+                    .when(recipeInfoService)
+                    .getSuccess(recipeId);
+            doReturn(mockYoutubeMeta(recipeId, "YouTube Title")).when(recipeYoutubeMetaService).get(recipeId);
+            doReturn(mockDetailMetaWithTitle(recipeId, "   ")).when(recipeDetailMetaService).get(recipeId);
+            doReturn(List.of()).when(recipeTagService).gets(recipeId);
+            doReturn(false).when(recipeBookmarkService).exist(userId, recipeId);
+
+            RecipeOverview result = sut.getRecipeOverview(recipeId, userId);
+
+            assertThat(result.getVideoTitle()).isEqualTo("YouTube Title");
+        }
+
+        @Test
+        @DisplayName("detailMeta title이 있으면 그대로 사용")
+        void shouldUseDetailMetaTitleWhenPresent()
+                throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
+            UUID recipeId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+
+            doReturn(mockRecipe(recipeId, RecipeStatus.SUCCESS))
+                    .when(recipeInfoService)
+                    .getSuccess(recipeId);
+            doReturn(mockYoutubeMeta(recipeId, "YouTube Title")).when(recipeYoutubeMetaService).get(recipeId);
+            doReturn(mockDetailMetaWithTitle(recipeId, "AI Generated Title")).when(recipeDetailMetaService).get(recipeId);
+            doReturn(List.of()).when(recipeTagService).gets(recipeId);
+            doReturn(false).when(recipeBookmarkService).exist(userId, recipeId);
+
+            RecipeOverview result = sut.getRecipeOverview(recipeId, userId);
+
+            assertThat(result.getVideoTitle()).isEqualTo("AI Generated Title");
+        }
     }
 
     @Nested
@@ -416,15 +476,29 @@ class RecipeFacadeTest {
     }
 
     private RecipeYoutubeMeta mockYoutubeMeta(UUID recipeId) {
+        return mockYoutubeMeta(recipeId, "title");
+    }
+
+    private RecipeYoutubeMeta mockYoutubeMeta(UUID recipeId, String title) {
         RecipeYoutubeMeta meta = mock(RecipeYoutubeMeta.class);
         doReturn(recipeId).when(meta).getRecipeId();
-        doReturn("title").when(meta).getTitle();
+        doReturn(title).when(meta).getTitle();
         return meta;
     }
 
     private RecipeDetailMeta mockDetailMeta(UUID recipeId) {
         RecipeDetailMeta meta = mock(RecipeDetailMeta.class);
         doReturn(recipeId).when(meta).getRecipeId();
+        doReturn("desc").when(meta).getDescription();
+        doReturn(2).when(meta).getServings();
+        doReturn(30).when(meta).getCookTime();
+        return meta;
+    }
+
+    private RecipeDetailMeta mockDetailMetaWithTitle(UUID recipeId, String title) {
+        RecipeDetailMeta meta = mock(RecipeDetailMeta.class);
+        doReturn(recipeId).when(meta).getRecipeId();
+        doReturn(title).when(meta).getTitle();
         doReturn("desc").when(meta).getDescription();
         doReturn(2).when(meta).getServings();
         doReturn(30).when(meta).getCookTime();

@@ -56,10 +56,10 @@ public class AsyncRecipeCreationService {
      * @throws YoutubeMetaException YouTube 메타데이터 처리 실패 시
      */
     @Async("recipeCreateExecutor")
-    public void create(UUID recipeId, long creditCost, String videoId, URI videoUrl)
+    public void create(UUID recipeId, long creditCost, String videoId, URI videoUrl, String title)
             throws RecipeInfoException, YoutubeMetaException {
         try {
-            recipeCreationPipeline.run(RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl));
+            recipeCreationPipeline.run(RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl, title));
 
         } catch (RecipeException e) {
             log.error("레시피 생성 실패: recipeId={}, reason={}", recipeId, e.getError(), e);
@@ -82,7 +82,6 @@ public class AsyncRecipeCreationService {
             }
         }
     }
-
     private void bannedRecipe(UUID recipeId, long creditCost) throws YoutubeMetaException, RecipeInfoException {
         recipeYoutubeMetaService.ban(recipeId);
         cleanup(recipeId, creditCost);

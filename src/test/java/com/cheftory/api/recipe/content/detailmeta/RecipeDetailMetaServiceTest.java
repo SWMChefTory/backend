@@ -72,7 +72,7 @@ public class RecipeDetailMetaServiceTest {
 
                 @BeforeEach
                 void setUp() {
-                    recipeDetailMetaService.create(recipeId, cookTime, servings, description);
+                    recipeDetailMetaService.create(recipeId, cookTime, servings, description, null);
                 }
 
                 @Test
@@ -116,7 +116,7 @@ public class RecipeDetailMetaServiceTest {
 
                 @BeforeEach
                 void setUp() {
-                    recipeDetailMetaService.create(recipeId, cookTime, servings, description);
+                    recipeDetailMetaService.create(recipeId, cookTime, servings, description, null);
                 }
 
                 @Test

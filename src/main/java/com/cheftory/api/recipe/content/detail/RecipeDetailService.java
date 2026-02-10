@@ -25,10 +25,12 @@ public class RecipeDetailService {
      * @param videoId YouTube 비디오 ID
      * @param fileUri 파일 URI
      * @param mimeType 파일 MIME 타입
+     * @param originalTitle 원본 영상 제목
      * @return 레시피 상세 정보
      * @throws RecipeException 레시피 상세 정보 조회 실패 시
      */
-    public RecipeDetail getRecipeDetails(String videoId, String fileUri, String mimeType) throws RecipeException {
-        return client.fetch(videoId, fileUri, mimeType).toRecipeDetail();
+    public RecipeDetail getRecipeDetails(String videoId, String fileUri, String mimeType, String originalTitle)
+            throws RecipeException {
+        return client.fetch(videoId, fileUri, mimeType, originalTitle).toRecipeDetail();
     }
 }

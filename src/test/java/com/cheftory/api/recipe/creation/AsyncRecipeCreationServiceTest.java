@@ -96,7 +96,7 @@ class AsyncRecipeCreationServiceTest {
 
                 @BeforeEach
                 void setUp() throws RecipeException {
-                    sut.create(recipeId, creditCost, videoId, videoUrl);
+                    sut.create(recipeId, creditCost, videoId, videoUrl, null);
                 }
 
                 @Test
@@ -141,7 +141,7 @@ class AsyncRecipeCreationServiceTest {
 
                 @BeforeEach
                 void setUp() throws RecipeInfoException, YoutubeMetaException {
-                    sut.create(recipeId, creditCost, videoId, videoUrl);
+                    sut.create(recipeId, creditCost, videoId, videoUrl, null);
                 }
 
                 @Test
@@ -187,7 +187,7 @@ class AsyncRecipeCreationServiceTest {
 
                 @BeforeEach
                 void setUp() throws RecipeInfoException, YoutubeMetaException {
-                    sut.create(recipeId, creditCost, videoId, videoUrl);
+                    sut.create(recipeId, creditCost, videoId, videoUrl, null);
                 }
 
                 @Test
@@ -234,7 +234,7 @@ class AsyncRecipeCreationServiceTest {
 
                 @BeforeEach
                 void setUp() throws RecipeInfoException, YoutubeMetaException {
-                    sut.create(recipeId, creditCost, videoId, videoUrl);
+                    sut.create(recipeId, creditCost, videoId, videoUrl, null);
                 }
 
                 @Test
@@ -295,7 +295,7 @@ class AsyncRecipeCreationServiceTest {
 
                 @BeforeEach
                 void setUp() throws RecipeInfoException, YoutubeMetaException {
-                    sut.create(recipeId, creditCost, videoId, videoUrl);
+                    sut.create(recipeId, creditCost, videoId, videoUrl, null);
                 }
 
                 @Test

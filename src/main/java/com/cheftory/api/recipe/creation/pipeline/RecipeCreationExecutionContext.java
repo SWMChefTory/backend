@@ -17,14 +17,15 @@ public class RecipeCreationExecutionContext {
     private URI videoUrl;
     private @Nullable String fileUri;
     private @Nullable String mimeType;
+    private String title;
 
-    public static RecipeCreationExecutionContext of(UUID recipeId, String videoId, URI videoUrl) {
-        return new RecipeCreationExecutionContext(recipeId, videoId, videoUrl, null, null);
+    public static RecipeCreationExecutionContext of(UUID recipeId, String videoId, URI videoUrl, String title) {
+        return new RecipeCreationExecutionContext(recipeId, videoId, videoUrl, null, null, title);
     }
 
     public static RecipeCreationExecutionContext withFileInfo(
             RecipeCreationExecutionContext context, String fileUri, String mimeType) {
         return new RecipeCreationExecutionContext(
-                context.recipeId, context.videoId, context.videoUrl, fileUri, mimeType);
+                context.recipeId, context.videoId, context.videoUrl, fileUri, mimeType, context.title);
     }
 }

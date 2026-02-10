@@ -10,11 +10,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param videoId 비디오 ID
  * @param fileUri 파일 URI
  * @param mimeType 파일 MIME 타입
+ * @param originalTitle 원본 영상 제목
  */
 public record ClientRecipeDetailRequest(
         @JsonProperty("video_id") String videoId,
         @JsonProperty("file_uri") String fileUri,
-        @JsonProperty("mime_type") String mimeType) {
+        @JsonProperty("mime_type") String mimeType,
+        @JsonProperty("original_title") String originalTitle) {
 
     /**
      * 요청 DTO 생성 팩토리 메서드
@@ -22,9 +24,11 @@ public record ClientRecipeDetailRequest(
      * @param videoId 비디오 ID
      * @param fileUri 파일 URI
      * @param mimeType 파일 MIME 타입
+     * @param originalTitle 원본 영상 제목
      * @return 요청 DTO 객체
      */
-    public static ClientRecipeDetailRequest from(String videoId, String fileUri, String mimeType) {
-        return new ClientRecipeDetailRequest(videoId, fileUri, mimeType);
+    public static ClientRecipeDetailRequest from(
+            String videoId, String fileUri, String mimeType, String originalTitle) {
+        return new ClientRecipeDetailRequest(videoId, fileUri, mimeType, originalTitle);
     }
 }

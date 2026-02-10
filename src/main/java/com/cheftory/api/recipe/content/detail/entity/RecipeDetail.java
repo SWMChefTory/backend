@@ -5,6 +5,7 @@ import java.util.List;
 /**
  * 레시피 상세 정보.
  *
+ * @param title AI 생성 레시피 제목
  * @param description 레시피 설명
  * @param ingredients 재료 목록
  * @param tags 태그 목록
@@ -12,7 +13,7 @@ import java.util.List;
  * @param cookTime 조리 시간 (분)
  */
 public record RecipeDetail(
-        String description, List<Ingredient> ingredients, List<String> tags, Integer servings, Integer cookTime) {
+        String title, String description, List<Ingredient> ingredients, List<String> tags, Integer servings, Integer cookTime) {
 
     /**
      * 재료 정보.
@@ -38,6 +39,7 @@ public record RecipeDetail(
     /**
      * 레시피 상세 정보를 생성합니다.
      *
+     * @param title AI 생성 레시피 제목
      * @param description 설명
      * @param ingredients 재료 목록
      * @param tags 태그 목록
@@ -46,7 +48,13 @@ public record RecipeDetail(
      * @return 레시피 상세 정보
      */
     public static RecipeDetail of(
-            String description, List<Ingredient> ingredients, List<String> tags, Integer servings, Integer cookTime) {
-        return new RecipeDetail(description, ingredients, tags, servings, cookTime);
+            String title,
+            String description,
+            List<Ingredient> ingredients,
+            List<String> tags,
+            Integer servings,
+            Integer cookTime) {
+        return new RecipeDetail(title, description, ingredients, tags, servings, cookTime);
     }
+
 }
