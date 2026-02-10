@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- 향후 추가될 기능들
+
+### Changed
+- 향후 변경될 사항들
+
+### Fixed
+- 향후 수정될 버그들
+
+---
+
+## [1.1.22] - 2026-02-10
+
+### Changed
+- **Repository 계층 완전 분리**: 모든 Repository를 3계층 패턴(인터페이스/구현체/JPA)으로 리팩토링
+  - 레시피 관련: `RecipeInfoRepository`, `RecipeDetailMetaRepository`, `RecipeBriefingRepository`, `RecipeIngredientRepository`, `RecipeStepRepository`, `RecipeTagRepository`, `RecipeYoutubeMetaRepository`
+  - 생성 관련: `RecipeIdentifyRepository`, `RecipeProgressRepository`
+  - 기타: `RecipeRankRepository`, `RecipeCategoryRepository`
+  - 각 Repository 인터페이스는 비즈니스 로직을, `*Impl`은 예외 변환을, `*JpaRepository`는 데이터 접근을 담당
+- **도메인 엔티티 이동**: `RankingKeyGenerator`를 `RecipeRanking` 엔티티로 통합하여 랭킹 키 생성 로직을 도메인 계층으로 이동
+- **데이터 접근 메서드 명확화**: `RecipeInfoRepository.gets()`가 `RecipeStatus.SUCCESS`만 반환하도록 변경하여 FAILED 레시피 노출 방지
+- **서비스 책임 분리**: `RecipeInfoService.getSuccess()`에서 `increaseCount()` 호출 제거하여 조회 책임을 호출처(Facade)로 이관
+
+### Added
+- **JavaDoc 대규모 추가**: 전체 코드베이스의 Controller, Service, Facade, Port, Repository 클래스에 포괄적인 JavaDoc 추가
+  - 클래스 및 메소드 레벨 문서화로 가독성 및 유지보수성 개선
+- **검색 Port 도입**: `RecipeSearchPort`, `RecipeRankingPort`, `RankingPersonalizationSearchPort`, `RankingCandidateSearchPort` 인터페이스로 외부 시스템과의 계약 명확화
+- **챌린지 Repository JavaDoc**: `RecipeChallengeRepository`, `RecipeUserChallengeRepository`, `RecipeUserChallengeCompletionRepository` 문서화
+
+### Fixed
+- **요리 종류(cuisine) 레시피 조회에서 FAILED 상태 노출 문제 수정**: `RecipeInfoRepository.gets()`가 `RecipeStatus.SUCCESS` 필터링 적용하여 실패 레시피가 결과에 포함되지 않도록 수정
+- **.DS_Store 파일 커밋 방지**: `.gitignore`에 `.DS_Store` 패턴 추가
+
+### Technical
+- **JUnit 4 → JUnit 5 마이그레이션 완료**: `mockwebserver`를 `mockwebserver3-junit5`로 변경 및 JUnit 4 의존성 제거
+- **불필요한 의존성 제거**: `junit`, `junit-vintage-engine`, `hamcrest`, `xmlunit-core`, `jsonassert` 의존성 제거
+- **테스트 리팩토링**: BDD 스타일 테스트 패턴 적용 및 리포지토리 테스트 구조화
+
+---
+
 ## [1.1.21] - 2026-02-09
 
 ### Added
@@ -35,19 +77,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Javadoc 문서화**: recipe.bookmark 및 recipe.category 패키지 내의 클래스, 인터페이스, 열거형, 메서드에 다수의 Javadoc 주석 추가
   - 코드 가독성 및 유지보수성 대폭 향상
   - 향후 개발 및 협업 효율성 증가
-
----
-
-## [Unreleased]
-
-### Added
-- 향후 추가될 기능들
-
-### Changed
-- 향후 변경될 사항들
-
-### Fixed
-- 향후 수정될 버그들
 
 ---
 
