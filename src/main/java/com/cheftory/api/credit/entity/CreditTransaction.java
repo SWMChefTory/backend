@@ -9,6 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 크레딧 거래 이력을 나타내는 엔티티.
+ * 멱등성 키를 통해 중복 거래를 방지합니다.
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -40,6 +44,13 @@ public class CreditTransaction {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    /**
+     * 크레딧 지급 거래를 생성합니다.
+     *
+     * @param credit 크레딧 정보
+     * @param clock 현재 시간 제공자
+     * @return 크레딧 지급 거래 엔티티
+     */
     public static CreditTransaction grant(Credit credit, Clock clock) {
         return new CreditTransaction(
                 UUID.randomUUID(),
@@ -51,6 +62,13 @@ public class CreditTransaction {
                 clock.now());
     }
 
+    /**
+     * 크레딧 사용 거래를 생성합니다.
+     *
+     * @param credit 크레딧 정보
+     * @param clock 현재 시간 제공자
+     * @return 크레딧 사용 거래 엔티티
+     */
     public static CreditTransaction spend(Credit credit, Clock clock) {
         return new CreditTransaction(
                 UUID.randomUUID(),

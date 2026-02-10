@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@DisplayName("RecipeTag Repository")
+@DisplayName("RecipeTagRepository 테스트")
 @Import(RecipeTagRepositoryImpl.class)
 public class RecipeTagRepositoryTest extends DbContextTest {
 
@@ -38,37 +38,35 @@ public class RecipeTagRepositoryTest extends DbContextTest {
     }
 
     @Nested
-    @DisplayName("레시피 태그 저장")
-    class SaveRecipeTag {
+    @DisplayName("레시피 태그 저장 (create)")
+    class Create {
 
         @Nested
         @DisplayName("Given - 유효한 레시피 태그가 주어졌을 때")
-        class GivenValidRecipeTag {
-            private String tag;
-            private UUID recipeId;
+        class GivenValidTag {
+            String tag;
+            UUID recipeId;
+            RecipeTag recipeTag;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
                 tag = "한식";
-                doReturn(FIXED_TIME).when(clock).now();
+                recipeTag = RecipeTag.create(tag, recipeId, clock);
             }
 
             @Nested
-            @DisplayName("When - 레시피 태그를 저장한다면")
-            class WhenSavingRecipeTag {
-
-                private RecipeTag recipeTag;
+            @DisplayName("When - 저장을 요청하면")
+            class WhenSaving {
 
                 @BeforeEach
-                void beforeEach() {
-                    recipeTag = RecipeTag.create(tag, recipeId, clock);
+                void setUp() {
                     recipeTagRepository.create(List.of(recipeTag));
                 }
 
-                @DisplayName("Then - 레시피 태그가 저장되어야 한다")
                 @Test
-                public void thenShouldPersistRecipeTag() {
+                @DisplayName("Then - 레시피 태그를 저장한다")
+                void thenSavesTag() {
                     List<RecipeTag> savedTags = recipeTagRepository.finds(recipeId);
 
                     assertThat(savedTags).hasSize(1);
@@ -82,26 +80,32 @@ public class RecipeTagRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("Given - 빈 태그 목록이 주어졌을 때")
-        class GivenEmptyTagList {
-            @Test
-            @DisplayName("When - 저장을 시도하면 예외 없이 처리되어야 한다")
-            void shouldHandleEmptyListGracefully() {
-                recipeTagRepository.create(Collections.emptyList());
-                // No exception should be thrown
+        class GivenEmptyList {
+
+            @Nested
+            @DisplayName("When - 저장을 요청하면")
+            class WhenSaving {
+
+                @Test
+                @DisplayName("Then - 예외 없이 처리된다")
+                void thenHandlesGracefully() {
+                    recipeTagRepository.create(Collections.emptyList());
+                }
             }
         }
     }
 
     @Nested
-    @DisplayName("특정 레시피의 태그들 조회")
-    class FindRecipeTags {
+    @DisplayName("레시피 태그 조회 (finds)")
+    class Finds {
+
         @Nested
-        @DisplayName("Given - 특정 레시피에 태그들이 존재할 때")
-        class GivenRecipeWithTags {
-            private UUID recipeId;
-            private RecipeTag tag1;
-            private RecipeTag tag2;
-            private RecipeTag tag3;
+        @DisplayName("Given - 태그가 저장되어 있을 때")
+        class GivenSavedTags {
+            UUID recipeId;
+            RecipeTag tag1;
+            RecipeTag tag2;
+            RecipeTag tag3;
 
             @BeforeEach
             void setUp() {
@@ -113,26 +117,36 @@ public class RecipeTagRepositoryTest extends DbContextTest {
             }
 
             @Nested
-            @DisplayName("When - 해당 레시피의 태그들을 조회하면")
-            class WhenFindingTagsByRecipeId {
+            @DisplayName("When - 레시피 ID로 조회하면")
+            class WhenFindingByRecipeId {
+                List<RecipeTag> tags;
 
-                @DisplayName("Then - 모든 태그들이 조회되어야 한다")
+                @BeforeEach
+                void setUp() {
+                    tags = recipeTagRepository.finds(recipeId);
+                }
+
                 @Test
-                public void thenShouldReturnAllTagsForRecipe() {
-                    var tags = recipeTagRepository.finds(recipeId);
+                @DisplayName("Then - 해당 레시피의 모든 태그를 반환한다")
+                void thenReturnsAllTags() {
                     assertThat(tags).hasSize(3);
                     assertThat(tags).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛", "간단요리");
                 }
             }
 
             @Nested
-            @DisplayName("When - 레시피 IDs로 태그를 조회하면")
-            class WhenFindingTagsByRecipeIds {
+            @DisplayName("When - 레시피 ID 목록으로 조회하면")
+            class WhenFindingByRecipeIds {
+                List<RecipeTag> tags;
 
-                @DisplayName("Then - 모든 태그들이 조회되어야 한다")
+                @BeforeEach
+                void setUp() {
+                    tags = recipeTagRepository.finds(List.of(recipeId));
+                }
+
                 @Test
-                public void thenShouldReturnAllTagsForRecipe() {
-                    var tags = recipeTagRepository.finds(List.of(recipeId));
+                @DisplayName("Then - 해당 레시피들의 모든 태그를 반환한다")
+                void thenReturnsAllTags() {
                     assertThat(tags).hasSize(3);
                     assertThat(tags).extracting(RecipeTag::getTag).containsExactlyInAnyOrder("한식", "매운맛", "간단요리");
                 }
@@ -141,24 +155,51 @@ public class RecipeTagRepositoryTest extends DbContextTest {
 
         @Nested
         @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
-        class GivenNonExistentRecipeId {
-            @Test
-            @DisplayName("When - 태그를 조회하면 빈 목록을 반환해야 한다")
-            void shouldReturnEmptyList() {
-                UUID nonExistentId = UUID.randomUUID();
-                List<RecipeTag> tags = recipeTagRepository.finds(nonExistentId);
-                assertThat(tags).isEmpty();
+        class GivenNonExistentId {
+            UUID nonExistentId;
+
+            @BeforeEach
+            void setUp() {
+                nonExistentId = UUID.randomUUID();
+            }
+
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenFinding {
+                List<RecipeTag> tags;
+
+                @BeforeEach
+                void setUp() {
+                    tags = recipeTagRepository.finds(nonExistentId);
+                }
+
+                @Test
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmptyList() {
+                    assertThat(tags).isEmpty();
+                }
             }
         }
 
         @Nested
         @DisplayName("Given - 빈 레시피 ID 목록이 주어졌을 때")
-        class GivenEmptyRecipeIdList {
-            @Test
-            @DisplayName("When - 태그를 조회하면 빈 목록을 반환해야 한다")
-            void shouldReturnEmptyList() {
-                List<RecipeTag> tags = recipeTagRepository.finds(Collections.emptyList());
-                assertThat(tags).isEmpty();
+        class GivenEmptyIdList {
+
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenFinding {
+                List<RecipeTag> tags;
+
+                @BeforeEach
+                void setUp() {
+                    tags = recipeTagRepository.finds(Collections.emptyList());
+                }
+
+                @Test
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmptyList() {
+                    assertThat(tags).isEmpty();
+                }
             }
         }
     }

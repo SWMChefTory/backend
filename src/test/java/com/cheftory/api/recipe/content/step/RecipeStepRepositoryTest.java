@@ -18,10 +18,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
-@DataJpaTest
 @Import({RecipeStepRepositoryImpl.class})
 @DisplayName("RecipeStepRepository 테스트")
 class RecipeStepRepositoryTest extends DbContextTest {
@@ -39,48 +37,79 @@ class RecipeStepRepositoryTest extends DbContextTest {
     }
 
     @Nested
-    @DisplayName("create 메서드는")
-    class Describe_create {
+    @DisplayName("레시피 단계 생성 (create)")
+    class Create {
 
-        @Test
-        @DisplayName("여러 레시피 단계를 한 번에 저장한다")
-        void it_saves_multiple_steps() {
-            // Given
-            UUID recipeId = UUID.randomUUID();
-            RecipeStep step1 = RecipeStep.create(1, "Step 1", List.of(), 0.0, recipeId, clock);
-            RecipeStep step2 = RecipeStep.create(2, "Step 2", List.of(), 30.0, recipeId, clock);
+        @Nested
+        @DisplayName("Given - 여러 레시피 단계가 주어졌을 때")
+        class GivenMultipleSteps {
+            UUID recipeId;
+            RecipeStep step1;
+            RecipeStep step2;
 
-            // When
-            recipeStepRepository.create(List.of(step1, step2));
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                step1 = RecipeStep.create(1, "Step 1", List.of(), 0.0, recipeId, clock);
+                step2 = RecipeStep.create(2, "Step 2", List.of(), 30.0, recipeId, clock);
+            }
 
-            // Then
-            List<RecipeStep> results = recipeStepRepository.finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
-            assertThat(results).hasSize(2);
-            assertThat(results).extracting(RecipeStep::getStepOrder).containsExactly(1, 2);
+            @Nested
+            @DisplayName("When - 저장을 요청하면")
+            class WhenSaving {
+
+                @BeforeEach
+                void setUp() {
+                    recipeStepRepository.create(List.of(step1, step2));
+                }
+
+                @Test
+                @DisplayName("Then - 모든 단계를 저장한다")
+                void thenSavesAll() {
+                    List<RecipeStep> results = recipeStepRepository.finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+                    assertThat(results).hasSize(2);
+                    assertThat(results).extracting(RecipeStep::getStepOrder).containsExactly(1, 2);
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("findAllByRecipeId 메서드는")
-    class Describe_findAllByRecipeId {
+    @DisplayName("레시피 단계 조회 (finds)")
+    class Finds {
 
-        @Test
-        @DisplayName("특정 레시피의 모든 단계를 정렬하여 조회한다")
-        void it_returns_sorted_steps_for_recipe() {
-            // Given
-            UUID recipeId = UUID.randomUUID();
-            RecipeStep step2 = RecipeStep.create(2, "Step 2", List.of(), 30.0, recipeId, clock);
-            RecipeStep step1 = RecipeStep.create(1, "Step 1", List.of(), 0.0, recipeId, clock);
+        @Nested
+        @DisplayName("Given - 레시피 단계들이 저장되어 있을 때")
+        class GivenSavedSteps {
+            UUID recipeId;
 
-            recipeStepRepository.create(List.of(step2, step1));
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                RecipeStep step2 = RecipeStep.create(2, "Step 2", List.of(), 30.0, recipeId, clock);
+                RecipeStep step1 = RecipeStep.create(1, "Step 1", List.of(), 0.0, recipeId, clock);
 
-            // When
-            List<RecipeStep> results = recipeStepRepository.finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+                recipeStepRepository.create(List.of(step2, step1));
+            }
 
-            // Then
-            assertThat(results).hasSize(2);
-            assertThat(results.get(0).getStepOrder()).isEqualTo(1);
-            assertThat(results.get(1).getStepOrder()).isEqualTo(2);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenFinding {
+                List<RecipeStep> results;
+
+                @BeforeEach
+                void setUp() {
+                    results = recipeStepRepository.finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+                }
+
+                @Test
+                @DisplayName("Then - 순서대로 정렬된 단계를 반환한다")
+                void thenReturnsSortedSteps() {
+                    assertThat(results).hasSize(2);
+                    assertThat(results.get(0).getStepOrder()).isEqualTo(1);
+                    assertThat(results.get(1).getStepOrder()).isEqualTo(2);
+                }
+            }
         }
     }
 }

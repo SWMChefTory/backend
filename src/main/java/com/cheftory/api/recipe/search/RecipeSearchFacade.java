@@ -24,6 +24,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+/**
+ * 레시피 검색 퍼사드.
+ *
+ * <p>OpenSearch 검색 결과를 레시피 개요 정보로 변환하여 제공합니다.</p>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -35,6 +40,15 @@ public class RecipeSearchFacade {
     private final RecipeTagService recipeTagService;
     private final RecipeInfoService recipeInfoService;
 
+    /**
+     * 검색어로 레시피를 검색하고 개요 정보를 반환합니다.
+     *
+     * @param query 검색어
+     * @param userId 사용자 ID
+     * @param cursor 페이징 커서
+     * @return 레시피 개요 목록
+     * @throws SearchException 검색 실패 시
+     */
     public CursorPage<RecipeOverview> searchRecipes(String query, UUID userId, String cursor) throws SearchException {
         CursorPage<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, cursor);
 

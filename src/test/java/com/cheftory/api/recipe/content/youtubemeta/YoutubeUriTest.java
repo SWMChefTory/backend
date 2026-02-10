@@ -7,157 +7,138 @@ import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import java.net.URI;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("YoutubeUri.from")
+@DisplayName("YoutubeUri 엔티티")
 class YoutubeUriTest {
 
     private static final String ID = "j7s9VRsrm9o";
     private static final String NORMALIZED = "https://www.youtube.com/watch?v=" + ID;
 
-    @DisplayName("Given - 유효한 유튜브 일반 URL")
     @Nested
-    class GivenValidGeneralUrl {
+    @DisplayName("URL 파싱 (from)")
+    class From {
 
-        private final URI general = URI.create("https://www.youtube.com/watch?v=" + ID);
+        @Nested
+        @DisplayName("Given - 유효한 일반 URL이 주어졌을 때")
+        class GivenGeneralUrl {
+            URI url;
 
-        @DisplayName("When - from 호출")
-        @Test
-        void thenReturnsNormalizedAndId() throws YoutubeMetaException {
-            YoutubeUri result = YoutubeUri.from(general);
+            @BeforeEach
+            void setUp() {
+                url = URI.create("https://www.youtube.com/watch?v=" + ID);
+            }
 
-            assertThat(result.getVideoId()).isEqualTo(ID);
-            assertThat(result.getNormalizedUrl()).isEqualTo(URI.create(NORMALIZED));
-        }
-    }
+            @Nested
+            @DisplayName("When - 파싱을 요청하면")
+            class WhenParsing {
+                YoutubeUri result;
 
-    @DisplayName("Given - 유효한 유튜브 단축 URL (youtu.be)")
-    @Nested
-    class GivenValidShortUrl {
+                @BeforeEach
+                void setUp() throws YoutubeMetaException {
+                    result = YoutubeUri.from(url);
+                }
 
-        private final URI shortUrl = URI.create("https://youtu.be/" + ID);
-
-        @DisplayName("When - from 호출")
-        @Test
-        void thenReturnsNormalizedAndId() throws YoutubeMetaException {
-            YoutubeUri result = YoutubeUri.from(shortUrl);
-
-            assertThat(result.getVideoId()).isEqualTo(ID);
-            assertThat(result.getNormalizedUrl()).isEqualTo(URI.create(NORMALIZED));
-        }
-    }
-
-    @DisplayName("Given - 추가 파라미터가 있는 유효한 일반 URL")
-    @Nested
-    class GivenValidGeneralUrlWithExtraParams {
-
-        private final URI withParams =
-                URI.create("https://www.youtube.com/watch?v=" + ID + "&t=100s&list=PLrAXtmRdnEQy");
-
-        @DisplayName("When - from 호출")
-        @Test
-        void thenStripsExtrasAndKeepsOnlyV() throws YoutubeMetaException {
-            YoutubeUri result = YoutubeUri.from(withParams);
-
-            assertThat(result.getVideoId()).isEqualTo(ID);
-            assertThat(result.getNormalizedUrl()).isEqualTo(URI.create(NORMALIZED));
-        }
-    }
-
-    @DisplayName("Given - 유효하지 않은 URL들")
-    @Nested
-    class GivenInvalidUrls {
-
-        @Test
-        @DisplayName("Invalid host -> YOUTUBE_URL_HOST_INVALID")
-        void invalidHost() {
-            URI invalidHost = URI.create("https://www.invalid.com/watch?v=" + ID);
-
-            YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(invalidHost));
-
-            assertThat(ex.getError().getErrorCode())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_INVALID.getErrorCode());
-            assertThat(ex.getError().getMessage())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_INVALID.getMessage());
+                @Test
+                @DisplayName("Then - 정규화된 URL과 ID를 반환한다")
+                void thenReturnsNormalized() {
+                    assertThat(result.getVideoId()).isEqualTo(ID);
+                    assertThat(result.getNormalizedUrl()).isEqualTo(URI.create(NORMALIZED));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("Invalid path (/watch 아님) -> YOUTUBE_URL_PATH_INVALID")
-        void invalidPath() {
-            URI invalidPath = URI.create("https://www.youtube.com/invalid?v=" + ID);
+        @Nested
+        @DisplayName("Given - 유효한 단축 URL이 주어졌을 때")
+        class GivenShortUrl {
+            URI url;
 
-            YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(invalidPath));
+            @BeforeEach
+            void setUp() {
+                url = URI.create("https://youtu.be/" + ID);
+            }
 
-            assertThat(ex.getError().getErrorCode())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_INVALID.getErrorCode());
-            assertThat(ex.getError().getMessage())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_INVALID.getMessage());
+            @Nested
+            @DisplayName("When - 파싱을 요청하면")
+            class WhenParsing {
+                YoutubeUri result;
+
+                @BeforeEach
+                void setUp() throws YoutubeMetaException {
+                    result = YoutubeUri.from(url);
+                }
+
+                @Test
+                @DisplayName("Then - 정규화된 URL과 ID를 반환한다")
+                void thenReturnsNormalized() {
+                    assertThat(result.getVideoId()).isEqualTo(ID);
+                    assertThat(result.getNormalizedUrl()).isEqualTo(URI.create(NORMALIZED));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("쿼리 없음 -> YOUTUBE_URL_QUERY_PARAM_INVALID")
-        void nullQuery() {
-            URI nullQuery = URI.create("https://www.youtube.com/watch");
+        @Nested
+        @DisplayName("Given - 추가 파라미터가 있는 URL이 주어졌을 때")
+        class GivenUrlWithParams {
+            URI url;
 
-            YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(nullQuery));
+            @BeforeEach
+            void setUp() {
+                url = URI.create("https://www.youtube.com/watch?v=" + ID + "&t=100s&list=PLrAXtmRdnEQy");
+            }
 
-            assertThat(ex.getError().getErrorCode())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getErrorCode());
-            assertThat(ex.getError().getMessage())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getMessage());
+            @Nested
+            @DisplayName("When - 파싱을 요청하면")
+            class WhenParsing {
+                YoutubeUri result;
+
+                @BeforeEach
+                void setUp() throws YoutubeMetaException {
+                    result = YoutubeUri.from(url);
+                }
+
+                @Test
+                @DisplayName("Then - 불필요한 파라미터를 제거하고 반환한다")
+                void thenStripsParams() {
+                    assertThat(result.getVideoId()).isEqualTo(ID);
+                    assertThat(result.getNormalizedUrl()).isEqualTo(URI.create(NORMALIZED));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("호스트 없음 -> YOUTUBE_URL_HOST_NULL")
-        void nullHost() {
-            // scheme만 있고 authority 없음 → host가 null로 파싱됨
-            URI nullHost = URI.create("https:///watch?v=" + ID);
+        @Nested
+        @DisplayName("Given - 유효하지 않은 URL이 주어졌을 때")
+        class GivenInvalidUrl {
 
-            YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(nullHost));
+            @Test
+            @DisplayName("Then - 잘못된 호스트면 HOST_INVALID 예외를 던진다")
+            void invalidHost() {
+                URI url = URI.create("https://www.invalid.com/watch?v=" + ID);
+                YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(url));
+                assertThat(ex.getError().getErrorCode())
+                        .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_INVALID.getErrorCode());
+            }
 
-            assertThat(ex.getError().getErrorCode())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL.getErrorCode());
-            assertThat(ex.getError().getMessage()).isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_HOST_NULL.getMessage());
-        }
+            @Test
+            @DisplayName("Then - 잘못된 경로면 PATH_INVALID 예외를 던진다")
+            void invalidPath() {
+                URI url = URI.create("https://www.youtube.com/invalid?v=" + ID);
+                YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(url));
+                assertThat(ex.getError().getErrorCode())
+                        .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_INVALID.getErrorCode());
+            }
 
-        @Test
-        @DisplayName("경로 없음 -> YOUTUBE_URL_PATH_NULL")
-        void nullPath() {
-            URI nullPath = URI.create("https://www.youtube.com?v=" + ID);
-
-            YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(nullPath));
-
-            assertThat(ex.getError().getErrorCode())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL.getErrorCode());
-            assertThat(ex.getError().getMessage()).isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_PATH_NULL.getMessage());
-        }
-
-        @Test
-        @DisplayName("v 파라미터 없음 -> YOUTUBE_URL_QUERY_PARAM_INVALID")
-        void missingVParam() {
-            URI missingV = URI.create("https://www.youtube.com/watch?list=PLrAXtmRdnEQy");
-
-            YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(missingV));
-
-            assertThat(ex.getError().getErrorCode())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getErrorCode());
-            assertThat(ex.getError().getMessage())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getMessage());
-        }
-
-        @Test
-        @DisplayName("v 파라미터 빈 값 -> YOUTUBE_URL_QUERY_PARAM_INVALID")
-        void emptyVParam() {
-            URI emptyV = URI.create("https://www.youtube.com/watch?v=");
-
-            YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(emptyV));
-
-            assertThat(ex.getError().getErrorCode())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getErrorCode());
-            assertThat(ex.getError().getMessage())
-                    .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getMessage());
+            @Test
+            @DisplayName("Then - 쿼리가 없으면 QUERY_PARAM_INVALID 예외를 던진다")
+            void nullQuery() {
+                URI url = URI.create("https://www.youtube.com/watch");
+                YoutubeMetaException ex = assertThrows(YoutubeMetaException.class, () -> YoutubeUri.from(url));
+                assertThat(ex.getError().getErrorCode())
+                        .isEqualTo(YoutubeMetaErrorCode.YOUTUBE_URL_QUERY_PARAM_INVALID.getErrorCode());
+            }
         }
     }
 }

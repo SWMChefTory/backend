@@ -29,42 +29,72 @@ class RecipeIdValidatorTest {
     }
 
     @Nested
-    @DisplayName("isValid 메서드는")
-    class DescribeIsValid {
+    @DisplayName("유효성 검증 (isValid)")
+    class IsValid {
 
-        @Test
-        @DisplayName("레시피가 존재하면 true를 반환한다")
-        void shouldReturnTrueWhenRecipeExists() {
-            // Given
-            UUID recipeId = UUID.randomUUID();
-            doReturn(true).when(recipeInfoService).exists(recipeId);
+        @Nested
+        @DisplayName("Given - 존재하는 레시피 ID가 주어졌을 때")
+        class GivenExistingRecipeId {
+            UUID recipeId;
 
-            // When
-            boolean result = validator.isValid(recipeId, context);
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                doReturn(true).when(recipeInfoService).exists(recipeId);
+            }
 
-            // Then
-            assertThat(result).isTrue();
-            verify(recipeInfoService).exists(recipeId);
+            @Nested
+            @DisplayName("When - 검증을 요청하면")
+            class WhenValidating {
+                boolean result;
+
+                @BeforeEach
+                void setUp() {
+                    result = validator.isValid(recipeId, context);
+                }
+
+                @Test
+                @DisplayName("Then - true를 반환한다")
+                void thenReturnsTrue() {
+                    assertThat(result).isTrue();
+                    verify(recipeInfoService).exists(recipeId);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("레시피가 존재하지 않으면 false를 반환하고 에러 메시지를 설정한다")
-        void shouldReturnFalseWhenRecipeNotExists() {
-            // Given
-            UUID recipeId = UUID.randomUUID();
-            doReturn(false).when(recipeInfoService).exists(recipeId);
+        @Nested
+        @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
+        class GivenNonExistingRecipeId {
+            UUID recipeId;
 
-            ConstraintValidatorContext.ConstraintViolationBuilder builder =
-                    mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
-            doReturn(builder).when(context).buildConstraintViolationWithTemplate(anyString());
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                doReturn(false).when(recipeInfoService).exists(recipeId);
 
-            // When
-            boolean result = validator.isValid(recipeId, context);
+                ConstraintValidatorContext.ConstraintViolationBuilder builder =
+                        mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
+                doReturn(builder).when(context).buildConstraintViolationWithTemplate(anyString());
+            }
 
-            // Then
-            assertThat(result).isFalse();
-            verify(recipeInfoService).exists(recipeId);
-            verify(context).disableDefaultConstraintViolation();
+            @Nested
+            @DisplayName("When - 검증을 요청하면")
+            class WhenValidating {
+                boolean result;
+
+                @BeforeEach
+                void setUp() {
+                    result = validator.isValid(recipeId, context);
+                }
+
+                @Test
+                @DisplayName("Then - false를 반환한다")
+                void thenReturnsFalse() {
+                    assertThat(result).isFalse();
+                    verify(recipeInfoService).exists(recipeId);
+                    verify(context).disableDefaultConstraintViolation();
+                }
+            }
         }
     }
 }

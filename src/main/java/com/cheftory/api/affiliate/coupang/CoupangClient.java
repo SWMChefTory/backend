@@ -16,6 +16,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * 쿠팡 파트너스 API와 통신하는 클라이언트.
+ *
+ * <p>HTTP 요청 생성, HMAC 서명 생성, API 호출을 담당합니다.</p>
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -26,6 +31,13 @@ public class CoupangClient {
 
     private final CoupangPartnersProperties properties;
 
+    /**
+     * 쿠팡 파트너스 API를 통해 제품을 검색합니다.
+     *
+     * @param keyword 검색 키워드
+     * @return 검색된 쿠팡 제품 목록
+     * @throws CoupangException API 요청 실패 시
+     */
     public CoupangProducts searchProducts(String keyword) throws CoupangException {
         try {
             URI uri = UriComponentsBuilder.fromPath("/v2/providers/affiliate_open_api/apis/openapi/products/search")

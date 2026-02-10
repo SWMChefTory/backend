@@ -39,91 +39,163 @@ class RecipeBookmarkFacadeTest {
     }
 
     @Nested
-    @DisplayName("createAndCharge")
-    class CreateAndCharge {
+    @DisplayName("북마크 생성 및 과금 (create)")
+    class Create {
 
-        @Test
-        @DisplayName("북마크가 새로 생성되면 credit 차감을 시도한다")
-        void shouldSpendCreditWhenBookmarkCreated()
-                throws RecipeInfoException, RecipeBookmarkException, CreditException {
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 100L;
+        @Nested
+        @DisplayName("Given - 새로운 북마크 생성 시")
+        class GivenNewBookmark {
+            UUID userId;
+            UUID recipeId;
+            long creditCost;
+            RecipeInfo recipeInfo;
 
-            RecipeInfo recipeInfo = mock(RecipeInfo.class);
-            when(recipeInfo.getId()).thenReturn(recipeId);
-            when(recipeInfo.getCreditCost()).thenReturn(creditCost);
-            when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
-            when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
+            @BeforeEach
+            void setUp() throws RecipeInfoException, RecipeBookmarkException {
+                userId = UUID.randomUUID();
+                recipeId = UUID.randomUUID();
+                creditCost = 100L;
 
-            sut.create(userId, recipeId);
+                recipeInfo = mock(RecipeInfo.class);
+                when(recipeInfo.getId()).thenReturn(recipeId);
+                when(recipeInfo.getCreditCost()).thenReturn(creditCost);
+                when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
+                when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
+            }
 
-            verify(recipeBookmarkService).create(userId, recipeId);
-            verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
-            verify(recipeBookmarkService, never()).delete(userId, recipeId);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @BeforeEach
+                void setUp() throws CreditException, RecipeBookmarkException, RecipeInfoException {
+                    sut.create(userId, recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 북마크를 생성하고 크레딧을 차감한다")
+                void thenCreatesAndCharges() throws CreditException, RecipeBookmarkException {
+                    verify(recipeBookmarkService).create(userId, recipeId);
+                    verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+                    verify(recipeBookmarkService, never()).delete(userId, recipeId);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("이미 북마크가 존재하면 credit 차감을 하지 않는다")
-        void shouldNotSpendCreditWhenBookmarkAlreadyExists()
-                throws RecipeInfoException, RecipeBookmarkException, CreditException {
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 100L;
+        @Nested
+        @DisplayName("Given - 이미 존재하는 북마크일 때")
+        class GivenExistingBookmark {
+            UUID userId;
+            UUID recipeId;
+            long creditCost;
+            RecipeInfo recipeInfo;
 
-            RecipeInfo recipeInfo = mock(RecipeInfo.class);
-            when(recipeInfo.getId()).thenReturn(recipeId);
-            when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
-            when(recipeBookmarkService.create(userId, recipeId)).thenReturn(false);
+            @BeforeEach
+            void setUp() throws RecipeInfoException, RecipeBookmarkException {
+                userId = UUID.randomUUID();
+                recipeId = UUID.randomUUID();
+                creditCost = 100L;
 
-            sut.create(userId, recipeId);
+                recipeInfo = mock(RecipeInfo.class);
+                when(recipeInfo.getId()).thenReturn(recipeId);
+                when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
+                when(recipeBookmarkService.create(userId, recipeId)).thenReturn(false);
+            }
 
-            verify(recipeBookmarkService).create(userId, recipeId);
-            verify(creditPort, never()).spendRecipeCreate(userId, recipeId, creditCost);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @BeforeEach
+                void setUp() throws CreditException, RecipeBookmarkException, RecipeInfoException {
+                    sut.create(userId, recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 북마크만 생성(활성화)하고 크레딧은 차감하지 않는다")
+                void thenCreatesOnly() throws CreditException, RecipeBookmarkException {
+                    verify(recipeBookmarkService).create(userId, recipeId);
+                    verify(creditPort, never()).spendRecipeCreate(userId, recipeId, creditCost);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("credit 부족이면 CREDIT_INSUFFICIENT를 던진다")
-        void shouldThrowCreditInsufficient() throws CreditException, RecipeBookmarkException, RecipeInfoException {
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 100L;
+        @Nested
+        @DisplayName("Given - 크레딧이 부족할 때")
+        class GivenInsufficientCredit {
+            UUID userId;
+            UUID recipeId;
+            long creditCost;
+            RecipeInfo recipeInfo;
 
-            RecipeInfo recipeInfo = mock(RecipeInfo.class);
-            when(recipeInfo.getId()).thenReturn(recipeId);
-            when(recipeInfo.getCreditCost()).thenReturn(creditCost);
-            when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
-            when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
+            @BeforeEach
+            void setUp() throws RecipeInfoException, RecipeBookmarkException, CreditException {
+                userId = UUID.randomUUID();
+                recipeId = UUID.randomUUID();
+                creditCost = 100L;
 
-            doThrow(new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
-                    .when(creditPort)
-                    .spendRecipeCreate(userId, recipeId, creditCost);
+                recipeInfo = mock(RecipeInfo.class);
+                when(recipeInfo.getId()).thenReturn(recipeId);
+                when(recipeInfo.getCreditCost()).thenReturn(creditCost);
+                when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
+                when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
 
-            assertThatThrownBy(() -> sut.create(userId, recipeId))
-                    .isInstanceOf(CreditException.class)
-                    .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_INSUFFICIENT);
+                doThrow(new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
+                        .when(creditPort)
+                        .spendRecipeCreate(userId, recipeId, creditCost);
+            }
+
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @Test
+                @DisplayName("Then - CREDIT_INSUFFICIENT 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> sut.create(userId, recipeId))
+                            .isInstanceOf(CreditException.class)
+                            .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_INSUFFICIENT);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("credit 동시성 충돌이면 CREDIT_CONCURRENCY_CONFLICT를 던진다")
-        void shouldThrowConcurrencyConflict() throws CreditException, RecipeBookmarkException, RecipeInfoException {
-            UUID userId = UUID.randomUUID();
-            UUID recipeId = UUID.randomUUID();
-            long creditCost = 100L;
+        @Nested
+        @DisplayName("Given - 크레딧 동시성 충돌 발생 시")
+        class GivenConcurrencyConflict {
+            UUID userId;
+            UUID recipeId;
+            long creditCost;
+            RecipeInfo recipeInfo;
 
-            RecipeInfo recipeInfo = mock(RecipeInfo.class);
-            when(recipeInfo.getId()).thenReturn(recipeId);
-            when(recipeInfo.getCreditCost()).thenReturn(creditCost);
-            when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
-            when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
+            @BeforeEach
+            void setUp() throws RecipeInfoException, RecipeBookmarkException, CreditException {
+                userId = UUID.randomUUID();
+                recipeId = UUID.randomUUID();
+                creditCost = 100L;
 
-            doThrow(new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT))
-                    .when(creditPort)
-                    .spendRecipeCreate(userId, recipeId, creditCost);
+                recipeInfo = mock(RecipeInfo.class);
+                when(recipeInfo.getId()).thenReturn(recipeId);
+                when(recipeInfo.getCreditCost()).thenReturn(creditCost);
+                when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
+                when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
 
-            assertThatThrownBy(() -> sut.create(userId, recipeId))
-                    .isInstanceOf(CreditException.class)
-                    .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
+                doThrow(new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT))
+                        .when(creditPort)
+                        .spendRecipeCreate(userId, recipeId, creditCost);
+            }
+
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @Test
+                @DisplayName("Then - CREDIT_CONCURRENCY_CONFLICT 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> sut.create(userId, recipeId))
+                            .isInstanceOf(CreditException.class)
+                            .hasFieldOrPropertyWithValue("error", CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
+                }
+            }
         }
     }
 }

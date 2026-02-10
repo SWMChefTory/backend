@@ -16,11 +16,12 @@ import com.cheftory.api.affiliate.model.CoupangProducts;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
+import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import java.util.List;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 
-@DisplayName("Affiliate Controller")
+@DisplayName("AffiliateController 테스트")
 class AffiliateControllerTest extends RestDocsTest {
 
     private AffiliateService affiliateService;
@@ -37,48 +38,54 @@ class AffiliateControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("쿠팡 상품 검색")
+    @DisplayName("쿠팡 상품 검색 (searchCoupangProducts)")
     class SearchCoupangProducts {
 
         @Nested
-        @DisplayName("Given - 유효한 keyword가 주어졌을 때")
+        @DisplayName("Given - 유효한 검색어가 주어졌을 때")
         class GivenValidKeyword {
+            String keyword;
+            CoupangProducts wrapper;
+
+            @BeforeEach
+            void setUp() throws CoupangException {
+                keyword = "Water";
+                CoupangProduct item = mock(CoupangProduct.class);
+                doReturn("Water").when(item).getKeyword();
+                doReturn(12).when(item).getRank();
+                doReturn(Boolean.TRUE).when(item).getIsRocket();
+                doReturn(Boolean.TRUE).when(item).getIsFreeShipping();
+                doReturn(27664441L).when(item).getProductId();
+                doReturn("https://img").when(item).getProductImage();
+                doReturn("탐사 소프트 3겹 롤화장지").when(item).getProductName();
+                doReturn(15600).when(item).getProductPrice();
+                doReturn("https://link").when(item).getProductUrl();
+
+                wrapper = mock(CoupangProducts.class);
+                doReturn(List.of(item)).when(wrapper).getCoupangProducts();
+                doReturn(wrapper).when(affiliateService).searchCoupangProducts(any(String.class));
+            }
 
             @Nested
-            @DisplayName("When - 상품 검색을 요청하면")
-            class WhenSearchingProducts {
+            @DisplayName("When - 검색을 요청하면")
+            class WhenSearching {
+                ValidatableMockMvcResponse response;
+
+                @BeforeEach
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
+                            .param("keyword", keyword)
+                            .get("/api/v1/affiliate/search/coupang")
+                            .then();
+                }
 
                 @Test
-                @DisplayName("Then - 200과 상품 리스트를 반환한다")
-                void thenReturn200WithProducts() throws CoupangException {
-                    // given
-                    CoupangProduct item = mock(CoupangProduct.class);
-                    doReturn("Water").when(item).getKeyword();
-                    doReturn(12).when(item).getRank();
-                    doReturn(Boolean.TRUE).when(item).getIsRocket();
-                    doReturn(Boolean.TRUE).when(item).getIsFreeShipping();
-                    doReturn(27664441L).when(item).getProductId();
-                    doReturn("https://img").when(item).getProductImage();
-                    doReturn("탐사 소프트 3겹 롤화장지").when(item).getProductName();
-                    doReturn(15600).when(item).getProductPrice();
-                    doReturn("https://link").when(item).getProductUrl();
-
-                    // 래퍼(CoupangProducts) mock
-                    CoupangProducts wrapper = mock(CoupangProducts.class);
-                    doReturn(List.of(item)).when(wrapper).getCoupangProducts();
-
-                    // 서비스 스텁은 래퍼로 반환
-                    doReturn(wrapper).when(affiliateService).searchCoupangProducts(any(String.class));
-
-                    // when
-                    var response = given().contentType(ContentType.JSON)
-                            .param("keyword", "Water")
-                            .get("/api/v1/affiliate/search/coupang")
-                            .then()
-                            .status(HttpStatus.OK)
+                @DisplayName("Then - 상품 목록을 반환한다")
+                void thenReturnsProducts() throws CoupangException {
+                    response.status(HttpStatus.OK)
                             .body("coupangProducts.coupangProducts", hasSize(1))
                             .apply(document(
-                                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                                    getNestedClassPath(AffiliateControllerTest.this.getClass()) + "/{method-name}",
                                     requestPreprocessor(),
                                     responsePreprocessor(),
                                     queryParameters(parameterWithName("keyword").description("검색 키워드")),
@@ -104,8 +111,7 @@ class AffiliateControllerTest extends RestDocsTest {
                                             fieldWithPath("coupangProducts.coupangProducts[].productUrl")
                                                     .description("상품 랜딩 URL"))));
 
-                    // then
-                    verify(affiliateService).searchCoupangProducts("Water");
+                    verify(affiliateService).searchCoupangProducts(keyword);
 
                     var json = response.extract().jsonPath();
                     assertThat(json.getList("coupangProducts.coupangProducts")).hasSize(1);
@@ -124,56 +130,78 @@ class AffiliateControllerTest extends RestDocsTest {
         }
 
         @Nested
-        @DisplayName("Given - 결과가 비어 있을 때")
+        @DisplayName("Given - 검색 결과가 없을 때")
         class GivenEmptyResult {
+            String keyword;
 
-            @Test
-            @DisplayName("Then - 200과 빈 배열을 반환한다")
-            void thenReturn200WithEmptyArray() throws CoupangException {
-                // given
+            @BeforeEach
+            void setUp() throws CoupangException {
+                keyword = "empty";
                 CoupangProducts emptyWrapper = mock(CoupangProducts.class);
                 doReturn(List.of()).when(emptyWrapper).getCoupangProducts();
+                doReturn(emptyWrapper).when(affiliateService).searchCoupangProducts(keyword);
+            }
 
-                doReturn(emptyWrapper).when(affiliateService).searchCoupangProducts("empty");
+            @Nested
+            @DisplayName("When - 검색을 요청하면")
+            class WhenSearching {
+                ValidatableMockMvcResponse response;
 
-                // when & then
-                given().contentType(ContentType.JSON)
-                        .param("keyword", "empty")
-                        .get("/api/v1/affiliate/search/coupang")
-                        .then()
-                        .status(HttpStatus.OK)
-                        .body("coupangProducts.coupangProducts", hasSize(0))
-                        .apply(document(
-                                getNestedClassPath(this.getClass()) + "/{method-name}",
-                                requestPreprocessor(),
-                                responsePreprocessor(),
-                                queryParameters(parameterWithName("keyword").description("검색 키워드")),
-                                responseFields(fieldWithPath("coupangProducts.coupangProducts")
-                                        .description("검색 결과 상품 목록(빈 배열)"))));
+                @BeforeEach
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
+                            .param("keyword", keyword)
+                            .get("/api/v1/affiliate/search/coupang")
+                            .then();
+                }
 
-                verify(affiliateService).searchCoupangProducts("empty");
+                @Test
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmptyList() throws CoupangException {
+                    response.status(HttpStatus.OK)
+                            .body("coupangProducts.coupangProducts", hasSize(0))
+                            .apply(document(
+                                    getNestedClassPath(AffiliateControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    queryParameters(parameterWithName("keyword").description("검색 키워드")),
+                                    responseFields(fieldWithPath("coupangProducts.coupangProducts")
+                                            .description("검색 결과 상품 목록(빈 배열)"))));
+
+                    verify(affiliateService).searchCoupangProducts(keyword);
+                }
             }
         }
 
         @Nested
-        @DisplayName("Given - keyword 파라미터가 없는 경우")
+        @DisplayName("Given - 검색어가 누락되었을 때")
         class GivenMissingKeyword {
 
-            @Test
-            @DisplayName("Then - 400을 반환한다")
-            void thenReturn400() {
-                given().contentType(ContentType.JSON)
-                        .get("/api/v1/affiliate/search/coupang")
-                        .then()
-                        .status(HttpStatus.BAD_REQUEST)
-                        .apply(document(
-                                getNestedClassPath(this.getClass()) + "/{method-name}",
-                                requestPreprocessor(),
-                                responsePreprocessor(),
-                                queryParameters(parameterWithName("keyword")
-                                        .description("검색 키워드")
-                                        .optional())));
-                verifyNoInteractions(affiliateService);
+            @Nested
+            @DisplayName("When - 검색을 요청하면")
+            class WhenSearching {
+                ValidatableMockMvcResponse response;
+
+                @BeforeEach
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
+                            .get("/api/v1/affiliate/search/coupang")
+                            .then();
+                }
+
+                @Test
+                @DisplayName("Then - 400 Bad Request를 반환한다")
+                void thenReturnsBadRequest() {
+                    response.status(HttpStatus.BAD_REQUEST)
+                            .apply(document(
+                                    getNestedClassPath(AffiliateControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    queryParameters(parameterWithName("keyword")
+                                            .description("검색 키워드")
+                                            .optional())));
+                    verifyNoInteractions(affiliateService);
+                }
             }
         }
     }

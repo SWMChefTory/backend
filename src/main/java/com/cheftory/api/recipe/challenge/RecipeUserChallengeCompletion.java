@@ -12,6 +12,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 사용자 챌린지 완료 엔티티.
+ *
+ * <p>사용자가 특정 챌린지를 완료한 이력을 관리합니다.</p>
+ */
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter

@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 
-@DisplayName("RecipeCreationDetailStep")
+@DisplayName("RecipeCreationDetailStep 테스트")
 class RecipeCreationDetailStepTest {
 
     private RecipeDetailService recipeDetailService;
@@ -69,82 +69,133 @@ class RecipeCreationDetailStepTest {
     }
 
     @Nested
-    @DisplayName("run")
+    @DisplayName("실행 (run)")
     class Run {
 
-        @Test
-        @DisplayName("file 정보가 없으면 RECIPE_CREATE_FAIL 예외가 발생한다")
-        void shouldThrowWhenFileInfoMissing() {
-            UUID recipeId = UUID.randomUUID();
-            String videoId = "video-123";
-            URI videoUrl = URI.create("https://youtu.be/video-123");
-            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
+        @Nested
+        @DisplayName("Given - 파일 정보가 없을 때")
+        class GivenNoFileInfo {
+            RecipeCreationExecutionContext context;
+            UUID recipeId;
 
-            assertThatThrownBy(() -> sut.run(context))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(
+                        recipeId, "video-123", URI.create("https://youtu.be/video-123"));
+            }
 
-            verify(recipeProgressService, never())
-                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
+            @Nested
+            @DisplayName("When - 실행을 요청하면")
+            class WhenRunning {
+
+                @Test
+                @DisplayName("Then - RECIPE_CREATE_FAIL 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> sut.run(context))
+                            .isInstanceOf(RecipeException.class)
+                            .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+
+                    verify(recipeProgressService, never())
+                            .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("성공 시 detail과 progress가 순서대로 기록된다")
-        void shouldCreateDetailAndProgress() throws RecipeException {
-            UUID recipeId = UUID.randomUUID();
-            String videoId = "video-456";
-            URI videoUrl = URI.create("https://youtu.be/video-456");
-            String fileUri = "s3://bucket/file.mp4";
-            String mimeType = "video/mp4";
-            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
-                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
+        @Nested
+        @DisplayName("Given - 파일 정보가 있고 정상 동작할 때")
+        class GivenFileInfoAndSuccess {
+            RecipeCreationExecutionContext context;
+            UUID recipeId;
+            String videoId;
+            String fileUri;
+            String mimeType;
+            RecipeDetail detail;
 
-            RecipeDetail detail = RecipeDetail.of(
-                    "desc", List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")), List.of("tag1"), 2, 10);
-            when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType))
-                    .thenReturn(detail);
+            @BeforeEach
+            void setUp() throws RecipeException {
+                recipeId = UUID.randomUUID();
+                videoId = "video-456";
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
+                context = RecipeCreationExecutionContext.withFileInfo(
+                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-456")),
+                        fileUri,
+                        mimeType);
 
-            sut.run(context);
+                detail = RecipeDetail.of(
+                        "desc", List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")), List.of("tag1"), 2, 10);
+                when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType))
+                        .thenReturn(detail);
+            }
 
-            InOrder order = inOrder(recipeProgressService);
-            order.verify(recipeProgressService)
-                    .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
-            order.verify(recipeProgressService)
-                    .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
-            order.verify(recipeProgressService).success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
-            order.verify(recipeProgressService)
-                    .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
+            @Nested
+            @DisplayName("When - 실행을 요청하면")
+            class WhenRunning {
 
-            // DETAIL 성공 기록은 제거됨
-            // order.verify(recipeProgressService)
-            //        .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL);
+                @BeforeEach
+                void setUp() throws RecipeException {
+                    sut.run(context);
+                }
 
-            verify(recipeIngredientService).create(recipeId, detail.ingredients());
-            verify(recipeTagService).create(recipeId, detail.tags());
-            verify(recipeDetailMetaService)
-                    .create(recipeId, detail.cookTime(), detail.servings(), detail.description());
+                @Test
+                @DisplayName("Then - 상세 정보를 생성하고 진행 상태를 업데이트한다")
+                void thenCreatesDetailAndUpdatesProgress() {
+                    InOrder order = inOrder(recipeProgressService);
+                    order.verify(recipeProgressService)
+                            .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
+                    order.verify(recipeProgressService)
+                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
+                    order.verify(recipeProgressService)
+                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
+                    order.verify(recipeProgressService)
+                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
+
+                    verify(recipeIngredientService).create(recipeId, detail.ingredients());
+                    verify(recipeTagService).create(recipeId, detail.tags());
+                    verify(recipeDetailMetaService)
+                            .create(recipeId, detail.cookTime(), detail.servings(), detail.description());
+                }
+            }
         }
 
-        @Test
-        @DisplayName("예외 발생 시 progress를 failed로 기록한다")
-        void shouldFailProgressWhenExceptionThrown() throws RecipeException {
-            UUID recipeId = UUID.randomUUID();
-            String videoId = "video-789";
-            URI videoUrl = URI.create("https://youtu.be/video-789");
-            String fileUri = "s3://bucket/file.mp4";
-            String mimeType = "video/mp4";
-            RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
-                    RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
+        @Nested
+        @DisplayName("Given - 상세 정보 생성 중 예외가 발생할 때")
+        class GivenException {
+            RecipeCreationExecutionContext context;
+            UUID recipeId;
 
-            when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType))
-                    .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
+            @BeforeEach
+            void setUp() throws RecipeException {
+                recipeId = UUID.randomUUID();
+                String videoId = "video-789";
+                String fileUri = "s3://bucket/file.mp4";
+                String mimeType = "video/mp4";
+                context = RecipeCreationExecutionContext.withFileInfo(
+                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-789")),
+                        fileUri,
+                        mimeType);
 
-            assertThatThrownBy(() -> sut.run(context))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+                when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType))
+                        .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
+            }
 
-            verify(recipeProgressService).failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
-            verify(recipeIngredientService, never()).create(ArgumentMatchers.any(), ArgumentMatchers.anyList());
+            @Nested
+            @DisplayName("When - 실행을 요청하면")
+            class WhenRunning {
+
+                @Test
+                @DisplayName("Then - 진행 상태를 실패로 기록하고 예외를 던진다")
+                void thenFailsProgressAndThrowsException() {
+                    assertThatThrownBy(() -> sut.run(context))
+                            .isInstanceOf(RecipeException.class)
+                            .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
+
+                    verify(recipeProgressService)
+                            .failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
+                    verify(recipeIngredientService, never()).create(ArgumentMatchers.any(), ArgumentMatchers.anyList());
+                }
+            }
         }
     }
 }

@@ -14,6 +14,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 레시피 챌린지 엔티티.
+ *
+ * <p>사용자가 참여할 수 있는 레시피 관련 챌린지 정보를 관리합니다.</p>
+ */
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter

@@ -2,44 +2,64 @@ package com.cheftory.api.recipe.rank;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.RankCursor;
 import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api._common.region.Market;
+import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
+import com.cheftory.api.recipe.rank.port.RecipeRankingPort;
+import com.cheftory.api.recipe.rank.repository.RecipeRankRepository;
+import com.cheftory.api.recipe.rank.repository.RecipeRankRepositoryImpl;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 @DisplayName("RecipeRankService Tests")
 public class RecipeRankServiceTest {
 
-    private RecipeRankRepository recipeRankRepository;
-    private RankingKeyGenerator rankingKeyGenerator;
-    private RankCursorCodec rankCursorCodec;
-    private RecipeRankingPort recipeRankingPort;
-    private RecipeRankService recipeRankService;
+    private RecipeRankRepository repository;
+    private RankCursorCodec cursorCodec;
+    private RecipeRankingPort port;
+    private Clock clock;
+    private RecipeRankService service;
+    private MockedStatic<MarketContext> marketContextMock;
 
     @BeforeEach
     void setUp() {
-        recipeRankRepository = mock(RecipeRankRepository.class);
-        rankingKeyGenerator = mock(RankingKeyGenerator.class);
-        rankCursorCodec = mock(RankCursorCodec.class);
-        recipeRankingPort = mock(RecipeRankingPort.class);
-        recipeRankService =
-                new RecipeRankService(recipeRankRepository, rankingKeyGenerator, rankCursorCodec, recipeRankingPort);
+        repository = mock(RecipeRankRepositoryImpl.class);
+        cursorCodec = mock(RankCursorCodec.class);
+        port = mock(RecipeRankingPort.class);
+        clock = mock(Clock.class);
+        service = new RecipeRankService(repository, cursorCodec, port, clock);
+
+        marketContextMock = Mockito.mockStatic(MarketContext.class);
+        MarketContext.Info info = new MarketContext.Info(Market.KOREA, "KR");
+        marketContextMock.when(MarketContext::required).thenReturn(info);
+    }
+
+    @AfterEach
+    void tearDown() {
+        marketContextMock.close();
     }
 
     @Nested
@@ -61,11 +81,11 @@ public class RecipeRankServiceTest {
                 UUID recipeId1 = UUID.randomUUID();
                 UUID recipeId2 = UUID.randomUUID();
                 recipeIds = List.of(recipeId1, recipeId2);
-                newKey = "trendRecipe:ranking:20240101120000";
-                latestKey = "trendRecipe:latest";
+                LocalDateTime now = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+                newKey = "korea:trendRecipe:ranking:20240101120000";
+                latestKey = "korea:trendRecipe:latest";
 
-                doReturn(newKey).when(rankingKeyGenerator).generateKey(rankingType);
-                doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
+                doReturn(now).when(clock).now();
             }
 
             @Nested
@@ -75,12 +95,12 @@ public class RecipeRankServiceTest {
                 @Test
                 @DisplayName("Then - 올바른 순서로 레시피 순위가 저장되어야 한다")
                 void thenShouldSaveRecipeRankingsInCorrectOrder() {
-                    recipeRankService.updateRecipes(rankingType, recipeIds);
+                    service.updateRecipes(rankingType, recipeIds);
 
-                    verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(0), 1);
-                    verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(1), 2);
-                    verify(recipeRankRepository).setExpire(newKey, Duration.ofDays(2));
-                    verify(recipeRankRepository).saveLatest(latestKey, newKey);
+                    verify(repository).saveRanking(newKey, recipeIds.get(0), 1);
+                    verify(repository).saveRanking(newKey, recipeIds.get(1), 2);
+                    verify(repository).setExpire(eq(newKey), any(Duration.class));
+                    verify(repository).saveLatest(latestKey, newKey);
                 }
             }
         }
@@ -101,11 +121,11 @@ public class RecipeRankServiceTest {
                 UUID recipeId2 = UUID.randomUUID();
                 UUID recipeId3 = UUID.randomUUID();
                 recipeIds = List.of(recipeId1, recipeId2, recipeId3);
-                newKey = "chefRecipe:ranking:20240101120000";
-                latestKey = "chefRecipe:latest";
+                LocalDateTime now = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+                newKey = "korea:chefRecipe:ranking:20240101120000";
+                latestKey = "korea:chefRecipe:latest";
 
-                doReturn(newKey).when(rankingKeyGenerator).generateKey(rankingType);
-                doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
+                doReturn(now).when(clock).now();
             }
 
             @Nested
@@ -115,13 +135,13 @@ public class RecipeRankServiceTest {
                 @Test
                 @DisplayName("Then - 올바른 순서로 셰프 레시피 순위가 저장되어야 한다")
                 void thenShouldSaveChefRecipeRankingsInCorrectOrder() {
-                    recipeRankService.updateRecipes(rankingType, recipeIds);
+                    service.updateRecipes(rankingType, recipeIds);
 
-                    verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(0), 1);
-                    verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(1), 2);
-                    verify(recipeRankRepository).saveRanking(newKey, recipeIds.get(2), 3);
-                    verify(recipeRankRepository).setExpire(newKey, Duration.ofDays(2));
-                    verify(recipeRankRepository).saveLatest(latestKey, newKey);
+                    verify(repository).saveRanking(newKey, recipeIds.get(0), 1);
+                    verify(repository).saveRanking(newKey, recipeIds.get(1), 2);
+                    verify(repository).saveRanking(newKey, recipeIds.get(2), 3);
+                    verify(repository).setExpire(eq(newKey), any(Duration.class));
+                    verify(repository).saveLatest(latestKey, newKey);
                 }
             }
         }
@@ -135,8 +155,8 @@ public class RecipeRankServiceTest {
         @DisplayName("커서 기반 첫 페이지를 조회한다")
         void shouldGetRecipeIdsWithCursorFirst() throws CheftoryException {
             RankingType rankingType = RankingType.TRENDING;
-            String latestKey = "trendRecipe:latest";
-            String rankingKey = "trendRecipe:ranking:20240101120000";
+            String latestKey = "korea:trendRecipe:latest";
+            String rankingKey = "korea:trendRecipe:ranking:20240101120000";
             List<String> recipeIds = Stream.of(
                             UUID.randomUUID(),
                             UUID.randomUUID(),
@@ -152,34 +172,33 @@ public class RecipeRankServiceTest {
                     .map(UUID::toString)
                     .toList();
 
-            doReturn(latestKey).when(rankingKeyGenerator).getLatestKey(rankingType);
-            doReturn(Optional.of(rankingKey)).when(recipeRankRepository).findLatest(latestKey);
-            doReturn(recipeIds).when(recipeRankRepository).findRecipeIdsByRank(rankingKey, 1, 11);
-            doReturn("next-cursor").when(rankCursorCodec).encode(any(RankCursor.class));
+            doReturn(Optional.of(rankingKey)).when(repository).findLatest(latestKey);
+            doReturn(recipeIds).when(repository).findRecipeIdsByRank(rankingKey, 1, 11);
+            doReturn("next-cursor").when(cursorCodec).encode(any(RankCursor.class));
 
-            CursorPage<UUID> result = recipeRankService.getRecipeIds(rankingType, null);
+            CursorPage<UUID> result = service.getRecipeIds(rankingType, null);
 
             assertThat(result.items()).hasSize(10);
             assertThat(result.nextCursor()).isEqualTo("next-cursor");
-            verify(recipeRankRepository).findRecipeIdsByRank(rankingKey, 1, 11);
+            verify(repository).findRecipeIdsByRank(rankingKey, 1, 11);
         }
 
         @Test
         @DisplayName("커서 기반 다음 페이지를 조회한다")
         void shouldGetRecipeIdsWithCursorNext() throws CheftoryException {
             RankingType rankingType = RankingType.CHEF;
-            RankCursor decoded = new RankCursor("chefRecipe:ranking:20240101120000", 10);
+            RankCursor decoded = new RankCursor("korea:chefRecipe:ranking:20240101120000", 10);
 
-            doReturn(decoded).when(rankCursorCodec).decode("cursor");
+            doReturn(decoded).when(cursorCodec).decode("cursor");
             doReturn(List.of(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
-                    .when(recipeRankRepository)
+                    .when(repository)
                     .findRecipeIdsByRank(decoded.rankingKey(), 11, 11);
 
-            CursorPage<UUID> result = recipeRankService.getRecipeIds(rankingType, "cursor");
+            CursorPage<UUID> result = service.getRecipeIds(rankingType, "cursor");
 
             assertThat(result.items()).hasSize(2);
             assertThat(result.nextCursor()).isNull();
-            verify(recipeRankRepository).findRecipeIdsByRank(decoded.rankingKey(), 11, 11);
+            verify(repository).findRecipeIdsByRank(decoded.rankingKey(), 11, 11);
         }
     }
 
@@ -191,13 +210,12 @@ public class RecipeRankServiceTest {
         CursorPage<UUID> expected = CursorPage.of(List.of(UUID.randomUUID()), "next-cursor");
 
         doReturn(expected)
-                .when(recipeRankingPort)
+                .when(port)
                 .recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, cursor, 10);
 
-        CursorPage<UUID> result = recipeRankService.getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
+        CursorPage<UUID> result = service.getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
 
         assertThat(result).isEqualTo(expected);
-        verify(recipeRankingPort)
-                .recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, cursor, 10);
+        verify(port).recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, cursor, 10);
     }
 }

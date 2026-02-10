@@ -36,7 +36,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("AsyncRecipeService 테스트")
+@DisplayName("AsyncRecipeCreationService 테스트")
 class AsyncRecipeCreationServiceTest {
 
     private RecipeProgressService recipeProgressService;
@@ -71,17 +71,16 @@ class AsyncRecipeCreationServiceTest {
     }
 
     @Nested
-    @DisplayName("성공 플로우")
-    class SuccessFlow {
+    @DisplayName("레시피 생성 (create)")
+    class Create {
 
         @Nested
         @DisplayName("Given - 유효한 인자가 주어졌을 때")
         class GivenValidArguments {
-
-            private UUID recipeId;
-            private long creditCost;
-            private String videoId;
-            private URI videoUrl;
+            UUID recipeId;
+            long creditCost;
+            String videoId;
+            URI videoUrl;
 
             @BeforeEach
             void setUp() {
@@ -92,14 +91,17 @@ class AsyncRecipeCreationServiceTest {
             }
 
             @Nested
-            @DisplayName("When - create 메소드를 호출하면")
-            class WhenCreateMethodCalled {
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @BeforeEach
+                void setUp() throws RecipeException {
+                    sut.create(recipeId, creditCost, videoId, videoUrl);
+                }
 
                 @Test
-                @DisplayName("Then - 파이프라인이 실행되고 identify가 삭제된다")
-                void thenPipelineRunAndIdentifyDeleted() throws RecipeException {
-                    sut.create(recipeId, creditCost, videoId, videoUrl);
-
+                @DisplayName("Then - 파이프라인을 실행하고 식별자를 삭제한다")
+                void thenRunsPipelineAndDeletesIdentifier() throws RecipeException {
                     verify(recipeCreationPipeline).run(any(RecipeCreationExecutionContext.class));
                     verify(recipeIdentifyService).delete(videoUrl);
 
@@ -110,181 +112,158 @@ class AsyncRecipeCreationServiceTest {
                 }
             }
         }
-    }
-
-    @Nested
-    @DisplayName("예외 플로우")
-    class ExceptionFlow {
 
         @Nested
-        @DisplayName("NOT_COOK_VIDEO 예외")
-        class NotCookRecipeException {
+        @DisplayName("Given - 요리 영상이 아닐 때")
+        class GivenNotCookVideo {
+            UUID recipeId;
+            long creditCost;
+            String videoId;
+            URI videoUrl;
+
+            @BeforeEach
+            void setUp() throws RecipeException {
+                recipeId = UUID.randomUUID();
+                creditCost = 100L;
+                videoId = "not-cook";
+                videoUrl = URI.create("https://youtu.be/not-cook");
+
+                doThrow(new RecipeVerifyException(RecipeVerifyErrorCode.NOT_COOK_VIDEO))
+                        .when(recipeCreationPipeline)
+                        .run(any(RecipeCreationExecutionContext.class));
+
+                doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
+            }
 
             @Nested
-            @DisplayName("Given - 요리 레시피가 아닌 영상일 때")
-            class GivenNotCookVideo {
-
-                private UUID recipeId;
-                private long creditCost;
-                private String videoId;
-                private URI videoUrl;
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
                 @BeforeEach
-                void setUp() throws RecipeException {
-                    recipeId = UUID.randomUUID();
-                    creditCost = 100L;
-                    videoId = "not-cook";
-                    videoUrl = URI.create("https://youtu.be/not-cook");
-
-                    doThrow(new RecipeVerifyException(RecipeVerifyErrorCode.NOT_COOK_VIDEO))
-                            .when(recipeCreationPipeline)
-                            .run(any(RecipeCreationExecutionContext.class));
-
-                    doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
+                void setUp() throws RecipeInfoException, YoutubeMetaException {
+                    sut.create(recipeId, creditCost, videoId, videoUrl);
                 }
 
-                @Nested
-                @DisplayName("When - create 메소드를 호출하면")
-                class WhenCreateMethodCalled {
+                @Test
+                @DisplayName("Then - 실패 처리하고 메타를 밴 처리한다")
+                void thenFailsAndBansMeta() throws RecipeInfoException, YoutubeMetaException, CreditException {
+                    verify(recipeInfoService).failed(recipeId);
+                    verify(recipeProgressService)
+                            .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                    verify(recipeBookmarkService).gets(recipeId);
+                    verify(recipeYoutubeMetaService).ban(recipeId);
+                    verify(recipeIdentifyService).delete(videoUrl);
 
-                    @Test
-                    @DisplayName("Then - 실패 처리되고 ban 처리된다")
-                    void thenFailedAndBanProcessed() throws RecipeInfoException, YoutubeMetaException, CreditException {
-                        sut.create(recipeId, creditCost, videoId, videoUrl);
-
-                        verify(recipeInfoService).failed(recipeId);
-                        verify(recipeProgressService)
-                                .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeBookmarkService).gets(recipeId);
-                        verify(recipeYoutubeMetaService).ban(recipeId); // ban 호출 확인
-                        verify(recipeIdentifyService).delete(videoUrl);
-
-                        verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
-                    }
+                    verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
                 }
             }
         }
 
         @Nested
-        @DisplayName("VERIFY_SERVER_ERROR 예외")
-        class VerifyServerErrorException {
+        @DisplayName("Given - 검증 서버 오류가 발생했을 때")
+        class GivenVerifyServerError {
+            UUID recipeId;
+            long creditCost;
+            String videoId;
+            URI videoUrl;
+
+            @BeforeEach
+            void setUp() throws RecipeException {
+                recipeId = UUID.randomUUID();
+                creditCost = 100L;
+                videoId = "no-meta";
+                videoUrl = URI.create("https://youtu.be/no-meta");
+
+                doThrow(new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR))
+                        .when(recipeCreationPipeline)
+                        .run(any(RecipeCreationExecutionContext.class));
+
+                doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
+            }
 
             @Nested
-            @DisplayName("Given - verify 호출이 실패할 때")
-            class GivenVerifyFail {
-
-                private UUID recipeId;
-                private long creditCost;
-                private String videoId;
-                private URI videoUrl;
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
                 @BeforeEach
-                void setUp() throws RecipeException {
-                    recipeId = UUID.randomUUID();
-                    creditCost = 100L;
-                    videoId = "no-meta";
-                    videoUrl = URI.create("https://youtu.be/no-meta");
-
-                    doThrow(new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR))
-                            .when(recipeCreationPipeline)
-                            .run(any(RecipeCreationExecutionContext.class));
-
-                    doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
+                void setUp() throws RecipeInfoException, YoutubeMetaException {
+                    sut.create(recipeId, creditCost, videoId, videoUrl);
                 }
 
-                @Nested
-                @DisplayName("When - create 메소드를 호출하면")
-                class WhenCreateMethodCalled {
+                @Test
+                @DisplayName("Then - 실패 처리만 하고 밴 처리는 하지 않는다")
+                void thenFailsWithoutBan() throws RecipeInfoException, YoutubeMetaException, CreditException {
+                    verify(recipeInfoService).failed(recipeId);
+                    verify(recipeProgressService)
+                            .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                    verify(recipeBookmarkService).gets(recipeId);
+                    verify(recipeIdentifyService).delete(videoUrl);
 
-                    @Test
-                    @DisplayName("Then - 실패 처리만 되고 ban 처리는 되지 않는다")
-                    void thenOnlyFailedProcessedWithoutBan()
-                            throws RecipeInfoException, YoutubeMetaException, CreditException {
-                        sut.create(recipeId, creditCost, videoId, videoUrl);
-
-                        verify(recipeInfoService).failed(recipeId);
-                        verify(recipeProgressService)
-                                .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeBookmarkService).gets(recipeId);
-                        verify(recipeIdentifyService).delete(videoUrl);
-
-                        verify(recipeYoutubeMetaService, never()).ban(any());
-                        verify(recipeYoutubeMetaService).failed(recipeId); // failed 호출 확인
-                        verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
-                    }
+                    verify(recipeYoutubeMetaService, never()).ban(any());
+                    verify(recipeYoutubeMetaService).failed(recipeId);
+                    verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
                 }
             }
         }
 
         @Nested
-        @DisplayName("일반 RuntimeException")
-        class GenericRuntimeException {
+        @DisplayName("Given - 일반 예외가 발생했을 때")
+        class GivenGenericException {
+            UUID recipeId;
+            long creditCost;
+            String videoId;
+            URI videoUrl;
+
+            @BeforeEach
+            void setUp() throws RecipeException {
+                recipeId = UUID.randomUUID();
+                creditCost = 100L;
+                videoId = "boom";
+                videoUrl = URI.create("https://youtu.be/boom");
+
+                doThrow(new RuntimeException("boom"))
+                        .when(recipeCreationPipeline)
+                        .run(any(RecipeCreationExecutionContext.class));
+
+                doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
+            }
 
             @Nested
-            @DisplayName("Given - 일반 예외가 발생할 때")
-            class GivenGenericException {
-
-                private UUID recipeId;
-                private long creditCost;
-                private String videoId;
-                private URI videoUrl;
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
                 @BeforeEach
-                void setUp() throws RecipeException {
-                    recipeId = UUID.randomUUID();
-                    creditCost = 100L;
-                    videoId = "boom";
-                    videoUrl = URI.create("https://youtu.be/boom");
-
-                    doThrow(new RuntimeException("boom"))
-                            .when(recipeCreationPipeline)
-                            .run(any(RecipeCreationExecutionContext.class));
-
-                    doReturn(List.of()).when(recipeBookmarkService).gets(recipeId);
+                void setUp() throws RecipeInfoException, YoutubeMetaException {
+                    sut.create(recipeId, creditCost, videoId, videoUrl);
                 }
 
-                @Nested
-                @DisplayName("When - create 메소드를 호출하면")
-                class WhenCreateMethodCalled {
+                @Test
+                @DisplayName("Then - 실패 처리하고 식별자를 삭제한다")
+                void thenFailsAndDeletesIdentifier() throws RecipeInfoException, YoutubeMetaException, CreditException {
+                    verify(recipeInfoService).failed(recipeId);
+                    verify(recipeProgressService)
+                            .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                    verify(recipeBookmarkService).gets(recipeId);
+                    verify(recipeIdentifyService).delete(videoUrl);
 
-                    @Test
-                    @DisplayName("Then - 실패 처리되고 식별자가 삭제된다")
-                    void thenFailedProcessedAndIdentifierDeleted()
-                            throws RecipeInfoException, YoutubeMetaException, CreditException {
-                        sut.create(recipeId, creditCost, videoId, videoUrl);
-
-                        verify(recipeInfoService).failed(recipeId);
-                        verify(recipeProgressService)
-                                .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
-                        verify(recipeBookmarkService).gets(recipeId);
-                        verify(recipeIdentifyService).delete(videoUrl);
-
-                        verify(recipeYoutubeMetaService, never()).ban(any());
-                        verify(recipeYoutubeMetaService).failed(recipeId); // failed 호출 확인
-                        verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
-                    }
+                    verify(recipeYoutubeMetaService, never()).ban(any());
+                    verify(recipeYoutubeMetaService).failed(recipeId);
+                    verify(creditPort, never()).refundRecipeCreate(any(), any(), anyLong());
                 }
             }
         }
-    }
-
-    @Nested
-    @DisplayName("환불(credit) 처리")
-    class RefundFlow {
 
         @Nested
         @DisplayName("Given - 실패 시 북마크가 존재할 때")
         class GivenBookmarksOnFailure {
-
-            private UUID recipeId;
-            private long creditCost;
-            private String videoId;
-            private URI videoUrl;
-
-            private UUID userId1;
-            private UUID userId2;
-            private RecipeBookmark bookmark1;
-            private RecipeBookmark bookmark2;
+            UUID recipeId;
+            long creditCost;
+            String videoId;
+            URI videoUrl;
+            UUID userId1;
+            UUID userId2;
+            RecipeBookmark bookmark1;
+            RecipeBookmark bookmark2;
 
             @BeforeEach
             void setUp() throws RecipeException {
@@ -310,17 +289,22 @@ class AsyncRecipeCreationServiceTest {
                         .gets(recipeId);
             }
 
-            @Test
-            @DisplayName("Then - 삭제된 북마크 수만큼 환불이 지급된다")
-            void thenRefundGrantedForEachBookmark() throws RecipeInfoException, CreditException, YoutubeMetaException {
-                sut.create(recipeId, creditCost, videoId, videoUrl);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-                verify(recipeInfoService).failed(recipeId);
-                verify(recipeBookmarkService).gets(recipeId);
+                @BeforeEach
+                void setUp() throws RecipeInfoException, YoutubeMetaException {
+                    sut.create(recipeId, creditCost, videoId, videoUrl);
+                }
 
-                verify(creditPort).refundRecipeCreate(userId1, recipeId, creditCost);
-                verify(creditPort).refundRecipeCreate(userId2, recipeId, creditCost);
-                verifyNoMoreInteractions(creditPort);
+                @Test
+                @DisplayName("Then - 각 북마크에 대해 환불을 진행한다")
+                void thenRefundsForEachBookmark() throws CreditException {
+                    verify(creditPort).refundRecipeCreate(userId1, recipeId, creditCost);
+                    verify(creditPort).refundRecipeCreate(userId2, recipeId, creditCost);
+                    verifyNoMoreInteractions(creditPort);
+                }
             }
         }
     }

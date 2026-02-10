@@ -11,6 +11,11 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
 
+/**
+ * 쿠팡 파트너스 API 인증을 위한 HMAC 서명 생성기.
+ *
+ * <p>HmacSHA256 알고리즘을 사용하여 API 요청에 필요한 서명을 생성합니다.</p>
+ */
 public final class HmacGenerator {
 
     private static final String ALGORITHM = "HmacSHA256";
@@ -20,13 +25,13 @@ public final class HmacGenerator {
             DateTimeFormatter.ofPattern("yyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC);
 
     /**
-     * Generate HMAC signature
+     * 쿠팡 파트너스 API 인증을 위한 HMAC 서명을 생성합니다.
      *
-     * @param method HTTP method (e.g. GET, POST)
-     * @param uri http request uri
-     * @param secretKey secret key that Coupang partner granted for calling open api
-     * @param accessKey access key that Coupang partner granted for calling open api
-     * @return HMAC signature
+     * @param method HTTP 메서드 (예: GET, POST)
+     * @param uri HTTP 요청 URI
+     * @param secretKey 쿠팡 파트너스에서 발급받은 시크릿 키
+     * @param accessKey 쿠팡 파트너스에서 발급받은 액세스 키
+     * @return HMAC 서명이 포함된 Authorization 헤더 값
      */
     public static String generate(String method, String uri, String secretKey, String accessKey) {
         String[] parts = uri.split("\\?");

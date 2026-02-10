@@ -37,53 +37,87 @@ class RecipeStepServiceTest {
     }
 
     @Nested
-    @DisplayName("create 메서드는")
-    class Describe_create {
+    @DisplayName("레시피 단계 생성 (create)")
+    class Create {
 
-        @Test
-        @DisplayName("외부 API로부터 단계를 추출하여 저장하고 ID 목록을 반환한다")
-        void it_creates_steps_and_returns_ids() throws RecipeStepException {
-            // Given
-            UUID recipeId = UUID.randomUUID();
-            String fileUri = "uri";
-            String mimeType = "video/mp4";
+        @Nested
+        @DisplayName("Given - 유효한 파일 정보가 주어졌을 때")
+        class GivenValidFileInfo {
+            UUID recipeId;
+            String fileUri;
+            String mimeType;
+            UUID stepId;
 
-            ClientRecipeStepsResponse response = mock(ClientRecipeStepsResponse.class);
-            RecipeStep step = mock(RecipeStep.class);
-            UUID stepId = UUID.randomUUID();
+            @BeforeEach
+            void setUp() throws RecipeStepException {
+                recipeId = UUID.randomUUID();
+                fileUri = "uri";
+                mimeType = "video/mp4";
+                stepId = UUID.randomUUID();
 
-            doReturn(stepId).when(step).getId();
-            doReturn(response).when(recipeStepClient).fetch(fileUri, mimeType);
-            doReturn(List.of(step)).when(response).toRecipeSteps(recipeId, clock);
-            doReturn(List.of(stepId)).when(recipeStepRepository).create(anyList());
+                ClientRecipeStepsResponse response = mock(ClientRecipeStepsResponse.class);
+                RecipeStep step = mock(RecipeStep.class);
 
-            // When
-            List<UUID> result = recipeStepService.create(recipeId, fileUri, mimeType);
+                doReturn(stepId).when(step).getId();
+                doReturn(response).when(recipeStepClient).fetch(fileUri, mimeType);
+                doReturn(List.of(step)).when(response).toRecipeSteps(recipeId, clock);
+                doReturn(List.of(stepId)).when(recipeStepRepository).create(anyList());
+            }
 
-            // Then
-            assertThat(result).containsExactly(stepId);
-            verify(recipeStepRepository).create(anyList());
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                List<UUID> result;
+
+                @BeforeEach
+                void setUp() throws RecipeStepException {
+                    result = recipeStepService.create(recipeId, fileUri, mimeType);
+                }
+
+                @Test
+                @DisplayName("Then - 외부 API로 단계를 추출하여 저장하고 ID 목록을 반환한다")
+                void thenCreatesAndReturnsIds() {
+                    assertThat(result).containsExactly(stepId);
+                    verify(recipeStepRepository).create(anyList());
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("gets 메서드는")
-    class Describe_gets {
+    @DisplayName("레시피 단계 조회 (gets)")
+    class Gets {
 
-        @Test
-        @DisplayName("레시피 ID로 정렬된 단계 목록을 조회한다")
-        void it_returns_sorted_steps_by_recipe_id() {
-            // Given
-            UUID recipeId = UUID.randomUUID();
-            List<RecipeStep> expected = List.of(mock(RecipeStep.class));
-            doReturn(expected).when(recipeStepRepository).finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+        @Nested
+        @DisplayName("Given - 레시피 ID가 주어졌을 때")
+        class GivenRecipeId {
+            UUID recipeId;
+            List<RecipeStep> expected;
 
-            // When
-            List<RecipeStep> result = recipeStepService.gets(recipeId);
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                expected = List.of(mock(RecipeStep.class));
+                doReturn(expected).when(recipeStepRepository).finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+            }
 
-            // Then
-            assertThat(result).isEqualTo(expected);
-            verify(recipeStepRepository).finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeStep> result;
+
+                @BeforeEach
+                void setUp() {
+                    result = recipeStepService.gets(recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 정렬된 단계 목록을 반환한다")
+                void thenReturnsSortedSteps() {
+                    assertThat(result).isEqualTo(expected);
+                    verify(recipeStepRepository).finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
+                }
+            }
         }
     }
 }

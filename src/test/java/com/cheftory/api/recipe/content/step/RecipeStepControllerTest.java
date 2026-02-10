@@ -20,6 +20,7 @@ import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.step.entity.RecipeStep;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
+import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-@DisplayName("RecipeStepController")
+@DisplayName("RecipeStepController 테스트")
 public class RecipeStepControllerTest extends RestDocsTest {
 
     private RecipeStepService recipeStepService;
@@ -50,73 +51,70 @@ public class RecipeStepControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("레시피 단계 조회")
+    @DisplayName("레시피 단계 조회 (getRecipeSteps)")
     class GetRecipeSteps {
 
         @Nested
         @DisplayName("Given - 유효한 레시피 ID가 주어졌을 때")
         class GivenValidRecipeId {
-
-            private UUID recipeId;
+            UUID recipeId;
+            List<RecipeStep> recipeSteps;
+            UUID step1Id;
+            UUID step2Id;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
+                step1Id = UUID.randomUUID();
+                step2Id = UUID.randomUUID();
+
+                RecipeStep step1 = mock(RecipeStep.class);
+                RecipeStep step2 = mock(RecipeStep.class);
+
+                // Step 1 모킹
+                doReturn(step1Id).when(step1).getId();
+                doReturn(1).when(step1).getStepOrder();
+                doReturn("재료 준비").when(step1).getSubtitle();
+                doReturn(0.0).when(step1).getStart();
+
+                RecipeStep.Detail step1Detail1 = RecipeStep.Detail.of("김치 200g을 준비합니다", 0.0);
+                RecipeStep.Detail step1Detail2 = RecipeStep.Detail.of("돼지고기 150g을 준비합니다", 5.0);
+                doReturn(List.of(step1Detail1, step1Detail2)).when(step1).getDetails();
+
+                // Step 2 모킹
+                doReturn(step2Id).when(step2).getId();
+                doReturn(2).when(step2).getStepOrder();
+                doReturn("조리하기").when(step2).getSubtitle();
+                doReturn(30.0).when(step2).getStart();
+
+                RecipeStep.Detail step2Detail1 = RecipeStep.Detail.of("팬에 기름을 두르고 가열합니다", 30.0);
+                RecipeStep.Detail step2Detail2 = RecipeStep.Detail.of("김치와 돼지고기를 넣고 볶습니다", 45.0);
+                doReturn(List.of(step2Detail1, step2Detail2)).when(step2).getDetails();
+
+                recipeSteps = List.of(step1, step2);
+                doReturn(recipeSteps).when(recipeStepService).gets(any(UUID.class));
+                doReturn(true).when(recipeInfoService).exists(any(UUID.class));
             }
 
             @Nested
-            @DisplayName("When - 레시피 단계를 조회한다면")
-            class WhenRequestingRecipeSteps {
-
-                private List<RecipeStep> recipeSteps;
-                private RecipeStep step1;
-                private RecipeStep step2;
-                private UUID step1Id;
-                private UUID step2Id;
+            @DisplayName("When - 조회를 요청하면")
+            class WhenRequesting {
+                ValidatableMockMvcResponse response;
 
                 @BeforeEach
                 void setUp() {
-                    step1Id = UUID.randomUUID();
-                    step2Id = UUID.randomUUID();
-
-                    step1 = mock(RecipeStep.class);
-                    step2 = mock(RecipeStep.class);
-
-                    // Step 1 모킹
-                    doReturn(step1Id).when(step1).getId();
-                    doReturn(1).when(step1).getStepOrder();
-                    doReturn("재료 준비").when(step1).getSubtitle();
-                    doReturn(0.0).when(step1).getStart();
-
-                    RecipeStep.Detail step1Detail1 = RecipeStep.Detail.of("김치 200g을 준비합니다", 0.0);
-                    RecipeStep.Detail step1Detail2 = RecipeStep.Detail.of("돼지고기 150g을 준비합니다", 5.0);
-                    doReturn(List.of(step1Detail1, step1Detail2)).when(step1).getDetails();
-
-                    // Step 2 모킹
-                    doReturn(step2Id).when(step2).getId();
-                    doReturn(2).when(step2).getStepOrder();
-                    doReturn("조리하기").when(step2).getSubtitle();
-                    doReturn(30.0).when(step2).getStart();
-
-                    RecipeStep.Detail step2Detail1 = RecipeStep.Detail.of("팬에 기름을 두르고 가열합니다", 30.0);
-                    RecipeStep.Detail step2Detail2 = RecipeStep.Detail.of("김치와 돼지고기를 넣고 볶습니다", 45.0);
-                    doReturn(List.of(step2Detail1, step2Detail2)).when(step2).getDetails();
-
-                    recipeSteps = List.of(step1, step2);
-                    doReturn(recipeSteps).when(recipeStepService).gets(any(UUID.class));
-                    doReturn(true).when(recipeInfoService).exists(any(UUID.class));
+                    response = given().contentType(ContentType.JSON)
+                            .get("/papi/v1/recipes/{recipeId}/steps", recipeId)
+                            .then();
                 }
 
                 @Test
-                @DisplayName("Then - 레시피 단계를 성공적으로 반환해야 한다")
-                void thenShouldReturnRecipeSteps() {
-                    var response = given().contentType(ContentType.JSON)
-                            .get("/papi/v1/recipes/{recipeId}/steps", recipeId)
-                            .then()
-                            .status(HttpStatus.OK)
+                @DisplayName("Then - 레시피 단계를 반환한다")
+                void thenReturnsSteps() {
+                    response.status(HttpStatus.OK)
                             .body("steps", hasSize(recipeSteps.size()))
                             .apply(document(
-                                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                                    getNestedClassPath(RecipeStepControllerTest.this.getClass()) + "/{method-name}",
                                     requestPreprocessor(),
                                     responsePreprocessor(),
                                     pathParameters(parameterWithName("recipeId").description("조회할 레시피 ID")),
@@ -179,8 +177,7 @@ public class RecipeStepControllerTest extends RestDocsTest {
         @Nested
         @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
         class GivenNonExistentRecipeId {
-
-            private UUID nonExistentRecipeId;
+            UUID nonExistentRecipeId;
 
             @BeforeEach
             void setUp() {
@@ -188,21 +185,30 @@ public class RecipeStepControllerTest extends RestDocsTest {
                 doReturn(false).when(recipeInfoService).exists(nonExistentRecipeId);
             }
 
-            @Test
-            @DisplayName("Then - 400 Bad Request를 반환해야 한다")
-            void thenShouldReturnBadRequest() {
-                given().contentType(ContentType.JSON)
-                        .get("/papi/v1/recipes/{recipeId}/steps", nonExistentRecipeId)
-                        .then()
-                        .status(HttpStatus.BAD_REQUEST);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenRequesting {
+                ValidatableMockMvcResponse response;
+
+                @BeforeEach
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
+                            .get("/papi/v1/recipes/{recipeId}/steps", nonExistentRecipeId)
+                            .then();
+                }
+
+                @Test
+                @DisplayName("Then - 400 Bad Request를 반환한다")
+                void thenReturnsBadRequest() {
+                    response.status(HttpStatus.BAD_REQUEST);
+                }
             }
         }
 
         @Nested
         @DisplayName("Given - 단계가 없는 레시피 ID가 주어졌을 때")
         class GivenRecipeIdWithNoSteps {
-
-            private UUID recipeId;
+            UUID recipeId;
 
             @BeforeEach
             void setUp() {
@@ -211,16 +217,25 @@ public class RecipeStepControllerTest extends RestDocsTest {
                 doReturn(true).when(recipeInfoService).exists(any(UUID.class));
             }
 
-            @Test
-            @DisplayName("Then - 빈 단계 목록을 반환해야 한다")
-            void thenShouldReturnEmptySteps() {
-                given().contentType(ContentType.JSON)
-                        .get("/papi/v1/recipes/{recipeId}/steps", recipeId)
-                        .then()
-                        .status(HttpStatus.OK)
-                        .body("steps", hasSize(0));
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenRequesting {
+                ValidatableMockMvcResponse response;
 
-                verify(recipeStepService).gets(recipeId);
+                @BeforeEach
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
+                            .get("/papi/v1/recipes/{recipeId}/steps", recipeId)
+                            .then();
+                }
+
+                @Test
+                @DisplayName("Then - 빈 단계 목록을 반환한다")
+                void thenReturnsEmptyList() {
+                    response.status(HttpStatus.OK).body("steps", hasSize(0));
+
+                    verify(recipeStepService).gets(recipeId);
+                }
             }
         }
     }

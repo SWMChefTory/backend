@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.I18nTranslator;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
@@ -22,7 +23,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("RecipeInfoService")
+@DisplayName("RecipeInfoService 테스트")
 class RecipeInfoServiceTest {
 
     private RecipeInfoRepository repository;
@@ -39,217 +40,377 @@ class RecipeInfoServiceTest {
     }
 
     @Nested
-    @DisplayName("getSuccess(recipeId)")
+    @DisplayName("성공 레시피 조회 (getSuccess)")
     class GetSuccess {
 
-        @Test
-        @DisplayName("성공 상태의 레시피면 레시피를 반환한다")
-        void shouldReturnSuccessRecipe() throws RecipeInfoException {
-            UUID recipeId = UUID.randomUUID();
-            RecipeInfo recipeInfo = mock(RecipeInfo.class);
-            doReturn(false).when(recipeInfo).isFailed();
-            doReturn(false).when(recipeInfo).isBlocked();
-            doReturn(recipeInfo).when(repository).get(recipeId);
+        @Nested
+        @DisplayName("Given - 성공 상태의 레시피가 있을 때")
+        class GivenSuccessRecipe {
+            UUID recipeId;
+            RecipeInfo recipeInfo;
 
-            RecipeInfo result = service.getSuccess(recipeId);
+            @BeforeEach
+            void setUp() throws RecipeInfoException {
+                recipeId = UUID.randomUUID();
+                recipeInfo = mock(RecipeInfo.class);
+                doReturn(false).when(recipeInfo).isFailed();
+                doReturn(false).when(recipeInfo).isBlocked();
+                doReturn(recipeInfo).when(repository).get(recipeId);
+            }
 
-            assertThat(result).isEqualTo(recipeInfo);
-            verify(repository).get(recipeId);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                RecipeInfo result;
+
+                @BeforeEach
+                void setUp() throws RecipeInfoException {
+                    result = service.getSuccess(recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 레시피를 반환한다")
+                void thenReturnsRecipe() throws RecipeInfoException {
+                    assertThat(result).isEqualTo(recipeInfo);
+                    verify(repository).get(recipeId);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("실패 상태 레시피면 RECIPE_FAILED 예외를 던진다")
-        void shouldThrowRecipeFailedWhenFailed() throws RecipeInfoException {
-            UUID recipeId = UUID.randomUUID();
-            RecipeInfo recipeInfo = mock(RecipeInfo.class);
-            doReturn(true).when(recipeInfo).isFailed();
-            doReturn(recipeInfo).when(repository).get(recipeId);
+        @Nested
+        @DisplayName("Given - 실패 상태의 레시피가 있을 때")
+        class GivenFailedRecipe {
+            UUID recipeId;
+            RecipeInfo recipeInfo;
 
-            assertThatThrownBy(() -> service.getSuccess(recipeId))
-                    .isInstanceOf(RecipeInfoException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeInfoErrorCode.RECIPE_FAILED);
+            @BeforeEach
+            void setUp() throws RecipeInfoException {
+                recipeId = UUID.randomUUID();
+                recipeInfo = mock(RecipeInfo.class);
+                doReturn(true).when(recipeInfo).isFailed();
+                doReturn(recipeInfo).when(repository).get(recipeId);
+            }
+
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+
+                @Test
+                @DisplayName("Then - RECIPE_FAILED 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> service.getSuccess(recipeId))
+                            .isInstanceOf(RecipeInfoException.class)
+                            .hasFieldOrPropertyWithValue("error", RecipeInfoErrorCode.RECIPE_FAILED);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("차단 상태 레시피면 RECIPE_BANNED 예외를 던진다")
-        void shouldThrowRecipeBannedWhenBlocked() throws RecipeInfoException {
-            UUID recipeId = UUID.randomUUID();
-            RecipeInfo recipeInfo = mock(RecipeInfo.class);
-            doReturn(false).when(recipeInfo).isFailed();
-            doReturn(true).when(recipeInfo).isBlocked();
-            doReturn(recipeInfo).when(repository).get(recipeId);
+        @Nested
+        @DisplayName("Given - 차단 상태의 레시피가 있을 때")
+        class GivenBlockedRecipe {
+            UUID recipeId;
+            RecipeInfo recipeInfo;
 
-            assertThatThrownBy(() -> service.getSuccess(recipeId))
-                    .isInstanceOf(RecipeInfoException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeInfoErrorCode.RECIPE_BANNED);
+            @BeforeEach
+            void setUp() throws RecipeInfoException {
+                recipeId = UUID.randomUUID();
+                recipeInfo = mock(RecipeInfo.class);
+                doReturn(false).when(recipeInfo).isFailed();
+                doReturn(true).when(recipeInfo).isBlocked();
+                doReturn(recipeInfo).when(repository).get(recipeId);
+            }
+
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+
+                @Test
+                @DisplayName("Then - RECIPE_BANNED 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> service.getSuccess(recipeId))
+                            .isInstanceOf(RecipeInfoException.class)
+                            .hasFieldOrPropertyWithValue("error", RecipeInfoErrorCode.RECIPE_BANNED);
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("delegate methods")
+    @DisplayName("위임 메서드 (Delegate Methods)")
     class DelegateMethods {
 
-        @Test
-        @DisplayName("increaseCount는 repository로 위임한다")
-        void shouldDelegateIncreaseCount() {
-            UUID recipeId = UUID.randomUUID();
-
-            service.increaseCount(recipeId);
-
-            verify(repository).increaseCount(recipeId);
+        @Nested
+        @DisplayName("increaseCount")
+        class IncreaseCount {
+            @Test
+            @DisplayName("repository로 위임한다")
+            void delegates() {
+                UUID recipeId = UUID.randomUUID();
+                service.increaseCount(recipeId);
+                verify(repository).increaseCount(recipeId);
+            }
         }
 
-        @Test
-        @DisplayName("create는 신규 레시피를 생성해 repository.create를 호출한다")
-        void shouldCreateRecipe() {
-            RecipeInfo created = service.create();
-
-            assertThat(created).isNotNull();
-            verify(repository).create(created);
+        @Nested
+        @DisplayName("create")
+        class Create {
+            @Test
+            @DisplayName("신규 레시피를 생성해 repository로 위임한다")
+            void delegates() {
+                RecipeInfo created = service.create();
+                assertThat(created).isNotNull();
+                verify(repository).create(created);
+            }
         }
 
-        @Test
-        @DisplayName("getProgresses는 repository.getProgressRecipes를 호출한다")
-        void shouldDelegateGetProgresses() {
-            List<UUID> recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-            List<RecipeInfo> expected = List.of(mock(RecipeInfo.class));
-            doReturn(expected).when(repository).getProgressRecipes(recipeIds);
+        @Nested
+        @DisplayName("getProgresses")
+        class GetProgresses {
+            @Test
+            @DisplayName("repository.getProgressRecipes로 위임한다")
+            void delegates() {
+                List<UUID> recipeIds = List.of(UUID.randomUUID());
+                List<RecipeInfo> expected = List.of(mock(RecipeInfo.class));
+                doReturn(expected).when(repository).getProgressRecipes(recipeIds);
 
-            List<RecipeInfo> result = service.getProgresses(recipeIds);
+                List<RecipeInfo> result = service.getProgresses(recipeIds);
 
-            assertThat(result).isEqualTo(expected);
-            verify(repository).getProgressRecipes(recipeIds);
+                assertThat(result).isEqualTo(expected);
+                verify(repository).getProgressRecipes(recipeIds);
+            }
         }
 
-        @Test
-        @DisplayName("gets는 repository.gets를 호출한다")
-        void shouldDelegateGets() {
-            List<UUID> recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-            List<RecipeInfo> expected = List.of(mock(RecipeInfo.class));
-            doReturn(expected).when(repository).gets(recipeIds);
+        @Nested
+        @DisplayName("gets")
+        class Gets {
+            @Test
+            @DisplayName("repository.gets로 위임한다")
+            void delegates() {
+                List<UUID> recipeIds = List.of(UUID.randomUUID());
+                List<RecipeInfo> expected = List.of(mock(RecipeInfo.class));
+                doReturn(expected).when(repository).gets(recipeIds);
 
-            List<RecipeInfo> result = service.gets(recipeIds);
+                List<RecipeInfo> result = service.gets(recipeIds);
 
-            assertThat(result).isEqualTo(expected);
-            verify(repository).gets(recipeIds);
+                assertThat(result).isEqualTo(expected);
+                verify(repository).gets(recipeIds);
+            }
         }
 
-        @Test
-        @DisplayName("success는 repository.success를 호출한다")
-        void shouldDelegateSuccess() throws RecipeInfoException {
-            UUID recipeId = UUID.randomUUID();
-            RecipeInfo expected = mock(RecipeInfo.class);
-            doReturn(expected).when(repository).success(recipeId, clock);
+        @Nested
+        @DisplayName("success")
+        class Success {
+            @Test
+            @DisplayName("repository.success로 위임한다")
+            void delegates() throws RecipeInfoException {
+                UUID recipeId = UUID.randomUUID();
+                RecipeInfo expected = mock(RecipeInfo.class);
+                doReturn(expected).when(repository).success(recipeId, clock);
 
-            RecipeInfo result = service.success(recipeId);
+                RecipeInfo result = service.success(recipeId);
 
-            assertThat(result).isEqualTo(expected);
-            verify(repository).success(recipeId, clock);
+                assertThat(result).isEqualTo(expected);
+                verify(repository).success(recipeId, clock);
+            }
         }
 
-        @Test
-        @DisplayName("failed는 repository.failed를 호출한다")
-        void shouldDelegateFailed() throws RecipeInfoException {
-            UUID recipeId = UUID.randomUUID();
-            RecipeInfo expected = mock(RecipeInfo.class);
-            doReturn(expected).when(repository).failed(recipeId, clock);
+        @Nested
+        @DisplayName("failed")
+        class Failed {
+            @Test
+            @DisplayName("repository.failed로 위임한다")
+            void delegates() throws RecipeInfoException {
+                UUID recipeId = UUID.randomUUID();
+                RecipeInfo expected = mock(RecipeInfo.class);
+                doReturn(expected).when(repository).failed(recipeId, clock);
 
-            RecipeInfo result = service.failed(recipeId);
+                RecipeInfo result = service.failed(recipeId);
 
-            assertThat(result).isEqualTo(expected);
-            verify(repository).failed(recipeId, clock);
+                assertThat(result).isEqualTo(expected);
+                verify(repository).failed(recipeId, clock);
+            }
         }
 
-        @Test
-        @DisplayName("block은 repository.block을 호출한다")
-        void shouldDelegateBlock() throws RecipeInfoException {
-            UUID recipeId = UUID.randomUUID();
-
-            service.block(recipeId);
-
-            verify(repository).block(recipeId, clock);
+        @Nested
+        @DisplayName("block")
+        class Block {
+            @Test
+            @DisplayName("repository.block으로 위임한다")
+            void delegates() throws RecipeInfoException {
+                UUID recipeId = UUID.randomUUID();
+                service.block(recipeId);
+                verify(repository).block(recipeId, clock);
+            }
         }
 
-        @Test
-        @DisplayName("exists는 repository.exists를 호출한다")
-        void shouldDelegateExists() {
-            UUID recipeId = UUID.randomUUID();
-            doReturn(true).when(repository).exists(recipeId);
-
-            boolean result = service.exists(recipeId);
-
-            assertThat(result).isTrue();
-            verify(repository).exists(recipeId);
+        @Nested
+        @DisplayName("exists")
+        class Exists {
+            @Test
+            @DisplayName("repository.exists로 위임한다")
+            void delegates() {
+                UUID recipeId = UUID.randomUUID();
+                doReturn(true).when(repository).exists(recipeId);
+                boolean result = service.exists(recipeId);
+                assertThat(result).isTrue();
+                verify(repository).exists(recipeId);
+            }
         }
 
-        @Test
-        @DisplayName("get은 repository.get을 호출한다")
-        void shouldDelegateGet() throws RecipeInfoException {
-            UUID recipeId = UUID.randomUUID();
-            RecipeInfo expected = mock(RecipeInfo.class);
-            doReturn(expected).when(repository).get(recipeId);
+        @Nested
+        @DisplayName("get")
+        class Get {
+            @Test
+            @DisplayName("repository.get으로 위임한다")
+            void delegates() throws RecipeInfoException {
+                UUID recipeId = UUID.randomUUID();
+                RecipeInfo expected = mock(RecipeInfo.class);
+                doReturn(expected).when(repository).get(recipeId);
 
-            RecipeInfo result = service.get(recipeId);
+                RecipeInfo result = service.get(recipeId);
 
-            assertThat(result).isEqualTo(expected);
-            verify(repository).get(recipeId);
+                assertThat(result).isEqualTo(expected);
+                verify(repository).get(recipeId);
+            }
         }
     }
 
     @Nested
-    @DisplayName("cursor queries")
+    @DisplayName("커서 조회 (Cursor Queries)")
     class CursorQueries {
 
-        @Test
-        @DisplayName("인기 레시피는 cursor가 없으면 popularFirst를 호출한다")
-        void shouldCallPopularFirstWhenCursorBlank() throws Exception {
-            CursorPage<RecipeInfo> expected = CursorPage.of(List.of(), "next");
-            doReturn(expected).when(repository).popularFirst(RecipeInfoVideoQuery.ALL);
+        @Nested
+        @DisplayName("인기 레시피 조회 (getPopulars)")
+        class GetPopulars {
 
-            CursorPage<RecipeInfo> result = service.getPopulars("", RecipeInfoVideoQuery.ALL);
+            @Nested
+            @DisplayName("Given - 커서가 없을 때")
+            class GivenNoCursor {
+                CursorPage<RecipeInfo> expected;
 
-            assertThat(result).isEqualTo(expected);
-            verify(repository).popularFirst(RecipeInfoVideoQuery.ALL);
+                @BeforeEach
+                void setUp() {
+                    expected = CursorPage.of(List.of(), "next");
+                    doReturn(expected).when(repository).popularFirst(RecipeInfoVideoQuery.ALL);
+                }
+
+                @Nested
+                @DisplayName("When - 조회를 요청하면")
+                class WhenGetting {
+                    CursorPage<RecipeInfo> result;
+
+                    @BeforeEach
+                    void setUp() throws CursorException {
+                        result = service.getPopulars("", RecipeInfoVideoQuery.ALL);
+                    }
+
+                    @Test
+                    @DisplayName("Then - popularFirst를 호출한다")
+                    void thenCallsPopularFirst() {
+                        assertThat(result).isEqualTo(expected);
+                        verify(repository).popularFirst(RecipeInfoVideoQuery.ALL);
+                    }
+                }
+            }
+
+            @Nested
+            @DisplayName("Given - 커서가 있을 때")
+            class GivenCursor {
+                CursorPage<RecipeInfo> expected;
+
+                @BeforeEach
+                void setUp() throws CursorException {
+                    expected = CursorPage.of(List.of(), null);
+                    doReturn(expected).when(repository).popularKeyset(RecipeInfoVideoQuery.SHORTS, "cursor");
+                }
+
+                @Nested
+                @DisplayName("When - 조회를 요청하면")
+                class WhenGetting {
+                    CursorPage<RecipeInfo> result;
+
+                    @BeforeEach
+                    void setUp() throws CursorException {
+                        result = service.getPopulars("cursor", RecipeInfoVideoQuery.SHORTS);
+                    }
+
+                    @Test
+                    @DisplayName("Then - popularKeyset을 호출한다")
+                    void thenCallsPopularKeyset() throws CursorException {
+                        assertThat(result).isEqualTo(expected);
+                        verify(repository).popularKeyset(RecipeInfoVideoQuery.SHORTS, "cursor");
+                    }
+                }
+            }
         }
 
-        @Test
-        @DisplayName("인기 레시피는 cursor가 있으면 popularKeyset을 호출한다")
-        void shouldCallPopularKeysetWhenCursorExists() throws Exception {
-            CursorPage<RecipeInfo> expected = CursorPage.of(List.of(), null);
-            doReturn(expected).when(repository).popularKeyset(RecipeInfoVideoQuery.SHORTS, "cursor");
+        @Nested
+        @DisplayName("음식 종류별 조회 (getCuisines)")
+        class GetCuisines {
 
-            CursorPage<RecipeInfo> result = service.getPopulars("cursor", RecipeInfoVideoQuery.SHORTS);
+            @Nested
+            @DisplayName("Given - 커서가 없을 때")
+            class GivenNoCursor {
+                CursorPage<RecipeInfo> expected;
 
-            assertThat(result).isEqualTo(expected);
-            verify(repository).popularKeyset(RecipeInfoVideoQuery.SHORTS, "cursor");
-        }
+                @BeforeEach
+                void setUp() {
+                    expected = CursorPage.of(List.of(), "next");
+                    doReturn("한식").when(translator).translate(RecipeCuisineType.KOREAN.messageKey());
+                    doReturn(expected).when(repository).cusineFirst("한식");
+                }
 
-        @Test
-        @DisplayName("음식 종류는 cursor가 없으면 cusineFirst를 호출한다")
-        void shouldCallCuisineFirstWhenCursorBlank() throws Exception {
-            CursorPage<RecipeInfo> expected = CursorPage.of(List.of(), "next");
-            doReturn("한식").when(translator).translate(RecipeCuisineType.KOREAN.messageKey());
-            doReturn(expected).when(repository).cusineFirst("한식");
+                @Nested
+                @DisplayName("When - 조회를 요청하면")
+                class WhenGetting {
+                    CursorPage<RecipeInfo> result;
 
-            CursorPage<RecipeInfo> result = service.getCuisines(RecipeCuisineType.KOREAN, null);
+                    @BeforeEach
+                    void setUp() throws CursorException {
+                        result = service.getCuisines(RecipeCuisineType.KOREAN, null);
+                    }
 
-            assertThat(result).isEqualTo(expected);
-            verify(translator).translate(RecipeCuisineType.KOREAN.messageKey());
-            verify(repository).cusineFirst("한식");
-        }
+                    @Test
+                    @DisplayName("Then - cusineFirst를 호출한다")
+                    void thenCallsCusineFirst() {
+                        assertThat(result).isEqualTo(expected);
+                        verify(translator).translate(RecipeCuisineType.KOREAN.messageKey());
+                        verify(repository).cusineFirst("한식");
+                    }
+                }
+            }
 
-        @Test
-        @DisplayName("음식 종류는 cursor가 있으면 cuisineKeyset을 호출한다")
-        void shouldCallCuisineKeysetWhenCursorExists() throws Exception {
-            CursorPage<RecipeInfo> expected = CursorPage.of(List.of(), null);
-            doReturn("한식").when(translator).translate(RecipeCuisineType.KOREAN.messageKey());
-            doReturn(expected).when(repository).cuisineKeyset("한식", "cursor");
+            @Nested
+            @DisplayName("Given - 커서가 있을 때")
+            class GivenCursor {
+                CursorPage<RecipeInfo> expected;
 
-            CursorPage<RecipeInfo> result = service.getCuisines(RecipeCuisineType.KOREAN, "cursor");
+                @BeforeEach
+                void setUp() throws CursorException {
+                    expected = CursorPage.of(List.of(), null);
+                    doReturn("한식").when(translator).translate(RecipeCuisineType.KOREAN.messageKey());
+                    doReturn(expected).when(repository).cuisineKeyset("한식", "cursor");
+                }
 
-            assertThat(result).isEqualTo(expected);
-            verify(translator).translate(RecipeCuisineType.KOREAN.messageKey());
-            verify(repository).cuisineKeyset("한식", "cursor");
+                @Nested
+                @DisplayName("When - 조회를 요청하면")
+                class WhenGetting {
+                    CursorPage<RecipeInfo> result;
+
+                    @BeforeEach
+                    void setUp() throws CursorException {
+                        result = service.getCuisines(RecipeCuisineType.KOREAN, "cursor");
+                    }
+
+                    @Test
+                    @DisplayName("Then - cuisineKeyset을 호출한다")
+                    void thenCallsCuisineKeyset() throws CursorException {
+                        assertThat(result).isEqualTo(expected);
+                        verify(translator).translate(RecipeCuisineType.KOREAN.messageKey());
+                        verify(repository).cuisineKeyset("한식", "cursor");
+                    }
+                }
+            }
         }
     }
 }

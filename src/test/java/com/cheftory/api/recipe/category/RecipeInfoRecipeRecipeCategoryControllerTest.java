@@ -18,6 +18,7 @@ import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
+import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-@DisplayName("RecipeCategory Controller")
+@DisplayName("RecipeCategoryController 테스트")
 public class RecipeInfoRecipeRecipeCategoryControllerTest extends RestDocsTest {
 
     private RecipeCategoryController controller;
@@ -51,50 +52,51 @@ public class RecipeInfoRecipeRecipeCategoryControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("레시피 카테고리 생성")
-    class CreateRecipeInfoRecipeCategory {
+    @DisplayName("레시피 카테고리 생성 (create)")
+    class Create {
 
         @Nested
-        @DisplayName("Given - 레시피 카테고리 생성 요청이 주어졌을 때")
-        class GivenValidParametersForCreate {
-            private String categoryName;
-            private UUID userId;
-            private Map<String, Object> request;
+        @DisplayName("Given - 유효한 생성 요청이 주어졌을 때")
+        class GivenValidRequest {
+            String categoryName;
+            UUID userId;
+            Map<String, Object> request;
+            UUID recipeCategoryId;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeCategoryException {
                 categoryName = "한식";
                 userId = UUID.randomUUID();
                 var authentication = new UsernamePasswordAuthenticationToken(userId, null);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 request = Map.of("name", categoryName);
+                recipeCategoryId = UUID.randomUUID();
+                doReturn(recipeCategoryId).when(recipeCategoryService).create("한식", userId);
             }
 
             @Nested
-            @DisplayName("When - 레시피 카테고리를 생성해야 한다면")
-            class WhenCreatingRecipeInfoRecipeCategory {
-
-                private UUID recipeCategoryId;
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                ValidatableMockMvcResponse response;
 
                 @BeforeEach
-                void setUp() throws RecipeCategoryException {
-                    recipeCategoryId = UUID.randomUUID();
-                    doReturn(recipeCategoryId).when(recipeCategoryService).create("한식", userId);
-                }
-
-                @Test
-                @DisplayName("Then - 레시피 카테고리를 생성한다")
-                void thenShouldCreateRecipeCategory() throws RecipeCategoryException {
-                    var response = given().contentType(ContentType.JSON)
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
                             .attribute("userId", userId.toString())
                             .header("Authorization", "Bearer accessToken")
                             .body(request)
                             .post("/api/v1/recipes/categories")
-                            .then()
-                            .status(HttpStatus.OK)
+                            .then();
+                }
+
+                @Test
+                @DisplayName("Then - 카테고리를 생성하고 ID를 반환한다")
+                void thenCreatesAndReturnsId() throws RecipeCategoryException {
+                    response.status(HttpStatus.OK)
                             .apply(document(
-                                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                                    getNestedClassPath(RecipeInfoRecipeRecipeCategoryControllerTest.this.getClass())
+                                            + "/{method-name}",
                                     requestPreprocessor(),
                                     responsePreprocessor(),
                                     requestAccessTokenFields(),

@@ -23,6 +23,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+/**
+ * Apple OAuth 토큰 검증기
+ *
+ * <p>Apple Sign In을 통해 발급받은 ID 토큰을 검증하고 유저 식별자(sub)를 추출합니다.
+ * Apple의 공개키를 사용하여 RS256 알고리즘으로 서명을 검증하며,
+ * 만료 시간, 발급자(iss), 대상(aud) 등을 검증합니다.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j

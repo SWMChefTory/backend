@@ -42,74 +42,84 @@ class UserShareServiceTest {
     private final LocalDateTime now = today.atStartOfDay();
 
     @Nested
-    @DisplayName("share 메서드는")
-    class Describe_share {
+    @DisplayName("공유하기 (share)")
+    class Share {
 
-        @Test
-        @DisplayName("성공적으로 공유하면 크레딧을 지급하고 횟수를 반환한다")
-        void it_grants_credit_and_returns_count() throws UserShareException, CreditException {
-            // given
-            when(clock.now()).thenReturn(now);
+        @Nested
+        @DisplayName("Given - 정상적인 공유 요청일 때")
+        class GivenValidRequest {
 
-            UserShare createdShare = UserShare.create(userId, today, clock);
-            when(userShareRepository.create(userId, clock)).thenReturn(createdShare);
+            @Test
+            @DisplayName("Then - 크레딧을 지급하고 공유 횟수를 반환한다")
+            void thenGrantsCreditAndReturnsCount() throws UserShareException, CreditException {
+                when(clock.now()).thenReturn(now);
 
-            UserShare increasedShare = UserShare.create(userId, today, clock);
-            increasedShare.increase(3);
-            when(userShareRepository.shareTx(createdShare.getId(), 3)).thenReturn(increasedShare);
+                UserShare createdShare = UserShare.create(userId, today, clock);
+                when(userShareRepository.create(userId, clock)).thenReturn(createdShare);
 
-            // when
-            int result = userShareService.share(userId);
+                UserShare increasedShare = UserShare.create(userId, today, clock);
+                increasedShare.increase(3);
+                when(userShareRepository.shareTx(createdShare.getId(), 3)).thenReturn(increasedShare);
 
-            // then
-            assertThat(result).isEqualTo(1);
-            verify(userShareCreditPort).grantUserShare(userId, 1);
-            verify(userShareRepository, never()).compensateTx(any(), any());
+                int result = userShareService.share(userId);
+
+                assertThat(result).isEqualTo(1);
+                verify(userShareCreditPort).grantUserShare(userId, 1);
+                verify(userShareRepository, never()).compensateTx(any(), any());
+            }
         }
 
-        @Test
-        @DisplayName("크레딧 지급에 실패하면 보상 트랜잭션을 실행하고 예외를 던진다")
-        void it_compensates_when_credit_grant_fails() throws UserShareException, CreditException {
-            // given
-            when(clock.now()).thenReturn(now);
+        @Nested
+        @DisplayName("Given - 크레딧 지급 실패 시")
+        class GivenCreditGrantFail {
 
-            UserShare createdShare = UserShare.create(userId, today, clock);
-            when(userShareRepository.create(userId, clock)).thenReturn(createdShare);
+            @Test
+            @DisplayName("Then - 보상 트랜잭션을 실행하고 예외를 던진다")
+            void thenCompensatesAndThrowsException() throws UserShareException, CreditException {
+                when(clock.now()).thenReturn(now);
 
-            UserShare increasedShare = UserShare.create(userId, today, clock);
-            increasedShare.increase(3);
-            when(userShareRepository.shareTx(createdShare.getId(), 3)).thenReturn(increasedShare);
+                UserShare createdShare = UserShare.create(userId, today, clock);
+                when(userShareRepository.create(userId, clock)).thenReturn(createdShare);
 
-            CreditException creditException = mock(CreditException.class);
-            doThrow(creditException).when(userShareCreditPort).grantUserShare(userId, 1);
+                UserShare increasedShare = UserShare.create(userId, today, clock);
+                increasedShare.increase(3);
+                when(userShareRepository.shareTx(createdShare.getId(), 3)).thenReturn(increasedShare);
 
-            // when & then
-            assertThrows(CreditException.class, () -> userShareService.share(userId));
+                CreditException creditException = mock(CreditException.class);
+                doThrow(creditException).when(userShareCreditPort).grantUserShare(userId, 1);
 
-            verify(userShareRepository).compensateTx(createdShare.getId(), today);
+                assertThrows(CreditException.class, () -> userShareService.share(userId));
+
+                verify(userShareRepository).compensateTx(createdShare.getId(), today);
+            }
         }
 
-        @Test
-        @DisplayName("보상 트랜잭션까지 실패하더라도 원래의 CreditException을 던진다")
-        void it_throws_original_exception_even_if_compensation_fails() throws UserShareException, CreditException {
-            // given
-            when(clock.now()).thenReturn(now);
+        @Nested
+        @DisplayName("Given - 보상 트랜잭션 실패 시")
+        class GivenCompensationFail {
 
-            UserShare createdShare = UserShare.create(userId, today, clock);
-            when(userShareRepository.create(userId, clock)).thenReturn(createdShare);
+            @Test
+            @DisplayName("Then - 원래의 CreditException을 던진다")
+            void thenThrowsOriginalException() throws UserShareException, CreditException {
+                when(clock.now()).thenReturn(now);
 
-            UserShare increasedShare = UserShare.create(userId, today, clock);
-            increasedShare.increase(3);
-            when(userShareRepository.shareTx(createdShare.getId(), 3)).thenReturn(increasedShare);
+                UserShare createdShare = UserShare.create(userId, today, clock);
+                when(userShareRepository.create(userId, clock)).thenReturn(createdShare);
 
-            CreditException creditException = mock(CreditException.class);
-            doThrow(creditException).when(userShareCreditPort).grantUserShare(userId, 1);
-            doThrow(new UserShareException(null)).when(userShareRepository).compensateTx(createdShare.getId(), today);
+                UserShare increasedShare = UserShare.create(userId, today, clock);
+                increasedShare.increase(3);
+                when(userShareRepository.shareTx(createdShare.getId(), 3)).thenReturn(increasedShare);
 
-            // when & then
-            assertThrows(CreditException.class, () -> userShareService.share(userId));
+                CreditException creditException = mock(CreditException.class);
+                doThrow(creditException).when(userShareCreditPort).grantUserShare(userId, 1);
+                doThrow(new UserShareException(null))
+                        .when(userShareRepository)
+                        .compensateTx(createdShare.getId(), today);
 
-            verify(userShareRepository).compensateTx(createdShare.getId(), today);
+                assertThrows(CreditException.class, () -> userShareService.share(userId));
+
+                verify(userShareRepository).compensateTx(createdShare.getId(), today);
+            }
         }
     }
 }

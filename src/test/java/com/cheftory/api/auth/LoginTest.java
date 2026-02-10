@@ -10,56 +10,65 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("Login 도메인 테스트")
+@DisplayName("Login 엔티티")
 class LoginTest {
 
     private final UUID userId = UUID.randomUUID();
     private final Clock clock = new Clock();
 
     @Nested
-    @DisplayName("create 메서드는")
-    class Describe_create {
+    @DisplayName("로그인 생성 (create)")
+    class Create {
 
-        @Test
-        @DisplayName("Login 엔티티를 생성한다")
-        void it_creates_login() {
-            // given
-            String refreshToken = "refresh-token-value";
-            LocalDateTime expiredAt = LocalDateTime.now().plusDays(7);
+        @Nested
+        @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
+        class GivenValidParameters {
+            String refreshToken;
+            LocalDateTime expiredAt;
 
-            // when
-            Login login = Login.create(userId, refreshToken, expiredAt, clock);
+            @Test
+            @DisplayName("Then - Login 엔티티를 생성한다")
+            void thenCreatesLogin() {
+                refreshToken = "refresh-token-value";
+                expiredAt = LocalDateTime.now().plusDays(7);
 
-            // then
-            assertThat(login.getId()).isNotNull();
-            assertThat(login.getUserId()).isEqualTo(userId);
-            assertThat(login.getRefreshToken()).isEqualTo(refreshToken);
-            assertThat(login.getRefreshTokenExpiredAt()).isEqualTo(expiredAt);
-            assertThat(login.getCreatedAt()).isNotNull();
+                Login login = Login.create(userId, refreshToken, expiredAt, clock);
+
+                assertThat(login.getId()).isNotNull();
+                assertThat(login.getUserId()).isEqualTo(userId);
+                assertThat(login.getRefreshToken()).isEqualTo(refreshToken);
+                assertThat(login.getRefreshTokenExpiredAt()).isEqualTo(expiredAt);
+                assertThat(login.getCreatedAt()).isNotNull();
+            }
         }
     }
 
     @Nested
-    @DisplayName("updateRefreshToken 메서드는")
-    class Describe_updateRefreshToken {
+    @DisplayName("리프레시 토큰 갱신 (updateRefreshToken)")
+    class UpdateRefreshToken {
 
-        @Test
-        @DisplayName("리프레시 토큰과 만료 시간을 갱신한다")
-        void it_updates_refresh_token() {
-            // given
-            String oldToken = "old-refresh-token";
-            LocalDateTime oldExpiredAt = LocalDateTime.now().plusDays(7);
-            Login login = Login.create(userId, oldToken, oldExpiredAt, clock);
+        @Nested
+        @DisplayName("Given - 기존 로그인이 있을 때")
+        class GivenExistingLogin {
+            Login login;
+            String oldToken;
+            LocalDateTime oldExpiredAt;
 
-            String newToken = "new-refresh-token";
-            LocalDateTime newExpiredAt = LocalDateTime.now().plusDays(14);
+            @Test
+            @DisplayName("Then - 리프레시 토큰과 만료 시간을 갱신한다")
+            void thenUpdatesToken() {
+                oldToken = "old-refresh-token";
+                oldExpiredAt = LocalDateTime.now().plusDays(7);
+                login = Login.create(userId, oldToken, oldExpiredAt, clock);
 
-            // when
-            login.updateRefreshToken(newToken, newExpiredAt);
+                String newToken = "new-refresh-token";
+                LocalDateTime newExpiredAt = LocalDateTime.now().plusDays(14);
 
-            // then
-            assertThat(login.getRefreshToken()).isEqualTo(newToken);
-            assertThat(login.getRefreshTokenExpiredAt()).isEqualTo(newExpiredAt);
+                login.updateRefreshToken(newToken, newExpiredAt);
+
+                assertThat(login.getRefreshToken()).isEqualTo(newToken);
+                assertThat(login.getRefreshTokenExpiredAt()).isEqualTo(newExpiredAt);
+            }
         }
     }
 }

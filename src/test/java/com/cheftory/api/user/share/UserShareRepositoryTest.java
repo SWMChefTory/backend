@@ -21,10 +21,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
-@DataJpaTest
 @Import({UserShareRepositoryImpl.class})
 @DisplayName("UserShareRepository 테스트")
 class UserShareRepositoryTest extends DbContextTest {
@@ -47,102 +45,223 @@ class UserShareRepositoryTest extends DbContextTest {
     }
 
     @Nested
-    @DisplayName("shareTx 메서드는")
-    class Describe_shareTx {
+    @DisplayName("공유 횟수 증가 (shareTx)")
+    class ShareTx {
 
-        @Test
-        @DisplayName("일일 제한 횟수를 초과하면 예외를 던진다")
-        void it_throws_exception_when_limit_exceeded() throws UserShareException {
-            UUID userId = UUID.randomUUID();
-            UserShare created = userShareRepository.create(userId, clock);
+        @Nested
+        @DisplayName("Given - 제한 횟수 미만일 때")
+        class GivenUnderLimit {
+            UUID userId;
+            UserShare created;
 
-            userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
-            userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
-            userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+            @BeforeEach
+            void setUp() throws UserShareException {
+                userId = UUID.randomUUID();
+                created = userShareRepository.create(userId, clock);
+            }
 
-            assertThatThrownBy(() -> userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT))
-                    .isInstanceOf(UserShareException.class)
-                    .extracting("error")
-                    .isEqualTo(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
+            @Nested
+            @DisplayName("When - 증가를 요청하면")
+            class WhenIncreasing {
+                UserShare result;
+
+                @BeforeEach
+                void setUp() throws UserShareException {
+                    result = userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+                }
+
+                @Test
+                @DisplayName("Then - 횟수가 증가한다")
+                void thenIncreasesCount() {
+                    assertThat(result.getId()).isEqualTo(created.getId());
+                    assertThat(result.getCount()).isEqualTo(1);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("데이터가 존재하지 않으면 예외를 던진다")
-        void it_throws_exception_when_not_exists() {
-            assertThatThrownBy(() -> userShareRepository.shareTx(UUID.randomUUID(), DAILY_SHARE_LIMIT))
-                    .isInstanceOf(UserShareException.class)
-                    .extracting("error")
-                    .isEqualTo(UserShareErrorCode.USER_SHARE_NOT_FOUND);
+        @Nested
+        @DisplayName("Given - 제한 횟수에 도달했을 때")
+        class GivenLimitReached {
+            UUID userId;
+            UserShare created;
+
+            @BeforeEach
+            void setUp() throws UserShareException {
+                userId = UUID.randomUUID();
+                created = userShareRepository.create(userId, clock);
+                userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+                userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+                userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+            }
+
+            @Nested
+            @DisplayName("When - 증가를 요청하면")
+            class WhenIncreasing {
+
+                @Test
+                @DisplayName("Then - LIMIT_EXCEEDED 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT))
+                            .isInstanceOf(UserShareException.class)
+                            .extracting("error")
+                            .isEqualTo(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("정상적으로 공유 횟수를 증가시킨다")
-        void it_increases_share_count_successfully() throws UserShareException {
-            UUID userId = UUID.randomUUID();
-            UserShare created = userShareRepository.create(userId, clock);
+        @Nested
+        @DisplayName("Given - 존재하지 않는 데이터일 때")
+        class GivenNonExisting {
+            UUID id;
 
-            UserShare result = userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+            @BeforeEach
+            void setUp() {
+                id = UUID.randomUUID();
+            }
 
-            assertThat(result.getId()).isEqualTo(created.getId());
-            assertThat(result.getCount()).isEqualTo(1);
+            @Nested
+            @DisplayName("When - 증가를 요청하면")
+            class WhenIncreasing {
+
+                @Test
+                @DisplayName("Then - NOT_FOUND 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> userShareRepository.shareTx(id, DAILY_SHARE_LIMIT))
+                            .isInstanceOf(UserShareException.class)
+                            .extracting("error")
+                            .isEqualTo(UserShareErrorCode.USER_SHARE_NOT_FOUND);
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("compensateTx 메서드는")
-    class Describe_compensateTx {
-        @Test
-        @DisplayName("데이터가 존재하지 않으면 예외를 던진다")
-        void it_throws_exception_when_not_exists() {
-            assertThatThrownBy(() -> userShareRepository.compensateTx(
-                            UUID.randomUUID(), clock.now().toLocalDate()))
-                    .isInstanceOf(UserShareException.class)
-                    .extracting("error")
-                    .isEqualTo(UserShareErrorCode.USER_SHARE_NOT_FOUND);
+    @DisplayName("공유 횟수 보상 (compensateTx)")
+    class CompensateTx {
+
+        @Nested
+        @DisplayName("Given - 공유 횟수가 증가된 상태일 때")
+        class GivenIncreased {
+            UUID userId;
+            UserShare created;
+
+            @BeforeEach
+            void setUp() throws UserShareException {
+                userId = UUID.randomUUID();
+                created = userShareRepository.create(userId, clock);
+                userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+            }
+
+            @Nested
+            @DisplayName("When - 보상을 요청하면")
+            class WhenCompensating {
+
+                @BeforeEach
+                void setUp() throws UserShareException {
+                    userShareRepository.compensateTx(created.getId(), created.getSharedAt());
+                }
+
+                @Test
+                @DisplayName("Then - 횟수가 감소한다")
+                void thenDecreasesCount() throws UserShareException {
+                    UserShare result = userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+                    assertThat(result.getId()).isEqualTo(created.getId());
+                    assertThat(result.getCount()).isEqualTo(1);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("정상적으로 공유 횟수를 감소시킨다")
-        void it_decreases_share_count_successfully() throws UserShareException {
-            UUID userId = UUID.randomUUID();
-            UserShare created = userShareRepository.create(userId, clock);
-            userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+        @Nested
+        @DisplayName("Given - 존재하지 않는 데이터일 때")
+        class GivenNonExisting {
+            UUID id;
 
-            userShareRepository.compensateTx(created.getId(), created.getSharedAt());
-            UserShare result = userShareRepository.shareTx(created.getId(), DAILY_SHARE_LIMIT);
+            @BeforeEach
+            void setUp() {
+                id = UUID.randomUUID();
+            }
 
-            assertThat(result.getId()).isEqualTo(created.getId());
-            assertThat(result.getCount()).isEqualTo(1);
+            @Nested
+            @DisplayName("When - 보상을 요청하면")
+            class WhenCompensating {
+
+                @Test
+                @DisplayName("Then - NOT_FOUND 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> userShareRepository.compensateTx(
+                                    id, clock.now().toLocalDate()))
+                            .isInstanceOf(UserShareException.class)
+                            .extracting("error")
+                            .isEqualTo(UserShareErrorCode.USER_SHARE_NOT_FOUND);
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("create 메서드는")
-    class Describe_create {
+    @DisplayName("생성 (create)")
+    class Create {
 
-        @Test
-        @DisplayName("새로운 UserShare를 생성한다")
-        void it_creates_new_user_share() throws UserShareException {
-            UUID userId = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 새로운 데이터일 때")
+        class GivenNew {
+            UUID userId;
 
-            UserShare result = userShareRepository.create(userId, clock);
+            @BeforeEach
+            void setUp() {
+                userId = UUID.randomUUID();
+            }
 
-            assertThat(result.getId()).isNotNull();
-            assertThat(result.getUserId()).isEqualTo(userId);
-            assertThat(result.getCount()).isZero();
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                UserShare result;
+
+                @BeforeEach
+                void setUp() throws UserShareException {
+                    result = userShareRepository.create(userId, clock);
+                }
+
+                @Test
+                @DisplayName("Then - 초기 상태로 생성된다")
+                void thenCreated() {
+                    assertThat(result.getId()).isNotNull();
+                    assertThat(result.getUserId()).isEqualTo(userId);
+                    assertThat(result.getCount()).isZero();
+                }
+            }
         }
 
-        @Test
-        @DisplayName("같은 날짜에 이미 존재하면 기존 데이터를 조회하여 반환한다")
-        void it_returns_existing_user_share_when_already_exists() throws UserShareException {
-            UUID userId = UUID.randomUUID();
-            UserShare first = userShareRepository.create(userId, clock);
-            userShareRepository.shareTx(first.getId(), DAILY_SHARE_LIMIT);
+        @Nested
+        @DisplayName("Given - 이미 존재하는 데이터일 때")
+        class GivenExisting {
+            UUID userId;
+            UserShare first;
 
-            UserShare second = userShareRepository.create(userId, clock);
+            @BeforeEach
+            void setUp() throws UserShareException {
+                userId = UUID.randomUUID();
+                first = userShareRepository.create(userId, clock);
+                userShareRepository.shareTx(first.getId(), DAILY_SHARE_LIMIT);
+            }
 
-            assertThat(second.getId()).isEqualTo(first.getId());
-            assertThat(second.getCount()).isEqualTo(1);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                UserShare second;
+
+                @BeforeEach
+                void setUp() throws UserShareException {
+                    second = userShareRepository.create(userId, clock);
+                }
+
+                @Test
+                @DisplayName("Then - 기존 데이터를 반환한다")
+                void thenReturnsExisting() {
+                    assertThat(second.getId()).isEqualTo(first.getId());
+                    assertThat(second.getCount()).isEqualTo(1);
+                }
+            }
         }
     }
 }

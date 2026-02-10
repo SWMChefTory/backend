@@ -16,6 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+/**
+ * 랭킹 서비스.
+ *
+ * <p>개인화된 랭킹 추천 및 이벤트 추적 기능을 제공합니다.</p>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +32,17 @@ public class RankingService {
     private final RankingPersonalizationService rankingPersonalizationService;
     private final RankingCursorCodec rankingCursorCodec;
 
+    /**
+     * 개인화된 랭킹 추천을 반환합니다.
+     *
+     * @param userId 사용자 ID
+     * @param surfaceType 서피스 타입
+     * @param itemType 아이템 타입
+     * @param cursor 커서
+     * @param pageSize 페이지 크기
+     * @return 커서 페이지
+     * @throws CheftoryException Cheftory 예외
+     */
     public CursorPage<UUID> recommend(
             UUID userId, RankingSurfaceType surfaceType, RankingItemType itemType, String cursor, int pageSize)
             throws CheftoryException {
@@ -109,6 +125,16 @@ public class RankingService {
                 hasNext ? rankingCursorCodec.encode(new RankingCursor(requestId, page.nextCursor())) : null);
     }
 
+    /**
+     * 랭킹 이벤트를 기록합니다.
+     *
+     * @param userId 사용자 ID
+     * @param itemType 아이템 타입
+     * @param itemId 아이템 ID
+     * @param eventType 이벤트 타입
+     * @param requestId 요청 ID
+     * @throws CheftoryException Cheftory 예외
+     */
     public void event(UUID userId, RankingItemType itemType, UUID itemId, RankingEventType eventType, UUID requestId)
             throws CheftoryException {
         rankingInteractionService.logEvent(userId, itemType, itemId, eventType, requestId);

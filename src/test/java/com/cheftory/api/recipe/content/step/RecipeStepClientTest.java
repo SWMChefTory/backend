@@ -1,7 +1,7 @@
 package com.cheftory.api.recipe.content.step;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.cheftory.api.recipe.content.step.client.RecipeStepExternalClient;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsRequest;
@@ -48,144 +48,222 @@ class RecipeStepClientTest {
     }
 
     @Nested
-    @DisplayName("레시피 단계 조회")
-    class FetchRecipeSteps {
+    @DisplayName("레시피 단계 조회 (fetch)")
+    class Fetch {
 
-        @Test
-        @DisplayName("정상 응답 시 올바른 레시피 단계 목록이 반환된다")
-        void shouldReturnCorrectRecipeStepsOnSuccess() throws Exception {
-            String fileUri = "s3://bucket/file.mp4";
-            String mimeType = "video/mp4";
+        @Nested
+        @DisplayName("Given - 정상적인 응답이 주어졌을 때")
+        class GivenSuccessResponse {
+            String fileUri;
+            String mimeType;
+            String responseJson;
 
-            String responseJson =
-                    """
-			{
-				"steps": [
-					{
-						"subtitle": "첫 번째 단계",
-						"start": 10.0,
-						"descriptions": [
-							{
-								"text": "재료를 준비합니다",
-								"start": 10.5
-							},
-							{
-								"text": "도구를 정리합니다",
-								"start": 11.0
-							}
-						]
-					},
-					{
-						"subtitle": "두 번째 단계",
-						"start": 30.0,
-						"descriptions": [
-							{
-								"text": "요리를 시작합니다",
-								"start": 30.5
-							}
-						]
-					}
-				]
-			}
-			""";
+            @BeforeEach
+            void setUp() {
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
+                responseJson =
+                        """
+                        {
+                            "steps": [
+                                {
+                                    "subtitle": "첫 번째 단계",
+                                    "start": 10.0,
+                                    "descriptions": [
+                                        {
+                                            "text": "재료를 준비합니다",
+                                            "start": 10.5
+                                        },
+                                        {
+                                            "text": "도구를 정리합니다",
+                                            "start": 11.0
+                                        }
+                                    ]
+                                },
+                                {
+                                    "subtitle": "두 번째 단계",
+                                    "start": 30.0,
+                                    "descriptions": [
+                                        {
+                                            "text": "요리를 시작합니다",
+                                            "start": 30.5
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        """;
 
-            mockWebServer.enqueue(new MockResponse.Builder()
-                    .code(HttpStatus.OK.value())
-                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body(responseJson)
-                    .build());
+                mockWebServer.enqueue(new MockResponse.Builder()
+                        .code(HttpStatus.OK.value())
+                        .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body(responseJson)
+                        .build());
+            }
 
-            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetch(fileUri, mimeType);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenFetching {
+                ClientRecipeStepsResponse result;
 
-            assertThat(actualResponse).isNotNull();
-            assertThat(actualResponse.steps()).hasSize(2);
+                @BeforeEach
+                void setUp() throws Exception {
+                    result = recipeStepClient.fetch(fileUri, mimeType);
+                }
 
-            RecordedRequest recordedRequest = mockWebServer.takeRequest();
-            assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-            assertThat(recordedRequest.getTarget()).isEqualTo("/steps/video");
-            assertThat(recordedRequest.getHeaders().get(HttpHeaders.CONTENT_TYPE))
-                    .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+                @Test
+                @DisplayName("Then - 올바른 레시피 단계 목록을 반환한다")
+                void thenReturnsCorrectSteps() throws Exception {
+                    assertThat(result).isNotNull();
+                    assertThat(result.steps()).hasSize(2);
 
-            ClientRecipeStepsRequest actualRequest =
-                    objectMapper.readValue(recordedRequest.getBody().utf8(), ClientRecipeStepsRequest.class);
-            assertThat(actualRequest.fileUri()).isEqualTo(fileUri);
-            assertThat(actualRequest.mimeType()).isEqualTo(mimeType);
+                    RecordedRequest recordedRequest = mockWebServer.takeRequest();
+                    assertThat(recordedRequest.getMethod()).isEqualTo("POST");
+                    assertThat(recordedRequest.getTarget()).isEqualTo("/steps/video");
+                    assertThat(recordedRequest.getHeaders().get(HttpHeaders.CONTENT_TYPE))
+                            .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
+                    ClientRecipeStepsRequest actualRequest =
+                            objectMapper.readValue(recordedRequest.getBody().utf8(), ClientRecipeStepsRequest.class);
+                    assertThat(actualRequest.fileUri()).isEqualTo(fileUri);
+                    assertThat(actualRequest.mimeType()).isEqualTo(mimeType);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("서버 에러 시 RecipeStepException으로 래핑된다")
-        void shouldThrowRecipeStepExceptionOnServerError() throws Exception {
-            String fileUri = "s3://bucket/file.mp4";
-            String mimeType = "video/mp4";
+        @Nested
+        @DisplayName("Given - 서버 에러 응답이 주어졌을 때")
+        class GivenErrorResponse {
+            String fileUri;
+            String mimeType;
 
-            mockWebServer.enqueue(new MockResponse.Builder()
-                    .code(HttpStatus.BAD_REQUEST.value())
-                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body("{\"error\":\"Invalid request\"}")
-                    .build());
+            @BeforeEach
+            void setUp() {
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
 
-            assertThatThrownBy(() -> recipeStepClient.fetch(fileUri, mimeType))
-                    .isInstanceOf(RecipeStepException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
+                mockWebServer.enqueue(new MockResponse.Builder()
+                        .code(HttpStatus.BAD_REQUEST.value())
+                        .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body("{\"error\":\"Invalid request\"}")
+                        .build());
+            }
 
-            RecordedRequest recordedRequest = mockWebServer.takeRequest();
-            assertThat(recordedRequest.getMethod()).isEqualTo("POST");
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenFetching {
+                Throwable thrown;
+
+                @BeforeEach
+                void setUp() {
+                    thrown = catchThrowable(() -> recipeStepClient.fetch(fileUri, mimeType));
+                }
+
+                @Test
+                @DisplayName("Then - RecipeStepException 예외를 던진다")
+                void thenThrowsException() throws InterruptedException {
+                    assertThat(thrown)
+                            .isInstanceOf(RecipeStepException.class)
+                            .hasFieldOrPropertyWithValue("error", RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
+
+                    RecordedRequest recordedRequest = mockWebServer.takeRequest();
+                    assertThat(recordedRequest.getMethod()).isEqualTo("POST");
+                }
+            }
         }
 
-        @Test
-        @DisplayName("빈 단계 목록이 반환된다")
-        void shouldReturnEmptyStepsWhenEmptyResponse() throws Exception {
-            String fileUri = "s3://bucket/empty.mp4";
-            String mimeType = "video/mp4";
+        @Nested
+        @DisplayName("Given - 빈 단계 목록 응답이 주어졌을 때")
+        class GivenEmptyResponse {
+            String fileUri;
+            String mimeType;
 
-            mockWebServer.enqueue(new MockResponse.Builder()
-                    .code(HttpStatus.OK.value())
-                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body("{\"steps\": []}")
-                    .build());
+            @BeforeEach
+            void setUp() {
+                fileUri = "s3://bucket/empty.mp4";
+                mimeType = "video/mp4";
 
-            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetch(fileUri, mimeType);
+                mockWebServer.enqueue(new MockResponse.Builder()
+                        .code(HttpStatus.OK.value())
+                        .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body("{\"steps\": []}")
+                        .build());
+            }
 
-            assertThat(actualResponse).isNotNull();
-            assertThat(actualResponse.steps()).isEmpty();
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenFetching {
+                ClientRecipeStepsResponse result;
+
+                @BeforeEach
+                void setUp() throws Exception {
+                    result = recipeStepClient.fetch(fileUri, mimeType);
+                }
+
+                @Test
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmptyList() {
+                    assertThat(result).isNotNull();
+                    assertThat(result.steps()).isEmpty();
+                }
+            }
         }
 
-        @Test
-        @DisplayName("특수문자/숫자 응답도 정상 처리된다")
-        void shouldHandleDtoWithSpecialValues() throws Exception {
-            String fileUri = "s3://bucket/special.mp4";
-            String mimeType = "video/mp4";
+        @Nested
+        @DisplayName("Given - 특수문자가 포함된 응답이 주어졌을 때")
+        class GivenSpecialCharResponse {
+            String fileUri;
+            String mimeType;
+            String responseJson;
 
-            String responseJson =
-                    """
-			{
-				"steps": [
-					{
-						"subtitle": "특수 단계 & 테스트",
-						"start": 0.123,
-						"descriptions": [
-							{
-								"text": "특수문자 포함: @#$%",
-								"start": 0.5
-							}
-						]
-					}
-				]
-			}
-			""";
+            @BeforeEach
+            void setUp() {
+                fileUri = "s3://bucket/special.mp4";
+                mimeType = "video/mp4";
+                responseJson =
+                        """
+                        {
+                            "steps": [
+                                {
+                                    "subtitle": "특수 단계 & 테스트",
+                                    "start": 0.123,
+                                    "descriptions": [
+                                        {
+                                            "text": "특수문자 포함: @#$%",
+                                            "start": 0.5
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        """;
 
-            mockWebServer.enqueue(new MockResponse.Builder()
-                    .code(HttpStatus.OK.value())
-                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body(responseJson)
-                    .build());
+                mockWebServer.enqueue(new MockResponse.Builder()
+                        .code(HttpStatus.OK.value())
+                        .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body(responseJson)
+                        .build());
+            }
 
-            ClientRecipeStepsResponse actualResponse = recipeStepClient.fetch(fileUri, mimeType);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenFetching {
+                ClientRecipeStepsResponse result;
 
-            assertThat(actualResponse.steps()).hasSize(1);
-            ClientRecipeStepsResponse.Step step = actualResponse.steps().getFirst();
-            assertThat(step.subtitle()).isEqualTo("특수 단계 & 테스트");
-            assertThat(step.start()).isEqualTo(0.123);
+                @BeforeEach
+                void setUp() throws Exception {
+                    result = recipeStepClient.fetch(fileUri, mimeType);
+                }
+
+                @Test
+                @DisplayName("Then - 특수문자를 포함한 데이터를 정상적으로 반환한다")
+                void thenReturnsCorrectData() {
+                    assertThat(result.steps()).hasSize(1);
+                    ClientRecipeStepsResponse.Step step = result.steps().getFirst();
+                    assertThat(step.subtitle()).isEqualTo("특수 단계 & 테스트");
+                    assertThat(step.start()).isEqualTo(0.123);
+                }
+            }
         }
     }
 }

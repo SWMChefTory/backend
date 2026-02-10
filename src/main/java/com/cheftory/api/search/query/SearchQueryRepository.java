@@ -27,23 +27,46 @@ import org.opensearch.client.opensearch.core.search.Pit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 검색 쿼리 OpenSearch 리포지토리.
+ *
+ * <p>OpenSearch를 사용하여 검색 쿼리를 관리합니다.</p>
+ */
 @Repository
 @RequiredArgsConstructor
 @Slf4j
 public class SearchQueryRepository {
 
+    /** 인덱스 이름. */
     private static final String INDEX = "search_query";
+
+    /** PIT 유지 시간. */
     private static final Time PIT_KEEP_ALIVE = new Time.Builder().time("2m").build();
 
+    /** 필드: 범위. */
     private static final String FIELD_SCOPE = "scope";
+
+    /** 필드: 마켓. */
     private static final String FIELD_MARKET = "market";
+
+    /** 필드: 키워드. */
     private static final String FIELD_KEYWORDS = "keywords";
+
+    /** 필드: 채널 제목. */
     private static final String FIELD_CHANNEL_TITLE = "channel_title";
 
+    /** 필드: 생성일시. */
     private static final String FIELD_CREATED_AT = "created_at";
 
+    /** OpenSearch 클라이언트. */
     private final OpenSearchClient openSearchClient;
 
+    /**
+     * PIT(Point In Time) ID를 생성합니다.
+     *
+     * @return PIT ID
+     * @throws SearchException 검색 예외
+     */
     public String createPitId() throws SearchException {
         try {
             return openSearchClient
@@ -55,6 +78,11 @@ public class SearchQueryRepository {
         }
     }
 
+    /**
+     * PIT를 닫습니다.
+     *
+     * @param pitId PIT ID
+     */
     public void closePit(String pitId) {
         try {
             openSearchClient.deletePit(DeletePitRequest.of(c -> c.pitId(pitId)));
@@ -63,6 +91,17 @@ public class SearchQueryRepository {
         }
     }
 
+    /**
+     * 키워드로 첫 번째 커서 페이지를 검색합니다.
+     *
+     * @param scope 검색 범위
+     * @param keyword 검색어
+     * @param anchorNowIso 앵커 시간 (ISO 형식)
+     * @param pitId PIT ID
+     * @param pageable 페이지 정보
+     * @return 검색 결과 히트 목록
+     * @throws SearchException 검색 예외
+     */
     public List<Hit<SearchQuery>> searchByKeywordCursorFirst(
             SearchQueryScope scope, String keyword, String anchorNowIso, String pitId, Pageable pageable)
             throws SearchException {
@@ -70,6 +109,13 @@ public class SearchQueryRepository {
         return searchHits(cursorTemplateRequest(pitId, pageable, q, null, null), keyword);
     }
 
+    /**
+     * 여러 검색 쿼리를 조회합니다.
+     *
+     * @param ids 문서 ID 목록
+     * @return 검색 쿼리 목록
+     * @throws SearchException 검색 예외
+     */
     public List<SearchQuery> mgetSearchQueries(List<String> ids) throws SearchException {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
@@ -105,6 +151,19 @@ public class SearchQueryRepository {
         }
     }
 
+    /**
+     * 키워드로 키셋 기반 커서 페이지를 검색합니다.
+     *
+     * @param scope 검색 범위
+     * @param keyword 검색어
+     * @param anchorNowIso 앵커 시간 (ISO 형식)
+     * @param pitId PIT ID
+     * @param lastScore 마지막 점수
+     * @param lastId 마지막 ID
+     * @param pageable 페이지 정보
+     * @return 검색 결과 히트 목록
+     * @throws SearchException 검색 예외
+     */
     public List<Hit<SearchQuery>> searchByKeywordCursorKeyset(
             SearchQueryScope scope,
             String keyword,
@@ -118,6 +177,18 @@ public class SearchQueryRepository {
         return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId), keyword);
     }
 
+    /**
+     * 후보군 첫 번째 커서 페이지를 검색합니다.
+     *
+     * @param scope 검색 범위
+     * @param label 라벨
+     * @param anchorNowIso 앵커 시간 (ISO 형식)
+     * @param pitId PIT ID
+     * @param profile 개인화 프로필
+     * @param pageable 페이지 정보
+     * @return 검색 결과 히트 목록
+     * @throws SearchException 검색 예외
+     */
     public List<Hit<SearchQuery>> searchCandidatesCursorFirst(
             SearchQueryScope scope,
             String label,
@@ -130,6 +201,20 @@ public class SearchQueryRepository {
         return searchHits(cursorTemplateRequest(pitId, pageable, q, null, null), "candidates");
     }
 
+    /**
+     * 후보군 키셋 기반 커서 페이지를 검색합니다.
+     *
+     * @param scope 검색 범위
+     * @param label 라벨
+     * @param anchorNowIso 앵커 시간 (ISO 형식)
+     * @param pitId PIT ID
+     * @param profile 개인화 프로필
+     * @param lastScore 마지막 점수
+     * @param lastId 마지막 ID
+     * @param pageable 페이지 정보
+     * @return 검색 결과 히트 목록
+     * @throws SearchException 검색 예외
+     */
     public List<Hit<SearchQuery>> searchCandidatesCursorKeyset(
             SearchQueryScope scope,
             String label,
@@ -144,6 +229,16 @@ public class SearchQueryRepository {
         return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId), "candidates");
     }
 
+    /**
+     * 커서 템플릿 검색 요청을 생성합니다.
+     *
+     * @param pitId PIT ID
+     * @param pageable 페이지 정보
+     * @param query 쿼리
+     * @param afterScore 이후 점수
+     * @param afterId 이후 ID
+     * @return 검색 요청
+     */
     private SearchRequest cursorTemplateRequest(
             String pitId, Pageable pageable, Query query, Double afterScore, String afterId) {
         return SearchRequest.of(s -> {
@@ -158,6 +253,14 @@ public class SearchQueryRepository {
         });
     }
 
+    /**
+     * 함수 점수 쿼리를 생성합니다.
+     *
+     * @param scope 검색 범위
+     * @param keyword 검색어
+     * @param targetTime 목표 시간
+     * @return 함수 점수 쿼리
+     */
     private Query buildFunctionScoreQuery(SearchQueryScope scope, String keyword, String targetTime) {
         String scopeValue = scope.name().toLowerCase();
         String marketValue = currentMarketKey();
@@ -188,6 +291,15 @@ public class SearchQueryRepository {
                 .scoreMode(FunctionScoreMode.Sum)));
     }
 
+    /**
+     * 후보군 함수 점수 쿼리를 생성합니다.
+     *
+     * @param scope 검색 범위
+     * @param label 라벨
+     * @param targetTime 목표 시간
+     * @param profile 개인화 프로필
+     * @return 함수 점수 쿼리
+     */
     private Query buildCandidatesFunctionScoreQuery(
             SearchQueryScope scope, String label, String targetTime, PersonalizationProfile profile) {
 
@@ -228,12 +340,27 @@ public class SearchQueryRepository {
                 .boostMode(FunctionBoostMode.Sum)));
     }
 
+    /**
+     * Search After를 적용합니다.
+     *
+     * @param s 검색 요청 빌더
+     * @param afterScore 이후 점수
+     * @param afterId 이후 ID
+     */
     private void applySearchAfter(SearchRequest.Builder s, Double afterScore, String afterId) {
         if (afterScore == null || afterId == null || afterId.isBlank()) return;
         s.searchAfter(
                 List.of(FieldValue.of(v -> v.doubleValue(afterScore)), FieldValue.of(v -> v.stringValue(afterId))));
     }
 
+    /**
+     * 검색을 수행하고 히트 목록을 반환합니다.
+     *
+     * @param request 검색 요청
+     * @param keywordForLog 로그용 검색어
+     * @return 검색 결과 히트 목록
+     * @throws SearchException 검색 예외
+     */
     private List<Hit<SearchQuery>> searchHits(SearchRequest request, String keywordForLog) throws SearchException {
         try {
             return openSearchClient.search(request, SearchQuery.class).hits().hits();
@@ -243,12 +370,26 @@ public class SearchQueryRepository {
         }
     }
 
+    /**
+     * 현재 마켓 키를 반환합니다.
+     *
+     * @return 마켓 키
+     * @throws Exception 마켓 컨텍스트 조회 실패 시 예외
+     */
     @SneakyThrows
     private String currentMarketKey() {
         Market market = MarketContext.required().market();
         return market.name().toLowerCase();
     }
 
+    /**
+     * 가우스 감소 함수를 생성합니다.
+     *
+     * @param targetTime 목표 시간
+     * @param scale 스케일
+     * @param decay 감소율
+     * @return 함수 점수 목록
+     */
     private List<FunctionScore> buildGaussDecayFunction(String targetTime, String scale, Double decay) {
         return List.of(FunctionScore.of(functionScore ->
                 functionScore.gauss(gauss -> gauss.field(FIELD_CREATED_AT).placement(placement -> placement

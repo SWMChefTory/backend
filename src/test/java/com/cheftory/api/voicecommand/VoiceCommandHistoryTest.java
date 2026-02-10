@@ -14,25 +14,24 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("VoiceCommand Entity")
+@DisplayName("VoiceCommandHistory 엔티티")
 public class VoiceCommandHistoryTest {
 
     @Nested
-    @DisplayName("음성 명령 기록 생성")
-    class CreateVoiceCommandHistory {
+    @DisplayName("생성 (create)")
+    class Create {
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
         class GivenValidParameters {
-
-            private String sttModel;
-            private String intentGPT4Model;
-            private String intentNLUModel;
-            private String transcribe;
-            private String result;
-            private UUID userId;
-            private Integer start;
-            private Integer end;
+            String sttModel;
+            String intentGPT4Model;
+            String intentNLUModel;
+            String transcribe;
+            String result;
+            UUID userId;
+            Integer start;
+            Integer end;
 
             @BeforeEach
             void setUp() {
@@ -47,138 +46,90 @@ public class VoiceCommandHistoryTest {
             }
 
             @Nested
-            @DisplayName("When - GPT4.1 모델로 생성한다면")
-            class WhenCreatingWithGPT4 {
-
-                private VoiceCommandHistory voiceCommandHistory;
+            @DisplayName("When - GPT4.1 모델로 생성하면")
+            class WhenGPT4 {
+                VoiceCommandHistory history;
 
                 @BeforeEach
-                void beforeEach() throws VoiceCommandHistoryException {
-                    voiceCommandHistory = VoiceCommandHistory.create(
+                void setUp() throws VoiceCommandHistoryException {
+                    history = VoiceCommandHistory.create(
                             sttModel, transcribe, intentGPT4Model, result, userId, start, end);
                 }
 
                 @Test
-                @DisplayName("Then - 올바른 속성으로 VoiceCommand가 생성되어야 한다")
-                public void thenShouldCreateVoiceCommandWithCorrectProperties() {
-                    assertThat(voiceCommandHistory.getId()).isNotNull();
-                    assertThat(voiceCommandHistory.getSttModel()).isEqualTo(STTModel.VITO);
-                    assertThat(voiceCommandHistory.getTranscribe()).isEqualTo(transcribe);
-                    assertThat(voiceCommandHistory.getIntentModel()).isEqualTo(IntentModel.GPT4_1);
-                    assertThat(voiceCommandHistory.getResult()).isEqualTo(result);
-                    assertThat(voiceCommandHistory.getUserId()).isEqualTo(userId);
-                    assertThat(voiceCommandHistory.getCreatedAt()).isNotNull();
-                    assertThat(voiceCommandHistory.getCreatedAt()).isBeforeOrEqualTo(LocalDateTime.now());
-                    assertThat(voiceCommandHistory.getStart()).isEqualTo(start);
-                    assertThat(voiceCommandHistory.getEnd()).isEqualTo(end);
+                @DisplayName("Then - 올바르게 생성된다")
+                void thenCreatedCorrectly() {
+                    assertThat(history.getId()).isNotNull();
+                    assertThat(history.getSttModel()).isEqualTo(STTModel.VITO);
+                    assertThat(history.getTranscribe()).isEqualTo(transcribe);
+                    assertThat(history.getIntentModel()).isEqualTo(IntentModel.GPT4_1);
+                    assertThat(history.getResult()).isEqualTo(result);
+                    assertThat(history.getUserId()).isEqualTo(userId);
+                    assertThat(history.getCreatedAt()).isNotNull();
+                    assertThat(history.getCreatedAt()).isBeforeOrEqualTo(LocalDateTime.now());
+                    assertThat(history.getStart()).isEqualTo(start);
+                    assertThat(history.getEnd()).isEqualTo(end);
                 }
             }
 
             @Nested
-            @DisplayName("When - NLU 모델로 생성한다면")
-            class WhenCreatingWithNLU {
-
-                private VoiceCommandHistory voiceCommandHistory;
+            @DisplayName("When - NLU 모델로 생성하면")
+            class WhenNLU {
+                VoiceCommandHistory history;
 
                 @BeforeEach
-                void beforeEach() throws VoiceCommandHistoryException {
-                    voiceCommandHistory = VoiceCommandHistory.create(
+                void setUp() throws VoiceCommandHistoryException {
+                    history = VoiceCommandHistory.create(
                             sttModel, transcribe, intentNLUModel, result, userId, start, end);
                 }
 
                 @Test
-                @DisplayName("Then - NLU 모델로 올바르게 생성되어야 한다")
-                public void thenShouldCreateWithNLUModel() {
-                    assertThat(voiceCommandHistory.getSttModel()).isEqualTo(STTModel.VITO);
-                    assertThat(voiceCommandHistory.getIntentModel()).isEqualTo(IntentModel.NLU);
-                    assertThat(voiceCommandHistory.getTranscribe()).isEqualTo(transcribe);
-                    assertThat(voiceCommandHistory.getResult()).isEqualTo(result);
-                    assertThat(voiceCommandHistory.getUserId()).isEqualTo(userId);
-                    assertThat(voiceCommandHistory.getStart()).isEqualTo(start);
-                    assertThat(voiceCommandHistory.getEnd()).isEqualTo(end);
+                @DisplayName("Then - 올바르게 생성된다")
+                void thenCreatedCorrectly() {
+                    assertThat(history.getSttModel()).isEqualTo(STTModel.VITO);
+                    assertThat(history.getIntentModel()).isEqualTo(IntentModel.NLU);
+                    assertThat(history.getTranscribe()).isEqualTo(transcribe);
+                    assertThat(history.getResult()).isEqualTo(result);
+                    assertThat(history.getUserId()).isEqualTo(userId);
+                    assertThat(history.getStart()).isEqualTo(start);
+                    assertThat(history.getEnd()).isEqualTo(end);
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 잘못된 STT 모델이 주어졌을 때")
+        @DisplayName("Given - 잘못된 STT 모델일 때")
         class GivenInvalidSttModel {
 
-            private String invalidSttModel;
-            private String validIntentModel;
-            private String transcribe;
-            private String result;
-            private UUID userId;
-            private Integer start;
-            private Integer end;
-
-            @BeforeEach
-            void setUp() {
-                invalidSttModel = "INVALID_MODEL";
-                validIntentModel = "GPT4.1";
-                transcribe = "test";
-                result = "result";
-                userId = UUID.randomUUID();
-                start = 1;
-                end = 2;
-            }
-
-            @Nested
-            @DisplayName("When - 음성 명령 기록을 생성한다면")
-            class WhenCreatingVoiceCommandHistory {
-                @Test
-                @DisplayName("Then - STT 모델 예외가 발생해야 한다")
-                public void thenShouldThrowSttModelException() {
-                    assertThatThrownBy(() -> VoiceCommandHistory.create(
-                                    invalidSttModel, transcribe, validIntentModel, result, userId, start, end))
-                            .isInstanceOf(VoiceCommandHistoryException.class)
-                            .satisfies(ex -> {
-                                VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
-                                assertThat(exception.getError())
-                                        .isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL);
-                            });
-                }
+            @Test
+            @DisplayName("Then - UNKNOWN_STT_MODEL 예외를 던진다")
+            void thenThrowsException() {
+                assertThatThrownBy(() ->
+                                VoiceCommandHistory.create("INVALID", "text", "GPT4.1", "res", UUID.randomUUID(), 1, 2))
+                        .isInstanceOf(VoiceCommandHistoryException.class)
+                        .satisfies(ex -> {
+                            VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
+                            assertThat(exception.getError())
+                                    .isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_STT_MODEL);
+                        });
             }
         }
 
         @Nested
-        @DisplayName("Given - 잘못된 Intent 모델이 주어졌을 때")
+        @DisplayName("Given - 잘못된 Intent 모델일 때")
         class GivenInvalidIntentModel {
 
-            private String validSttModel;
-            private String invalidIntentModel;
-            private String transcribe;
-            private String result;
-            private UUID userId;
-            private Integer start;
-            private Integer end;
-
-            @BeforeEach
-            void setUp() {
-                validSttModel = "VITO";
-                invalidIntentModel = "INVALID_MODEL";
-                transcribe = "test";
-                result = "result";
-                userId = UUID.randomUUID();
-                start = 1;
-                end = 2;
-            }
-
-            @Nested
-            @DisplayName("When - 음성 명령 기록을 생성한다면")
-            class WhenCreatingVoiceCommandHistory {
-                @Test
-                @DisplayName("Then - Intent 모델 예외가 발생해야 한다")
-                public void thenShouldThrowIntentModelException() {
-                    assertThatThrownBy(() -> VoiceCommandHistory.create(
-                                    validSttModel, transcribe, invalidIntentModel, result, userId, start, end))
-                            .isInstanceOf(VoiceCommandHistoryException.class)
-                            .satisfies(ex -> {
-                                VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
-                                assertThat(exception.getError())
-                                        .isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL);
-                            });
-                }
+            @Test
+            @DisplayName("Then - UNKNOWN_INTENT_MODEL 예외를 던진다")
+            void thenThrowsException() {
+                assertThatThrownBy(() ->
+                                VoiceCommandHistory.create("VITO", "text", "INVALID", "res", UUID.randomUUID(), 1, 2))
+                        .isInstanceOf(VoiceCommandHistoryException.class)
+                        .satisfies(ex -> {
+                            VoiceCommandHistoryException exception = (VoiceCommandHistoryException) ex;
+                            assertThat(exception.getError())
+                                    .isEqualTo(VoiceCommandErrorCode.VOICE_COMMAND_UNKNOWN_INTENT_MODEL);
+                        });
             }
         }
     }

@@ -24,6 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+/**
+ * 비동기 레시피 생성 서비스.
+ *
+ * <p>외부 API 호출을 포함하는 레시피 생성 파이프라인을 비동기로 실행합니다.</p>
+ */
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -37,6 +42,19 @@ public class AsyncRecipeCreationService {
     private final RecipeCreditPort creditPort;
     private final RecipeCreationPipeline recipeCreationPipeline;
 
+    /**
+     * 비동기로 레시피 생성 파이프라인을 실행합니다.
+     *
+     * <p>외부 API 호출을 포함하는 레시피 생성 작업을 비동기로 수행하며,
+     * 실패 시 크레딧 환불 및 식별자 정리를 수행합니다.</p>
+     *
+     * @param recipeId 레시피 ID
+     * @param creditCost 소비된 크레딧 양
+     * @param videoId YouTube 비디오 ID
+     * @param videoUrl YouTube 비디오 URL
+     * @throws RecipeInfoException 레시피 정보 처리 실패 시
+     * @throws YoutubeMetaException YouTube 메타데이터 처리 실패 시
+     */
     @Async("recipeCreateExecutor")
     public void create(UUID recipeId, long creditCost, String videoId, URI videoUrl)
             throws RecipeInfoException, YoutubeMetaException {

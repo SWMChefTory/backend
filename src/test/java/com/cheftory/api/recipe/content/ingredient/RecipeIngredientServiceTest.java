@@ -34,49 +34,79 @@ class RecipeIngredientServiceTest {
     }
 
     @Nested
-    @DisplayName("create 메서드는")
-    class Describe_create {
+    @DisplayName("레시피 재료 생성 (create)")
+    class Create {
 
-        @Test
-        @DisplayName("재료 목록을 엔티티로 변환하여 저장한다")
-        void it_converts_and_saves_ingredients() {
-            // Given
-            UUID recipeId = UUID.randomUUID();
-            List<Ingredient> ingredients =
-                    List.of(new Ingredient("Sugar", 100, "g"), new Ingredient("Flour", 200, "g"));
-            doNothing().when(recipeIngredientRepository).create(anyList());
+        @Nested
+        @DisplayName("Given - 재료 목록이 주어졌을 때")
+        class GivenIngredients {
+            UUID recipeId;
+            List<Ingredient> ingredients;
 
-            // When
-            recipeIngredientService.create(recipeId, ingredients);
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                ingredients = List.of(new Ingredient("Sugar", 100, "g"), new Ingredient("Flour", 200, "g"));
+                doNothing().when(recipeIngredientRepository).create(anyList());
+            }
 
-            // Then
-            ArgumentCaptor<List<RecipeIngredient>> captor = ArgumentCaptor.forClass(List.class);
-            verify(recipeIngredientRepository).create(captor.capture());
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-            List<RecipeIngredient> saved = captor.getValue();
-            assertThat(saved).hasSize(2);
-            assertThat(saved).extracting(RecipeIngredient::getName).containsExactlyInAnyOrder("Sugar", "Flour");
+                @BeforeEach
+                void setUp() {
+                    recipeIngredientService.create(recipeId, ingredients);
+                }
+
+                @Test
+                @DisplayName("Then - 엔티티로 변환하여 저장한다")
+                void thenConvertsAndSaves() {
+                    ArgumentCaptor<List<RecipeIngredient>> captor = ArgumentCaptor.forClass(List.class);
+                    verify(recipeIngredientRepository).create(captor.capture());
+
+                    List<RecipeIngredient> saved = captor.getValue();
+                    assertThat(saved).hasSize(2);
+                    assertThat(saved).extracting(RecipeIngredient::getName).containsExactlyInAnyOrder("Sugar", "Flour");
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("gets 메서드는")
-    class Describe_gets {
+    @DisplayName("레시피 재료 조회 (gets)")
+    class Gets {
 
-        @Test
-        @DisplayName("레시피 ID로 재료 목록을 조회한다")
-        void it_returns_ingredients_by_recipe_id() {
-            // Given
-            UUID recipeId = UUID.randomUUID();
-            List<RecipeIngredient> expected = List.of(mock(RecipeIngredient.class));
-            doReturn(expected).when(recipeIngredientRepository).finds(recipeId);
+        @Nested
+        @DisplayName("Given - 레시피 ID가 주어졌을 때")
+        class GivenRecipeId {
+            UUID recipeId;
+            List<RecipeIngredient> expected;
 
-            // When
-            List<RecipeIngredient> result = recipeIngredientService.gets(recipeId);
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                expected = List.of(mock(RecipeIngredient.class));
+                doReturn(expected).when(recipeIngredientRepository).finds(recipeId);
+            }
 
-            // Then
-            assertThat(result).isEqualTo(expected);
-            verify(recipeIngredientRepository).finds(recipeId);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeIngredient> result;
+
+                @BeforeEach
+                void setUp() {
+                    result = recipeIngredientService.gets(recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 재료 목록을 반환한다")
+                void thenReturnsIngredients() {
+                    assertThat(result).isEqualTo(expected);
+                    verify(recipeIngredientRepository).finds(recipeId);
+                }
+            }
         }
     }
 }

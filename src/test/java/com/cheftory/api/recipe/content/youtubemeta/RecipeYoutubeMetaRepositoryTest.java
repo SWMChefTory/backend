@@ -26,7 +26,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-@DisplayName("RecipeYoutubeMetaRepository")
+@DisplayName("RecipeYoutubeMetaRepository 테스트")
 @Import(RecipeYoutubeMetaRepositoryImpl.class)
 public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
 
@@ -36,18 +36,27 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
     @MockitoBean
     private Clock clock;
 
+    private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+
+    @BeforeEach
+    void setUp() {
+        doReturn(FIXED_TIME).when(clock).now();
+    }
+
     @Nested
-    @DisplayName("레시피 유튜브 메타데이터 저장")
-    class SaveRecipeYoutubeMeta {
+    @DisplayName("레시피 유튜브 메타데이터 저장 (create)")
+    class Create {
 
         @Nested
-        @DisplayName("Given - 유효한 레시피 유튜브 메타데이터가 주어졌을 때")
-        class GivenValidRecipeYoutubeMeta {
-
-            private UriComponents youtubeUri;
-            private String title;
-            private Integer videoSeconds;
-            private URI youtubeThumbnailUrl;
+        @DisplayName("Given - 유효한 메타데이터가 주어졌을 때")
+        class GivenValidMeta {
+            UriComponents youtubeUri;
+            String title;
+            Integer videoSeconds;
+            URI youtubeThumbnailUrl;
+            YoutubeVideoInfo youtubeVideoInfo;
+            RecipeYoutubeMeta recipeYoutubeMeta;
+            UUID recipeId;
 
             @BeforeEach
             void setUp() {
@@ -56,208 +65,183 @@ public class RecipeYoutubeMetaRepositoryTest extends DbContextTest {
                 title = "백종원의 요리비책 - 김치볶음밥";
                 videoSeconds = 300;
                 youtubeThumbnailUrl = URI.create("https://img.youtube.com/vi/j7s9VRsrm9o/maxresdefault.jpg");
+                recipeId = UUID.randomUUID();
+
+                youtubeVideoInfo = mock(YoutubeVideoInfo.class);
+                doReturn(youtubeThumbnailUrl).when(youtubeVideoInfo).getThumbnailUrl();
+                doReturn(title).when(youtubeVideoInfo).getTitle();
+                doReturn("백종원 채널").when(youtubeVideoInfo).getChannelTitle();
+                doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
+                doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
+                doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo).getVideoType();
+
+                recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
             }
 
-            @DisplayName("When - 레시피 유튜브 메타데이터를 저장한다면")
             @Nested
-            class WhenSavingRecipeYoutubeMeta {
-
-                private YoutubeVideoInfo youtubeVideoInfo;
-                private RecipeYoutubeMeta recipeYoutubeMeta;
-                private UUID recipeId;
-                private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+            @DisplayName("When - 저장을 요청하면")
+            class WhenSaving {
+                RecipeYoutubeMeta result;
 
                 @BeforeEach
-                void beforeEach() {
-                    youtubeVideoInfo = mock(YoutubeVideoInfo.class);
-                    recipeId = UUID.randomUUID();
-                    doReturn(youtubeThumbnailUrl).when(youtubeVideoInfo).getThumbnailUrl();
-                    doReturn(title).when(youtubeVideoInfo).getTitle();
-                    doReturn("백종원 채널").when(youtubeVideoInfo).getChannelTitle();
-                    doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
-                    doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
-                    doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo).getVideoType();
-                    doReturn(FIXED_TIME).when(clock).now();
-                    recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
+                void setUp() {
+                    result = repository.create(recipeYoutubeMeta);
                 }
 
-                @DisplayName("Then - 정상적으로 저장된다")
                 @Test
-                void ThenSaveSuccessfully() {
-
-                    recipeYoutubeMeta = repository.create(recipeYoutubeMeta);
-
-                    assertThat(recipeYoutubeMeta.getId()).isNotNull();
-                    assertThat(recipeYoutubeMeta.getVideoUri()).isEqualTo(youtubeUri.toUri());
-                    assertThat(recipeYoutubeMeta.getTitle()).isEqualTo(title);
-                    assertThat(recipeYoutubeMeta.getVideoSeconds()).isEqualTo(videoSeconds);
-                    assertThat(recipeYoutubeMeta.getThumbnailUrl()).isEqualTo(youtubeThumbnailUrl);
+                @DisplayName("Then - 정상적으로 저장된다")
+                void thenSavesSuccessfully() {
+                    assertThat(result.getId()).isNotNull();
+                    assertThat(result.getVideoUri()).isEqualTo(youtubeUri.toUri());
+                    assertThat(result.getTitle()).isEqualTo(title);
+                    assertThat(result.getVideoSeconds()).isEqualTo(videoSeconds);
+                    assertThat(result.getThumbnailUrl()).isEqualTo(youtubeThumbnailUrl);
                 }
             }
         }
     }
 
     @Nested
-    @DisplayName("레시피 유튜브 메타데이터 조회")
-    class GetRecipeYoutubeMeta {
+    @DisplayName("레시피 유튜브 메타데이터 조회 (find)")
+    class Find {
 
-        private UriComponents youtubeUri;
-        private String title;
-        private Integer videoSeconds;
-        private URI youtubeThumbnailUrl;
-        private YoutubeVideoInfo youtubeVideoInfo;
-        private RecipeYoutubeMeta recipeYoutubeMeta;
-        private UUID recipeId;
-        private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-
-        @BeforeEach
-        void setUp() {
-            youtubeUri = UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=" + UUID.randomUUID())
-                    .build();
-            title = "백종원의 요리비책 - 김치볶음밥";
-            videoSeconds = 300;
-            youtubeThumbnailUrl = URI.create("https://img.youtube.com/vi/j7s9VRsrm9o/maxresdefault.jpg");
-            recipeId = UUID.randomUUID();
-
-            youtubeVideoInfo = mock(YoutubeVideoInfo.class);
-            doReturn(youtubeThumbnailUrl).when(youtubeVideoInfo).getThumbnailUrl();
-            doReturn(title).when(youtubeVideoInfo).getTitle();
-            doReturn("백종원 채널").when(youtubeVideoInfo).getChannelTitle();
-            doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
-            doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
-            doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo).getVideoType();
-            doReturn(FIXED_TIME).when(clock).now();
-
-            recipeYoutubeMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
-            repository.create(recipeYoutubeMeta);
-        }
-
-        @DisplayName("When - 유효한 URL로 조회한다면")
         @Nested
-        class WhenGettingByValidUrl {
-
-            private List<RecipeYoutubeMeta> recipeYoutubeMetaList;
+        @DisplayName("Given - 메타데이터가 저장되어 있을 때")
+        class GivenSavedMeta {
+            UriComponents youtubeUri;
+            String title;
+            Integer videoSeconds;
+            URI youtubeThumbnailUrl;
+            RecipeYoutubeMeta savedMeta;
+            UUID recipeId;
 
             @BeforeEach
-            void beforeEach() {
-                recipeYoutubeMetaList = repository.find(youtubeUri.toUri());
+            void setUp() {
+                youtubeUri = UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=" + UUID.randomUUID())
+                        .build();
+                title = "백종원의 요리비책 - 김치볶음밥";
+                videoSeconds = 300;
+                youtubeThumbnailUrl = URI.create("https://img.youtube.com/vi/j7s9VRsrm9o/maxresdefault.jpg");
+                recipeId = UUID.randomUUID();
+
+                YoutubeVideoInfo youtubeVideoInfo = mock(YoutubeVideoInfo.class);
+                doReturn(youtubeThumbnailUrl).when(youtubeVideoInfo).getThumbnailUrl();
+                doReturn(title).when(youtubeVideoInfo).getTitle();
+                doReturn("백종원 채널").when(youtubeVideoInfo).getChannelTitle();
+                doReturn(videoSeconds).when(youtubeVideoInfo).getVideoSeconds();
+                doReturn(youtubeUri.toUri()).when(youtubeVideoInfo).getVideoUri();
+                doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo).getVideoType();
+
+                savedMeta = RecipeYoutubeMeta.create(youtubeVideoInfo, recipeId, clock);
+                repository.create(savedMeta);
             }
 
-            @DisplayName("Then - 정상적으로 조회된다")
-            @Test
-            void ThenGetSuccessfully() {
-                assertThat(recipeYoutubeMetaList).isNotNull();
-                assertThat(recipeYoutubeMetaList).hasSize(1);
-                RecipeYoutubeMeta foundRecipeYoutubeMeta = recipeYoutubeMetaList.getFirst();
-                assertThat(foundRecipeYoutubeMeta.getId()).isEqualTo(recipeYoutubeMeta.getId());
-                assertThat(foundRecipeYoutubeMeta.getVideoUri()).isEqualTo(youtubeUri.toUri());
-                assertThat(foundRecipeYoutubeMeta.getTitle()).isEqualTo(title);
-                assertThat(foundRecipeYoutubeMeta.getVideoSeconds()).isEqualTo(videoSeconds);
-                assertThat(foundRecipeYoutubeMeta.getThumbnailUrl()).isEqualTo(youtubeThumbnailUrl);
-            }
-        }
+            @Nested
+            @DisplayName("When - URL로 조회하면")
+            class WhenFindingByUrl {
+                List<RecipeYoutubeMeta> result;
 
-        @DisplayName("When - 유효한 레시피 ID로 조회한다면")
-        @Nested
-        class WhenGettingByValidId {
-            private RecipeYoutubeMeta foundRecipeYoutubeMeta;
+                @BeforeEach
+                void setUp() {
+                    result = repository.find(youtubeUri.toUri());
+                }
 
-            @BeforeEach
-            void beforeEach() throws YoutubeMetaException {
-                foundRecipeYoutubeMeta = repository.find(recipeId);
+                @Test
+                @DisplayName("Then - 해당 메타데이터를 반환한다")
+                void thenReturnsMeta() {
+                    assertThat(result).hasSize(1);
+                    RecipeYoutubeMeta found = result.getFirst();
+                    assertThat(found.getId()).isEqualTo(savedMeta.getId());
+                    assertThat(found.getVideoUri()).isEqualTo(youtubeUri.toUri());
+                    assertThat(found.getTitle()).isEqualTo(title);
+                }
             }
 
-            @DisplayName("Then - 정상적으로 조회된다")
-            @Test
-            void ThenGetSuccessfully() {
-                assertThat(foundRecipeYoutubeMeta).isNotNull();
-                assertThat(foundRecipeYoutubeMeta.getId()).isEqualTo(recipeYoutubeMeta.getId());
-                assertThat(foundRecipeYoutubeMeta.getVideoUri()).isEqualTo(youtubeUri.toUri());
-                assertThat(foundRecipeYoutubeMeta.getTitle()).isEqualTo(title);
-                assertThat(foundRecipeYoutubeMeta.getVideoSeconds()).isEqualTo(videoSeconds);
-                assertThat(foundRecipeYoutubeMeta.getThumbnailUrl()).isEqualTo(youtubeThumbnailUrl);
+            @Nested
+            @DisplayName("When - 레시피 ID로 조회하면")
+            class WhenFindingById {
+                RecipeYoutubeMeta result;
+
+                @BeforeEach
+                void setUp() throws YoutubeMetaException {
+                    result = repository.find(recipeId);
+                }
+
+                @Test
+                @DisplayName("Then - 해당 메타데이터를 반환한다")
+                void thenReturnsMeta() {
+                    assertThat(result).isNotNull();
+                    assertThat(result.getId()).isEqualTo(savedMeta.getId());
+                    assertThat(result.getVideoUri()).isEqualTo(youtubeUri.toUri());
+                    assertThat(result.getTitle()).isEqualTo(title);
+                }
             }
         }
     }
 
     @Nested
-    @DisplayName("레시피 유튜브 메타데이터 목록 조회")
-    class GetRecipeYoutubeMetas {
+    @DisplayName("레시피 유튜브 메타데이터 목록 조회 (finds)")
+    class Finds {
 
-        private UriComponents youtubeUri1;
-        private String title1;
-        private Integer videoSeconds1;
-        private URI youtubeThumbnailUrl1;
-        private UriComponents youtubeUri2;
-        private String title2;
-        private Integer videoSeconds2;
-        private URI youtubeThumbnailUrl2;
-        private YoutubeVideoInfo youtubeVideoInfo1;
-        private YoutubeVideoInfo youtubeVideoInfo2;
-        private UUID recipeId1;
-        private UUID recipeId2;
-        private final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
-
-        @BeforeEach
-        void setUp() {
-            recipeId1 = UUID.randomUUID();
-            recipeId2 = UUID.randomUUID();
-            youtubeUri1 = UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=" + UUID.randomUUID())
-                    .build();
-            title1 = "백종원의 요리비책 - 김치볶음밥";
-            videoSeconds1 = 300;
-            youtubeThumbnailUrl1 = URI.create("https://img.youtube.com/vi/j7s9VRsrm9o/maxresdefault.jpg");
-
-            youtubeUri2 = UriComponentsBuilder.fromUriString("https://www.youtube.com/watch?v=" + UUID.randomUUID())
-                    .build();
-            title2 = "백종원의 요리비책 - 된장찌개";
-            videoSeconds2 = 600;
-            youtubeThumbnailUrl2 = URI.create("https://img.youtube.com/vi/abcdEFGHIjk/maxresdefault.jpg");
-
-            youtubeVideoInfo1 = mock(YoutubeVideoInfo.class);
-            doReturn(youtubeThumbnailUrl1).when(youtubeVideoInfo1).getThumbnailUrl();
-            doReturn(title1).when(youtubeVideoInfo1).getTitle();
-            doReturn("요리 채널1").when(youtubeVideoInfo1).getChannelTitle();
-            doReturn(videoSeconds1).when(youtubeVideoInfo1).getVideoSeconds();
-            doReturn(youtubeUri1.toUri()).when(youtubeVideoInfo1).getVideoUri();
-            doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo1).getVideoType();
-
-            youtubeVideoInfo2 = mock(YoutubeVideoInfo.class);
-            doReturn(youtubeThumbnailUrl2).when(youtubeVideoInfo2).getThumbnailUrl();
-            doReturn(title2).when(youtubeVideoInfo2).getTitle();
-            doReturn("요리 채널2").when(youtubeVideoInfo2).getChannelTitle();
-            doReturn(videoSeconds2).when(youtubeVideoInfo2).getVideoSeconds();
-            doReturn(youtubeUri2.toUri()).when(youtubeVideoInfo2).getVideoUri();
-            doReturn(YoutubeMetaType.NORMAL).when(youtubeVideoInfo2).getVideoType();
-            doReturn(FIXED_TIME).when(clock).now();
-        }
-
-        @DisplayName("When - 목록 조회한다면")
         @Nested
-        class WhenGettingList {
-            private Iterable<RecipeYoutubeMeta> recipeYoutubeMetas;
-
-            RecipeYoutubeMeta recipeYoutubeMeta1;
-            RecipeYoutubeMeta recipeYoutubeMeta2;
-            List<UUID> youtubeMetaIds;
+        @DisplayName("Given - 여러 메타데이터가 저장되어 있을 때")
+        class GivenMultipleMetas {
             List<UUID> recipeIds;
 
             @BeforeEach
-            void beforeEach() {
-                recipeYoutubeMeta1 = RecipeYoutubeMeta.create(youtubeVideoInfo1, recipeId1, clock);
-                recipeYoutubeMeta2 = RecipeYoutubeMeta.create(youtubeVideoInfo2, recipeId2, clock);
-                youtubeMetaIds = List.of(
-                        repository.create(recipeYoutubeMeta1).getId(),
-                        repository.create(recipeYoutubeMeta2).getId());
+            void setUp() {
+                UUID recipeId1 = UUID.randomUUID();
+                UUID recipeId2 = UUID.randomUUID();
+
+                YoutubeVideoInfo info1 = mock(YoutubeVideoInfo.class);
+                doReturn(URI.create("https://img.youtube.com/vi/1/default.jpg"))
+                        .when(info1)
+                        .getThumbnailUrl();
+                doReturn("Title 1").when(info1).getTitle();
+                doReturn("Channel 1").when(info1).getChannelTitle();
+                doReturn(300).when(info1).getVideoSeconds();
+                doReturn(URI.create("https://youtube.com/watch?v=1"))
+                        .when(info1)
+                        .getVideoUri();
+                doReturn(YoutubeMetaType.NORMAL).when(info1).getVideoType();
+
+                YoutubeVideoInfo info2 = mock(YoutubeVideoInfo.class);
+                doReturn(URI.create("https://img.youtube.com/vi/2/default.jpg"))
+                        .when(info2)
+                        .getThumbnailUrl();
+                doReturn("Title 2").when(info2).getTitle();
+                doReturn("Channel 2").when(info2).getChannelTitle();
+                doReturn(600).when(info2).getVideoSeconds();
+                doReturn(URI.create("https://youtube.com/watch?v=2"))
+                        .when(info2)
+                        .getVideoUri();
+                doReturn(YoutubeMetaType.NORMAL).when(info2).getVideoType();
+
+                RecipeYoutubeMeta meta1 = RecipeYoutubeMeta.create(info1, recipeId1, clock);
+                RecipeYoutubeMeta meta2 = RecipeYoutubeMeta.create(info2, recipeId2, clock);
+
+                repository.create(meta1);
+                repository.create(meta2);
+
                 recipeIds = List.of(recipeId1, recipeId2);
             }
 
-            @DisplayName("Then - 정상적으로 조회된다")
-            @Test
-            void ThenGetListSuccessfully() {
-                recipeYoutubeMetas = repository.finds(recipeIds);
-                assertThat(recipeYoutubeMetas).isNotNull();
-                assertThat(recipeYoutubeMetas).hasSize(2);
+            @Nested
+            @DisplayName("When - 목록 조회를 요청하면")
+            class WhenFindingList {
+                Iterable<RecipeYoutubeMeta> result;
+
+                @BeforeEach
+                void setUp() {
+                    result = repository.finds(recipeIds);
+                }
+
+                @Test
+                @DisplayName("Then - 모든 메타데이터를 반환한다")
+                void thenReturnsAll() {
+                    assertThat(result).isNotNull();
+                    assertThat(result).hasSize(2);
+                }
             }
         }
     }

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("VoiceCommand Service")
+@DisplayName("VoiceCommandHistoryService 테스트")
 public class VoiceCommandHistoryServiceTest {
 
     private VoiceCommandHistoryRepository voiceCommandHistoryRepository;
@@ -27,20 +27,19 @@ public class VoiceCommandHistoryServiceTest {
     }
 
     @Nested
-    @DisplayName("음성 명령 기록 생성")
-    class CreateVoiceCommandHistory {
+    @DisplayName("음성 명령 기록 생성 (create)")
+    class Create {
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
         class GivenValidParameters {
-
-            private String baseIntent;
-            private String intent;
-            private UUID userId;
-            private String sttModel;
-            private String intentModel;
-            private Integer start;
-            private Integer end;
+            String baseIntent;
+            String intent;
+            UUID userId;
+            String sttModel;
+            String intentModel;
+            Integer start;
+            Integer end;
 
             @BeforeEach
             void setUp() {
@@ -54,12 +53,12 @@ public class VoiceCommandHistoryServiceTest {
             }
 
             @Nested
-            @DisplayName("When - 음성 명령 기록을 생성한다면")
-            class WhenCreatingVoiceCommandHistory {
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
                 @Test
-                @DisplayName("Then - 올바른 파라미터로 Repository의 save가 호출되어야 한다")
-                public void thenShouldCallRepositorySaveWithCorrectParameters() throws VoiceCommandHistoryException {
+                @DisplayName("Then - 올바른 파라미터로 저장한다")
+                void thenSavesCorrectly() throws VoiceCommandHistoryException {
                     voiceCommandHistoryService.create(baseIntent, intent, userId, sttModel, intentModel, start, end);
 
                     verify(voiceCommandHistoryRepository).save(argThat(voiceCommand -> {
@@ -80,72 +79,48 @@ public class VoiceCommandHistoryServiceTest {
         }
 
         @Nested
-        @DisplayName("Given - 잘못된 STT 모델이 주어졌을 때")
+        @DisplayName("Given - 잘못된 STT 모델일 때")
         class GivenInvalidSttModel {
-
-            private String baseIntent;
-            private String intent;
-            private UUID userId;
-            private String invalidSttModel;
-            private String intentModel;
-            private Integer start;
-            private Integer end;
+            String invalidSttModel;
 
             @BeforeEach
             void setUp() {
-                baseIntent = "testBaseIntent";
-                intent = "testIntent";
-                userId = UUID.randomUUID();
                 invalidSttModel = "INVALID_STT";
-                intentModel = "GPT4.1";
-                start = 1;
-                end = 2;
             }
 
             @Nested
-            @DisplayName("When - 음성 명령 기록을 생성한다면")
-            class WhenCreatingVoiceCommandHistory {
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
                 @Test
-                @DisplayName("Then - 예외가 발생해야 한다")
-                public void thenShouldThrowException() {
+                @DisplayName("Then - 예외를 던진다")
+                void thenThrowsException() {
                     assertThatThrownBy(() -> voiceCommandHistoryService.create(
-                                    baseIntent, intent, userId, invalidSttModel, intentModel, start, end))
+                                    "base", "intent", UUID.randomUUID(), invalidSttModel, "GPT4.1", 1, 2))
                             .isInstanceOf(VoiceCommandHistoryException.class);
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 잘못된 Intent 모델이 주어졌을 때")
+        @DisplayName("Given - 잘못된 Intent 모델일 때")
         class GivenInvalidIntentModel {
-
-            private String baseIntent;
-            private String intent;
-            private UUID userId;
-            private String sttModel;
-            private String invalidIntentModel;
-            private Integer start;
-            private Integer end;
+            String invalidIntentModel;
 
             @BeforeEach
             void setUp() {
-                baseIntent = "testBaseIntent";
-                intent = "testIntent";
-                userId = UUID.randomUUID();
-                sttModel = "VITO";
                 invalidIntentModel = "INVALID_INTENT";
-                start = 1;
-                end = 2;
             }
 
             @Nested
-            @DisplayName("When - 음성 명령 기록을 생성한다면")
-            class WhenCreatingVoiceCommandHistory {
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
                 @Test
-                @DisplayName("Then - 예외가 발생해야 한다")
-                public void thenShouldThrowException() {
+                @DisplayName("Then - 예외를 던진다")
+                void thenThrowsException() {
                     assertThatThrownBy(() -> voiceCommandHistoryService.create(
-                                    baseIntent, intent, userId, sttModel, invalidIntentModel, start, end))
+                                    "base", "intent", UUID.randomUUID(), "VITO", invalidIntentModel, 1, 2))
                             .isInstanceOf(VoiceCommandHistoryException.class);
                 }
             }

@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.creation.identify;
+package com.cheftory.api.recipe.creation.identify.repository;
 
 import com.cheftory.api.recipe.creation.identify.entity.RecipeIdentify;
 import java.net.URI;
@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RecipeIdentifyRepository extends JpaRepository<RecipeIdentify, UUID> {
+public interface RecipeIdentifyJpaRepository extends JpaRepository<RecipeIdentify, UUID> {
     Optional<RecipeIdentify> findByUrl(URI uri);
 
     void deleteByUrl(URI uri);

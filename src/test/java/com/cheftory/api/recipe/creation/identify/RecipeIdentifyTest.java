@@ -9,23 +9,25 @@ import com.cheftory.api.recipe.creation.identify.entity.RecipeIdentify;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-@DisplayName("RecipeIdentifyUrl 엔티티")
+@DisplayName("RecipeIdentify 엔티티")
 class RecipeIdentifyTest {
 
     @Nested
-    @DisplayName("create(url, recipeId, clock)")
+    @DisplayName("식별 정보 생성 (create)")
     class Create {
 
         @Nested
-        @DisplayName("Given - 유효한 URL과 recipeId가 주어졌을 때")
-        class GivenValidUrlAndRecipeId {
+        @DisplayName("Given - 유효한 URL이 주어졌을 때")
+        class GivenValidUrl {
 
             private Clock clock;
             private LocalDateTime now;
             private URI url;
-            private UUID recipeId;
 
             @BeforeEach
             void setUp() {
@@ -33,23 +35,22 @@ class RecipeIdentifyTest {
                 now = LocalDateTime.now();
                 doReturn(now).when(clock).now();
                 url = URI.create("https://www.youtube.com/watch?v=test_" + UUID.randomUUID());
-                recipeId = UUID.randomUUID();
             }
 
             @Nested
-            @DisplayName("When - create() 메서드를 호출하면")
-            class WhenCreatingEntity {
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
                 private RecipeIdentify recipeIdentify;
 
                 @BeforeEach
-                void createEntity() {
+                void setUp() {
                     recipeIdentify = RecipeIdentify.create(url, clock);
                 }
 
                 @Test
-                @DisplayName("Then - UUID가 자동 생성되고 URL/recipeId/createdAt이 설정된다")
-                void thenEntityFieldsArePopulated() {
+                @DisplayName("Then - UUID가 자동 생성되고 URL과 생성 시간이 설정된다")
+                void thenFieldsArePopulated() {
                     assertThat(recipeIdentify).isNotNull();
                     assertThat(recipeIdentify.getId()).isNotNull();
                     assertThat(recipeIdentify.getUrl()).isEqualTo(url);
@@ -57,7 +58,7 @@ class RecipeIdentifyTest {
                 }
 
                 @Test
-                @DisplayName("Then - 동일한 URL과 recipeId로 다른 create()를 호출하면 ID는 달라진다")
+                @DisplayName("Then - 동일한 URL로 다시 생성해도 ID는 달라진다")
                 void thenDifferentIdsForDifferentInstances() {
                     RecipeIdentify another = RecipeIdentify.create(url, clock);
 

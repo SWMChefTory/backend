@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.rank;
+package com.cheftory.api.recipe.rank.repository;
 
 import java.time.Duration;
 import java.util.List;
@@ -11,22 +11,26 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class RecipeRankRepository {
+public class RecipeRankRepositoryImpl implements RecipeRankRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
+    @Override
     public void saveRanking(String key, UUID recipeId, Integer rank) {
         redisTemplate.opsForZSet().add(key, recipeId.toString(), rank.doubleValue());
     }
 
+    @Override
     public void setExpire(String key, Duration duration) {
         redisTemplate.expire(key, duration);
     }
 
+    @Override
     public void saveLatest(String pointerKey, String realKey) {
         redisTemplate.opsForValue().set(pointerKey, realKey);
     }
 
+    @Override
     public Optional<String> findLatest(String pointerKey) {
         if (pointerKey == null || pointerKey.isBlank()) {
             return Optional.empty();
@@ -35,15 +39,18 @@ public class RecipeRankRepository {
         return Optional.ofNullable(redisTemplate.opsForValue().get(pointerKey)).filter(key -> !key.isBlank());
     }
 
+    @Override
     public Set<String> findRecipeIds(String key, long start, long end) {
         return redisTemplate.opsForZSet().range(key, start, end);
     }
 
+    @Override
     public Long count(String key) {
         Long count = redisTemplate.opsForZSet().zCard(key);
         return count != null ? count : 0L;
     }
 
+    @Override
     public List<String> findRecipeIdsByRank(String key, int startRank, int count) {
         long startIndex = Math.max(0, (long) startRank - 1);
         long endIndex = startIndex + count - 1;
