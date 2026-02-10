@@ -14,9 +14,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
 
+/**
+ * 유튜브 메타 정보 외부 클라이언트 구현체
+ */
 @Slf4j
 @Component
-public class VideoInfoClient {
+public class YoutubeMetaExternalClient implements YoutubeMetaClient {
 
     private final WebClient webClient;
 
@@ -26,11 +29,21 @@ public class VideoInfoClient {
     @Value("${youtube.api-token-block-check}")
     private String youtubeBlockCheckKey;
 
-    public VideoInfoClient(@Qualifier("youtubeClient") WebClient webClient) {
+    public YoutubeMetaExternalClient(@Qualifier("youtubeClient") WebClient webClient) {
         this.webClient = webClient;
     }
 
-    public YoutubeVideoInfo fetchVideoInfo(YoutubeUri youtubeUri) {
+    /**
+     * 유튜브 비디오 정보 조회
+     *
+     * <p>YouTube Data API를 사용하여 비디오 정보를 조회하고, 쇼츠 여부 등을 판단합니다.</p>
+     *
+     * @param youtubeUri 유튜브 URI
+     * @return 비디오 정보
+     * @throws YoutubeMetaException API 호출 실패 또는 비디오 정보 조회 실패 시
+     */
+    @Override
+    public YoutubeVideoInfo fetch(YoutubeUri youtubeUri) throws YoutubeMetaException {
         String videoId = youtubeUri.getVideoId();
 
         try {
@@ -120,7 +133,16 @@ public class VideoInfoClient {
         }
     }
 
-    public Boolean isBlockedVideo(YoutubeUri youtubeUri) {
+    /**
+     * 유튜브 비디오 차단 여부 확인
+     *
+     * <p>YouTube Data API를 사용하여 비디오의 상태 및 임베드 가능 여부를 확인합니다.</p>
+     *
+     * @param youtubeUri 유튜브 URI
+     * @return 차단 여부 (true: 차단됨, false: 차단되지 않음)
+     */
+    @Override
+    public Boolean isBlocked(YoutubeUri youtubeUri) {
         String videoId = youtubeUri.getVideoId();
 
         try {

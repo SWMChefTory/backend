@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import java.time.Duration;
@@ -30,7 +31,7 @@ class RankingSnapshotServiceTest {
 
     @Test
     @DisplayName("savePit saves PIT with ttl")
-    void savePitSavesPitWithTtl() {
+    void savePitSavesPitWithTtl() throws CheftoryException {
         UUID requestId = UUID.randomUUID();
         doReturn("pit:key")
                 .when(keyGenerator)
@@ -43,7 +44,7 @@ class RankingSnapshotServiceTest {
 
     @Test
     @DisplayName("getPit returns cached PIT")
-    void getPitReturnsCachedPit() {
+    void getPitReturnsCachedPit() throws CheftoryException {
         UUID requestId = UUID.randomUUID();
         doReturn("pit:key")
                 .when(keyGenerator)
@@ -57,7 +58,7 @@ class RankingSnapshotServiceTest {
 
     @Test
     @DisplayName("refreshPit updates ttl for pit and impression keys")
-    void refreshPitUpdatesTtl() {
+    void refreshPitUpdatesTtl() throws CheftoryException {
         UUID requestId = UUID.randomUUID();
         doReturn("pit:key")
                 .when(keyGenerator)
@@ -72,7 +73,7 @@ class RankingSnapshotServiceTest {
 
     @Test
     @DisplayName("deletePit removes cached PIT")
-    void deletePitRemovesCachedPit() {
+    void deletePitRemovesCachedPit() throws CheftoryException {
         UUID requestId = UUID.randomUUID();
         doReturn("pit:key")
                 .when(keyGenerator)
@@ -85,7 +86,7 @@ class RankingSnapshotServiceTest {
 
     @Test
     @DisplayName("allocateImpressionPositions returns start position")
-    void allocateImpressionPositionsReturnsStart() {
+    void allocateImpressionPositionsReturnsStart() throws CheftoryException {
         UUID requestId = UUID.randomUUID();
         doReturn("pos:key").when(keyGenerator).impressionPosKey(requestId);
         doReturn(15L).when(snapshotRepository).incrementLong("pos:key", 5);
@@ -98,7 +99,7 @@ class RankingSnapshotServiceTest {
 
     @Test
     @DisplayName("clearImpressionPositions deletes key")
-    void clearImpressionPositionsDeletesKey() {
+    void clearImpressionPositionsDeletesKey() throws CheftoryException {
         UUID requestId = UUID.randomUUID();
         doReturn("pos:key").when(keyGenerator).impressionPosKey(requestId);
 

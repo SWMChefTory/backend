@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.exception.CheftoryException;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +27,7 @@ class RecipeRankingAdapterTest {
 
     @Test
     @DisplayName("logEvent delegates to rankingService")
-    void logEventDelegates() {
+    void logEventDelegates() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         UUID itemId = UUID.randomUUID();
         UUID requestId = UUID.randomUUID();
@@ -38,7 +39,7 @@ class RecipeRankingAdapterTest {
 
     @Test
     @DisplayName("recommend delegates to rankingService")
-    void recommendDelegates() {
+    void recommendDelegates() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         CursorPage<UUID> expected = CursorPage.of(List.of(UUID.randomUUID()), "cursor");
 

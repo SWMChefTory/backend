@@ -12,11 +12,13 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
 import com.cheftory.api._common.security.UserArgumentResolver;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.user.share.exception.UserShareErrorCode;
 import com.cheftory.api.user.share.exception.UserShareException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
+import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,46 +56,80 @@ public class UserShareControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("POST /api/v1/users/share - 공유하기")
-    class shareResponse {
+    @DisplayName("공유하기 (share)")
+    class Share {
 
-        @Test
-        @DisplayName("성공 - 공유 횟수를 반환한다")
-        void shouldReturnShareCount() {
+        @Nested
+        @DisplayName("Given - 유효한 요청일 때")
+        class GivenValidRequest {
 
-            doReturn(1).when(userShareService).share(fixedUserId);
+            @BeforeEach
+            void setUp() throws CreditException, UserShareException {
+                doReturn(1).when(userShareService).share(fixedUserId);
+            }
 
-            var response = given().contentType(ContentType.JSON)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .post("/api/v1/users/share")
-                    .then()
-                    .status(HttpStatus.OK)
-                    .apply(document(
-                            getNestedClassPath(this.getClass()) + "/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            responseFields(fieldWithPath("share_count").description("오늘의 공유 횟수"))));
+            @Nested
+            @DisplayName("When - 공유를 요청하면")
+            class WhenSharing {
+                ValidatableMockMvcResponse response;
 
-            response.body("share_count", equalTo(1));
+                @BeforeEach
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .post("/api/v1/users/share")
+                            .then();
+                }
+
+                @Test
+                @DisplayName("Then - 공유 횟수를 반환한다")
+                void thenReturnsCount() {
+                    response.status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(UserShareControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    responseFields(fieldWithPath("share_count").description("오늘의 공유 횟수"))));
+
+                    response.body("share_count", equalTo(1));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("실패 - 일일 공유 제한을 초과하면 에러를 반환한다")
-        void shouldReturnLimitExceededError() {
-            doThrow(new UserShareException(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED))
-                    .when(userShareService)
-                    .share(fixedUserId);
+        @Nested
+        @DisplayName("Given - 일일 공유 제한을 초과했을 때")
+        class GivenLimitExceeded {
 
-            var response = given().contentType(ContentType.JSON)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .post("/api/v1/users/share")
-                    .then();
+            @BeforeEach
+            void setUp() throws CreditException, UserShareException {
+                doThrow(new UserShareException(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED))
+                        .when(userShareService)
+                        .share(fixedUserId);
+            }
 
-            assertErrorResponse(response, UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
+            @Nested
+            @DisplayName("When - 공유를 요청하면")
+            class WhenSharing {
+                ValidatableMockMvcResponse response;
+
+                @BeforeEach
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .post("/api/v1/users/share")
+                            .then();
+                }
+
+                @Test
+                @DisplayName("Then - LIMIT_EXCEEDED 에러를 반환한다")
+                void thenReturnsError() {
+                    assertErrorResponse(response, UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
+                }
+            }
         }
     }
 }

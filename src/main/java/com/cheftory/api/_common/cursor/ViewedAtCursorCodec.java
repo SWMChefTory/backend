@@ -9,7 +9,7 @@ public class ViewedAtCursorCodec implements CursorCodec<ViewedAtCursor> {
 
     private static final String SEP = "|";
 
-    public ViewedAtCursor decode(String cursor) {
+    public ViewedAtCursor decode(String cursor) throws CursorException {
         try {
             int idx = cursor.lastIndexOf(SEP);
 
@@ -23,10 +23,6 @@ public class ViewedAtCursorCodec implements CursorCodec<ViewedAtCursor> {
 
     @Override
     public String encode(ViewedAtCursor value) {
-        try {
-            return value.lastViewedAt().toString() + SEP + value.lastId().toString();
-        } catch (Exception e) {
-            throw new CursorException(CursorErrorCode.INVALID_CURSOR);
-        }
+        return value.lastViewedAt().toString() + SEP + value.lastId().toString();
     }
 }

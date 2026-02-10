@@ -8,11 +8,16 @@ public class CountIdCursorCodec implements CursorCodec<CountIdCursor> {
     private static final String SEP = "|";
 
     @Override
-    public CountIdCursor decode(String cursor) {
-        int idx = cursor.lastIndexOf(SEP);
-        long c = Long.parseLong(cursor.substring(0, idx));
-        UUID id = UUID.fromString(cursor.substring(idx + 1));
-        return new CountIdCursor(c, id);
+    public CountIdCursor decode(String cursor) throws CursorException {
+
+        try {
+            int idx = cursor.lastIndexOf(SEP);
+            long c = Long.parseLong(cursor.substring(0, idx));
+            UUID id = UUID.fromString(cursor.substring(idx + 1));
+            return new CountIdCursor(c, id);
+        } catch (Exception e) {
+            throw new CursorException(CursorErrorCode.INVALID_CURSOR);
+        }
     }
 
     @Override

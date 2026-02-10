@@ -3,21 +3,22 @@ package com.cheftory.api.recipe.content.detailmeta;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cheftory.api._common.Clock;
-import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaRepository;
 import com.cheftory.api.recipe.content.detailMeta.RecipeDetailMetaService;
 import com.cheftory.api.recipe.content.detailMeta.entity.RecipeDetailMeta;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaErrorCode;
 import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaException;
+import com.cheftory.api.recipe.content.detailMeta.repository.RecipeDetailMetaRepository;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +26,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-@DisplayName("RecipeDetailMetaService")
+@DisplayName("RecipeDetailMetaService 테스트")
 public class RecipeDetailMetaServiceTest {
 
     private RecipeDetailMetaRepository recipeDetailMetaRepository;
@@ -44,18 +45,17 @@ public class RecipeDetailMetaServiceTest {
         recipeDetailMetaService = new RecipeDetailMetaService(recipeDetailMetaRepository, clock);
     }
 
-    @DisplayName("레시피 상세 메타 생성")
     @Nested
-    class CreateRecipeDetailMeta {
+    @DisplayName("상세 메타 생성 (create)")
+    class Create {
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
         class GivenValidParameters {
-            private UUID recipeId;
-            private Integer cookTime;
-            private Integer servings;
-            private String description;
-            private RecipeDetailMeta savedMeta;
+            UUID recipeId;
+            Integer cookTime;
+            Integer servings;
+            String description;
 
             @BeforeEach
             void setUp() {
@@ -63,25 +63,23 @@ public class RecipeDetailMetaServiceTest {
                 cookTime = 30;
                 servings = 2;
                 description = "맛있는 김치찌개 만들기";
-                savedMeta = mock(RecipeDetailMeta.class);
-
-                when(recipeDetailMetaRepository.save(any(RecipeDetailMeta.class)))
-                        .thenReturn(savedMeta);
+                doNothing().when(recipeDetailMetaRepository).create(any(RecipeDetailMeta.class));
             }
 
-            @DisplayName("When - 레시피 상세 메타를 생성하면")
             @Nested
-            class WhenCreateRecipeDetailMeta {
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @BeforeEach
+                void setUp() {
+                    recipeDetailMetaService.create(recipeId, cookTime, servings, description);
+                }
 
                 @Test
-                @DisplayName("Then - 상세 메타가 성공적으로 생성된다")
-                void thenRecipeDetailMetaIsCreated() {
-                    // when
-                    recipeDetailMetaService.create(recipeId, cookTime, servings, description);
-
-                    // then
+                @DisplayName("Then - 상세 메타가 생성되어 저장된다")
+                void thenCreatedAndSaved() {
                     ArgumentCaptor<RecipeDetailMeta> captor = ArgumentCaptor.forClass(RecipeDetailMeta.class);
-                    verify(recipeDetailMetaRepository).save(captor.capture());
+                    verify(recipeDetailMetaRepository).create(captor.capture());
 
                     RecipeDetailMeta capturedMeta = captor.getValue();
                     assertThat(capturedMeta).isNotNull();
@@ -96,12 +94,12 @@ public class RecipeDetailMetaServiceTest {
         }
 
         @Nested
-        @DisplayName("Given - 간단한 레시피 파라미터가 주어졌을 때")
-        class GivenSimpleRecipeParameters {
-            private UUID recipeId;
-            private Integer cookTime;
-            private Integer servings;
-            private String description;
+        @DisplayName("Given - 간단한 파라미터가 주어졌을 때")
+        class GivenSimpleParameters {
+            UUID recipeId;
+            Integer cookTime;
+            Integer servings;
+            String description;
 
             @BeforeEach
             void setUp() {
@@ -109,94 +107,110 @@ public class RecipeDetailMetaServiceTest {
                 cookTime = 5;
                 servings = 1;
                 description = "간단한 계란찜";
-
-                when(recipeDetailMetaRepository.save(any(RecipeDetailMeta.class)))
-                        .thenReturn(mock(RecipeDetailMeta.class));
+                doNothing().when(recipeDetailMetaRepository).create(any(RecipeDetailMeta.class));
             }
 
-            @Test
-            @DisplayName("When - 간단한 레시피 메타를 생성하면 Then - 올바른 값으로 생성된다")
-            void whenCreateSimpleRecipeMeta_thenCreatedWithCorrectValues() {
-                // when
-                recipeDetailMetaService.create(recipeId, cookTime, servings, description);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
 
-                // then
-                ArgumentCaptor<RecipeDetailMeta> captor = ArgumentCaptor.forClass(RecipeDetailMeta.class);
-                verify(recipeDetailMetaRepository).save(captor.capture());
+                @BeforeEach
+                void setUp() {
+                    recipeDetailMetaService.create(recipeId, cookTime, servings, description);
+                }
 
-                RecipeDetailMeta capturedMeta = captor.getValue();
-                assertThat(capturedMeta.getCookTime()).isEqualTo(5);
-                assertThat(capturedMeta.getServings()).isEqualTo(1);
-                assertThat(capturedMeta.getDescription()).isEqualTo("간단한 계란찜");
+                @Test
+                @DisplayName("Then - 올바른 값으로 생성된다")
+                void thenCreatedCorrectly() {
+                    ArgumentCaptor<RecipeDetailMeta> captor = ArgumentCaptor.forClass(RecipeDetailMeta.class);
+                    verify(recipeDetailMetaRepository).create(captor.capture());
+
+                    RecipeDetailMeta capturedMeta = captor.getValue();
+                    assertThat(capturedMeta.getCookTime()).isEqualTo(5);
+                    assertThat(capturedMeta.getServings()).isEqualTo(1);
+                    assertThat(capturedMeta.getDescription()).isEqualTo("간단한 계란찜");
+                }
             }
         }
     }
 
-    @DisplayName("레시피 ID로 상세 메타 조회")
     @Nested
-    class FindByRecipeId {
+    @DisplayName("상세 메타 조회 (get)")
+    class Get {
 
         @Nested
         @DisplayName("Given - 존재하는 레시피 ID가 주어졌을 때")
-        class GivenExistingRecipeId {
-            private UUID recipeId;
-            private RecipeDetailMeta expectedMeta;
+        class GivenExistingId {
+            UUID recipeId;
+            RecipeDetailMeta expectedMeta;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeDetailMetaException {
                 recipeId = UUID.randomUUID();
                 expectedMeta = createMockRecipeDetailMeta(recipeId, 30, 2, "김치찌개");
-
-                when(recipeDetailMetaRepository.findByRecipeId(recipeId)).thenReturn(Optional.of(expectedMeta));
+                doReturn(expectedMeta).when(recipeDetailMetaRepository).get(recipeId);
             }
 
-            @Test
-            @DisplayName("When - 상세 메타를 조회하면 Then - 해당 메타가 반환된다")
-            void whenFindByRecipeId_thenReturnsMetaData() {
-                // when
-                RecipeDetailMeta result = recipeDetailMetaService.get(recipeId);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                RecipeDetailMeta result;
 
-                // then
-                assertThat(result).isEqualTo(expectedMeta);
-                assertThat(result.getRecipeId()).isEqualTo(recipeId);
-                assertThat(result.getCookTime()).isEqualTo(30);
-                assertThat(result.getServings()).isEqualTo(2);
-                assertThat(result.getDescription()).isEqualTo("김치찌개");
+                @BeforeEach
+                void setUp() throws RecipeDetailMetaException {
+                    result = recipeDetailMetaService.get(recipeId);
+                }
 
-                verify(recipeDetailMetaRepository).findByRecipeId(recipeId);
+                @Test
+                @DisplayName("Then - 해당 메타를 반환한다")
+                void thenReturnsMeta() throws RecipeDetailMetaException {
+                    assertThat(result).isEqualTo(expectedMeta);
+                    assertThat(result.getRecipeId()).isEqualTo(recipeId);
+                    assertThat(result.getCookTime()).isEqualTo(30);
+                    assertThat(result.getServings()).isEqualTo(2);
+                    assertThat(result.getDescription()).isEqualTo("김치찌개");
+                    verify(recipeDetailMetaRepository).get(recipeId);
+                }
             }
         }
 
         @Nested
         @DisplayName("Given - 존재하지 않는 레시피 ID가 주어졌을 때")
-        class GivenNonExistingRecipeId {
-            private UUID recipeId;
+        class GivenNonExistingId {
+            UUID recipeId;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws RecipeDetailMetaException {
                 recipeId = UUID.randomUUID();
-                when(recipeDetailMetaRepository.findByRecipeId(recipeId)).thenReturn(Optional.empty());
+                doThrow(new RecipeDetailMetaException(RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND))
+                        .when(recipeDetailMetaRepository)
+                        .get(recipeId);
             }
 
-            @Test
-            @DisplayName("When - 상세 메타를 조회하면 Then - 예외가 발생한다")
-            void whenFindByRecipeId_thenReturnsEmptyOptional() {
-                assertThatThrownBy(() -> recipeDetailMetaService.get(recipeId))
-                        .isInstanceOf(RecipeDetailMetaException.class)
-                        .hasFieldOrPropertyWithValue("error", RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+
+                @Test
+                @DisplayName("Then - 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> recipeDetailMetaService.get(recipeId))
+                            .isInstanceOf(RecipeDetailMetaException.class)
+                            .hasFieldOrPropertyWithValue("error", RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND);
+                }
             }
         }
     }
 
-    @DisplayName("여러 레시피 ID로 상세 메타 조회")
     @Nested
-    class FindByMultipleRecipeIds {
+    @DisplayName("다중 상세 메타 조회 (getIn)")
+    class GetIn {
 
         @Nested
         @DisplayName("Given - 여러 레시피 ID가 주어졌을 때")
-        class GivenMultipleRecipeIds {
-            private List<UUID> recipeIds;
-            private List<RecipeDetailMeta> expectedMetas;
+        class GivenMultipleIds {
+            List<UUID> recipeIds;
+            List<RecipeDetailMeta> expectedMetas;
 
             @BeforeEach
             void setUp() {
@@ -210,72 +224,92 @@ public class RecipeDetailMetaServiceTest {
                         createMockRecipeDetailMeta(recipeId2, 15, 1, "계란찜"),
                         createMockRecipeDetailMeta(recipeId3, 45, 4, "불고기"));
 
-                when(recipeDetailMetaRepository.findAllByRecipeIdIn(recipeIds)).thenReturn(expectedMetas);
+                when(recipeDetailMetaRepository.gets(recipeIds)).thenReturn(expectedMetas);
             }
 
-            @Test
-            @DisplayName("When - 여러 상세 메타를 조회하면 Then - 모든 메타가 반환된다")
-            void whenFindByMultipleRecipeIds_thenReturnsAllMetas() {
-                // when
-                List<RecipeDetailMeta> result = recipeDetailMetaService.getIn(recipeIds);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeDetailMeta> result;
 
-                // then
-                assertThat(result).hasSize(3);
-                assertThat(result).containsExactlyElementsOf(expectedMetas);
-                assertThat(result)
-                        .extracting(RecipeDetailMeta::getDescription)
-                        .containsExactlyInAnyOrder("김치찌개", "계란찜", "불고기");
-                assertThat(result).extracting(RecipeDetailMeta::getCookTime).containsExactlyInAnyOrder(30, 15, 45);
-                assertThat(result).extracting(RecipeDetailMeta::getServings).containsExactlyInAnyOrder(2, 1, 4);
+                @BeforeEach
+                void setUp() {
+                    result = recipeDetailMetaService.getIn(recipeIds);
+                }
 
-                verify(recipeDetailMetaRepository).findAllByRecipeIdIn(recipeIds);
+                @Test
+                @DisplayName("Then - 모든 메타를 반환한다")
+                void thenReturnsAll() {
+                    assertThat(result).hasSize(3);
+                    assertThat(result).containsExactlyElementsOf(expectedMetas);
+                    assertThat(result)
+                            .extracting(RecipeDetailMeta::getDescription)
+                            .containsExactlyInAnyOrder("김치찌개", "계란찜", "불고기");
+                    assertThat(result).extracting(RecipeDetailMeta::getCookTime).containsExactlyInAnyOrder(30, 15, 45);
+                    assertThat(result).extracting(RecipeDetailMeta::getServings).containsExactlyInAnyOrder(2, 1, 4);
+
+                    verify(recipeDetailMetaRepository).gets(recipeIds);
+                }
             }
         }
 
         @Nested
         @DisplayName("Given - 존재하지 않는 레시피 ID들이 주어졌을 때")
-        class GivenNonExistingRecipeIds {
-            private List<UUID> recipeIds;
+        class GivenNonExistingIds {
+            List<UUID> recipeIds;
 
             @BeforeEach
             void setUp() {
                 recipeIds = List.of(UUID.randomUUID(), UUID.randomUUID());
-                when(recipeDetailMetaRepository.findAllByRecipeIdIn(recipeIds)).thenReturn(Collections.emptyList());
+                when(recipeDetailMetaRepository.gets(recipeIds)).thenReturn(Collections.emptyList());
             }
 
-            @Test
-            @DisplayName("When - 여러 상세 메타를 조회하면 Then - 빈 목록이 반환된다")
-            void whenFindByNonExistingIds_thenReturnsEmptyList() {
-                // when
-                List<RecipeDetailMeta> result = recipeDetailMetaService.getIn(recipeIds);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeDetailMeta> result;
 
-                // then
-                assertThat(result).isEmpty();
-                verify(recipeDetailMetaRepository).findAllByRecipeIdIn(recipeIds);
+                @BeforeEach
+                void setUp() {
+                    result = recipeDetailMetaService.getIn(recipeIds);
+                }
+
+                @Test
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmpty() {
+                    assertThat(result).isEmpty();
+                    verify(recipeDetailMetaRepository).gets(recipeIds);
+                }
             }
         }
 
         @Nested
-        @DisplayName("Given - 빈 레시피 ID 목록이 주어졌을 때")
-        class GivenEmptyRecipeIds {
-            private List<UUID> emptyRecipeIds;
+        @DisplayName("Given - 빈 ID 목록이 주어졌을 때")
+        class GivenEmptyIds {
+            List<UUID> emptyRecipeIds;
 
             @BeforeEach
             void setUp() {
                 emptyRecipeIds = Collections.emptyList();
-                when(recipeDetailMetaRepository.findAllByRecipeIdIn(emptyRecipeIds))
-                        .thenReturn(Collections.emptyList());
+                when(recipeDetailMetaRepository.gets(emptyRecipeIds)).thenReturn(Collections.emptyList());
             }
 
-            @Test
-            @DisplayName("When - 빈 목록으로 조회하면 Then - 빈 목록이 반환된다")
-            void whenFindByEmptyList_thenReturnsEmptyList() {
-                // when
-                List<RecipeDetailMeta> result = recipeDetailMetaService.getIn(emptyRecipeIds);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                List<RecipeDetailMeta> result;
 
-                // then
-                assertThat(result).isEmpty();
-                verify(recipeDetailMetaRepository).findAllByRecipeIdIn(emptyRecipeIds);
+                @BeforeEach
+                void setUp() {
+                    result = recipeDetailMetaService.getIn(emptyRecipeIds);
+                }
+
+                @Test
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmpty() {
+                    assertThat(result).isEmpty();
+                    verify(recipeDetailMetaRepository).gets(emptyRecipeIds);
+                }
             }
         }
     }

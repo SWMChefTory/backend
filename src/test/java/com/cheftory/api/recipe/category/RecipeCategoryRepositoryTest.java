@@ -11,26 +11,19 @@ import com.cheftory.api.recipe.category.entity.RecipeCategory;
 import com.cheftory.api.recipe.category.entity.RecipeCategoryStatus;
 import com.cheftory.api.recipe.category.exception.RecipeCategoryErrorCode;
 import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
-import com.cheftory.api.recipe.category.repository.RecipeCategoryJpaRepository;
 import com.cheftory.api.recipe.category.repository.RecipeCategoryRepository;
 import com.cheftory.api.recipe.category.repository.RecipeCategoryRepositoryImpl;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
-@DisplayName("RecipeCategoryRepository Tests")
-@DataJpaTest
+@DisplayName("RecipeCategoryRepository 테스트")
 @Import({RecipeCategoryRepositoryImpl.class})
 public class RecipeCategoryRepositoryTest extends DbContextTest {
 
@@ -40,7 +33,7 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
     @Mock
     private Clock clock;
 
-    private LocalDateTime now = LocalDateTime.now();
+    private final LocalDateTime now = LocalDateTime.now();
 
     @BeforeEach
     void setUp() {
@@ -48,198 +41,386 @@ public class RecipeCategoryRepositoryTest extends DbContextTest {
         doReturn(now).when(clock).now();
     }
 
-
     @Nested
-    @DisplayName("카테고리 생성")
-    class CreateRecipeCategory {
+    @DisplayName("카테고리 생성 (create)")
+    class Create {
 
-        @Test
-        @DisplayName("카테고리를 생성한다")
-        void shouldCreateRecipeCategory() {
-            UUID userId = UUID.randomUUID();
-            String name = "테스트 카테고리";
+        @Nested
+        @DisplayName("Given - 유효한 카테고리가 주어졌을 때")
+        class GivenValidCategory {
+            UUID userId;
+            String name;
+            RecipeCategory category;
 
-            RecipeCategory category = RecipeCategory.create(clock, name, userId);
-            UUID categoryId = recipeCategoryRepository.create(category);
+            @BeforeEach
+            void setUp() throws RecipeCategoryException {
+                userId = UUID.randomUUID();
+                name = "테스트 카테고리";
+                category = RecipeCategory.create(clock, name, userId);
+            }
 
-            assertThat(categoryId).isNotNull();
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                UUID categoryId;
+
+                @BeforeEach
+                void setUp() {
+                    categoryId = recipeCategoryRepository.create(category);
+                }
+
+                @Test
+                @DisplayName("Then - 카테고리가 생성된다")
+                void thenCreated() {
+                    assertThat(categoryId).isNotNull();
+                }
+            }
         }
 
-        @Test
-        @DisplayName("이름이 비어있으면 예외를 던진다")
-        void shouldThrowExceptionWhenNameEmpty() {
-            UUID userId = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 이름이 비어있을 때")
+        class GivenEmptyName {
+            UUID userId;
 
-            assertThatThrownBy(() -> RecipeCategory.create(clock, "", userId))
-                    .isInstanceOf(RecipeCategoryException.class)
-                    .extracting("error")
-                    .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
+            @BeforeEach
+            void setUp() {
+                userId = UUID.randomUUID();
+            }
+
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @Test
+                @DisplayName("Then - NAME_EMPTY 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> RecipeCategory.create(clock, "", userId))
+                            .isInstanceOf(RecipeCategoryException.class)
+                            .extracting("error")
+                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("이름이 공백이면 예외를 던진다")
-        void shouldThrowExceptionWhenNameBlank() {
-            UUID userId = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 이름이 공백일 때")
+        class GivenBlankName {
+            UUID userId;
 
-            assertThatThrownBy(() -> RecipeCategory.create(clock, "   ", userId))
-                    .isInstanceOf(RecipeCategoryException.class)
-                    .extracting("error")
-                    .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
+            @BeforeEach
+            void setUp() {
+                userId = UUID.randomUUID();
+            }
+
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+
+                @Test
+                @DisplayName("Then - NAME_EMPTY 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> RecipeCategory.create(clock, "   ", userId))
+                            .isInstanceOf(RecipeCategoryException.class)
+                            .extracting("error")
+                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NAME_EMPTY);
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("카테고리 삭제")
-    class DeleteRecipeCategory {
+    @DisplayName("카테고리 삭제 (delete)")
+    class Delete {
 
-        @Test
-        @DisplayName("카테고리를 삭제한다")
-        void shouldDeleteRecipeCategory() {
-            UUID userId = UUID.randomUUID();
-            String name = "테스트 카테고리";
+        @Nested
+        @DisplayName("Given - 존재하는 카테고리가 있을 때")
+        class GivenExistingCategory {
+            UUID userId;
+            UUID categoryId;
 
-            RecipeCategory category = RecipeCategory.create(clock, name, userId);
-            UUID categoryId = recipeCategoryRepository.create(category);
+            @BeforeEach
+            void setUp() throws RecipeCategoryException {
+                userId = UUID.randomUUID();
+                RecipeCategory category = RecipeCategory.create(clock, "테스트 카테고리", userId);
+                categoryId = recipeCategoryRepository.create(category);
+            }
 
-            recipeCategoryRepository.delete(userId, categoryId);
+            @Nested
+            @DisplayName("When - 삭제를 요청하면")
+            class WhenDeleting {
 
+                @BeforeEach
+                void setUp() throws RecipeCategoryException {
+                    recipeCategoryRepository.delete(userId, categoryId);
+                }
+
+                @Test
+                @DisplayName("Then - 카테고리가 삭제된다")
+                void thenDeleted() {
+                    assertThat(recipeCategoryRepository.exists(categoryId)).isFalse();
+                }
+            }
         }
 
-        @Test
-        @DisplayName("존재하지 않는 카테고리 삭제 시 예외를 던진다")
-        void shouldThrowExceptionWhenCategoryNotFound() {
-            UUID userId = UUID.randomUUID();
-            UUID categoryId = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 존재하지 않는 카테고리일 때")
+        class GivenNonExistingCategory {
+            UUID userId;
+            UUID categoryId;
 
-            assertThatThrownBy(() -> recipeCategoryRepository.delete(userId, categoryId))
-                    .isInstanceOf(RecipeCategoryException.class)
-                    .extracting("error")
-                    .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND);
+            @BeforeEach
+            void setUp() {
+                userId = UUID.randomUUID();
+                categoryId = UUID.randomUUID();
+            }
+
+            @Nested
+            @DisplayName("When - 삭제를 요청하면")
+            class WhenDeleting {
+
+                @Test
+                @DisplayName("Then - NOT_FOUND 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> recipeCategoryRepository.delete(userId, categoryId))
+                            .isInstanceOf(RecipeCategoryException.class)
+                            .extracting("error")
+                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("다른 사용자의 카테고리 삭제 시 예외를 던진다")
-        void shouldThrowExceptionWhenNotOwner() {
-            UUID userId1 = UUID.randomUUID();
-            UUID userId2 = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 다른 사용자의 카테고리일 때")
+        class GivenOtherUserCategory {
+            UUID userId1;
+            UUID userId2;
+            UUID categoryId;
 
-            RecipeCategory category = RecipeCategory.create(clock, "테스트 카테고리", userId1);
-            UUID categoryId = recipeCategoryRepository.create(category);
+            @BeforeEach
+            void setUp() throws RecipeCategoryException {
+                userId1 = UUID.randomUUID();
+                userId2 = UUID.randomUUID();
+                RecipeCategory category = RecipeCategory.create(clock, "테스트 카테고리", userId1);
+                categoryId = recipeCategoryRepository.create(category);
+            }
 
-            assertThatThrownBy(() -> recipeCategoryRepository.delete(userId2, categoryId))
-                    .isInstanceOf(RecipeCategoryException.class)
-                    .extracting("error")
-                    .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND);
+            @Nested
+            @DisplayName("When - 삭제를 요청하면")
+            class WhenDeleting {
+
+                @Test
+                @DisplayName("Then - NOT_FOUND 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> recipeCategoryRepository.delete(userId2, categoryId))
+                            .isInstanceOf(RecipeCategoryException.class)
+                            .extracting("error")
+                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("이미 삭제된 카테고리 삭제 시 예외를 던진다")
-        void shouldThrowExceptionWhenAlreadyDeleted() {
-            UUID userId = UUID.randomUUID();
-            String name = "테스트 카테고리";
+        @Nested
+        @DisplayName("Given - 이미 삭제된 카테고리일 때")
+        class GivenDeletedCategory {
+            UUID userId;
+            UUID categoryId;
 
-            RecipeCategory category = RecipeCategory.create(clock, name, userId);
-            UUID categoryId = recipeCategoryRepository.create(category);
+            @BeforeEach
+            void setUp() throws RecipeCategoryException {
+                userId = UUID.randomUUID();
+                RecipeCategory category = RecipeCategory.create(clock, "테스트 카테고리", userId);
+                categoryId = recipeCategoryRepository.create(category);
+                recipeCategoryRepository.delete(userId, categoryId);
+            }
 
-            recipeCategoryRepository.delete(userId, categoryId);
+            @Nested
+            @DisplayName("When - 삭제를 요청하면")
+            class WhenDeleting {
 
-            assertThatThrownBy(() -> recipeCategoryRepository.delete(userId, categoryId))
-                    .isInstanceOf(RecipeCategoryException.class)
-                    .extracting("error")
-                    .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND);
+                @Test
+                @DisplayName("Then - NOT_FOUND 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> recipeCategoryRepository.delete(userId, categoryId))
+                            .isInstanceOf(RecipeCategoryException.class)
+                            .extracting("error")
+                            .isEqualTo(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND);
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("카테고리 조회")
-    class GetsRecipeCategory {
+    @DisplayName("카테고리 조회 (gets)")
+    class Gets {
 
-        @Test
-        @DisplayName("사용자의 활성 카테고리 목록을 조회한다")
-        void shouldGetUserCategories() {
-            UUID userId = UUID.randomUUID();
-            String name1 = "카테고리1";
-            String name2 = "카테고리2";
-            String name3 = "카테고리3";
+        @Nested
+        @DisplayName("Given - 사용자의 카테고리들이 있을 때")
+        class GivenUserCategories {
+            UUID userId;
+            String name1;
+            String name2;
+            String name3;
 
-            RecipeCategory category1 = RecipeCategory.create(clock, name1, userId);
-            recipeCategoryRepository.create(category1);
-            RecipeCategory category2 = RecipeCategory.create(clock, name2, userId);
-            recipeCategoryRepository.create(category2);
-            RecipeCategory category3 = RecipeCategory.create(clock, name3, userId);
-            recipeCategoryRepository.create(category3);
+            @BeforeEach
+            void setUp() throws RecipeCategoryException {
+                userId = UUID.randomUUID();
+                name1 = "카테고리1";
+                name2 = "카테고리2";
+                name3 = "카테고리3";
 
-            var result = recipeCategoryRepository.gets(userId);
+                recipeCategoryRepository.create(RecipeCategory.create(clock, name1, userId));
+                recipeCategoryRepository.create(RecipeCategory.create(clock, name2, userId));
+                recipeCategoryRepository.create(RecipeCategory.create(clock, name3, userId));
+            }
 
-            assertThat(result).hasSize(3);
-            assertThat(result).extracting("name").contains(name1, name2, name3);
-            assertThat(result).allMatch(c -> c.getStatus().equals(RecipeCategoryStatus.ACTIVE));
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                java.util.List<RecipeCategory> result;
+
+                @BeforeEach
+                void setUp() {
+                    result = recipeCategoryRepository.gets(userId);
+                }
+
+                @Test
+                @DisplayName("Then - 활성 카테고리 목록을 반환한다")
+                void thenReturnsActiveCategories() {
+                    assertThat(result).hasSize(3);
+                    assertThat(result).extracting("name").contains(name1, name2, name3);
+                    assertThat(result).allMatch(c -> c.getStatus().equals(RecipeCategoryStatus.ACTIVE));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("삭제된 카테고리는 목록에서 제외된다")
-        void shouldExcludeDeletedCategories() {
-            UUID userId = UUID.randomUUID();
-            String name1 = "카테고리1";
-            String name2 = "카테고리2";
+        @Nested
+        @DisplayName("Given - 삭제된 카테고리가 포함되어 있을 때")
+        class GivenDeletedCategoriesIncluded {
+            UUID userId;
+            String name1;
 
-            RecipeCategory category1 = RecipeCategory.create(clock, name1, userId);
-            RecipeCategory category2 = RecipeCategory.create(clock, name2, userId);
+            @BeforeEach
+            void setUp() throws RecipeCategoryException {
+                userId = UUID.randomUUID();
+                name1 = "카테고리1";
+                String name2 = "카테고리2";
 
-            recipeCategoryRepository.create(category1);
-            UUID categoryId2 = recipeCategoryRepository.create(category2);
+                recipeCategoryRepository.create(RecipeCategory.create(clock, name1, userId));
+                UUID categoryId2 = recipeCategoryRepository.create(RecipeCategory.create(clock, name2, userId));
+                recipeCategoryRepository.delete(userId, categoryId2);
+            }
 
-            recipeCategoryRepository.delete(userId, categoryId2);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+                java.util.List<RecipeCategory> result;
 
-            var result = recipeCategoryRepository.gets(userId);
+                @BeforeEach
+                void setUp() {
+                    result = recipeCategoryRepository.gets(userId);
+                }
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getName()).isEqualTo(name1);
+                @Test
+                @DisplayName("Then - 삭제된 카테고리는 제외된다")
+                void thenExcludesDeleted() {
+                    assertThat(result).hasSize(1);
+                    assertThat(result.getFirst().getName()).isEqualTo(name1);
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("카테고리 존재 여부 확인")
-    class ExistsRecipeCategory {
+    @DisplayName("카테고리 존재 여부 확인 (exists)")
+    class Exists {
 
-        @Test
-        @DisplayName("카테고리가 존재하면 true를 반환한다")
-        void shouldReturnTrueWhenCategoryExists() {
-            UUID userId = UUID.randomUUID();
-            String name = "테스트 카테고리";
+        @Nested
+        @DisplayName("Given - 존재하는 카테고리일 때")
+        class GivenExistingCategory {
+            UUID categoryId;
 
-            RecipeCategory category = RecipeCategory.create(clock, name, userId);
-            UUID categoryId = recipeCategoryRepository.create(category);
+            @BeforeEach
+            void setUp() throws RecipeCategoryException {
+                UUID userId = UUID.randomUUID();
+                RecipeCategory category = RecipeCategory.create(clock, "테스트 카테고리", userId);
+                categoryId = recipeCategoryRepository.create(category);
+            }
 
-            boolean result = recipeCategoryRepository.exists(categoryId);
+            @Nested
+            @DisplayName("When - 확인을 요청하면")
+            class WhenChecking {
+                boolean result;
 
-            assertThat(result).isTrue();
+                @BeforeEach
+                void setUp() {
+                    result = recipeCategoryRepository.exists(categoryId);
+                }
+
+                @Test
+                @DisplayName("Then - true를 반환한다")
+                void thenReturnsTrue() {
+                    assertThat(result).isTrue();
+                }
+            }
         }
 
-        @Test
-        @DisplayName("삭제된 카테고리는 존재하지 않는 것으로 간주한다")
-        void shouldReturnFalseWhenCategoryDeleted() {
-            UUID userId = UUID.randomUUID();
-            String name = "테스트 카테고리";
+        @Nested
+        @DisplayName("Given - 삭제된 카테고리일 때")
+        class GivenDeletedCategory {
+            UUID categoryId;
 
-            RecipeCategory category = RecipeCategory.create(clock, name, userId);
-            UUID categoryId = recipeCategoryRepository.create(category);
+            @BeforeEach
+            void setUp() throws RecipeCategoryException {
+                UUID userId = UUID.randomUUID();
+                RecipeCategory category = RecipeCategory.create(clock, "테스트 카테고리", userId);
+                categoryId = recipeCategoryRepository.create(category);
+                recipeCategoryRepository.delete(userId, categoryId);
+            }
 
-            recipeCategoryRepository.delete(userId, categoryId);
+            @Nested
+            @DisplayName("When - 확인을 요청하면")
+            class WhenChecking {
+                boolean result;
 
-            boolean result = recipeCategoryRepository.exists(categoryId);
+                @BeforeEach
+                void setUp() {
+                    result = recipeCategoryRepository.exists(categoryId);
+                }
 
-            assertThat(result).isFalse();
+                @Test
+                @DisplayName("Then - false를 반환한다")
+                void thenReturnsFalse() {
+                    assertThat(result).isFalse();
+                }
+            }
         }
 
-        @Test
-        @DisplayName("카테고리가 존재하지 않으면 false를 반환한다")
-        void shouldReturnFalseWhenCategoryNotExists() {
-            UUID categoryId = UUID.randomUUID();
+        @Nested
+        @DisplayName("Given - 존재하지 않는 카테고리일 때")
+        class GivenNonExistingCategory {
+            UUID categoryId;
 
-            boolean result = recipeCategoryRepository.exists(categoryId);
+            @BeforeEach
+            void setUp() {
+                categoryId = UUID.randomUUID();
+            }
 
-            assertThat(result).isFalse();
+            @Nested
+            @DisplayName("When - 확인을 요청하면")
+            class WhenChecking {
+                boolean result;
+
+                @BeforeEach
+                void setUp() {
+                    result = recipeCategoryRepository.exists(categoryId);
+                }
+
+                @Test
+                @DisplayName("Then - false를 반환한다")
+                void thenReturnsFalse() {
+                    assertThat(result).isFalse();
+                }
+            }
         }
     }
 }

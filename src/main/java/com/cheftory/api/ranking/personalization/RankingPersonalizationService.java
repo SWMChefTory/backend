@@ -2,6 +2,7 @@ package com.cheftory.api.ranking.personalization;
 
 import static java.util.Objects.requireNonNull;
 
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,11 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 랭킹 개인화 서비스.
+ *
+ * <p>사용자의 시드 아이템을 기반으로 개인화 프로필을 생성합니다.</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class RankingPersonalizationService {
@@ -20,7 +26,14 @@ public class RankingPersonalizationService {
 
     private final RankingPersonalizationSearchPort rankingPersonalizationSearchPort;
 
-    public PersonalizationProfile aggregateProfile(List<UUID> seedIds) {
+    /**
+     * 시드 아이템들을 기반으로 개인화 프로필을 집계합니다.
+     *
+     * @param seedIds 시드 아이템 ID 목록
+     * @return 개인화 프로필
+     * @throws SearchException 검색 예외
+     */
+    public PersonalizationProfile aggregateProfile(List<UUID> seedIds) throws SearchException {
         List<String> ids = seedIds.stream().map(UUID::toString).toList();
         List<SearchQuery> seedDocs = rankingPersonalizationSearchPort.mgetSearchQueries(ids);
 
@@ -37,6 +50,13 @@ public class RankingPersonalizationService {
         return new PersonalizationProfile(topK(keywordCounts, KEYWORDS_TOP_N), topK(channelCounts, CHANNELS_TOP_N));
     }
 
+    /**
+     * 상위 K개 항목을 추출합니다.
+     *
+     * @param counts 항목별 카운트 맵
+     * @param k 추출할 개수
+     * @return 상위 K개 항목
+     */
     private static List<String> topK(Map<String, Integer> counts, int k) {
         return counts.entrySet().stream()
                 .sorted((a, b) -> {

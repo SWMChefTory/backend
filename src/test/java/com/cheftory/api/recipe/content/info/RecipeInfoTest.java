@@ -13,7 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("RecipeTest")
+@DisplayName("RecipeInfo 엔티티")
 public class RecipeInfoTest {
 
     private Clock clock;
@@ -25,27 +25,26 @@ public class RecipeInfoTest {
     }
 
     @Nested
-    @DisplayName("레시피 생성")
-    class CreateRecipeInfo {
+    @DisplayName("레시피 생성 (create)")
+    class Create {
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
         class GivenValidParameters {
 
             @Nested
-            @DisplayName("When - 레시피를 생성하면")
-            class WhenCreateRecipeInfo {
-
-                private RecipeInfo recipeInfo;
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                RecipeInfo recipeInfo;
 
                 @BeforeEach
                 void setUp() {
                     recipeInfo = RecipeInfo.create(clock);
                 }
 
-                @DisplayName("Then - 레시피가 생성된다")
                 @Test
-                void thenRecipeIsCreated() {
+                @DisplayName("Then - 초기 상태로 생성된다")
+                void thenCreated() {
                     assertThat(recipeInfo).isNotNull();
                     assertThat(recipeInfo.getId()).isNotNull();
                     assertThat(recipeInfo.getViewCount()).isEqualTo(0);
@@ -58,14 +57,13 @@ public class RecipeInfoTest {
     }
 
     @Nested
-    @DisplayName("레시피 상태 변경")
-    class ChangeRecipeInfoStatus {
+    @DisplayName("상태 변경 (success, failed)")
+    class StatusChange {
 
         @Nested
         @DisplayName("Given - 레시피가 생성되어 있을 때")
-        class GivenRecipeInfoCreated {
-
-            private RecipeInfo recipeInfo;
+        class GivenCreated {
+            RecipeInfo recipeInfo;
 
             @BeforeEach
             void setUp() {
@@ -73,17 +71,17 @@ public class RecipeInfoTest {
             }
 
             @Nested
-            @DisplayName("When - 레시피 상태를 성공으로 변경하면")
-            class WhenChangeStatusToSuccess {
+            @DisplayName("When - 성공으로 변경하면")
+            class WhenSuccess {
 
                 @BeforeEach
                 void setUp() {
                     recipeInfo.success(clock);
                 }
 
-                @DisplayName("Then - 레시피 상태가 성공으로 변경된다")
                 @Test
-                void thenRecipeStatusIsSuccess() {
+                @DisplayName("Then - SUCCESS 상태가 된다")
+                void thenSuccess() {
                     assertThat(recipeInfo.isSuccess()).isTrue();
                     assertThat(recipeInfo.isFailed()).isFalse();
                     assertThat(recipeInfo.getRecipeStatus()).isEqualTo(RecipeStatus.SUCCESS);
@@ -91,17 +89,17 @@ public class RecipeInfoTest {
             }
 
             @Nested
-            @DisplayName("When - 레시피 상태를 실패로 변경하면")
-            class WhenChangeStatusToFailed {
+            @DisplayName("When - 실패로 변경하면")
+            class WhenFailed {
 
                 @BeforeEach
                 void setUp() {
                     recipeInfo.failed(clock);
                 }
 
-                @DisplayName("Then - 레시피 상태가 실패로 변경된다")
                 @Test
-                void thenRecipeStatusIsFailed() {
+                @DisplayName("Then - FAILED 상태가 된다")
+                void thenFailed() {
                     assertThat(recipeInfo.isFailed()).isTrue();
                     assertThat(recipeInfo.isSuccess()).isFalse();
                     assertThat(recipeInfo.isBlocked()).isFalse();
@@ -112,14 +110,13 @@ public class RecipeInfoTest {
     }
 
     @Nested
-    @DisplayName("레시피 상태 확인")
-    class CheckRecipeInfoStatus {
+    @DisplayName("상태 확인 (isSuccess, isFailed, isBlocked)")
+    class StatusCheck {
 
         @Nested
-        @DisplayName("Given - SUCCESS 상태의 레시피가 있을 때")
-        class GivenSuccessRecipeInfo {
-
-            private RecipeInfo recipeInfo;
+        @DisplayName("Given - SUCCESS 상태일 때")
+        class GivenSuccess {
+            RecipeInfo recipeInfo;
 
             @BeforeEach
             void setUp() {
@@ -128,8 +125,8 @@ public class RecipeInfoTest {
             }
 
             @Test
-            @DisplayName("Then - isSuccess는 true, isFailed와 isBlocked는 false를 반환한다")
-            void thenSuccessCheckMethodsWork() {
+            @DisplayName("Then - isSuccess만 true를 반환한다")
+            void thenIsSuccessTrue() {
                 assertThat(recipeInfo.isSuccess()).isTrue();
                 assertThat(recipeInfo.isFailed()).isFalse();
                 assertThat(recipeInfo.isBlocked()).isFalse();
@@ -137,10 +134,9 @@ public class RecipeInfoTest {
         }
 
         @Nested
-        @DisplayName("Given - FAILED 상태의 레시피가 있을 때")
-        class GivenFailedRecipeInfo {
-
-            private RecipeInfo recipeInfo;
+        @DisplayName("Given - FAILED 상태일 때")
+        class GivenFailed {
+            RecipeInfo recipeInfo;
 
             @BeforeEach
             void setUp() {
@@ -149,8 +145,8 @@ public class RecipeInfoTest {
             }
 
             @Test
-            @DisplayName("Then - isFailed는 true, isSuccess와 isBlocked는 false를 반환한다")
-            void thenFailedCheckMethodsWork() {
+            @DisplayName("Then - isFailed만 true를 반환한다")
+            void thenIsFailedTrue() {
                 assertThat(recipeInfo.isFailed()).isTrue();
                 assertThat(recipeInfo.isSuccess()).isFalse();
                 assertThat(recipeInfo.isBlocked()).isFalse();
@@ -158,10 +154,9 @@ public class RecipeInfoTest {
         }
 
         @Nested
-        @DisplayName("Given - IN_PROGRESS 상태의 레시피가 있을 때")
-        class GivenInProgressRecipeInfo {
-
-            private RecipeInfo recipeInfo;
+        @DisplayName("Given - IN_PROGRESS 상태일 때")
+        class GivenInProgress {
+            RecipeInfo recipeInfo;
 
             @BeforeEach
             void setUp() {
@@ -169,8 +164,8 @@ public class RecipeInfoTest {
             }
 
             @Test
-            @DisplayName("Then - 모든 상태 체크 메서드가 false를 반환한다")
-            void thenInProgressCheckMethodsWork() {
+            @DisplayName("Then - 모든 상태 확인 메서드가 false를 반환한다")
+            void thenAllFalse() {
                 assertThat(recipeInfo.isSuccess()).isFalse();
                 assertThat(recipeInfo.isFailed()).isFalse();
                 assertThat(recipeInfo.isBlocked()).isFalse();

@@ -15,10 +15,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
-@DataJpaTest
 @Import(UserRepositoryImpl.class)
 class UserRepositoryTest extends DbContextTest {
 
@@ -27,7 +25,7 @@ class UserRepositoryTest extends DbContextTest {
 
     @Test
     @DisplayName("유저 ID로 유저 조회")
-    void find_byUserId() {
+    void find_byUserId() throws UserException {
         Clock clock = new Clock();
         User user = User.create("테스터", Gender.MALE, LocalDate.of(1990, 1, 1), Provider.GOOGLE, "sub-1234", true, clock);
 
@@ -42,7 +40,7 @@ class UserRepositoryTest extends DbContextTest {
     @Test
     @DisplayName("존재하지 않는 유저 ID로 조회하면 예외 발생")
     void find_byNotFoundUserId_throwException() {
-        assertThatThrownBy(() -> userRepository.find(java.util.UUID.randomUUID()))
+        assertThatThrownBy(() -> userRepository.find(UUID.randomUUID()))
                 .isInstanceOf(UserException.class)
                 .extracting("error")
                 .isEqualTo(UserErrorCode.USER_NOT_FOUND);
@@ -50,7 +48,7 @@ class UserRepositoryTest extends DbContextTest {
 
     @Test
     @DisplayName("Provider와 ProviderSub로 유저 조회")
-    void find_byProviderAndProviderSub() {
+    void find_byProviderAndProviderSub() throws UserException {
         Clock clock = new Clock();
         User user = User.create(
                 "테스터", Gender.FEMALE, LocalDate.of(1995, 3, 15), Provider.APPLE, "apple-sub-999", false, clock);
@@ -65,7 +63,7 @@ class UserRepositoryTest extends DbContextTest {
 
     @Test
     @DisplayName("Provider와 ProviderSub로 존재 여부 확인 - 존재하는 경우")
-    void exist_byProviderAndProviderSub_returnsTrue() {
+    void exist_byProviderAndProviderSub_returnsTrue() throws UserException {
         Clock clock = new Clock();
         User user =
                 User.create("테스터", Gender.MALE, LocalDate.of(1990, 1, 1), Provider.KAKAO, "kakao-sub-111", true, clock);
@@ -79,7 +77,7 @@ class UserRepositoryTest extends DbContextTest {
 
     @Test
     @DisplayName("Provider와 ProviderSub로 존재 여부 확인 - 존재하지 않는 경우")
-    void exist_byProviderAndProviderSub_returnsFalse() {
+    void exist_byProviderAndProviderSub_returnsFalse() throws UserException {
         boolean result = userRepository.exist(Provider.GOOGLE, "non-existent-sub");
 
         assertThat(result).isFalse();
@@ -100,7 +98,7 @@ class UserRepositoryTest extends DbContextTest {
 
     @Test
     @DisplayName("유저 정보 수정")
-    void update_user() {
+    void update_user() throws UserException {
         Clock clock = new Clock();
         User user =
                 User.create("수정전", Gender.MALE, LocalDate.of(1990, 1, 1), Provider.GOOGLE, "update-sub", true, clock);
@@ -127,7 +125,7 @@ class UserRepositoryTest extends DbContextTest {
 
     @Test
     @DisplayName("유저 삭제 (DELETED 상태로 변경)")
-    void delete_user() {
+    void delete_user() throws UserException {
         Clock clock = new Clock();
         User user =
                 User.create("삭제할유저", Gender.MALE, LocalDate.of(1990, 1, 1), Provider.GOOGLE, "delete-sub", true, clock);
@@ -169,14 +167,14 @@ class UserRepositoryTest extends DbContextTest {
     @Test
     @DisplayName("유저 ID로 존재 여부 확인 - 존재하지 않는 경우")
     void exist_byUserId_returnsFalse() {
-        boolean result = userRepository.exist(java.util.UUID.randomUUID());
+        boolean result = userRepository.exist(UUID.randomUUID());
 
         assertThat(result).isFalse();
     }
 
     @Test
     @DisplayName("튜토리얼 완료 처리")
-    void completeTutorial_user() {
+    void completeTutorial_user() throws UserException {
         Clock clock = new Clock();
         User user = User.create(
                 "튜토리얼", Gender.MALE, LocalDate.of(1990, 1, 1), Provider.GOOGLE, "tutorial-sub", true, clock);
@@ -217,7 +215,7 @@ class UserRepositoryTest extends DbContextTest {
 
     @Test
     @DisplayName("튜토리얼 완료 취소 처리")
-    void decompleteTutorial_user() {
+    void decompleteTutorial_user() throws UserException {
         Clock clock = new Clock();
         User user = User.create(
                 "튜토리얼취소", Gender.MALE, LocalDate.of(1990, 1, 1), Provider.GOOGLE, "revert-sub", true, clock);

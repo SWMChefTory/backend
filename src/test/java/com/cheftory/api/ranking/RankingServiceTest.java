@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.RankingCursor;
 import com.cheftory.api._common.cursor.RankingCursorCodec;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.candidate.RankingCandidateService;
 import com.cheftory.api.ranking.interaction.RankingInteractionService;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
@@ -48,7 +49,7 @@ class RankingServiceTest {
 
     @Test
     @DisplayName("recommend first page opens pit and refreshes snapshot when hasNext")
-    void recommendFirstPageHasNext() {
+    void recommendFirstPageHasNext() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         UUID requestId = UUID.randomUUID();
         List<UUID> items = List.of(UUID.randomUUID(), UUID.randomUUID());
@@ -84,7 +85,7 @@ class RankingServiceTest {
 
     @Test
     @DisplayName("recommend next page closes pit and clears snapshot when no next cursor")
-    void recommendNextPageNoNext() {
+    void recommendNextPageNoNext() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         UUID requestId = UUID.randomUUID();
         RankingCursor decoded = new RankingCursor(requestId, "after");
@@ -118,7 +119,7 @@ class RankingServiceTest {
 
     @Test
     @DisplayName("event delegates to interaction service")
-    void eventDelegatesToInteractionService() {
+    void eventDelegatesToInteractionService() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         UUID itemId = UUID.randomUUID();
         UUID requestId = UUID.randomUUID();

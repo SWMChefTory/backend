@@ -63,7 +63,7 @@ public class TokenProvider {
      * @throws AuthException 토큰이 만료되었을 때 EXPIRED_TOKEN
      * @throws AuthException 토큰이 유효하지 않을 때 INVALID_TOKEN
      */
-    public UUID getUserId(String token, AuthTokenType expectedType) {
+    public UUID getUserId(String token, AuthTokenType expectedType) throws AuthException {
         Claims claims = parseTokenClaims(token);
 
         String expected = expectedType == AuthTokenType.ACCESS

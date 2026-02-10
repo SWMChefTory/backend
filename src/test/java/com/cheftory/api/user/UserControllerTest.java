@@ -14,6 +14,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.security.UserArgumentResolver;
+import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.exception.GlobalExceptionHandler;
 import com.cheftory.api.user.entity.Gender;
 import com.cheftory.api.user.entity.Provider;
@@ -68,66 +69,90 @@ public class UserControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("GET /api/v1/users/me - 현재 로그인한 사용자 정보 조회")
-    class getUserResponse {
+    @DisplayName("내 정보 조회 (getMe)")
+    class GetMe {
 
-        @Test
-        @DisplayName("성공 - 유저 정보를 반환한다")
-        void shouldReturnUserInfo() {
+        @Nested
+        @DisplayName("Given - 유효한 사용자일 때")
+        class GivenValidUser {
 
-            User user = User.create(
-                    "nickname", Gender.MALE, validDateOfBirth, Provider.APPLE, "apple-sub-123", true, clock);
+            @BeforeEach
+            void setUp() throws UserException {
+                User user = User.create(
+                        "nickname", Gender.MALE, validDateOfBirth, Provider.APPLE, "apple-sub-123", true, clock);
+                doReturn(user).when(userService).get(fixedUserId);
+            }
 
-            doReturn(user).when(userService).get(fixedUserId);
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
 
-            var response = given().contentType(ContentType.JSON)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .get("/api/v1/users/me")
-                    .then()
-                    .status(HttpStatus.OK)
-                    .apply(document(
-                            getNestedClassPath(this.getClass()) + "/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            responseFields(
-                                    fieldWithPath("nickname").description("닉네임"),
-                                    fieldWithPath("gender").description("성별"),
-                                    fieldWithPath("date_of_birth").description("생년월일"),
-                                    fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
-                                    fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                                    fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
-                                    fieldWithPath("provider_sub").description("공급자 고유번호"))));
+                @Test
+                @DisplayName("Then - 유저 정보를 반환한다")
+                void thenReturnsUserInfo() {
+                    var response = given().contentType(ContentType.JSON)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .get("/api/v1/users/me")
+                            .then()
+                            .status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(UserControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    responseFields(
+                                            fieldWithPath("nickname").description("닉네임"),
+                                            fieldWithPath("gender").description("성별"),
+                                            fieldWithPath("date_of_birth").description("생년월일"),
+                                            fieldWithPath("terms_of_use_agreed_at")
+                                                    .description("이용약관 동의 일시"),
+                                            fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                                            fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                                            fieldWithPath("provider_sub").description("공급자 고유번호"))));
 
-            response.body("nickname", equalTo("nickname"))
-                    .body("gender", equalTo(Gender.MALE.name()))
-                    .body("date_of_birth", equalTo(validDateOfBirth.toString()));
+                    response.body("nickname", equalTo("nickname"))
+                            .body("gender", equalTo(Gender.MALE.name()))
+                            .body("date_of_birth", equalTo(validDateOfBirth.toString()));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("실패 - 존재하지 않는 유저일 경우 400를 반환한다")
-        void shouldThrowUserNotFound_whenUserDoesNotExist() {
+        @Nested
+        @DisplayName("Given - 존재하지 않는 사용자일 때")
+        class GivenNonExistingUser {
 
-            doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
-                    .when(userService)
-                    .get(fixedUserId);
+            @BeforeEach
+            void setUp() throws UserException {
+                doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
+                        .when(userService)
+                        .get(fixedUserId);
+            }
 
-            given().contentType(ContentType.JSON)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .get("/api/v1/users/me")
-                    .then()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("message", equalTo(UserErrorCode.USER_NOT_FOUND.getMessage()))
-                    .body("errorCode", equalTo(UserErrorCode.USER_NOT_FOUND.getErrorCode()));
+            @Nested
+            @DisplayName("When - 조회를 요청하면")
+            class WhenGetting {
+
+                @Test
+                @DisplayName("Then - 400 Bad Request를 반환한다")
+                void thenReturnsBadRequest() {
+                    given().contentType(ContentType.JSON)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .get("/api/v1/users/me")
+                            .then()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .body("message", equalTo(UserErrorCode.USER_NOT_FOUND.getMessage()))
+                            .body("errorCode", equalTo(UserErrorCode.USER_NOT_FOUND.getErrorCode()));
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("PATCH /api/v1/users/me - 현재 로그인한 사용자 정보 수정")
-    class updateUserResponse {
+    @DisplayName("내 정보 수정 (updateMe)")
+    class UpdateMe {
 
         String oldNickname = "oldNick";
         Gender oldGender = Gender.FEMALE;
@@ -137,268 +162,371 @@ public class UserControllerTest extends RestDocsTest {
         Gender newGender = Gender.MALE;
         LocalDate newBirth = LocalDate.of(2000, 1, 1);
 
-        @Test
-        @DisplayName("성공 - 닉네임 수정")
-        void shouldUpdateNicknameOnly() {
+        @Nested
+        @DisplayName("Given - 닉네임 수정 요청일 때")
+        class GivenNicknameUpdate {
 
-            User user = User.create(newNickname, oldGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
+            @BeforeEach
+            void setUp() throws UserException {
+                User user =
+                        User.create(newNickname, oldGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
+                doReturn(user).when(userService).update(fixedUserId, newNickname, oldGender, oldBirth);
+            }
 
-            doReturn(user).when(userService).update(fixedUserId, newNickname, oldGender, oldBirth);
+            @Nested
+            @DisplayName("When - 수정을 요청하면")
+            class WhenUpdating {
 
-            Map<String, Object> request = new HashMap<>();
-            request.put("nickname", newNickname);
-            request.put("gender", oldGender);
-            request.put("date_of_birth", oldBirth);
+                @Test
+                @DisplayName("Then - 닉네임이 수정된 정보를 반환한다")
+                void thenReturnsUpdatedInfo() {
+                    Map<String, Object> request = new HashMap<>();
+                    request.put("nickname", newNickname);
+                    request.put("gender", oldGender);
+                    request.put("date_of_birth", oldBirth);
 
-            var response = given().contentType(ContentType.JSON)
-                    .body(request)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .patch("/api/v1/users/me")
-                    .then()
-                    .status(HttpStatus.OK)
-                    .apply(document(
-                            getNestedClassPath(this.getClass()) + "/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            requestFields(
-                                    fieldWithPath("nickname").description("변경할 닉네임"),
-                                    fieldWithPath("gender").description("기존 성별"),
-                                    fieldWithPath("date_of_birth").description("기존 생년월일")),
-                            responseFields(
-                                    fieldWithPath("nickname").description("닉네임"),
-                                    fieldWithPath("gender").description("성별"),
-                                    fieldWithPath("date_of_birth").description("생년월일"),
-                                    fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
-                                    fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                                    fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
-                                    fieldWithPath("provider_sub").description("공급자 고유번호"))));
+                    var response = given().contentType(ContentType.JSON)
+                            .body(request)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .patch("/api/v1/users/me")
+                            .then()
+                            .status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(UserControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    requestFields(
+                                            fieldWithPath("nickname").description("변경할 닉네임"),
+                                            fieldWithPath("gender").description("기존 성별"),
+                                            fieldWithPath("date_of_birth").description("기존 생년월일")),
+                                    responseFields(
+                                            fieldWithPath("nickname").description("닉네임"),
+                                            fieldWithPath("gender").description("성별"),
+                                            fieldWithPath("date_of_birth").description("생년월일"),
+                                            fieldWithPath("terms_of_use_agreed_at")
+                                                    .description("이용약관 동의 일시"),
+                                            fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                                            fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                                            fieldWithPath("provider_sub").description("공급자 고유번호"))));
 
-            response.body("nickname", equalTo(newNickname))
-                    .body("gender", equalTo(oldGender.name()))
-                    .body("date_of_birth", equalTo(oldBirth.toString()));
+                    response.body("nickname", equalTo(newNickname))
+                            .body("gender", equalTo(oldGender.name()))
+                            .body("date_of_birth", equalTo(oldBirth.toString()));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("성공 - 성별 수정")
-        void shouldUpdateGenderOnly() {
-            User user = User.create(oldNickname, newGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
+        @Nested
+        @DisplayName("Given - 성별 수정 요청일 때")
+        class GivenGenderUpdate {
 
-            doReturn(user).when(userService).update(fixedUserId, oldNickname, newGender, oldBirth);
+            @BeforeEach
+            void setUp() throws UserException {
+                User user =
+                        User.create(oldNickname, newGender, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
+                doReturn(user).when(userService).update(fixedUserId, oldNickname, newGender, oldBirth);
+            }
 
-            Map<String, Object> request = new HashMap<>();
-            request.put("nickname", oldNickname);
-            request.put("gender", newGender);
-            request.put("date_of_birth", oldBirth);
+            @Nested
+            @DisplayName("When - 수정을 요청하면")
+            class WhenUpdating {
 
-            var response = given().contentType(ContentType.JSON)
-                    .body(request)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .patch("/api/v1/users/me")
-                    .then()
-                    .status(HttpStatus.OK)
-                    .apply(document(
-                            getNestedClassPath(this.getClass()) + "/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            requestFields(
-                                    fieldWithPath("nickname").description("기존 닉네임"),
-                                    fieldWithPath("gender").description("변경할 성별 (NULL 가능)"),
-                                    fieldWithPath("date_of_birth").description("기존 생년월일")),
-                            responseFields(
-                                    fieldWithPath("nickname").description("닉네임"),
-                                    fieldWithPath("gender").description("성별"),
-                                    fieldWithPath("date_of_birth").description("생년월일"),
-                                    fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
-                                    fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                                    fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
-                                    fieldWithPath("provider_sub").description("공급자 고유번호"))));
+                @Test
+                @DisplayName("Then - 성별이 수정된 정보를 반환한다")
+                void thenReturnsUpdatedInfo() {
+                    Map<String, Object> request = new HashMap<>();
+                    request.put("nickname", oldNickname);
+                    request.put("gender", newGender);
+                    request.put("date_of_birth", oldBirth);
 
-            response.body("nickname", equalTo(oldNickname))
-                    .body("gender", equalTo(newGender.name()))
-                    .body("date_of_birth", equalTo(oldBirth.toString()));
+                    var response = given().contentType(ContentType.JSON)
+                            .body(request)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .patch("/api/v1/users/me")
+                            .then()
+                            .status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(UserControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    requestFields(
+                                            fieldWithPath("nickname").description("기존 닉네임"),
+                                            fieldWithPath("gender").description("변경할 성별 (NULL 가능)"),
+                                            fieldWithPath("date_of_birth").description("기존 생년월일")),
+                                    responseFields(
+                                            fieldWithPath("nickname").description("닉네임"),
+                                            fieldWithPath("gender").description("성별"),
+                                            fieldWithPath("date_of_birth").description("생년월일"),
+                                            fieldWithPath("terms_of_use_agreed_at")
+                                                    .description("이용약관 동의 일시"),
+                                            fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                                            fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                                            fieldWithPath("provider_sub").description("공급자 고유번호"))));
+
+                    response.body("nickname", equalTo(oldNickname))
+                            .body("gender", equalTo(newGender.name()))
+                            .body("date_of_birth", equalTo(oldBirth.toString()));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("성공 - 성별 수정(NULL)")
-        void shouldUpdateGenderToNULL() {
-            User user = User.create(oldNickname, null, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
+        @Nested
+        @DisplayName("Given - 성별 NULL 수정 요청일 때")
+        class GivenGenderNullUpdate {
 
-            doReturn(user).when(userService).update(fixedUserId, oldNickname, null, oldBirth);
+            @BeforeEach
+            void setUp() throws UserException {
+                User user = User.create(oldNickname, null, oldBirth, Provider.APPLE, "apple-sub-123", false, clock);
+                doReturn(user).when(userService).update(fixedUserId, oldNickname, null, oldBirth);
+            }
 
-            Map<String, Object> request = new HashMap<>();
-            request.put("nickname", oldNickname);
-            request.put("gender", null);
-            request.put("date_of_birth", oldBirth);
+            @Nested
+            @DisplayName("When - 수정을 요청하면")
+            class WhenUpdating {
 
-            var response = given().contentType(ContentType.JSON)
-                    .body(request)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .patch("/api/v1/users/me")
-                    .then()
-                    .status(HttpStatus.OK)
-                    .apply(document(
-                            getNestedClassPath(this.getClass()) + "/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            requestFields(
-                                    fieldWithPath("nickname").description("기존 닉네임"),
-                                    fieldWithPath("gender").description("변경할 성별"),
-                                    fieldWithPath("date_of_birth").description("기존 생년월일")),
-                            responseFields(
-                                    fieldWithPath("nickname").description("닉네임"),
-                                    fieldWithPath("gender").description("성별"),
-                                    fieldWithPath("date_of_birth").description("생년월일"),
-                                    fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
-                                    fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                                    fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
-                                    fieldWithPath("provider_sub").description("공급자 고유번호"))));
+                @Test
+                @DisplayName("Then - 성별이 NULL로 수정된 정보를 반환한다")
+                void thenReturnsUpdatedInfo() {
+                    Map<String, Object> request = new HashMap<>();
+                    request.put("nickname", oldNickname);
+                    request.put("gender", null);
+                    request.put("date_of_birth", oldBirth);
 
-            response.body("nickname", equalTo(oldNickname))
-                    .body("gender", equalTo(null))
-                    .body("date_of_birth", equalTo(oldBirth.toString()));
+                    var response = given().contentType(ContentType.JSON)
+                            .body(request)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .patch("/api/v1/users/me")
+                            .then()
+                            .status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(UserControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    requestFields(
+                                            fieldWithPath("nickname").description("기존 닉네임"),
+                                            fieldWithPath("gender").description("변경할 성별"),
+                                            fieldWithPath("date_of_birth").description("기존 생년월일")),
+                                    responseFields(
+                                            fieldWithPath("nickname").description("닉네임"),
+                                            fieldWithPath("gender").description("성별"),
+                                            fieldWithPath("date_of_birth").description("생년월일"),
+                                            fieldWithPath("terms_of_use_agreed_at")
+                                                    .description("이용약관 동의 일시"),
+                                            fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                                            fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                                            fieldWithPath("provider_sub").description("공급자 고유번호"))));
+
+                    response.body("nickname", equalTo(oldNickname))
+                            .body("gender", equalTo(null))
+                            .body("date_of_birth", equalTo(oldBirth.toString()));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("성공 - 생년월일 수정")
-        void shouldUpdateBirthOnly() {
-            User user = User.create(oldNickname, oldGender, newBirth, Provider.APPLE, "apple-sub-123", false, clock);
+        @Nested
+        @DisplayName("Given - 생년월일 수정 요청일 때")
+        class GivenBirthUpdate {
 
-            doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, newBirth);
+            @BeforeEach
+            void setUp() throws UserException {
+                User user =
+                        User.create(oldNickname, oldGender, newBirth, Provider.APPLE, "apple-sub-123", false, clock);
+                doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, newBirth);
+            }
 
-            Map<String, Object> request = new HashMap<>();
-            request.put("nickname", oldNickname);
-            request.put("gender", oldGender);
-            request.put("date_of_birth", newBirth);
+            @Nested
+            @DisplayName("When - 수정을 요청하면")
+            class WhenUpdating {
 
-            var response = given().contentType(ContentType.JSON)
-                    .body(request)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .patch("/api/v1/users/me")
-                    .then()
-                    .status(HttpStatus.OK)
-                    .apply(document(
-                            getNestedClassPath(this.getClass()) + "/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            requestFields(
-                                    fieldWithPath("nickname").description("기존 닉네임"),
-                                    fieldWithPath("gender").description("기존 성별"),
-                                    fieldWithPath("date_of_birth").description("변경할 생년월일")),
-                            responseFields(
-                                    fieldWithPath("nickname").description("닉네임"),
-                                    fieldWithPath("gender").description("성별"),
-                                    fieldWithPath("date_of_birth").description("생년월일"),
-                                    fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
-                                    fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                                    fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
-                                    fieldWithPath("provider_sub").description("공급자 고유번호"))));
+                @Test
+                @DisplayName("Then - 생년월일이 수정된 정보를 반환한다")
+                void thenReturnsUpdatedInfo() {
+                    Map<String, Object> request = new HashMap<>();
+                    request.put("nickname", oldNickname);
+                    request.put("gender", oldGender);
+                    request.put("date_of_birth", newBirth);
 
-            response.body("nickname", equalTo(oldNickname))
-                    .body("gender", equalTo(oldGender.name()))
-                    .body("date_of_birth", equalTo(newBirth.toString()));
+                    var response = given().contentType(ContentType.JSON)
+                            .body(request)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .patch("/api/v1/users/me")
+                            .then()
+                            .status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(UserControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    requestFields(
+                                            fieldWithPath("nickname").description("기존 닉네임"),
+                                            fieldWithPath("gender").description("기존 성별"),
+                                            fieldWithPath("date_of_birth").description("변경할 생년월일")),
+                                    responseFields(
+                                            fieldWithPath("nickname").description("닉네임"),
+                                            fieldWithPath("gender").description("성별"),
+                                            fieldWithPath("date_of_birth").description("생년월일"),
+                                            fieldWithPath("terms_of_use_agreed_at")
+                                                    .description("이용약관 동의 일시"),
+                                            fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                                            fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                                            fieldWithPath("provider_sub").description("공급자 고유번호"))));
+
+                    response.body("nickname", equalTo(oldNickname))
+                            .body("gender", equalTo(oldGender.name()))
+                            .body("date_of_birth", equalTo(newBirth.toString()));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("성공 - 생년월일 수정(NULL)")
-        void shouldUpdateBirthToNULL() {
-            User user = User.create(oldNickname, oldGender, null, Provider.APPLE, "apple-sub-123", false, clock);
+        @Nested
+        @DisplayName("Given - 생년월일 NULL 수정 요청일 때")
+        class GivenBirthNullUpdate {
 
-            doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, null);
+            @BeforeEach
+            void setUp() throws UserException {
+                User user = User.create(oldNickname, oldGender, null, Provider.APPLE, "apple-sub-123", false, clock);
+                doReturn(user).when(userService).update(fixedUserId, oldNickname, oldGender, null);
+            }
 
-            Map<String, Object> request = new HashMap<>();
-            request.put("nickname", oldNickname);
-            request.put("gender", oldGender);
-            request.put("date_of_birth", null);
+            @Nested
+            @DisplayName("When - 수정을 요청하면")
+            class WhenUpdating {
 
-            var response = given().contentType(ContentType.JSON)
-                    .body(request)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .patch("/api/v1/users/me")
-                    .then()
-                    .status(HttpStatus.OK)
-                    .apply(document(
-                            getNestedClassPath(this.getClass()) + "/{method-name}",
-                            requestPreprocessor(),
-                            responsePreprocessor(),
-                            requestFields(
-                                    fieldWithPath("nickname").description("기존 닉네임"),
-                                    fieldWithPath("gender").description("기존 성별"),
-                                    fieldWithPath("date_of_birth").description("변경할 생년월일 (NULL 가능)")),
-                            responseFields(
-                                    fieldWithPath("nickname").description("닉네임"),
-                                    fieldWithPath("gender").description("성별"),
-                                    fieldWithPath("date_of_birth").description("생년월일"),
-                                    fieldWithPath("terms_of_use_agreed_at").description("이용약관 동의 일시"),
-                                    fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
-                                    fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
-                                    fieldWithPath("provider_sub").description("공급자 고유번호"))));
+                @Test
+                @DisplayName("Then - 생년월일이 NULL로 수정된 정보를 반환한다")
+                void thenReturnsUpdatedInfo() {
+                    Map<String, Object> request = new HashMap<>();
+                    request.put("nickname", oldNickname);
+                    request.put("gender", oldGender);
+                    request.put("date_of_birth", null);
 
-            response.body("nickname", equalTo(oldNickname))
-                    .body("gender", equalTo(oldGender.name()))
-                    .body("date_of_birth", equalTo(null));
+                    var response = given().contentType(ContentType.JSON)
+                            .body(request)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .patch("/api/v1/users/me")
+                            .then()
+                            .status(HttpStatus.OK)
+                            .apply(document(
+                                    getNestedClassPath(UserControllerTest.this.getClass()) + "/{method-name}",
+                                    requestPreprocessor(),
+                                    responsePreprocessor(),
+                                    requestFields(
+                                            fieldWithPath("nickname").description("기존 닉네임"),
+                                            fieldWithPath("gender").description("기존 성별"),
+                                            fieldWithPath("date_of_birth").description("변경할 생년월일 (NULL 가능)")),
+                                    responseFields(
+                                            fieldWithPath("nickname").description("닉네임"),
+                                            fieldWithPath("gender").description("성별"),
+                                            fieldWithPath("date_of_birth").description("생년월일"),
+                                            fieldWithPath("terms_of_use_agreed_at")
+                                                    .description("이용약관 동의 일시"),
+                                            fieldWithPath("privacy_agreed_at").description("개인정보 처리방침 동의 일시"),
+                                            fieldWithPath("marketing_agreed_at").description("마케팅 정보 수신 동의 일시"),
+                                            fieldWithPath("provider_sub").description("공급자 고유번호"))));
+
+                    response.body("nickname", equalTo(oldNickname))
+                            .body("gender", equalTo(oldGender.name()))
+                            .body("date_of_birth", equalTo(null));
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("POST /api/v1/users/tutorial - 튜토리얼 완료")
-    class tutorialResponse {
+    @DisplayName("튜토리얼 완료 (tutorial)")
+    class Tutorial {
 
-        @Test
-        @DisplayName("성공 - 성공 메시지를 반환한다")
-        void shouldReturnSuccessMessage() {
-            var response = given().contentType(ContentType.JSON)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .post("/api/v1/users/tutorial")
-                    .then()
-                    .status(HttpStatus.OK);
+        @Nested
+        @DisplayName("Given - 유효한 요청일 때")
+        class GivenValidRequest {
 
-            response.body("message", equalTo("success"));
+            @Nested
+            @DisplayName("When - 완료를 요청하면")
+            class WhenCompleting {
+
+                @Test
+                @DisplayName("Then - 성공 메시지를 반환한다")
+                void thenReturnsSuccess() {
+                    var response = given().contentType(ContentType.JSON)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .post("/api/v1/users/tutorial")
+                            .then()
+                            .status(HttpStatus.OK);
+
+                    response.body("message", equalTo("success"));
+                }
+            }
         }
 
-        @Test
-        @DisplayName("실패 - 유저가 없으면 USER_NOT_FOUND 에러를 반환한다")
-        void shouldReturnUserNotFound() {
-            doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
-                    .when(userService)
-                    .tutorial(fixedUserId);
+        @Nested
+        @DisplayName("Given - 존재하지 않는 사용자일 때")
+        class GivenNonExistingUser {
 
-            var response = given().contentType(ContentType.JSON)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .post("/api/v1/users/tutorial")
-                    .then();
+            @BeforeEach
+            void setUp() throws UserException, CreditException {
+                doThrow(new UserException(UserErrorCode.USER_NOT_FOUND))
+                        .when(userService)
+                        .tutorial(fixedUserId);
+            }
 
-            assertErrorResponse(response, UserErrorCode.USER_NOT_FOUND);
+            @Nested
+            @DisplayName("When - 완료를 요청하면")
+            class WhenCompleting {
+
+                @Test
+                @DisplayName("Then - USER_NOT_FOUND 에러를 반환한다")
+                void thenReturnsError() {
+                    var response = given().contentType(ContentType.JSON)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .post("/api/v1/users/tutorial")
+                            .then();
+
+                    assertErrorResponse(response, UserErrorCode.USER_NOT_FOUND);
+                }
+            }
         }
 
-        @Test
-        @DisplayName("실패 - 이미 완료된 경우 TUTORIAL_ALREADY_FINISHED 에러를 반환한다")
-        void shouldReturnTutorialAlreadyFinished() {
-            doThrow(new UserException(UserErrorCode.TUTORIAL_ALREADY_FINISHED))
-                    .when(userService)
-                    .tutorial(fixedUserId);
+        @Nested
+        @DisplayName("Given - 이미 완료된 사용자일 때")
+        class GivenAlreadyCompleted {
 
-            var response = given().contentType(ContentType.JSON)
-                    .attribute("userId", fixedUserId.toString())
-                    .header("Authorization", "Bearer accessToken")
-                    .when()
-                    .post("/api/v1/users/tutorial")
-                    .then();
+            @BeforeEach
+            void setUp() throws UserException, CreditException {
+                doThrow(new UserException(UserErrorCode.TUTORIAL_ALREADY_FINISHED))
+                        .when(userService)
+                        .tutorial(fixedUserId);
+            }
 
-            assertErrorResponse(response, UserErrorCode.TUTORIAL_ALREADY_FINISHED);
+            @Nested
+            @DisplayName("When - 완료를 요청하면")
+            class WhenCompleting {
+
+                @Test
+                @DisplayName("Then - TUTORIAL_ALREADY_FINISHED 에러를 반환한다")
+                void thenReturnsError() {
+                    var response = given().contentType(ContentType.JSON)
+                            .attribute("userId", fixedUserId.toString())
+                            .header("Authorization", "Bearer accessToken")
+                            .when()
+                            .post("/api/v1/users/tutorial")
+                            .then();
+
+                    assertErrorResponse(response, UserErrorCode.TUTORIAL_ALREADY_FINISHED);
+                }
+            }
         }
     }
 }

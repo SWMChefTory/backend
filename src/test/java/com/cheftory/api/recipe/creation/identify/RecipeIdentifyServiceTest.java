@@ -1,20 +1,27 @@
 package com.cheftory.api.recipe.creation.identify;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.creation.identify.entity.RecipeIdentify;
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
+import com.cheftory.api.recipe.creation.identify.repository.RecipeIdentifyRepository;
 import java.net.URI;
 import java.time.LocalDateTime;
-import org.junit.jupiter.api.*;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-@DisplayName("RecipeIdentifyService")
+@DisplayName("RecipeIdentifyService 테스트")
 class RecipeIdentifyServiceTest {
 
     private RecipeIdentifyService service;
@@ -29,81 +36,113 @@ class RecipeIdentifyServiceTest {
     }
 
     @Nested
-    @DisplayName("create(url)")
+    @DisplayName("식별 정보 생성 (create)")
     class Create {
 
-        private URI url;
-        private LocalDateTime now;
-
-        @BeforeEach
-        void init() {
-            url = URI.create("https://www.youtube.com/watch?v=LOCK_TEST");
-            now = LocalDateTime.now();
-            when(clock.now()).thenReturn(now);
-        }
-
         @Nested
-        @DisplayName("Given - 유효한 URI 주어졌을 때")
-        class GivenValidUriAndRecipeId {
+        @DisplayName("Given - 유효한 URL이 주어졌을 때")
+        class GivenValidUrl {
+            URI url;
+            LocalDateTime now;
+            RecipeIdentify expected;
 
-            @Nested
-            @DisplayName("When - 저장 요청을 하면")
-            class WhenSaving {
+            @BeforeEach
+            void setUp() throws RecipeIdentifyException {
+                url = URI.create("https://www.youtube.com/watch?v=LOCK_TEST");
+                now = LocalDateTime.now();
+                expected = mock(RecipeIdentify.class);
 
-                @Test
-                @DisplayName("Then - 엔티티가 저장되고 반환된다")
-                void thenSavedAndReturned() {
-                    RecipeIdentify entity = RecipeIdentify.create(url, clock);
-                    when(repository.save(any(RecipeIdentify.class))).thenReturn(entity);
-
-                    RecipeIdentify result = service.create(url);
-
-                    assertThat(result.getUrl()).isEqualTo(url);
-                    assertThat(result.getCreatedAt()).isEqualTo(now);
-                    verify(repository).save(any(RecipeIdentify.class));
-                }
+                doReturn(now).when(clock).now();
+                doReturn(expected).when(repository).create(any(RecipeIdentify.class), eq(clock));
             }
 
             @Nested
-            @DisplayName("When - 같은 URI로 두 번 저장 요청하면")
-            class WhenSavingDuplicate {
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                RecipeIdentify result;
+
+                @BeforeEach
+                void setUp() throws RecipeIdentifyException {
+                    result = service.create(url);
+                }
 
                 @Test
-                @DisplayName("Then - RECIPE_IDENTIFY_PROGRESSING 예외가 발생한다")
-                void thenThrowsRecipeIdentifyException() {
-                    when(repository.save(any(RecipeIdentify.class)))
-                            .thenThrow(new DataIntegrityViolationException("duplicate key"));
+                @DisplayName("Then - 식별 정보를 생성하여 저장하고 반환한다")
+                void thenCreatesAndReturns() throws RecipeIdentifyException {
+                    assertThat(result).isEqualTo(expected);
+                    verify(repository).create(any(RecipeIdentify.class), eq(clock));
+                }
+            }
+        }
 
-                    RecipeIdentifyException ex = assertThrows(RecipeIdentifyException.class, () -> service.create(url));
+        @Nested
+        @DisplayName("Given - 이미 처리 중인 URL이 주어졌을 때")
+        class GivenDuplicateUrl {
+            URI url;
+            LocalDateTime now;
 
-                    assertThat(ex.getError().getErrorCode())
-                            .isEqualTo(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING.getErrorCode());
-                    verify(repository).save(any(RecipeIdentify.class));
+            @BeforeEach
+            void setUp() throws RecipeIdentifyException {
+                url = URI.create("https://www.youtube.com/watch?v=DUPLICATE");
+                now = LocalDateTime.now();
+
+                doReturn(now).when(clock).now();
+                doThrow(new RecipeIdentifyException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING))
+                        .when(repository)
+                        .create(any(RecipeIdentify.class), eq(clock));
+            }
+
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                Throwable thrown;
+
+                @BeforeEach
+                void setUp() {
+                    thrown = catchThrowable(() -> service.create(url));
+                }
+
+                @Test
+                @DisplayName("Then - RECIPE_IDENTIFY_PROGRESSING 예외를 던진다")
+                void thenThrowsException() {
+                    assertThat(thrown)
+                            .isInstanceOf(RecipeIdentifyException.class)
+                            .hasFieldOrPropertyWithValue(
+                                    "error.errorCode",
+                                    RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING.getErrorCode());
                 }
             }
         }
     }
 
     @Nested
-    @DisplayName("delete(url)")
+    @DisplayName("식별 정보 삭제 (delete)")
     class Delete {
 
         @Nested
-        @DisplayName("Given - 식별 URL 저장되어 있을 때")
-        class GivenExistingUrlAndRecipeId {
-
-            private URI url;
+        @DisplayName("Given - URL이 주어졌을 때")
+        class GivenUrl {
+            URI url;
 
             @BeforeEach
             void setUp() {
                 url = URI.create("https://example.com/lock");
             }
 
-            @Test
-            @DisplayName("When - 삭제 요청을 하면 Then - repository.deleteByUrlAndRecipeId()이 호출된다")
-            void thenRepositoryCalled() {
-                service.delete(url);
-                verify(repository).deleteByUrl(url);
+            @Nested
+            @DisplayName("When - 삭제를 요청하면")
+            class WhenDeleting {
+
+                @BeforeEach
+                void setUp() {
+                    service.delete(url);
+                }
+
+                @Test
+                @DisplayName("Then - 해당 식별 정보를 삭제한다")
+                void thenDeletes() {
+                    verify(repository).delete(url);
+                }
             }
         }
     }

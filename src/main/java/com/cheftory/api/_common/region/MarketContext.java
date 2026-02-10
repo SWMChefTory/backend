@@ -3,6 +3,7 @@ package com.cheftory.api._common.region;
 import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.exception.GlobalErrorCode;
 import java.util.concurrent.Callable;
+import lombok.SneakyThrows;
 
 public final class MarketContext {
     private static final ThreadLocal<Info> THREAD_LOCAL = new ThreadLocal<>();
@@ -15,6 +16,7 @@ public final class MarketContext {
         return THREAD_LOCAL.get();
     }
 
+    @SneakyThrows
     public static Info required() {
         Info info = THREAD_LOCAL.get();
         if (info == null) throw new CheftoryException(GlobalErrorCode.UNKNOWN_REGION);

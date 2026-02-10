@@ -21,7 +21,7 @@ public final class BearerAuthorizationUtils {
      * @return 접두사가 제거된 토큰
      * @throws AuthException 토큰이 null이거나 Bearer 스킴이 아닐 때 INVALID_TOKEN
      */
-    public static String removePrefix(String originalToken) {
+    public static String removePrefix(String originalToken) throws AuthException {
         if (originalToken == null || !originalToken.startsWith(BEARER_PREFIX)) {
             throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
@@ -35,7 +35,7 @@ public final class BearerAuthorizationUtils {
      * @return "Bearer " 접두사가 추가된 토큰
      * @throws AuthException 토큰이 null이거나 비어있을 때 INVALID_TOKEN
      */
-    public static String addPrefix(String token) {
+    public static String addPrefix(String token) throws AuthException {
         if (token == null || token.isEmpty()) {
             throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }

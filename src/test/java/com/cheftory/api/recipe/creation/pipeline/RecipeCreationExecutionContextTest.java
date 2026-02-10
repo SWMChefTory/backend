@@ -10,16 +10,15 @@ import org.junit.jupiter.api.*;
 class RecipeCreationExecutionContextTest {
 
     @Nested
-    @DisplayName("of 정적 팩토리 메서드")
-    class OfMethod {
+    @DisplayName("생성 (of)")
+    class Of {
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
         class GivenValidParameters {
-
-            private UUID recipeId;
-            private String videoId;
-            private URI videoUrl;
+            UUID recipeId;
+            String videoId;
+            URI videoUrl;
 
             @BeforeEach
             void setUp() {
@@ -28,100 +27,117 @@ class RecipeCreationExecutionContextTest {
                 videoUrl = URI.create("https://youtu.be/test");
             }
 
-            @Test
-            @DisplayName("When - of를 호출하면 Then - 컨텍스트가 생성되고 모든 필드가 설정된다")
-            void thenCreatesContextWithAllFieldsSet() {
-                RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
+            @Nested
+            @DisplayName("When - 생성을 요청하면")
+            class WhenCreating {
+                RecipeCreationExecutionContext context;
 
-                assertThat(context).isNotNull();
-                assertThat(context.getRecipeId()).isEqualTo(recipeId);
-                assertThat(context.getVideoId()).isEqualTo(videoId);
-                assertThat(context.getVideoUrl()).isEqualTo(videoUrl);
-                assertThat(context.getFileUri()).isNull();
-                assertThat(context.getMimeType()).isNull();
+                @BeforeEach
+                void setUp() {
+                    context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
+                }
+
+                @Test
+                @DisplayName("Then - 컨텍스트가 생성되고 기본 필드가 설정된다")
+                void thenCreated() {
+                    assertThat(context).isNotNull();
+                    assertThat(context.getRecipeId()).isEqualTo(recipeId);
+                    assertThat(context.getVideoId()).isEqualTo(videoId);
+                    assertThat(context.getVideoUrl()).isEqualTo(videoUrl);
+                    assertThat(context.getFileUri()).isNull();
+                    assertThat(context.getMimeType()).isNull();
+                }
             }
         }
     }
 
     @Nested
-    @DisplayName("withFileInfo 정적 팩토리 메서드")
-    class WithFileInfoMethod {
+    @DisplayName("파일 정보 추가 (withFileInfo)")
+    class WithFileInfo {
 
         @Nested
-        @DisplayName("Given - 기존 컨텍스트와 file 정보가 주어졌을 때")
-        class GivenExistingContextAndFileInfo {
-
-            private UUID recipeId;
-            private String videoId;
-            private URI videoUrl;
-            private RecipeCreationExecutionContext context;
-            private String fileUri;
-            private String mimeType;
+        @DisplayName("Given - 기존 컨텍스트와 파일 정보가 주어졌을 때")
+        class GivenContextAndFileInfo {
+            RecipeCreationExecutionContext context;
+            String fileUri;
+            String mimeType;
 
             @BeforeEach
             void setUp() {
-                recipeId = UUID.randomUUID();
-                videoId = "test-video-id";
-                videoUrl = URI.create("https://youtu.be/test");
-                context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
+                context = RecipeCreationExecutionContext.of(
+                        UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"));
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
             }
 
-            @Test
-            @DisplayName("When - withFileInfo를 호출하면 Then - 새 컨텍스트가 생성되고 file 정보가 설정된다")
-            void thenCreatesNewContextWithFileInfo() {
-                RecipeCreationExecutionContext newContext =
-                        RecipeCreationExecutionContext.withFileInfo(context, fileUri, mimeType);
+            @Nested
+            @DisplayName("When - 파일 정보 추가를 요청하면")
+            class WhenAddingFileInfo {
+                RecipeCreationExecutionContext newContext;
 
-                assertThat(newContext).isNotNull();
-                assertThat(newContext.getRecipeId()).isEqualTo(recipeId);
-                assertThat(newContext.getVideoId()).isEqualTo(videoId);
-                assertThat(newContext.getVideoUrl()).isEqualTo(videoUrl);
-                assertThat(newContext.getFileUri()).isEqualTo(fileUri);
-                assertThat(newContext.getMimeType()).isEqualTo(mimeType);
+                @BeforeEach
+                void setUp() {
+                    newContext = RecipeCreationExecutionContext.withFileInfo(context, fileUri, mimeType);
+                }
+
+                @Test
+                @DisplayName("Then - 파일 정보가 포함된 새 컨텍스트를 반환한다")
+                void thenReturnsNewContext() {
+                    assertThat(newContext).isNotNull();
+                    assertThat(newContext.getRecipeId()).isEqualTo(context.getRecipeId());
+                    assertThat(newContext.getVideoId()).isEqualTo(context.getVideoId());
+                    assertThat(newContext.getVideoUrl()).isEqualTo(context.getVideoUrl());
+                    assertThat(newContext.getFileUri()).isEqualTo(fileUri);
+                    assertThat(newContext.getMimeType()).isEqualTo(mimeType);
+                }
             }
         }
     }
 
     @Nested
-    @DisplayName("getter 메서드")
+    @DisplayName("조회 (getters)")
     class Getters {
 
         @Nested
-        @DisplayName("Given - 컨텍스트가 있을 때")
-        class GivenExistingContext {
-
-            private UUID recipeId;
-            private String videoId;
-            private URI videoUrl;
-            private String fileUri;
-            private String mimeType;
+        @DisplayName("Given - 파일 정보가 없는 컨텍스트일 때")
+        class GivenNoFileInfo {
+            RecipeCreationExecutionContext context;
 
             @BeforeEach
             void setUp() {
-                recipeId = UUID.randomUUID();
-                videoId = "test-video-id";
-                videoUrl = URI.create("https://youtu.be/test");
-                fileUri = "s3://bucket/file.mp4";
-                mimeType = "video/mp4";
+                context = RecipeCreationExecutionContext.of(
+                        UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"));
             }
 
             @Test
-            @DisplayName("Then - file 정보가 null이면 fileUri/mimeType은 null을 반환한다")
-            void thenGetFileInfoReturnsNullWhenEmpty() {
-                RecipeCreationExecutionContext context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl);
-
+            @DisplayName("Then - 파일 정보는 null을 반환한다")
+            void thenReturnsNull() {
                 assertThat(context.getFileUri()).isNull();
                 assertThat(context.getMimeType()).isNull();
             }
+        }
+
+        @Nested
+        @DisplayName("Given - 파일 정보가 있는 컨텍스트일 때")
+        class GivenFileInfo {
+            RecipeCreationExecutionContext context;
+            String fileUri;
+            String mimeType;
+
+            @BeforeEach
+            void setUp() {
+                fileUri = "s3://bucket/file.mp4";
+                mimeType = "video/mp4";
+                context = RecipeCreationExecutionContext.withFileInfo(
+                        RecipeCreationExecutionContext.of(
+                                UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test")),
+                        fileUri,
+                        mimeType);
+            }
 
             @Test
-            @DisplayName("Then - file 정보가 설정되면 getFileUri/getMimeType을 반환한다")
-            void thenGetFileInfoReturnsWhenSet() {
-                RecipeCreationExecutionContext context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl), fileUri, mimeType);
-
+            @DisplayName("Then - 설정된 파일 정보를 반환한다")
+            void thenReturnsFileInfo() {
                 assertThat(context.getFileUri()).isEqualTo(fileUri);
                 assertThat(context.getMimeType()).isEqualTo(mimeType);
             }

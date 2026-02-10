@@ -16,8 +16,10 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
+import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +27,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-@DisplayName("RecipeAutocomplete Controller")
+@DisplayName("AutocompleteController 테스트")
 public class AutocompleteControllerTest extends RestDocsTest {
 
     private AutocompleteService autocompleteService;
@@ -42,50 +44,52 @@ public class AutocompleteControllerTest extends RestDocsTest {
     }
 
     @Nested
-    @DisplayName("자동완성 검색")
+    @DisplayName("자동완성 검색 (getAutocomplete)")
     class GetAutocomplete {
 
         @Nested
         @DisplayName("Given - 유효한 검색어가 주어졌을 때")
         class GivenValidQuery {
-
-            private String query;
-            private List<Autocomplete> autocompletes;
+            String query;
+            List<Autocomplete> autocompletes;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 query = "김치";
+                Autocomplete a1 = mock(Autocomplete.class);
+                Autocomplete a2 = mock(Autocomplete.class);
+                Autocomplete a3 = mock(Autocomplete.class);
 
-                Autocomplete autocomplete1 = mock(Autocomplete.class);
-                Autocomplete autocomplete2 = mock(Autocomplete.class);
-                Autocomplete autocomplete3 = mock(Autocomplete.class);
+                doReturn("김치찌개").when(a1).getText();
+                doReturn("김치전").when(a2).getText();
+                doReturn("김치볶음밥").when(a3).getText();
 
-                doReturn("김치찌개").when(autocomplete1).getText();
-                doReturn("김치전").when(autocomplete2).getText();
-                doReturn("김치볶음밥").when(autocomplete3).getText();
-
-                autocompletes = List.of(autocomplete1, autocomplete2, autocomplete3);
-
+                autocompletes = List.of(a1, a2, a3);
                 doReturn(autocompletes)
                         .when(autocompleteService)
                         .autocomplete(any(AutocompleteScope.class), any(String.class));
             }
 
             @Nested
-            @DisplayName("When - 자동완성을 요청한다면")
-            class WhenRequestingAutocomplete {
+            @DisplayName("When - 검색을 요청하면")
+            class WhenRequesting {
+                ValidatableMockMvcResponse response;
 
-                @Test
-                @DisplayName("Then - 자동완성 목록을 성공적으로 반환해야 한다")
-                void thenShouldReturnAutocompleteList() {
-                    var response = given().contentType(ContentType.JSON)
+                @BeforeEach
+                void setUp() {
+                    response = given().contentType(ContentType.JSON)
                             .param("query", query)
                             .get("/api/v1/search/autocomplete")
-                            .then()
-                            .status(HttpStatus.OK)
+                            .then();
+                }
+
+                @Test
+                @DisplayName("Then - 자동완성 목록을 반환한다")
+                void thenReturnsList() throws SearchException {
+                    response.status(HttpStatus.OK)
                             .body("autocompletes", hasSize(3))
                             .apply(document(
-                                    getNestedClassPath(this.getClass()) + "/{method-name}",
+                                    getNestedClassPath(AutocompleteControllerTest.this.getClass()) + "/{method-name}",
                                     requestPreprocessor(),
                                     responsePreprocessor(),
                                     queryParameters(
@@ -100,34 +104,32 @@ public class AutocompleteControllerTest extends RestDocsTest {
 
                     verify(autocompleteService).autocomplete(AutocompleteScope.RECIPE, query);
 
-                    var responseBody = response.extract().jsonPath();
-                    var autocompleteList = responseBody.getList("autocompletes");
-                    assertThat(autocompleteList).hasSize(3);
+                    var body = response.extract().jsonPath();
+                    assertThat(body.getList("autocompletes")).hasSize(3);
                 }
             }
         }
 
         @Nested
-        @DisplayName("Given - 자동완성 결과가 없는 검색어가 주어졌을 때")
-        class GivenQueryWithNoResults {
-
-            private String query;
+        @DisplayName("Given - 결과가 없는 검색어일 때")
+        class GivenNoResults {
+            String query;
 
             @BeforeEach
-            void setUp() {
-                query = "존재하지않는검색어";
+            void setUp() throws SearchException {
+                query = "없는검색어";
                 doReturn(List.of())
                         .when(autocompleteService)
                         .autocomplete(any(AutocompleteScope.class), any(String.class));
             }
 
             @Nested
-            @DisplayName("When - 자동완성을 요청한다면")
-            class WhenRequestingAutocomplete {
+            @DisplayName("When - 검색을 요청하면")
+            class WhenRequesting {
 
                 @Test
-                @DisplayName("Then - 빈 목록을 반환해야 한다")
-                void thenShouldReturnEmptyList() {
+                @DisplayName("Then - 빈 목록을 반환한다")
+                void thenReturnsEmpty() throws SearchException {
                     given().contentType(ContentType.JSON)
                             .param("query", query)
                             .get("/api/v1/search/autocomplete")
@@ -141,23 +143,19 @@ public class AutocompleteControllerTest extends RestDocsTest {
         }
 
         @Nested
-        @DisplayName("Given - 일부 일치하는 검색어가 주어졌을 때")
-        class GivenPartialMatchQuery {
-
-            private String query;
-            private List<Autocomplete> autocompletes;
+        @DisplayName("Given - 일부 일치하는 검색어일 때")
+        class GivenPartialMatch {
+            String query;
+            List<Autocomplete> autocompletes;
 
             @BeforeEach
-            void setUp() {
+            void setUp() throws SearchException {
                 query = "파";
-
-                Autocomplete autocomplete1 = mock(Autocomplete.class);
-                Autocomplete autocomplete2 = mock(Autocomplete.class);
-
-                doReturn("파스타").when(autocomplete1).getText();
-                doReturn("파김치").when(autocomplete2).getText();
-
-                autocompletes = List.of(autocomplete1, autocomplete2);
+                Autocomplete a1 = mock(Autocomplete.class);
+                Autocomplete a2 = mock(Autocomplete.class);
+                doReturn("파스타").when(a1).getText();
+                doReturn("파김치").when(a2).getText();
+                autocompletes = List.of(a1, a2);
 
                 doReturn(autocompletes)
                         .when(autocompleteService)
@@ -165,12 +163,12 @@ public class AutocompleteControllerTest extends RestDocsTest {
             }
 
             @Nested
-            @DisplayName("When - 자동완성을 요청한다면")
-            class WhenRequestingAutocomplete {
+            @DisplayName("When - 검색을 요청하면")
+            class WhenRequesting {
 
                 @Test
-                @DisplayName("Then - 일치하는 자동완성 목록을 반환해야 한다")
-                void thenShouldReturnMatchingAutocompleteList() {
+                @DisplayName("Then - 일치하는 목록을 반환한다")
+                void thenReturnsMatching() throws SearchException {
                     var response = given().contentType(ContentType.JSON)
                             .param("query", query)
                             .get("/api/v1/search/autocomplete")
@@ -180,8 +178,8 @@ public class AutocompleteControllerTest extends RestDocsTest {
 
                     verify(autocompleteService).autocomplete(AutocompleteScope.RECIPE, query);
 
-                    var responseBody = response.extract().jsonPath();
-                    assertThat(responseBody.getList("autocompletes")).hasSize(2);
+                    var body = response.extract().jsonPath();
+                    assertThat(body.getList("autocompletes")).hasSize(2);
                 }
             }
         }

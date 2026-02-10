@@ -13,6 +13,7 @@ import com.cheftory.api._common.cursor.ScoreIdCursorCodec;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
+import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +45,7 @@ class SearchQueryServiceTest {
 
     @Test
     @DisplayName("cursor가 없으면 첫 페이지를 조회한다")
-    void shouldSearchFirstPageWithCursor() {
+    void shouldSearchFirstPageWithCursor() throws SearchException {
         String keyword = "김치찌개";
         String anchorNow = "2024-01-01T10:00:00";
         String pitId = "pit-1";
@@ -75,7 +76,7 @@ class SearchQueryServiceTest {
 
     @Test
     @DisplayName("cursor가 있으면 keyset을 조회한다")
-    void shouldSearchWithCursorKeyset() {
+    void shouldSearchWithCursorKeyset() throws SearchException {
         String keyword = "김치찌개";
         ScoreIdCursor decoded = new ScoreIdCursor(1.2, "id-10", "now", "pit");
 
@@ -108,7 +109,7 @@ class SearchQueryServiceTest {
 
     @Test
     @DisplayName("openPitForCandidates는 PIT를 연다")
-    void openPitForCandidatesOpensPit() {
+    void openPitForCandidatesOpensPit() throws SearchException {
         doReturn("pit-1").when(searchQueryRepository).createPitId();
 
         String result = searchQueryService.openPitForCandidates();
@@ -127,7 +128,7 @@ class SearchQueryServiceTest {
 
     @Test
     @DisplayName("mgetSearchQueries는 repository를 위임한다")
-    void mgetSearchQueriesDelegatesToRepository() {
+    void mgetSearchQueriesDelegatesToRepository() throws SearchException {
         List<String> ids = List.of("id-1", "id-2");
         List<SearchQuery> expected = List.of(SearchQuery.builder().id("id-1").build());
         doReturn(expected).when(searchQueryRepository).mgetSearchQueries(ids);
@@ -140,7 +141,7 @@ class SearchQueryServiceTest {
 
     @Test
     @DisplayName("추천 후보 첫 페이지는 cursor를 생성한다")
-    void searchCandidatesWithPitFirstPage() {
+    void searchCandidatesWithPitFirstPage() throws SearchException {
         RankingSurfaceType surfaceType = RankingSurfaceType.CUISINE_KOREAN;
         PersonalizationProfile profile = new PersonalizationProfile(List.of("kimchi"), List.of("channel"));
         String pitId = "pit-1";
@@ -189,7 +190,7 @@ class SearchQueryServiceTest {
 
     @Test
     @DisplayName("추천 후보 keyset 조회는 cursor를 갱신한다")
-    void searchCandidatesWithPitKeyset() {
+    void searchCandidatesWithPitKeyset() throws SearchException {
         RankingSurfaceType surfaceType = RankingSurfaceType.CUISINE_KOREAN;
         PersonalizationProfile profile = new PersonalizationProfile(List.of("kimchi"), List.of("channel"));
         String pitId = "pit-1";

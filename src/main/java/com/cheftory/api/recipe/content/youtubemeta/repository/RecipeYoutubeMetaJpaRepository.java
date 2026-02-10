@@ -1,4 +1,4 @@
-package com.cheftory.api.recipe.content.youtubemeta;
+package com.cheftory.api.recipe.content.youtubemeta.repository;
 
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import java.net.URI;
@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RecipeYoutubeMetaRepository extends JpaRepository<RecipeYoutubeMeta, UUID> {
+public interface RecipeYoutubeMetaJpaRepository extends JpaRepository<RecipeYoutubeMeta, UUID> {
     List<RecipeYoutubeMeta> findAllByVideoUri(URI videoUri);
 
     List<RecipeYoutubeMeta> findAllByRecipeIdIn(List<UUID> recipeIds);

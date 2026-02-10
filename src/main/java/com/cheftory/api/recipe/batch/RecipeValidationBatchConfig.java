@@ -2,11 +2,11 @@ package com.cheftory.api.recipe.batch;
 
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
-import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaRepository;
-import com.cheftory.api.recipe.content.youtubemeta.client.VideoInfoClient;
+import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaExternalClient;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaStatus;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
+import com.cheftory.api.recipe.content.youtubemeta.repository.RecipeYoutubeMetaJpaRepository;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -15,6 +15,7 @@ import java.util.UUID;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -45,8 +46,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class RecipeValidationBatchConfig {
 
     private final DataSource dataSource;
-    private final VideoInfoClient videoInfoClient;
-    private final RecipeYoutubeMetaRepository youtubeMetaRepository;
+    private final YoutubeMetaExternalClient youtubeMetaExternalClient;
+    private final RecipeYoutubeMetaJpaRepository youtubeMetaRepository;
 
     record RefundInfo(UUID userId, UUID recipeId, long creditCost) {}
 
@@ -64,7 +65,7 @@ public class RecipeValidationBatchConfig {
             private MarketContext.Scope scope;
 
             @Override
-            public void beforeStep(StepExecution stepExecution) {
+            public void beforeStep(@NonNull StepExecution stepExecution) {
                 Market market = Market.valueOf(marketParam);
 
                 String countryCode =
@@ -77,7 +78,7 @@ public class RecipeValidationBatchConfig {
             }
 
             @Override
-            public ExitStatus afterStep(StepExecution stepExecution) {
+            public ExitStatus afterStep(@NonNull StepExecution stepExecution) {
                 if (scope != null) scope.close();
                 return stepExecution.getExitStatus();
             }
@@ -267,7 +268,7 @@ public class RecipeValidationBatchConfig {
     private boolean checkYoutubeUrlWithApi(RecipeYoutubeMeta item) {
         try {
             YoutubeUri youtubeUri = YoutubeUri.from(item.getVideoUri());
-            return !videoInfoClient.isBlockedVideo(youtubeUri);
+            return !youtubeMetaExternalClient.isBlocked(youtubeUri);
         } catch (Exception e) {
             log.error("API 호출 실패 - Video ID: {}, Error: {}", item.getVideoId(), e.getMessage());
             return false;

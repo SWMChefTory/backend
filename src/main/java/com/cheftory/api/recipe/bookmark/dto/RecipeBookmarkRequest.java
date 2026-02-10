@@ -11,6 +11,8 @@ import java.util.UUID;
 public record RecipeBookmarkRequest() {
     /**
      * 카테고리 수정 요청
+     *
+     * @param categoryId 카테고리 ID
      */
     public record UpdateCategory(@JsonProperty("category_id") @NotNull @ExistsRecipeCategoryId UUID categoryId) {}
 }

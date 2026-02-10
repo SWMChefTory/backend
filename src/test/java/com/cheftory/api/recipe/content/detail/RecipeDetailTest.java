@@ -9,12 +9,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("RecipeDetailTest")
-public class RecipeDetailTest {
+@DisplayName("RecipeDetail 테스트")
+class RecipeDetailTest {
 
     @Nested
-    @DisplayName("레시피 상세 정보 생성")
-    class CreateRecipeDetail {
+    @DisplayName("레시피 상세 정보 생성 (of)")
+    class Of {
 
         @Nested
         @DisplayName("Given - 유효한 파라미터가 주어졌을 때")
@@ -50,8 +50,8 @@ public class RecipeDetailTest {
                     recipeDetail = RecipeDetail.of(description, ingredients, tags, servings, cookTime);
                 }
 
-                @DisplayName("Then - 레시피 상세 정보가 생성된다")
                 @Test
+                @DisplayName("Then - 레시피 상세 정보가 생성된다")
                 void thenRecipeDetailIsCreated() {
                     assertThat(recipeDetail).isNotNull();
                     assertThat(recipeDetail.description()).isEqualTo("맛있는 김치찌개 만들기");
@@ -68,8 +68,8 @@ public class RecipeDetailTest {
                     assertThat(recipeDetail.cookTime()).isEqualTo(30);
                 }
 
-                @DisplayName("Then - 각 재료 정보가 올바르게 설정된다")
                 @Test
+                @DisplayName("Then - 각 재료 정보가 올바르게 설정된다")
                 void thenIngredientInfoIsCorrect() {
                     RecipeDetail.Ingredient firstIngredient =
                             recipeDetail.ingredients().get(0);
@@ -116,8 +116,8 @@ public class RecipeDetailTest {
                     recipeDetail = RecipeDetail.of(description, ingredients, tags, servings, cookTime);
                 }
 
-                @DisplayName("Then - 간단한 레시피가 생성된다")
                 @Test
+                @DisplayName("Then - 간단한 레시피가 생성된다")
                 void thenSimpleRecipeIsCreated() {
                     assertThat(recipeDetail).isNotNull();
                     assertThat(recipeDetail.description()).isEqualTo("간단한 계란찜");
@@ -161,8 +161,8 @@ public class RecipeDetailTest {
                     recipeDetail = RecipeDetail.of(description, ingredients, tags, servings, cookTime);
                 }
 
-                @DisplayName("Then - 빈 목록을 가진 레시피가 생성된다")
                 @Test
+                @DisplayName("Then - 빈 목록을 가진 레시피가 생성된다")
                 void thenRecipeWithEmptyListsIsCreated() {
                     assertThat(recipeDetail).isNotNull();
                     assertThat(recipeDetail.description()).isEqualTo("재료 없는 레시피");
@@ -176,8 +176,8 @@ public class RecipeDetailTest {
     }
 
     @Nested
-    @DisplayName("재료 생성")
-    class CreateIngredient {
+    @DisplayName("재료 생성 (Ingredient.of)")
+    class IngredientOf {
 
         @Nested
         @DisplayName("Given - 유효한 재료 파라미터가 주어졌을 때")
@@ -205,8 +205,8 @@ public class RecipeDetailTest {
                     ingredient = RecipeDetail.Ingredient.of(name, amount, unit);
                 }
 
-                @DisplayName("Then - 재료가 생성된다")
                 @Test
+                @DisplayName("Then - 재료가 생성된다")
                 void thenIngredientIsCreated() {
                     assertThat(ingredient).isNotNull();
                     assertThat(ingredient.name()).isEqualTo("양파");
@@ -217,62 +217,182 @@ public class RecipeDetailTest {
         }
 
         @Nested
-        @DisplayName("Given - 다양한 단위의 재료 파라미터가 주어졌을 때")
-        class GivenVariousUnitIngredients {
+        @DisplayName("Given - 그램 단위 재료 파라미터가 주어졌을 때")
+        class GivenGramUnitIngredient {
 
-            @DisplayName("When - 그램 단위 재료를 생성하면 Then - 올바른 재료가 생성된다")
-            @Test
-            void whenCreateGramIngredient_thenCorrectIngredientIsCreated() {
-                RecipeDetail.Ingredient ingredient = RecipeDetail.Ingredient.of("소금", 5, "g");
+            private String name;
+            private Integer amount;
+            private String unit;
 
-                assertThat(ingredient.name()).isEqualTo("소금");
-                assertThat(ingredient.amount()).isEqualTo(5);
-                assertThat(ingredient.unit()).isEqualTo("g");
+            @BeforeEach
+            void setUp() {
+                name = "소금";
+                amount = 5;
+                unit = "g";
             }
 
-            @DisplayName("When - 큰술 단위 재료를 생성하면 Then - 올바른 재료가 생성된다")
-            @Test
-            void whenCreateTablespoonIngredient_thenCorrectIngredientIsCreated() {
-                RecipeDetail.Ingredient ingredient = RecipeDetail.Ingredient.of("올리브오일", 2, "큰술");
+            @Nested
+            @DisplayName("When - 재료를 생성하면")
+            class WhenCreateIngredient {
 
-                assertThat(ingredient.name()).isEqualTo("올리브오일");
-                assertThat(ingredient.amount()).isEqualTo(2);
-                assertThat(ingredient.unit()).isEqualTo("큰술");
-            }
+                private RecipeDetail.Ingredient ingredient;
 
-            @DisplayName("When - 컵 단위 재료를 생성하면 Then - 올바른 재료가 생성된다")
-            @Test
-            void whenCreateCupIngredient_thenCorrectIngredientIsCreated() {
-                RecipeDetail.Ingredient ingredient = RecipeDetail.Ingredient.of("물", 1, "컵");
+                @BeforeEach
+                void setUp() {
+                    ingredient = RecipeDetail.Ingredient.of(name, amount, unit);
+                }
 
-                assertThat(ingredient.name()).isEqualTo("물");
-                assertThat(ingredient.amount()).isEqualTo(1);
-                assertThat(ingredient.unit()).isEqualTo("컵");
+                @Test
+                @DisplayName("Then - 그램 단위 재료가 생성된다")
+                void thenGramIngredientIsCreated() {
+                    assertThat(ingredient.name()).isEqualTo("소금");
+                    assertThat(ingredient.amount()).isEqualTo(5);
+                    assertThat(ingredient.unit()).isEqualTo("g");
+                }
             }
         }
 
         @Nested
-        @DisplayName("Given - 특수한 값의 재료 파라미터가 주어졌을 때")
-        class GivenSpecialValueIngredients {
+        @DisplayName("Given - 큰술 단위 재료 파라미터가 주어졌을 때")
+        class GivenTablespoonUnitIngredient {
 
-            @DisplayName("When - 0 수량 재료를 생성하면 Then - 올바른 재료가 생성된다")
-            @Test
-            void whenCreateZeroAmountIngredient_thenCorrectIngredientIsCreated() {
-                RecipeDetail.Ingredient ingredient = RecipeDetail.Ingredient.of("장식용 파슬리", 0, "조금");
+            private String name;
+            private Integer amount;
+            private String unit;
 
-                assertThat(ingredient.name()).isEqualTo("장식용 파슬리");
-                assertThat(ingredient.amount()).isEqualTo(0);
-                assertThat(ingredient.unit()).isEqualTo("조금");
+            @BeforeEach
+            void setUp() {
+                name = "올리브오일";
+                amount = 2;
+                unit = "큰술";
             }
 
-            @DisplayName("When - 큰 수량 재료를 생성하면 Then - 올바른 재료가 생성된다")
-            @Test
-            void whenCreateLargeAmountIngredient_thenCorrectIngredientIsCreated() {
-                RecipeDetail.Ingredient ingredient = RecipeDetail.Ingredient.of("쌀", 1000, "g");
+            @Nested
+            @DisplayName("When - 재료를 생성하면")
+            class WhenCreateIngredient {
 
-                assertThat(ingredient.name()).isEqualTo("쌀");
-                assertThat(ingredient.amount()).isEqualTo(1000);
-                assertThat(ingredient.unit()).isEqualTo("g");
+                private RecipeDetail.Ingredient ingredient;
+
+                @BeforeEach
+                void setUp() {
+                    ingredient = RecipeDetail.Ingredient.of(name, amount, unit);
+                }
+
+                @Test
+                @DisplayName("Then - 큰술 단위 재료가 생성된다")
+                void thenTablespoonIngredientIsCreated() {
+                    assertThat(ingredient.name()).isEqualTo("올리브오일");
+                    assertThat(ingredient.amount()).isEqualTo(2);
+                    assertThat(ingredient.unit()).isEqualTo("큰술");
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 컵 단위 재료 파라미터가 주어졌을 때")
+        class GivenCupUnitIngredient {
+
+            private String name;
+            private Integer amount;
+            private String unit;
+
+            @BeforeEach
+            void setUp() {
+                name = "물";
+                amount = 1;
+                unit = "컵";
+            }
+
+            @Nested
+            @DisplayName("When - 재료를 생성하면")
+            class WhenCreateIngredient {
+
+                private RecipeDetail.Ingredient ingredient;
+
+                @BeforeEach
+                void setUp() {
+                    ingredient = RecipeDetail.Ingredient.of(name, amount, unit);
+                }
+
+                @Test
+                @DisplayName("Then - 컵 단위 재료가 생성된다")
+                void thenCupIngredientIsCreated() {
+                    assertThat(ingredient.name()).isEqualTo("물");
+                    assertThat(ingredient.amount()).isEqualTo(1);
+                    assertThat(ingredient.unit()).isEqualTo("컵");
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 0 수량 재료 파라미터가 주어졌을 때")
+        class GivenZeroAmountIngredient {
+
+            private String name;
+            private Integer amount;
+            private String unit;
+
+            @BeforeEach
+            void setUp() {
+                name = "장식용 파슬리";
+                amount = 0;
+                unit = "조금";
+            }
+
+            @Nested
+            @DisplayName("When - 재료를 생성하면")
+            class WhenCreateIngredient {
+
+                private RecipeDetail.Ingredient ingredient;
+
+                @BeforeEach
+                void setUp() {
+                    ingredient = RecipeDetail.Ingredient.of(name, amount, unit);
+                }
+
+                @Test
+                @DisplayName("Then - 0 수량 재료가 생성된다")
+                void thenZeroAmountIngredientIsCreated() {
+                    assertThat(ingredient.name()).isEqualTo("장식용 파슬리");
+                    assertThat(ingredient.amount()).isEqualTo(0);
+                    assertThat(ingredient.unit()).isEqualTo("조금");
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 큰 수량 재료 파라미터가 주어졌을 때")
+        class GivenLargeAmountIngredient {
+
+            private String name;
+            private Integer amount;
+            private String unit;
+
+            @BeforeEach
+            void setUp() {
+                name = "쌀";
+                amount = 1000;
+                unit = "g";
+            }
+
+            @Nested
+            @DisplayName("When - 재료를 생성하면")
+            class WhenCreateIngredient {
+
+                private RecipeDetail.Ingredient ingredient;
+
+                @BeforeEach
+                void setUp() {
+                    ingredient = RecipeDetail.Ingredient.of(name, amount, unit);
+                }
+
+                @Test
+                @DisplayName("Then - 큰 수량 재료가 생성된다")
+                void thenLargeAmountIngredientIsCreated() {
+                    assertThat(ingredient.name()).isEqualTo("쌀");
+                    assertThat(ingredient.amount()).isEqualTo(1000);
+                    assertThat(ingredient.unit()).isEqualTo("g");
+                }
             }
         }
     }

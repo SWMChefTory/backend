@@ -15,7 +15,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@DisplayName("RecipeProgress")
+@DisplayName("RecipeProgress 엔티티")
 class RecipeProgressTest {
 
     private Clock clock;
@@ -30,89 +30,105 @@ class RecipeProgressTest {
         recipeId = UUID.randomUUID();
     }
 
-    @ParameterizedTest(name = "Step={0} 에 대해 생성 성공")
-    @EnumSource(RecipeProgressStep.class)
-    void create_with_all_steps(RecipeProgressStep step) {
-        RecipeProgressDetail detail = pickDefaultDetailFor(step);
+    @Nested
+    @DisplayName("생성 (create)")
+    class Create {
 
-        RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.SUCCESS);
+        @ParameterizedTest(name = "Step={0} 에 대해 생성 성공")
+        @EnumSource(RecipeProgressStep.class)
+        @DisplayName("모든 Step에 대해 생성된다")
+        void withAllSteps(RecipeProgressStep step) {
+            RecipeProgressDetail detail = pickDefaultDetailFor(step);
 
-        assertThat(progress).isNotNull();
-        assertThat(ReflectionTestUtils.getField(progress, "id")).isNotNull();
-        assertThat(ReflectionTestUtils.getField(progress, "recipeId")).isEqualTo(recipeId);
-        assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
-        assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
-        assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(RecipeProgressState.SUCCESS);
-        assertThat(ReflectionTestUtils.getField(progress, "createdAt")).isEqualTo(now);
-    }
+            RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.SUCCESS);
 
-    @ParameterizedTest(name = "State={0} 에 대해 생성 성공")
-    @EnumSource(RecipeProgressState.class)
-    void create_with_all_states(RecipeProgressState state) {
-        RecipeProgressStep step = RecipeProgressStep.READY;
-        RecipeProgressDetail detail = RecipeProgressDetail.READY;
+            assertThat(progress).isNotNull();
+            assertThat(ReflectionTestUtils.getField(progress, "id")).isNotNull();
+            assertThat(ReflectionTestUtils.getField(progress, "recipeId")).isEqualTo(recipeId);
+            assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
+            assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
+            assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(RecipeProgressState.SUCCESS);
+            assertThat(ReflectionTestUtils.getField(progress, "createdAt")).isEqualTo(now);
+        }
 
-        RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, state);
+        @ParameterizedTest(name = "State={0} 에 대해 생성 성공")
+        @EnumSource(RecipeProgressState.class)
+        @DisplayName("모든 State에 대해 생성된다")
+        void withAllStates(RecipeProgressState state) {
+            RecipeProgressStep step = RecipeProgressStep.READY;
+            RecipeProgressDetail detail = RecipeProgressDetail.READY;
 
-        assertThat(progress).isNotNull();
-        assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
-        assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
-        assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(state);
-        assertThat(ReflectionTestUtils.getField(progress, "createdAt")).isEqualTo(now);
-    }
+            RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, state);
 
-    @ParameterizedTest(name = "Detail={0} 에 대해 생성 성공")
-    @EnumSource(RecipeProgressDetail.class)
-    void create_with_all_details(RecipeProgressDetail detail) {
-        RecipeProgressStep step = pickDefaultStepFor(detail);
-        RecipeProgressState state = RecipeProgressState.SUCCESS;
+            assertThat(progress).isNotNull();
+            assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
+            assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
+            assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(state);
+            assertThat(ReflectionTestUtils.getField(progress, "createdAt")).isEqualTo(now);
+        }
 
-        RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, state);
+        @ParameterizedTest(name = "Detail={0} 에 대해 생성 성공")
+        @EnumSource(RecipeProgressDetail.class)
+        @DisplayName("모든 Detail에 대해 생성된다")
+        void withAllDetails(RecipeProgressDetail detail) {
+            RecipeProgressStep step = pickDefaultStepFor(detail);
+            RecipeProgressState state = RecipeProgressState.SUCCESS;
 
-        assertThat(progress).isNotNull();
-        assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
-        assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
-        assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(state);
-        assertThat(ReflectionTestUtils.getField(progress, "createdAt")).isEqualTo(now);
-    }
+            RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, state);
 
-    @Test
-    @DisplayName("RUNNING 상태로 생성")
-    void create_with_running_state() {
-        RecipeProgressStep step = RecipeProgressStep.CAPTION;
-        RecipeProgressDetail detail = RecipeProgressDetail.CAPTION;
+            assertThat(progress).isNotNull();
+            assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
+            assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
+            assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(state);
+            assertThat(ReflectionTestUtils.getField(progress, "createdAt")).isEqualTo(now);
+        }
 
-        RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.RUNNING);
+        @Nested
+        @DisplayName("상태별 생성")
+        class ByState {
 
-        assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(RecipeProgressState.RUNNING);
-        assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
-        assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
-    }
+            @Test
+            @DisplayName("RUNNING 상태로 생성된다")
+            void runningState() {
+                RecipeProgressStep step = RecipeProgressStep.CAPTION;
+                RecipeProgressDetail detail = RecipeProgressDetail.CAPTION;
 
-    @Test
-    @DisplayName("SUCCESS 상태로 생성")
-    void create_with_success_state() {
-        RecipeProgressStep step = RecipeProgressStep.CAPTION;
-        RecipeProgressDetail detail = RecipeProgressDetail.CAPTION;
+                RecipeProgress progress =
+                        RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.RUNNING);
 
-        RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.SUCCESS);
+                assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(RecipeProgressState.RUNNING);
+                assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
+                assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
+            }
 
-        assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(RecipeProgressState.SUCCESS);
-        assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
-        assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
-    }
+            @Test
+            @DisplayName("SUCCESS 상태로 생성된다")
+            void successState() {
+                RecipeProgressStep step = RecipeProgressStep.CAPTION;
+                RecipeProgressDetail detail = RecipeProgressDetail.CAPTION;
 
-    @Test
-    @DisplayName("FAILED 상태로 생성")
-    void create_with_failed_state() {
-        RecipeProgressStep step = RecipeProgressStep.CAPTION;
-        RecipeProgressDetail detail = RecipeProgressDetail.CAPTION;
+                RecipeProgress progress =
+                        RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.SUCCESS);
 
-        RecipeProgress progress = RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.FAILED);
+                assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(RecipeProgressState.SUCCESS);
+                assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
+                assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
+            }
 
-        assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(RecipeProgressState.FAILED);
-        assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
-        assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
+            @Test
+            @DisplayName("FAILED 상태로 생성된다")
+            void failedState() {
+                RecipeProgressStep step = RecipeProgressStep.CAPTION;
+                RecipeProgressDetail detail = RecipeProgressDetail.CAPTION;
+
+                RecipeProgress progress =
+                        RecipeProgress.create(recipeId, clock, step, detail, RecipeProgressState.FAILED);
+
+                assertThat(ReflectionTestUtils.getField(progress, "state")).isEqualTo(RecipeProgressState.FAILED);
+                assertThat(ReflectionTestUtils.getField(progress, "step")).isEqualTo(step);
+                assertThat(ReflectionTestUtils.getField(progress, "detail")).isEqualTo(detail);
+            }
+        }
     }
 
     private RecipeProgressStep pickDefaultStepFor(RecipeProgressDetail detail) {

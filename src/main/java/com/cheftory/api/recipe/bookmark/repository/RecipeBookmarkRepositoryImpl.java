@@ -50,7 +50,7 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
                     }
                     return false;
                 },
-                () -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
+                (cause) -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
     }
 
     @Override
@@ -66,10 +66,11 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
                             .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE)
                             .orElseThrow(() ->
                                     new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND));
+
                     bookmark.updateRecipeCategoryId(categoryId);
                     repository.save(bookmark);
                 },
-                () -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
+                (cause) -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
     }
 
     @Override
@@ -78,10 +79,11 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
                 () -> {
                     List<RecipeBookmark> bookmarks =
                             repository.findByRecipeCategoryIdAndStatus(categoryId, RecipeBookmarkStatus.ACTIVE);
+
                     bookmarks.forEach(RecipeBookmark::emptyRecipeCategoryId);
                     repository.saveAll(bookmarks);
                 },
-                () -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
+                (cause) -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_CREATE_FAIL));
     }
 
     @Override
@@ -113,7 +115,7 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
     }
 
     @Override
-    public RecipeBookmark get(UUID userId, UUID recipeId) throws RecipeBookmarkException {
+    public RecipeBookmark find(UUID userId, UUID recipeId) throws RecipeBookmarkException {
         return repository
                 .findByRecipeIdAndUserIdAndStatus(recipeId, userId, RecipeBookmarkStatus.ACTIVE)
                 .orElseThrow(() -> new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_NOT_FOUND));
@@ -172,16 +174,17 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
     }
 
     @Override
-    public List<RecipeBookmark> gets(UUID userId, List<UUID> recipeIds) {
+    public List<RecipeBookmark> finds(UUID userId, List<UUID> recipeIds) {
         return repository.findByRecipeIdInAndUserIdAndStatus(recipeIds, userId, RecipeBookmarkStatus.ACTIVE);
     }
 
     @Override
-    public List<RecipeBookmark> gets(UUID recipeId) {
+    public List<RecipeBookmark> finds(UUID recipeId) {
         return repository.findAllByRecipeIdAndStatus(recipeId, RecipeBookmarkStatus.ACTIVE);
     }
 
     private CursorPage<RecipeBookmark> toCursorPage(List<RecipeBookmark> bookmarks, Pageable pageable) {
+
         return CursorPages.of(
                 bookmarks,
                 pageable.getPageSize(),

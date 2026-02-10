@@ -18,15 +18,15 @@ import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkStatus;
 import com.cheftory.api.recipe.bookmark.repository.RecipeBookmarkJpaRepository;
-import com.cheftory.api.recipe.content.info.RecipeInfoRepository;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
-import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaRepository;
-import com.cheftory.api.recipe.content.youtubemeta.client.VideoInfoClient;
+import com.cheftory.api.recipe.content.info.repository.RecipeInfoJpaRepository;
+import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaExternalClient;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaStatus;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
+import com.cheftory.api.recipe.content.youtubemeta.repository.RecipeYoutubeMetaJpaRepository;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -54,10 +54,10 @@ class RecipeInfoValidationBatchConfigTest {
     private Job youtubeValidationJob;
 
     @Autowired
-    private RecipeYoutubeMetaRepository youtubeMetaRepository;
+    private RecipeYoutubeMetaJpaRepository youtubeMetaRepository;
 
     @Autowired
-    private RecipeInfoRepository recipeInfoRepository;
+    private RecipeInfoJpaRepository recipeInfoJpaRepository;
 
     @Autowired
     private RecipeBookmarkJpaRepository recipeBookmarkJpaRepository;
@@ -69,7 +69,7 @@ class RecipeInfoValidationBatchConfigTest {
     private JdbcTemplate jdbcTemplate;
 
     @MockitoBean
-    private VideoInfoClient videoInfoClient;
+    private YoutubeMetaExternalClient youtubeMetaExternalClient;
 
     @MockitoBean
     private RecipeCreditPort recipeCreditPort;
@@ -79,13 +79,13 @@ class RecipeInfoValidationBatchConfigTest {
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             recipeBookmarkJpaRepository.deleteAll();
             youtubeMetaRepository.deleteAll();
-            recipeInfoRepository.deleteAll();
+            recipeInfoJpaRepository.deleteAll();
         }
 
         try (var ignored = MarketContext.with(new MarketContext.Info(GLOBAL, "US"))) {
             recipeBookmarkJpaRepository.deleteAll();
             youtubeMetaRepository.deleteAll();
-            recipeInfoRepository.deleteAll();
+            recipeInfoJpaRepository.deleteAll();
         }
     }
 
@@ -106,7 +106,7 @@ class RecipeInfoValidationBatchConfigTest {
             invalidBookmarkId = createRecipeBookmark(userId, invalidRecipeId);
         }
 
-        when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
+        when(youtubeMetaExternalClient.isBlocked(any())).thenReturn(true);
 
         JobExecution jobExecution = runBatchJob(KOREA.name());
         assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
@@ -137,7 +137,7 @@ class RecipeInfoValidationBatchConfigTest {
             validBookmarkId = createRecipeBookmark(userId, validRecipeId);
         }
 
-        when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
+        when(youtubeMetaExternalClient.isBlocked(any())).thenReturn(false);
 
         JobExecution jobExecution = runBatchJob(KOREA.name());
         assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
@@ -167,7 +167,7 @@ class RecipeInfoValidationBatchConfigTest {
             createRecipeBookmark(userId, recipeId);
         }
 
-        when(videoInfoClient.isBlockedVideo(any())).thenThrow(new RuntimeException("API Error"));
+        when(youtubeMetaExternalClient.isBlocked(any())).thenThrow(new RuntimeException("API Error"));
 
         JobExecution jobExecution = runBatchJob(KOREA.name());
         assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
@@ -182,7 +182,6 @@ class RecipeInfoValidationBatchConfigTest {
     @Test
     @DisplayName("ACTIVE 상태의 비디오만 검증 대상(이미 BLOCKED면 환불/상태 변경 없음)")
     void shouldProcessOnlyActiveVideos() throws Exception {
-        UUID userId = UUID.randomUUID();
         long creditCost = 10L;
 
         UUID activeMetaId;
@@ -198,7 +197,7 @@ class RecipeInfoValidationBatchConfigTest {
                     blockedRecipeId, "blocked_video", "https://www.youtube.com/watch?v=blocked_video");
         }
 
-        when(videoInfoClient.isBlockedVideo(any())).thenReturn(false);
+        when(youtubeMetaExternalClient.isBlocked(any())).thenReturn(false);
 
         JobExecution jobExecution = runBatchJob(KOREA.name());
         assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
@@ -242,7 +241,7 @@ class RecipeInfoValidationBatchConfigTest {
             globalBookmarkId = createRecipeBookmark(globalUserId, globalRecipeId);
         }
 
-        when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
+        when(youtubeMetaExternalClient.isBlocked(any())).thenReturn(true);
 
         // KOREA만 실행
         JobExecution jobExecution = runBatchJob(KOREA.name());
@@ -283,7 +282,7 @@ class RecipeInfoValidationBatchConfigTest {
         JobExecution jobExecution = runBatchJob(KOREA.name());
         assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
 
-        verify(videoInfoClient, never()).isBlockedVideo(any());
+        verify(youtubeMetaExternalClient, never()).isBlocked(any());
 
         try (var ignored = MarketContext.with(new MarketContext.Info(KOREA, "KR"))) {
             assertYoutubeMetaStatus(metaId, YoutubeMetaStatus.BLOCKED);
@@ -306,7 +305,7 @@ class RecipeInfoValidationBatchConfigTest {
             }
         }
 
-        when(videoInfoClient.isBlockedVideo(any())).thenReturn(true);
+        when(youtubeMetaExternalClient.isBlocked(any())).thenReturn(true);
 
         JobExecution jobExecution = runBatchJob(KOREA.name());
         assertThat(jobExecution.getExitStatus().getExitCode()).isEqualTo("COMPLETED");
@@ -315,7 +314,7 @@ class RecipeInfoValidationBatchConfigTest {
             long blockedMeta = youtubeMetaRepository.findAll().stream()
                     .filter(m -> m.getStatus() == YoutubeMetaStatus.BLOCKED)
                     .count();
-            long blockedRecipe = recipeInfoRepository.findAll().stream()
+            long blockedRecipe = recipeInfoJpaRepository.findAll().stream()
                     .filter(r -> r.getRecipeStatus() == RecipeStatus.BLOCKED)
                     .count();
             long blockedBookmark = recipeBookmarkJpaRepository.findAll().stream()
@@ -345,7 +344,7 @@ class RecipeInfoValidationBatchConfigTest {
     }
 
     private void assertRecipeStatus(UUID recipeId, RecipeStatus expectedStatus) {
-        var recipe = recipeInfoRepository.findById(recipeId).orElseThrow();
+        var recipe = recipeInfoJpaRepository.findById(recipeId).orElseThrow();
         assertThat(recipe.getRecipeStatus()).isEqualTo(expectedStatus);
     }
 
@@ -362,7 +361,7 @@ class RecipeInfoValidationBatchConfigTest {
      */
     private UUID createRecipe(long creditCost, String market) {
         RecipeInfo recipeInfo = RecipeInfo.create(clock);
-        UUID recipeId = recipeInfoRepository.save(recipeInfo).getId();
+        UUID recipeId = recipeInfoJpaRepository.save(recipeInfo).getId();
 
         jdbcTemplate.update(
                 """

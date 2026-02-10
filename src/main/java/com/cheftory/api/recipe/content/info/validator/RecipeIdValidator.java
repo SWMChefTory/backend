@@ -8,6 +8,9 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+/**
+ * 레시피 ID 존재 여부를 검증하는 Validator
+ */
 @Component
 @RequiredArgsConstructor
 public class RecipeIdValidator implements ConstraintValidator<ExistsRecipeId, UUID> {

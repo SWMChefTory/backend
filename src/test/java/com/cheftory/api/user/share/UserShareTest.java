@@ -16,7 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("UserShare 도메인 테스트")
+@DisplayName("UserShare 엔티티")
 class UserShareTest {
 
     private final UUID userId = UUID.randomUUID();
@@ -24,70 +24,79 @@ class UserShareTest {
     private final Clock clock = mock(Clock.class);
 
     @Nested
-    @DisplayName("increase 메서드는")
-    class Describe_increase {
+    @DisplayName("공유 횟수 증가 (increase)")
+    class Increase {
 
-        @Test
-        @DisplayName("제한 횟수 미만이면 횟수를 1 증가시킨다")
-        void it_increases_count() {
-            // given
-            when(clock.now()).thenReturn(LocalDateTime.now());
-            UserShare userShare = UserShare.create(userId, sharedAt, clock);
+        @Nested
+        @DisplayName("Given - 제한 횟수 미만일 때")
+        class GivenUnderLimit {
 
-            // when
-            userShare.increase(3);
+            @Test
+            @DisplayName("Then - 횟수를 1 증가시킨다")
+            void thenIncreasesCount() throws UserShareException {
+                when(clock.now()).thenReturn(LocalDateTime.now());
+                UserShare userShare = UserShare.create(userId, sharedAt, clock);
 
-            // then
-            assertThat(userShare.getCount()).isEqualTo(1);
+                userShare.increase(3);
+
+                assertThat(userShare.getCount()).isEqualTo(1);
+            }
         }
 
-        @Test
-        @DisplayName("제한 횟수에 도달하면 예외를 던진다")
-        void it_throws_exception_when_at_limit() {
-            // given
-            when(clock.now()).thenReturn(LocalDateTime.now());
-            UserShare userShare = UserShare.create(userId, sharedAt, clock);
-            userShare.increase(3);
-            userShare.increase(3);
-            userShare.increase(3);
+        @Nested
+        @DisplayName("Given - 제한 횟수에 도달했을 때")
+        class GivenLimitReached {
 
-            // when & then
-            UserShareException exception = assertThrows(UserShareException.class, () -> userShare.increase(3));
-            assertThat(exception.getError()).isEqualTo(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
+            @Test
+            @DisplayName("Then - LIMIT_EXCEEDED 예외를 던진다")
+            void thenThrowsException() throws UserShareException {
+                when(clock.now()).thenReturn(LocalDateTime.now());
+                UserShare userShare = UserShare.create(userId, sharedAt, clock);
+                userShare.increase(3);
+                userShare.increase(3);
+                userShare.increase(3);
+
+                UserShareException exception = assertThrows(UserShareException.class, () -> userShare.increase(3));
+                assertThat(exception.getError()).isEqualTo(UserShareErrorCode.USER_SHARE_LIMIT_EXCEEDED);
+            }
         }
     }
 
     @Nested
-    @DisplayName("decrease 메서드는")
-    class Describe_decrease {
+    @DisplayName("공유 횟수 감소 (decrease)")
+    class Decrease {
 
-        @Test
-        @DisplayName("횟수가 0보다 크면 1 감소시킨다")
-        void it_decreases_count() {
-            // given
-            when(clock.now()).thenReturn(LocalDateTime.now());
-            UserShare userShare = UserShare.create(userId, sharedAt, clock);
-            userShare.increase(3);
+        @Nested
+        @DisplayName("Given - 횟수가 0보다 클 때")
+        class GivenPositiveCount {
 
-            // when
-            userShare.decrease();
+            @Test
+            @DisplayName("Then - 횟수를 1 감소시킨다")
+            void thenDecreasesCount() throws UserShareException {
+                when(clock.now()).thenReturn(LocalDateTime.now());
+                UserShare userShare = UserShare.create(userId, sharedAt, clock);
+                userShare.increase(3);
 
-            // then
-            assertThat(userShare.getCount()).isZero();
+                userShare.decrease();
+
+                assertThat(userShare.getCount()).isZero();
+            }
         }
 
-        @Test
-        @DisplayName("횟수가 0이면 감소시키지 않는다")
-        void it_does_not_decrease_below_zero() {
-            // given
-            when(clock.now()).thenReturn(LocalDateTime.now());
-            UserShare userShare = UserShare.create(userId, sharedAt, clock);
+        @Nested
+        @DisplayName("Given - 횟수가 0일 때")
+        class GivenZeroCount {
 
-            // when
-            userShare.decrease();
+            @Test
+            @DisplayName("Then - 감소시키지 않는다")
+            void thenDoesNotDecrease() {
+                when(clock.now()).thenReturn(LocalDateTime.now());
+                UserShare userShare = UserShare.create(userId, sharedAt, clock);
 
-            // then
-            assertThat(userShare.getCount()).isZero();
+                userShare.decrease();
+
+                assertThat(userShare.getCount()).isZero();
+            }
         }
     }
 }

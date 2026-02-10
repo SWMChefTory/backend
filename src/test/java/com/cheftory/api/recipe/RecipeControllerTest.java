@@ -7,14 +7,23 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.security.UserArgumentResolver;
+import com.cheftory.api.credit.exception.CreditException;
+import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.exception.GlobalExceptionHandler;
+import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
+import com.cheftory.api.recipe.category.exception.RecipeCategoryException;
 import com.cheftory.api.recipe.challenge.RecipeCompleteChallenge;
+import com.cheftory.api.recipe.challenge.exception.RecipeChallengeException;
+import com.cheftory.api.recipe.content.detailMeta.exception.RecipeDetailMetaException;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
+import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
+import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.RecipeCreationFacade;
 import com.cheftory.api.recipe.dto.FullRecipe;
 import com.cheftory.api.recipe.dto.RecipeBookmarkOverview;
@@ -26,6 +35,7 @@ import com.cheftory.api.recipe.dto.RecipeInfoRecommendType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeOverview;
 import com.cheftory.api.recipe.dto.RecipeProgressStatus;
+import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.utils.RestDocsTest;
 import io.restassured.http.ContentType;
 import java.net.URI;
@@ -66,7 +76,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("레시피를 생성한다")
-    void shouldCreateRecipe() {
+    void shouldCreateRecipe() throws RecipeException, CreditException {
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
         String videoUrl = "https://youtu.be/video-id";
@@ -87,7 +97,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("레시피 상세 정보를 조회한다")
-    void shouldReturnFullRecipe() {
+    void shouldReturnFullRecipe() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
         FullRecipe fullRecipe = stubFullRecipe();
@@ -108,7 +118,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("레시피 개요 정보를 조회한다")
-    void shouldReturnRecipeOverview() {
+    void shouldReturnRecipeOverview() throws RecipeInfoException, RecipeDetailMetaException, YoutubeMetaException {
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
         RecipeOverview overview = stubRecipeOverview();
@@ -127,7 +137,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("커서로 최근 레시피를 조회하면 커서 기반 응답을 반환한다")
-    void shouldReturnRecentRecipesWithCursor() {
+    void shouldReturnRecentRecipesWithCursor() throws CursorException {
         UUID userId = UUID.randomUUID();
         String cursor = "cursor-1";
         String nextCursor = "cursor-2";
@@ -154,7 +164,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("커서로 추천 레시피를 조회하면 커서 기반 응답을 반환한다")
-    void shouldReturnRecommendRecipesWithCursor() {
+    void shouldReturnRecommendRecipesWithCursor() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         String cursor = "cursor-1";
         String nextCursor = "cursor-2";
@@ -182,7 +192,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("커서로 카테고리별 레시피를 조회하면 커서 기반 응답을 반환한다")
-    void shouldReturnCategorizedRecipesWithCursor() {
+    void shouldReturnCategorizedRecipesWithCursor() throws CursorException {
         UUID userId = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
         String cursor = "cursor-1";
@@ -228,7 +238,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("레시피 카테고리를 삭제한다")
-    void shouldDeleteRecipeCategory() {
+    void shouldDeleteRecipeCategory() throws RecipeBookmarkException, RecipeCategoryException {
         UUID userId = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
 
@@ -245,7 +255,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("레시피를 차단한다")
-    void shouldBlockRecipe() {
+    void shouldBlockRecipe() throws RecipeException {
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
 
@@ -262,7 +272,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("레시피 생성 진행 상태를 조회한다")
-    void shouldReturnRecipeProgress() {
+    void shouldReturnRecipeProgress() throws RecipeInfoException {
         UUID recipeId = UUID.randomUUID();
         RecipeProgressStatus status = stubRecipeProgressStatus();
 
@@ -279,7 +289,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("커서로 요리 카테고리별 레시피를 조회하면 커서 기반 응답을 반환한다")
-    void shouldReturnCuisineRecipesWithCursor() {
+    void shouldReturnCuisineRecipesWithCursor() throws CheftoryException {
         UUID userId = UUID.randomUUID();
         String cursor = "cursor-1";
         String nextCursor = "cursor-2";
@@ -308,7 +318,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
     @Test
     @DisplayName("챌린지 레시피를 조회한다")
-    void shouldReturnChallengeRecipes() {
+    void shouldReturnChallengeRecipes() throws RecipeChallengeException, CursorException {
         UUID userId = UUID.randomUUID();
         UUID challengeId = UUID.randomUUID();
         String cursor = "cursor-1";

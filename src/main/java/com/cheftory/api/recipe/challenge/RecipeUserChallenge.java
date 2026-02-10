@@ -14,6 +14,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 사용자별 레시피 챌린지 참여 정보 엔티티.
+ *
+ * <p>특정 사용자가 챌린지에 참여한 이력과 현재 상태를 관리합니다.</p>
+ */
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter

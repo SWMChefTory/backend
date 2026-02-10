@@ -1,13 +1,12 @@
 package com.cheftory.api.exception;
 
-public class CheftoryException extends RuntimeException {
+import lombok.Getter;
+
+@Getter
+public class CheftoryException extends Exception {
     private final Error error;
 
     public CheftoryException(Error error) {
         this.error = error;
-    }
-
-    public Error getError() {
-        return error;
     }
 }
