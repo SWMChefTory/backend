@@ -49,7 +49,7 @@ class RecipeDetailServiceTest {
                 mimeType = "video/mp4";
                 clientResponse = mock(ClientRecipeDetailResponse.class);
 
-                expectedRecipeDetail = RecipeDetail.of(
+                expectedRecipeDetail = RecipeDetail.of(null, 
                         "맛있는 김치찌개 만들기",
                         List.of(
                                 RecipeDetail.Ingredient.of("김치", 200, "g"),
@@ -59,7 +59,7 @@ class RecipeDetailServiceTest {
                         2,
                         30);
 
-                when(recipeDetailClient.fetch(videoId, fileUri, mimeType)).thenReturn(clientResponse);
+                when(recipeDetailClient.fetch(videoId, fileUri, mimeType, null)).thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(expectedRecipeDetail);
             }
 
@@ -71,7 +71,7 @@ class RecipeDetailServiceTest {
 
                 @BeforeEach
                 void setUp() throws RecipeException {
-                    result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
+                    result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType, null);
                 }
 
                 @Test
@@ -92,7 +92,7 @@ class RecipeDetailServiceTest {
                 @Test
                 @DisplayName("Then - 클라이언트가 호출된다")
                 void thenClientIsCalled() throws RecipeException {
-                    verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType));
+                    verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType), eq(null));
                     verify(clientResponse).toRecipeDetail();
                 }
             }
@@ -115,14 +115,14 @@ class RecipeDetailServiceTest {
                 mimeType = "video/mp4";
                 clientResponse = mock(ClientRecipeDetailResponse.class);
 
-                simpleRecipeDetail = RecipeDetail.of(
+                simpleRecipeDetail = RecipeDetail.of(null, 
                         "간단한 계란찜",
                         List.of(RecipeDetail.Ingredient.of("계란", 3, "개"), RecipeDetail.Ingredient.of("물", 50, "ml")),
                         List.of("간식"),
                         1,
                         5);
 
-                when(recipeDetailClient.fetch(videoId, fileUri, mimeType)).thenReturn(clientResponse);
+                when(recipeDetailClient.fetch(videoId, fileUri, mimeType, null)).thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(simpleRecipeDetail);
             }
 
@@ -134,7 +134,7 @@ class RecipeDetailServiceTest {
 
                 @BeforeEach
                 void setUp() throws RecipeException {
-                    result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
+                    result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType, null);
                 }
 
                 @Test
@@ -151,7 +151,7 @@ class RecipeDetailServiceTest {
                 @Test
                 @DisplayName("Then - 클라이언트가 호출된다")
                 void thenClientIsCalled() throws RecipeException {
-                    verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType));
+                    verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType), eq(null));
                 }
             }
         }
@@ -173,9 +173,9 @@ class RecipeDetailServiceTest {
                 mimeType = "video/mp4";
                 clientResponse = mock(ClientRecipeDetailResponse.class);
 
-                emptyIngredientsRecipe = RecipeDetail.of("재료 없는 레시피", List.of(), List.of("기타"), 1, 10);
+                emptyIngredientsRecipe = RecipeDetail.of(null, "재료 없는 레시피", List.of(), List.of("기타"), 1, 10);
 
-                when(recipeDetailClient.fetch(videoId, fileUri, mimeType)).thenReturn(clientResponse);
+                when(recipeDetailClient.fetch(videoId, fileUri, mimeType, null)).thenReturn(clientResponse);
                 when(clientResponse.toRecipeDetail()).thenReturn(emptyIngredientsRecipe);
             }
 
@@ -187,7 +187,7 @@ class RecipeDetailServiceTest {
 
                 @BeforeEach
                 void setUp() throws RecipeException {
-                    result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType);
+                    result = recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType, null);
                 }
 
                 @Test
@@ -204,7 +204,7 @@ class RecipeDetailServiceTest {
                 @Test
                 @DisplayName("Then - 클라이언트가 호출된다")
                 void thenClientIsCalled() throws RecipeException {
-                    verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType));
+                    verify(recipeDetailClient).fetch(eq(videoId), eq(fileUri), eq(mimeType), eq(null));
                 }
             }
         }
@@ -228,7 +228,7 @@ class RecipeDetailServiceTest {
                         new ClientRecipeDetailResponse.Ingredient("두부", 1, "모"));
 
                 clientResponse =
-                        new ClientRecipeDetailResponse("맛있는 김치찌개 만들기", ingredients, List.of("한식", "찌개", "김치"), 2, 30);
+                        new ClientRecipeDetailResponse(null, "맛있는 김치찌개 만들기", ingredients, List.of("한식", "찌개", "김치"), 2, 30);
             }
 
             @Nested
@@ -268,7 +268,7 @@ class RecipeDetailServiceTest {
 
             @BeforeEach
             void setUp() {
-                clientResponse = new ClientRecipeDetailResponse("간단한 레시피", List.of(), List.of("간단"), 1, 5);
+                clientResponse = new ClientRecipeDetailResponse(null, "간단한 레시피", List.of(), List.of("간단"), 1, 5);
             }
 
             @Nested
@@ -303,7 +303,7 @@ class RecipeDetailServiceTest {
 
             @BeforeEach
             void setUp() {
-                clientResponse = new ClientRecipeDetailResponse("테스트 설명", null, List.of("테스트"), 1, 5);
+                clientResponse = new ClientRecipeDetailResponse(null, "테스트 설명", null, List.of("테스트"), 1, 5);
             }
 
             @Test
@@ -322,7 +322,7 @@ class RecipeDetailServiceTest {
 
             @BeforeEach
             void setUp() {
-                clientResponse = new ClientRecipeDetailResponse(null, List.of(), null, null, null);
+                clientResponse = new ClientRecipeDetailResponse(null, null, List.of(), null, null, null);
             }
 
             @Nested

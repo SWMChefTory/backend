@@ -12,7 +12,7 @@ import java.util.List;
  * @param nextCursor 다음 페이지 커서
  */
 public record CuisineRecipesResponse(
-        @JsonProperty("cuisine_recipes") List<RecipeOverviewResponse> searchedRecipes,
+        @JsonProperty("cuisine_recipes") List<RecipeOverviewResponse> cuisineRecipes,
         @JsonProperty("has_next") boolean hasNext,
         @JsonProperty("next_cursor") String nextCursor) {
 

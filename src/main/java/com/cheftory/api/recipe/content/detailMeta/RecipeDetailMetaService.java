@@ -48,9 +48,11 @@ public class RecipeDetailMetaService {
      * @param cookTime 조리 시간 (분)
      * @param servings 인분
      * @param description 레시피 설명
+     * @param title AI 생성 레시피 제목
      */
-    public void create(UUID recipeId, Integer cookTime, Integer servings, String description) {
-        RecipeDetailMeta recipeDetailMeta = RecipeDetailMeta.create(cookTime, servings, description, clock, recipeId);
+    public void create(UUID recipeId, Integer cookTime, Integer servings, String description, String title) {
+        RecipeDetailMeta recipeDetailMeta =
+                RecipeDetailMeta.create(cookTime, servings, description, title, clock, recipeId);
         repository.create(recipeDetailMeta);
     }
 }

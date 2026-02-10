@@ -30,14 +30,14 @@ public class RecipeCreationDetailStep implements RecipeCreationPipelineStep {
         recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
         try {
             RecipeDetail detail = recipeDetailService.getRecipeDetails(
-                    context.getVideoId(), context.getFileUri(), context.getMimeType());
+                    context.getVideoId(), context.getFileUri(), context.getMimeType(), context.getTitle());
             recipeIngredientService.create(context.getRecipeId(), detail.ingredients());
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
             recipeTagService.create(context.getRecipeId(), detail.tags());
             recipeProgressService.success(context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
             recipeDetailMetaService.create(
-                    context.getRecipeId(), detail.cookTime(), detail.servings(), detail.description());
+                    context.getRecipeId(), detail.cookTime(), detail.servings(), detail.description(), context.getTitle());
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
             return context;

@@ -127,6 +127,7 @@ public class RecipeBookmarkOverview {
             @Nullable RecipeDetailMeta detailMeta,
             @Nullable List<RecipeTag> tags) {
 
+        String title = detailMeta == null ? null : detailMeta.getTitle();
         return new RecipeBookmarkOverview(
                 recipe.getId(),
                 recipe.getRecipeStatus(),
@@ -136,7 +137,7 @@ public class RecipeBookmarkOverview {
                 recipeBookmark.getViewedAt(),
                 recipeBookmark.getLastPlaySeconds(),
                 recipeBookmark.getRecipeCategoryId(),
-                youtubeMeta.getTitle(),
+                (title != null && !title.isBlank()) ? title : youtubeMeta.getTitle(),
                 youtubeMeta.getChannelTitle(),
                 youtubeMeta.getVideoId(),
                 youtubeMeta.getVideoUri(),

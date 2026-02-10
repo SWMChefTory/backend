@@ -48,7 +48,7 @@ public class RecipeDetailMetaTest {
 
                 @BeforeEach
                 void setUp() {
-                    recipeDetailMeta = RecipeDetailMeta.create(cookingTime, servings, description, clock, recipeId);
+                    recipeDetailMeta = RecipeDetailMeta.create(cookingTime, servings, description, null, clock, recipeId);
                 }
 
                 @Test

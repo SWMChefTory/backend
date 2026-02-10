@@ -63,8 +63,7 @@ class RecipeCreationBriefingStepTest {
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, "video-123", URI.create("https://youtu.be/video-123"));
+                context = RecipeCreationExecutionContext.of(recipeId, "video-123", URI.create("https://youtu.be/video-123"), "test-title");
             }
 
             @Nested
@@ -96,7 +95,7 @@ class RecipeCreationBriefingStepTest {
                 recipeId = UUID.randomUUID();
                 videoId = "video-456";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-456")),
+                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-456"), "test-title"),
                         "s3://bucket/file.mp4",
                         "video/mp4");
             }
@@ -134,8 +133,7 @@ class RecipeCreationBriefingStepTest {
             void setUp() throws RecipeBriefingException {
                 recipeId = UUID.randomUUID();
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, "video-789", URI.create("https://youtu.be/video-789")),
+                        RecipeCreationExecutionContext.of(recipeId, "video-789", URI.create("https://youtu.be/video-789"), "test-title"),
                         "s3://bucket/file.mp4",
                         "video/mp4");
 

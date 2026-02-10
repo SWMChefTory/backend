@@ -120,7 +120,7 @@ class RecipeCreationFacadeTest {
 
                     assertThat(result).isEqualTo(recipeId);
                     verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
-                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any(), any());
                 }
             }
 
@@ -140,7 +140,7 @@ class RecipeCreationFacadeTest {
 
                     assertThat(result).isEqualTo(recipeId);
                     verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
-                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any(), any());
                 }
             }
 
@@ -156,7 +156,7 @@ class RecipeCreationFacadeTest {
                     assertThat(result).isEqualTo(recipeId);
                     verify(recipeBookmarkService, never()).create(any(), any());
                     verify(creditPort, never()).spendRecipeCreate(any(), any(), anyLong());
-                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any(), any());
                 }
             }
         }
@@ -263,7 +263,7 @@ class RecipeCreationFacadeTest {
                     verify(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
                     verify(recipeBookmarkService).create(userId, recipeId);
                     verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
-                    verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri);
+                    verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri, videoInfo.getTitle());
                 }
             }
         }
@@ -316,7 +316,7 @@ class RecipeCreationFacadeTest {
                     UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
                     assertThat(result).isEqualTo(recipeId);
-                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any());
+                    verify(asyncRecipeCreationService, never()).create(any(), anyLong(), any(), any(), any());
                     verify(recipeBookmarkService).create(userId, recipeId);
                     verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
                 }
@@ -367,7 +367,7 @@ class RecipeCreationFacadeTest {
                     UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
                     assertThat(result).isEqualTo(recipeId);
-                    verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri);
+                    verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri, videoInfo.getTitle());
                 }
             }
         }

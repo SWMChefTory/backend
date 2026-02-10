@@ -62,8 +62,7 @@ class RecipeCreationFinalizeStepTest {
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, "video-123", URI.create("https://youtu.be/video-123"));
+                context = RecipeCreationExecutionContext.of(recipeId, "video-123", URI.create("https://youtu.be/video-123"), "test-title");
             }
 
             @Nested
@@ -93,8 +92,7 @@ class RecipeCreationFinalizeStepTest {
             void setUp() {
                 recipeId = UUID.randomUUID();
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, "video-456", URI.create("https://youtu.be/video-456")),
+                        RecipeCreationExecutionContext.of(recipeId, "video-456", URI.create("https://youtu.be/video-456"), "test-title"),
                         "s3://bucket/file.mp4",
                         "video/mp4");
             }
@@ -132,8 +130,7 @@ class RecipeCreationFinalizeStepTest {
             void setUp() throws RecipeInfoException {
                 recipeId = UUID.randomUUID();
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, "video-789", URI.create("https://youtu.be/video-789")),
+                        RecipeCreationExecutionContext.of(recipeId, "video-789", URI.create("https://youtu.be/video-789"), "test-title"),
                         "s3://bucket/file.mp4",
                         "video/mp4");
 

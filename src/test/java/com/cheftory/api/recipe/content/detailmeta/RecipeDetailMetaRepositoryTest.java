@@ -51,7 +51,7 @@ class RecipeDetailMetaRepositoryTest extends DbContextTest {
             @BeforeEach
             void setUp() throws RecipeDetailMetaException {
                 recipeId = UUID.randomUUID();
-                created = RecipeDetailMeta.create(30, 4, "Test description", clock, recipeId);
+                created = RecipeDetailMeta.create(30, 4, "Test description", "Test title", clock, recipeId);
                 recipeDetailMetaRepository.create(created);
             }
 
@@ -121,9 +121,9 @@ class RecipeDetailMetaRepositoryTest extends DbContextTest {
                 recipeId2 = UUID.randomUUID();
                 recipeId3 = UUID.randomUUID();
 
-                RecipeDetailMeta meta1 = RecipeDetailMeta.create(30, 4, "Description 1", clock, recipeId1);
-                RecipeDetailMeta meta2 = RecipeDetailMeta.create(45, 2, "Description 2", clock, recipeId2);
-                RecipeDetailMeta meta3 = RecipeDetailMeta.create(60, 6, "Description 3", clock, recipeId3);
+                RecipeDetailMeta meta1 = RecipeDetailMeta.create(30, 4, "Description 1", "Title 1", clock, recipeId1);
+                RecipeDetailMeta meta2 = RecipeDetailMeta.create(45, 2, "Description 2", "Title 2", clock, recipeId2);
+                RecipeDetailMeta meta3 = RecipeDetailMeta.create(60, 6, "Description 3", "Title 3", clock, recipeId3);
 
                 recipeDetailMetaRepository.create(meta1);
                 recipeDetailMetaRepository.create(meta2);
@@ -194,8 +194,8 @@ class RecipeDetailMetaRepositoryTest extends DbContextTest {
                 recipeId2 = UUID.randomUUID();
                 recipeId3 = UUID.randomUUID();
 
-                RecipeDetailMeta meta1 = RecipeDetailMeta.create(30, 4, "Description 1", clock, recipeId1);
-                RecipeDetailMeta meta3 = RecipeDetailMeta.create(60, 6, "Description 3", clock, recipeId3);
+                RecipeDetailMeta meta1 = RecipeDetailMeta.create(30, 4, "Description 1", "Title 1", clock, recipeId1);
+                RecipeDetailMeta meta3 = RecipeDetailMeta.create(60, 6, "Description 3", "Title 3", clock, recipeId3);
 
                 recipeDetailMetaRepository.create(meta1);
                 recipeDetailMetaRepository.create(meta3);
@@ -237,7 +237,7 @@ class RecipeDetailMetaRepositoryTest extends DbContextTest {
             @BeforeEach
             void setUp() throws RecipeDetailMetaException {
                 recipeId = UUID.randomUUID();
-                recipeDetailMeta = RecipeDetailMeta.create(45, 2, "Test description", clock, recipeId);
+                recipeDetailMeta = RecipeDetailMeta.create(45, 2, "Test description", "Test title", clock, recipeId);
             }
 
             @Nested

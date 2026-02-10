@@ -20,6 +20,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.23] - 2026-02-10
+
+### Added
+- **AI 생성 레시피 제목**: `RecipeDetailMeta` 엔티티에 `title` 필드 추가 (nullable, 마이그레이션 중)
+  - AI가 생성한 레시피 제목 저장을 위한 필드
+  - 마이그레이션 진행 중으로 null 허용
+- **응답 DTO에 title 필드 추가**: 클라이언트 응답에 레시피 제목 포함
+  - `RecipeOverview`, `RecipeBookmarkOverview`에 `videoTitle` 필드
+  - `FullRecipeResponse.DetailMeta`에 `title` 필드
+- **제목 fallback 로직**: `detailMeta.title`이 없으면 `youtubeMeta.title`(유튜브 영상 제목)로 대체
+  - AI 제목 없이도 클라이언트에 항상 제목 제공
+  - null 또는 빈 문자열일 때 fallback 동작
+- **테스트 추가**: title fallback 동작에 대한 단위 테스트 3개 추가
+
+### Changed
+- **레시피 제목 반환 방식**: 클라이언트 응답에서 유튜브 영상 제목 대신 AI 생성 제목 우선 사용
+
+---
+
 ## [1.1.22] - 2026-02-10
 
 ### Changed
