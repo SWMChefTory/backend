@@ -54,11 +54,11 @@ class AppleTokenVerifierTest {
         org.mockito.Mockito.doReturn("com.cheftory.test").when(appleProperties).getAppId();
         org.mockito.Mockito.doReturn("com.cheftory.web").when(appleProperties).getServiceId();
 
-        // AppleTokenClient Mock - 테스트용 JWKSet 반환
+        // AppleTokenClient Mock - 테스트용 JWKSet JSON 반환
         mockAppleTokenClient = new AppleTokenClient() {
             @Override
-            public JWKSet fetchJwks() throws VerificationException {
-                return new JWKSet(testRsaKey);
+            public String fetchJwks() throws VerificationException {
+                return new JWKSet(testRsaKey).toString();
             }
         };
 

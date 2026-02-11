@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
-import com.nimbusds.jose.jwk.JWKSet;
 
 /**
  * Apple JWKS 외부 클라이언트 구현체
@@ -31,7 +30,7 @@ public class AppleTokenExternalClient implements AppleTokenClient {
 
     @Override
     @Cacheable("apple-jwks")
-    public JWKSet fetchJwks() throws VerificationException {
+    public String fetchJwks() throws VerificationException {
         try {
             String response = webClient
                     .get()
@@ -46,13 +45,10 @@ public class AppleTokenExternalClient implements AppleTokenClient {
                 throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
             }
 
-            return JWKSet.parse(response);
+            return response;
 
         } catch (WebClientException e) {
             log.error("[AppleTokenExternalClient] JWKS 조회 중 WebClient 오류 발생", e);
-            throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
-        } catch (java.text.ParseException e) {
-            log.error("[AppleTokenExternalClient] JWKS 파싱 실패", e);
             throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
         } catch (Exception e) {
             log.error("[AppleTokenExternalClient] JWKS 조회 중 알 수 없는 오류 발생", e);

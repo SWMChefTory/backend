@@ -14,7 +14,9 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import java.time.Duration;
 
 @Configuration
 @EnableRedisRepositories(basePackages = "com.cheftory.api")
@@ -52,18 +54,28 @@ public class RedisConfig {
     public RedisCacheConfiguration cacheConfiguration(GenericJackson2JsonRedisSerializer serializer) {
         return RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(
-                        org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
+                        RedisSerializationContext.SerializationPair
                                 .fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(
-                        org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
+                        RedisSerializationContext.SerializationPair
                                 .fromSerializer(serializer));
     }
 
     @Bean
     public RedisCacheManager cacheManager(
             RedisConnectionFactory connectionFactory, RedisCacheConfiguration redisCacheConfiguration) {
+        RedisCacheConfiguration jwksCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(new StringRedisSerializer()))
+                .entryTtl(Duration.ofHours(1));
+
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(redisCacheConfiguration)
+                .withCacheConfiguration("apple-jwks", jwksCacheConfig)
                 .build();
     }
 }

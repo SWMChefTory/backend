@@ -11,8 +11,8 @@ public interface AppleTokenClient {
     /**
      * Apple의 공개키 목록(JWKS)을 조회합니다.
      *
-     * @return JWKSet 객체
+     * @return JWKS JSON 문자열
      * @throws VerificationException 조회 실패 시
      */
-    JWKSet fetchJwks() throws VerificationException;
+    String fetchJwks() throws VerificationException;
 }
