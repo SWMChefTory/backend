@@ -9,8 +9,6 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.cursor.CursorPage;
-import com.cheftory.api._common.cursor.RankCursor;
-import com.cheftory.api._common.cursor.RankCursorCodec;
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.exception.CheftoryException;
@@ -23,7 +21,6 @@ import com.cheftory.api.recipe.rank.repository.RecipeRankRepositoryImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -38,7 +35,6 @@ import org.mockito.Mockito;
 public class RecipeRankServiceTest {
 
     private RecipeRankRepository repository;
-    private RankCursorCodec cursorCodec;
     private RecipeRankingPort port;
     private Clock clock;
     private RecipeRankService service;
@@ -47,10 +43,9 @@ public class RecipeRankServiceTest {
     @BeforeEach
     void setUp() {
         repository = mock(RecipeRankRepositoryImpl.class);
-        cursorCodec = mock(RankCursorCodec.class);
         port = mock(RecipeRankingPort.class);
         clock = mock(Clock.class);
-        service = new RecipeRankService(repository, cursorCodec, port, clock);
+        service = new RecipeRankService(repository, port, clock);
 
         marketContextMock = Mockito.mockStatic(MarketContext.class);
         MarketContext.Info info = new MarketContext.Info(Market.KOREA, "KR");
@@ -155,50 +150,32 @@ public class RecipeRankServiceTest {
         @DisplayName("커서 기반 첫 페이지를 조회한다")
         void shouldGetRecipeIdsWithCursorFirst() throws CheftoryException {
             RankingType rankingType = RankingType.TRENDING;
-            String latestKey = "korea:trendRecipe:latest";
-            String rankingKey = "korea:trendRecipe:ranking:20240101120000";
-            List<String> recipeIds = Stream.of(
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID(),
-                            UUID.randomUUID())
-                    .map(UUID::toString)
-                    .toList();
+            List<UUID> recipeIds = Stream.generate(UUID::randomUUID).limit(11).toList();
 
-            doReturn(Optional.of(rankingKey)).when(repository).findLatest(latestKey);
-            doReturn(recipeIds).when(repository).findRecipeIdsByRank(rankingKey, 1, 11);
-            doReturn("next-cursor").when(cursorCodec).encode(any(RankCursor.class));
+            CursorPage<UUID> expectedPage = CursorPage.of(recipeIds.subList(0, 10), "next-cursor");
+            doReturn(expectedPage).when(repository).getRecipeIdsFirst(rankingType);
 
             CursorPage<UUID> result = service.getRecipeIds(rankingType, null);
 
             assertThat(result.items()).hasSize(10);
             assertThat(result.nextCursor()).isEqualTo("next-cursor");
-            verify(repository).findRecipeIdsByRank(rankingKey, 1, 11);
+            verify(repository).getRecipeIdsFirst(rankingType);
         }
 
         @Test
         @DisplayName("커서 기반 다음 페이지를 조회한다")
         void shouldGetRecipeIdsWithCursorNext() throws CheftoryException {
             RankingType rankingType = RankingType.CHEF;
-            RankCursor decoded = new RankCursor("korea:chefRecipe:ranking:20240101120000", 10);
+            List<UUID> recipeIds = Stream.generate(UUID::randomUUID).limit(2).toList();
 
-            doReturn(decoded).when(cursorCodec).decode("cursor");
-            doReturn(List.of(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
-                    .when(repository)
-                    .findRecipeIdsByRank(decoded.rankingKey(), 11, 11);
+            CursorPage<UUID> expectedPage = CursorPage.of(recipeIds, null);
+            doReturn(expectedPage).when(repository).getRecipeIds(rankingType, "cursor");
 
             CursorPage<UUID> result = service.getRecipeIds(rankingType, "cursor");
 
             assertThat(result.items()).hasSize(2);
             assertThat(result.nextCursor()).isNull();
-            verify(repository).findRecipeIdsByRank(decoded.rankingKey(), 11, 11);
+            verify(repository).getRecipeIds(rankingType, "cursor");
         }
     }
 

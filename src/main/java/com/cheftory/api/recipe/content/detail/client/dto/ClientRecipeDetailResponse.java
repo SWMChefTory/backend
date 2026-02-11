@@ -44,6 +44,7 @@ public record ClientRecipeDetailResponse(
         List<RecipeDetail.Ingredient> recipeIngredients = this.ingredients.stream()
                 .map(ing -> RecipeDetail.Ingredient.of(ing.name, ing.amount, ing.unit))
                 .toList();
-        return RecipeDetail.of(this.title, this.description, recipeIngredients, this.tags, this.servings, this.cookTime);
+        return RecipeDetail.of(
+                this.title, this.description, recipeIngredients, this.tags, this.servings, this.cookTime);
     }
 }

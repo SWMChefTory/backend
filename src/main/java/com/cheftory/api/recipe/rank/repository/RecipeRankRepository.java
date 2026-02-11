@@ -1,5 +1,9 @@
 package com.cheftory.api.recipe.rank.repository;
 
+import com.cheftory.api._common.cursor.CursorException;
+import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.recipe.rank.RankingType;
+import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -72,4 +76,23 @@ public interface RecipeRankRepository {
      * @return 레시피 ID 목록
      */
     List<String> findRecipeIdsByRank(String key, int startRank, int count);
+
+    /**
+     * 랭킹 타입별 레시피 ID 목록을 커서 기반 페이징으로 조회합니다 (첫 페이지).
+     *
+     * @param type 랭킹 타입
+     * @return 페이징된 레시피 ID 목록
+     * @throws RecipeRankException 랭킹 정보를 찾을 수 없는 경우
+     */
+    CursorPage<UUID> getRecipeIdsFirst(RankingType type) throws RecipeRankException;
+
+    /**
+     * 랭킹 타입별 레시피 ID 목록을 커서 기반 페이징으로 조회합니다.
+     *
+     * @param type 랭킹 타입
+     * @param cursor 페이징 커서
+     * @return 페이징된 레시피 ID 목록
+     * @throws CursorException 유효하지 않은 커서일 때
+     */
+    CursorPage<UUID> getRecipeIds(RankingType type, String cursor) throws CursorException;
 }

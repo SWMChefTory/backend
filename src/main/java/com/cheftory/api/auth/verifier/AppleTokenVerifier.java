@@ -1,5 +1,6 @@
 package com.cheftory.api.auth.verifier;
 
+import com.cheftory.api.auth.verifier.client.AppleTokenClient;
 import com.cheftory.api.auth.verifier.exception.VerificationErrorCode;
 import com.cheftory.api.auth.verifier.exception.VerificationException;
 import com.cheftory.api.auth.verifier.property.AppleProperties;
@@ -11,13 +12,11 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import java.net.URI;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,31 +34,19 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AppleTokenVerifier {
 
+    private static final String APPLE_ISSUER = "https://appleid.apple.com";
+
+    private final AppleTokenClient appleTokenClient;
     private final AppleProperties appleProperties;
 
-    private static final String APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys";
-    private static final String APPLE_ISSUER = "https://appleid.apple.com";
-    private static final AtomicReference<JWKSet> cachedJwkSet = new AtomicReference<>();
-    private static long lastFetchTimeMillis = 0;
-    private static final long CACHE_DURATION_MS = 60 * 60 * 1000;
-
-    private JWKSet getCachedJwkSet() throws VerificationException {
-        long now = System.currentTimeMillis();
-        if (cachedJwkSet.get() == null || now - lastFetchTimeMillis > CACHE_DURATION_MS) {
-            try {
-                URI uri = URI.create(APPLE_PUBLIC_KEYS_URL);
-                JWKSet newSet = JWKSet.load(uri.toURL());
-                cachedJwkSet.set(newSet);
-                lastFetchTimeMillis = now;
-            } catch (Exception e) {
-                log.error("[AppleTokenVerifier] 공개키 로딩 실패", e);
-                throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
-            }
-        }
-        return cachedJwkSet.get();
-    }
-
-    private JWTClaimsSet extractVerifiedClaims(String identityToken) throws VerificationException {
+    /**
+     * Apple ID 토큰에서 sub 클레임 추출
+     *
+     * @param identityToken Apple ID 토큰
+     * @return 유저 고유 식별자 (sub)
+     * @throws VerificationException 토큰 검증 실패 시
+     */
+    public String getSubFromToken(String identityToken) throws VerificationException {
         try {
             SignedJWT jwt = SignedJWT.parse(identityToken);
             JWSHeader header = jwt.getHeader();
@@ -69,7 +56,7 @@ public class AppleTokenVerifier {
                 throw new VerificationException(VerificationErrorCode.APPLE_INVALID_ALGORITHM);
             }
 
-            JWKSet jwkSet = getCachedJwkSet();
+            JWKSet jwkSet = appleTokenClient.fetchJwks().toJwkSet();
             JWK jwk = jwkSet.getKeyByKeyId(header.getKeyID());
 
             if (!(jwk instanceof RSAKey rsaKey)) {
@@ -117,7 +104,7 @@ public class AppleTokenVerifier {
                 throw new VerificationException(VerificationErrorCode.APPLE_INVALID_AUDIENCE);
             }
 
-            return claims;
+            return claims.getSubject();
 
         } catch (ParseException e) {
             log.error("[AppleTokenVerifier] 토큰 파싱 실패", e);
@@ -128,17 +115,5 @@ public class AppleTokenVerifier {
             log.error("[AppleTokenVerifier] 알 수 없는 예외 발생", e);
             throw new VerificationException(VerificationErrorCode.UNKNOWN_ERROR);
         }
-    }
-
-    /**
-     * Apple ID 토큰에서 sub 클레임 추출
-     *
-     * @param identityToken Apple ID 토큰
-     * @return 유저 고유 식별자 (sub)
-     * @throws VerificationException 토큰 검증 실패 시
-     */
-    public String getSubFromToken(String identityToken) throws VerificationException {
-        JWTClaimsSet claims = extractVerifiedClaims(identityToken);
-        return claims.getSubject();
     }
 }

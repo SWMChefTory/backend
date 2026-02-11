@@ -64,7 +64,8 @@ class RecipeCreationExecutionContextTest {
 
             @BeforeEach
             void setUp() {
-                context = RecipeCreationExecutionContext.of(UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title");
+                context = RecipeCreationExecutionContext.of(
+                        UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title");
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
             }
@@ -104,7 +105,8 @@ class RecipeCreationExecutionContextTest {
 
             @BeforeEach
             void setUp() {
-                context = RecipeCreationExecutionContext.of(UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title");
+                context = RecipeCreationExecutionContext.of(
+                        UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title");
             }
 
             @Test
@@ -127,7 +129,8 @@ class RecipeCreationExecutionContextTest {
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title"),
+                        RecipeCreationExecutionContext.of(
+                                UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title"),
                         fileUri,
                         mimeType);
             }

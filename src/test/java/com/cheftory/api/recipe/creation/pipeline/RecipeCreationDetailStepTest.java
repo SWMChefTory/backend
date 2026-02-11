@@ -81,7 +81,8 @@ class RecipeCreationDetailStepTest {
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(recipeId, "video-123", URI.create("https://youtu.be/video-123"), "test-title");
+                context = RecipeCreationExecutionContext.of(
+                        recipeId, "video-123", URI.create("https://youtu.be/video-123"), "test-title");
             }
 
             @Nested
@@ -118,12 +119,18 @@ class RecipeCreationDetailStepTest {
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-456"), "youtube-original-title"),
+                        RecipeCreationExecutionContext.of(
+                                recipeId, videoId, URI.create("https://youtu.be/video-456"), "youtube-original-title"),
                         fileUri,
                         mimeType);
 
-                detail = RecipeDetail.of("ai-generated-title",
-                        "desc", List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")), List.of("tag1"), 2, 10);
+                detail = RecipeDetail.of(
+                        "ai-generated-title",
+                        "desc",
+                        List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")),
+                        List.of("tag1"),
+                        2,
+                        10);
                 when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType, "youtube-original-title"))
                         .thenReturn(detail);
             }
@@ -153,7 +160,12 @@ class RecipeCreationDetailStepTest {
                     verify(recipeIngredientService).create(recipeId, detail.ingredients());
                     verify(recipeTagService).create(recipeId, detail.tags());
                     verify(recipeDetailMetaService)
-                            .create(recipeId, detail.cookTime(), detail.servings(), detail.description(), "ai-generated-title");
+                            .create(
+                                    recipeId,
+                                    detail.cookTime(),
+                                    detail.servings(),
+                                    detail.description(),
+                                    "ai-generated-title");
                 }
             }
         }
@@ -171,7 +183,8 @@ class RecipeCreationDetailStepTest {
                 String fileUri = "s3://bucket/file.mp4";
                 String mimeType = "video/mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(recipeId, videoId, URI.create("https://youtu.be/video-789"), "test-title"),
+                        RecipeCreationExecutionContext.of(
+                                recipeId, videoId, URI.create("https://youtu.be/video-789"), "test-title"),
                         fileUri,
                         mimeType);
 
