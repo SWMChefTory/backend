@@ -59,7 +59,7 @@ public class WebclientConfig {
 
     @Bean
     @Qualifier("youtubeClient")
-    public WebClient webClientForGoogle() {
+    public WebClient webClientForYoutube() {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .responseTimeout(Duration.ofSeconds(20));
@@ -85,6 +85,34 @@ public class WebclientConfig {
                 .uriBuilderFactory(factory)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .observationRegistry(observationRegistry)
+                .build();
+    }
+
+    @Bean
+    @Qualifier("appleClient")
+    public WebClient webClientForApple() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofSeconds(10));
+
+        return WebClient.builder()
+                .baseUrl("https://appleid.apple.com")
+                .observationRegistry(observationRegistry)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
+    }
+
+    @Bean
+    @Qualifier("googleClient")
+    public WebClient webClientForGoogle() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofSeconds(10));
+
+        return WebClient.builder()
+                .baseUrl("https://oauth2.googleapis.com")
+                .observationRegistry(observationRegistry)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
     }
 }

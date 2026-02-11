@@ -48,7 +48,7 @@ public class YoutubeMetaExternalClientTest {
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         mockWebServer.close();
     }
 
@@ -154,6 +154,289 @@ public class YoutubeMetaExternalClientTest {
                             .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
                 }
             }
+
+            @Nested
+            @DisplayName("When - embeddable이 false면")
+            class WhenNotEmbeddable {
+
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
+                            {
+                                "items": [
+                                    {
+                                        "snippet": {
+                                            "title": "임베드 불가 비디오",
+                                            "channelTitle": "채널",
+                                            "thumbnails": {
+                                                "maxres": {
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                }
+                                            }
+                                        },
+                                        "contentDetails": {
+                                            "duration": "PT5M"
+                                        },
+                                        "status": {
+                                            "embeddable": false
+                                        }
+                                    }
+                                ]
+                            }
+                            """;
+
+                    mockWebServer.enqueue(new MockResponse.Builder()
+                            .code(200)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(responseBody)
+                            .build());
+                }
+
+                @Test
+                @DisplayName("Then - VIDEO_NOT_EMBEDDABLE 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> youtubeMetaExternalClient.fetch(youtubeUri))
+                            .isInstanceOf(YoutubeMetaException.class)
+                            .hasFieldOrPropertyWithValue(
+                                    "error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_EMBEDDABLE);
+                }
+            }
+
+            @Nested
+            @DisplayName("When - duration이 null이면")
+            class WhenDurationNull {
+
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
+                            {
+                                "items": [
+                                    {
+                                        "snippet": {
+                                            "title": "duration 없는 비디오",
+                                            "channelTitle": "채널",
+                                            "thumbnails": {
+                                                "maxres": {
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                }
+                                            }
+                                        },
+                                        "contentDetails": {},
+                                        "status": {
+                                            "embeddable": true
+                                        }
+                                    }
+                                ]
+                            }
+                            """;
+
+                    mockWebServer.enqueue(new MockResponse.Builder()
+                            .code(200)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(responseBody)
+                            .build());
+                }
+
+                @Test
+                @DisplayName("Then - VIDEO_DURATION_NOT_FOUND 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> youtubeMetaExternalClient.fetch(youtubeUri))
+                            .isInstanceOf(YoutubeMetaException.class)
+                            .hasFieldOrPropertyWithValue(
+                                    "error", YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_DURATION_NOT_FOUND);
+                }
+            }
+
+            @Nested
+            @DisplayName("When - 60초 이하 비디오면")
+            class WhenShortsByDuration {
+
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
+                            {
+                                "items": [
+                                    {
+                                        "snippet": {
+                                            "title": "쇼츠 비디오",
+                                            "channelTitle": "쇼츠 채널",
+                                            "thumbnails": {
+                                                "maxres": {
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                }
+                                            }
+                                        },
+                                        "contentDetails": {
+                                            "duration": "PT45S"
+                                        },
+                                        "status": {
+                                            "embeddable": true
+                                        }
+                                    }
+                                ]
+                            }
+                            """;
+
+                    mockWebServer.enqueue(new MockResponse.Builder()
+                            .code(200)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(responseBody)
+                            .build());
+                }
+
+                @Test
+                @DisplayName("Then - SHORTS 타입으로 반환한다")
+                void thenReturnsShorts() throws Exception {
+                    YoutubeVideoInfo result = youtubeMetaExternalClient.fetch(youtubeUri);
+
+                    assertThat(result).isNotNull();
+                    assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+                }
+            }
+
+            @Nested
+            @DisplayName("When - API 호출이 실패하면")
+            class WhenApiError {
+
+                @BeforeEach
+                void setUp() {
+                    mockWebServer.enqueue(new MockResponse.Builder().code(500).build());
+                }
+
+                @Test
+                @DisplayName("Then - API_ERROR 예외를 던진다")
+                void thenThrowsException() {
+                    assertThatThrownBy(() -> youtubeMetaExternalClient.fetch(youtubeUri))
+                            .isInstanceOf(YoutubeMetaException.class)
+                            .hasFieldOrPropertyWithValue("error", YoutubeMetaErrorCode.YOUTUBE_META_API_ERROR);
+                }
+            }
+
+            @Nested
+            @DisplayName("When - channelId가 있고 쇼츠 플레이리스트에 있으면")
+            class WhenShortsInPlaylist {
+
+                @BeforeEach
+                void setUp() {
+                    // 메인 비디오 응답
+                    String videoResponseBody =
+                            """
+                            {
+                                "items": [
+                                    {
+                                        "snippet": {
+                                            "title": "플레이리스트 쇼츠",
+                                            "channelTitle": "채널",
+                                            "channelId": "UC123456789",
+                                            "thumbnails": {
+                                                "maxres": {
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                }
+                                            }
+                                        },
+                                        "contentDetails": {
+                                            "duration": "PT2M"
+                                        },
+                                        "status": {
+                                            "embeddable": true
+                                        }
+                                    }
+                                ]
+                            }
+                            """;
+
+                    mockWebServer.enqueue(new MockResponse.Builder()
+                            .code(200)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(videoResponseBody)
+                            .build());
+
+                    // 쇼츠 플레이리스트 응답 (비디오가 있음)
+                    String playlistResponseBody =
+                            """
+                            {
+                                "items": [
+                                    {
+                                        "snippet": {
+                                            "title": "쇼츠"
+                                        }
+                                    }
+                                ]
+                            }
+                            """;
+
+                    mockWebServer.enqueue(new MockResponse.Builder()
+                            .code(200)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(playlistResponseBody)
+                            .build());
+                }
+
+                @Test
+                @DisplayName("Then - SHORTS 타입으로 반환한다")
+                void thenReturnsShorts() throws Exception {
+                    YoutubeVideoInfo result = youtubeMetaExternalClient.fetch(youtubeUri);
+
+                    assertThat(result).isNotNull();
+                    assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.SHORTS);
+                }
+            }
+
+            @Nested
+            @DisplayName("When - 쇼츠 플레이리스트 API가 실패하면")
+            class WhenShortsPlaylistApiFails {
+
+                @BeforeEach
+                void setUp() {
+                    // 메인 비디오 응답 (2분 - 60초 초과)
+                    String videoResponseBody =
+                            """
+                            {
+                                "items": [
+                                    {
+                                        "snippet": {
+                                            "title": "일반 비디오",
+                                            "channelTitle": "채널",
+                                            "channelId": "UC123456789",
+                                            "thumbnails": {
+                                                "maxres": {
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                }
+                                            }
+                                        },
+                                        "contentDetails": {
+                                            "duration": "PT2M"
+                                        },
+                                        "status": {
+                                            "embeddable": true
+                                        }
+                                    }
+                                ]
+                            }
+                            """;
+
+                    mockWebServer.enqueue(new MockResponse.Builder()
+                            .code(200)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(videoResponseBody)
+                            .build());
+
+                    // 쇼츠 플레이리스트 API 실패
+                    mockWebServer.enqueue(new MockResponse.Builder().code(500).build());
+                }
+
+                @Test
+                @DisplayName("Then - NORMAL 타입으로 반환한다 (fallback)")
+                void thenReturnsNormal() throws Exception {
+                    YoutubeVideoInfo result = youtubeMetaExternalClient.fetch(youtubeUri);
+
+                    assertThat(result).isNotNull();
+                    assertThat(result.getVideoType()).isEqualTo(YoutubeMetaType.NORMAL);
+                }
+            }
         }
     }
 
@@ -230,6 +513,89 @@ public class YoutubeMetaExternalClientTest {
 
                 @Test
                 @DisplayName("Then - false(차단 안됨)를 반환한다")
+                void thenReturnsFalse() {
+                    Boolean result = youtubeMetaExternalClient.isBlocked(youtubeUri);
+                    assertThat(result).isFalse();
+                }
+            }
+
+            @Nested
+            @DisplayName("When - embeddable이 false면")
+            class WhenEmbeddableFalse {
+
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
+                            {
+                                "items": [
+                                    {
+                                        "status": {
+                                            "embeddable": false
+                                        }
+                                    }
+                                ]
+                            }
+                            """;
+
+                    mockWebServer.enqueue(new MockResponse.Builder()
+                            .code(200)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(responseBody)
+                            .build());
+                }
+
+                @Test
+                @DisplayName("Then - true(차단됨)를 반환한다")
+                void thenReturnsTrue() {
+                    Boolean result = youtubeMetaExternalClient.isBlocked(youtubeUri);
+                    assertThat(result).isTrue();
+                }
+            }
+
+            @Nested
+            @DisplayName("When - embeddable이 null이면")
+            class WhenEmbeddableNull {
+
+                @BeforeEach
+                void setUp() {
+                    String responseBody =
+                            """
+                            {
+                                "items": [
+                                    {
+                                        "status": {}
+                                    }
+                                ]
+                            }
+                            """;
+
+                    mockWebServer.enqueue(new MockResponse.Builder()
+                            .code(200)
+                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(responseBody)
+                            .build());
+                }
+
+                @Test
+                @DisplayName("Then - true(차단됨)를 반환한다")
+                void thenReturnsTrue() {
+                    Boolean result = youtubeMetaExternalClient.isBlocked(youtubeUri);
+                    assertThat(result).isTrue();
+                }
+            }
+
+            @Nested
+            @DisplayName("When - API 호출이 실패하면")
+            class WhenApiError {
+
+                @BeforeEach
+                void setUp() {
+                    mockWebServer.enqueue(new MockResponse.Builder().code(500).build());
+                }
+
+                @Test
+                @DisplayName("Then - false를 반환한다")
                 void thenReturnsFalse() {
                     Boolean result = youtubeMetaExternalClient.isBlocked(youtubeUri);
                     assertThat(result).isFalse();

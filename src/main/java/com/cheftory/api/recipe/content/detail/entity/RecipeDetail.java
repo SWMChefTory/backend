@@ -13,7 +13,12 @@ import java.util.List;
  * @param cookTime 조리 시간 (분)
  */
 public record RecipeDetail(
-        String title, String description, List<Ingredient> ingredients, List<String> tags, Integer servings, Integer cookTime) {
+        String title,
+        String description,
+        List<Ingredient> ingredients,
+        List<String> tags,
+        Integer servings,
+        Integer cookTime) {
 
     /**
      * 재료 정보.
@@ -56,5 +61,4 @@ public record RecipeDetail(
             Integer cookTime) {
         return new RecipeDetail(title, description, ingredients, tags, servings, cookTime);
     }
-
 }

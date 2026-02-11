@@ -2,6 +2,7 @@ package com.cheftory.api.recipe.rank;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.cheftory.api._common.cursor.RankCursorCodec;
 import com.cheftory.api.recipe.rank.repository.RecipeRankRepository;
 import com.cheftory.api.recipe.rank.repository.RecipeRankRepositoryImpl;
 import java.time.Duration;
@@ -29,7 +30,8 @@ class RecipeRankRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        recipeRankRepository = new RecipeRankRepositoryImpl(redisTemplate);
+        RankCursorCodec cursorCodec = new RankCursorCodec();
+        recipeRankRepository = new RecipeRankRepositoryImpl(redisTemplate, cursorCodec);
 
         Assertions.assertNotNull(redisTemplate.getConnectionFactory());
         redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();

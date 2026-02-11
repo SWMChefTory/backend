@@ -60,7 +60,9 @@ public record FullRecipeResponse(
                 fullRecipe.getRecipeSteps().stream().map(Step::from).toList(),
                 fullRecipe.getRecipeBookmark() != null ? ViewStatus.from(fullRecipe.getRecipeBookmark()) : null,
                 fullRecipe.getRecipeDetailMeta() != null
-                        ? DetailMeta.from(fullRecipe.getRecipeDetailMeta(), fullRecipe.getRecipeYoutubeMeta().getTitle())
+                        ? DetailMeta.from(
+                                fullRecipe.getRecipeDetailMeta(),
+                                fullRecipe.getRecipeYoutubeMeta().getTitle())
                         : null,
                 fullRecipe.getRecipeTags().stream().map(Tag::from).toList(),
                 fullRecipe.getRecipeBriefings().stream().map(Briefing::from).toList(),
@@ -93,7 +95,8 @@ public record FullRecipeResponse(
             if (title == null || title.isBlank()) {
                 title = fallbackTitle;
             }
-            return new DetailMeta(title, detailMeta.getDescription(), detailMeta.getServings(), detailMeta.getCookTime());
+            return new DetailMeta(
+                    title, detailMeta.getDescription(), detailMeta.getServings(), detailMeta.getCookTime());
         }
     }
 

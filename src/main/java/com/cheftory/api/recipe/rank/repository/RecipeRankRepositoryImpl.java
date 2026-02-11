@@ -1,5 +1,13 @@
 package com.cheftory.api.recipe.rank.repository;
 
+import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api._common.cursor.CursorPages;
+import com.cheftory.api._common.cursor.RankCursor;
+import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api.recipe.rank.RankingType;
+import com.cheftory.api.recipe.rank.entity.RecipeRanking;
+import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
+import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +21,10 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RecipeRankRepositoryImpl implements RecipeRankRepository {
 
+    private static final Integer PAGE_SIZE = 10;
+
     private final RedisTemplate<String, String> redisTemplate;
+    private final RankCursorCodec cursorCodec;
 
     @Override
     public void saveRanking(String key, UUID recipeId, Integer rank) {
@@ -58,5 +69,34 @@ public class RecipeRankRepositoryImpl implements RecipeRankRepository {
         Set<String> set = redisTemplate.opsForZSet().range(key, startIndex, endIndex);
         if (set == null || set.isEmpty()) return List.of();
         return List.copyOf(set);
+    }
+
+    @Override
+    public CursorPage<UUID> getRecipeIdsFirst(RankingType type) throws RecipeRankException {
+        String rankingKey = findLatest(RecipeRanking.getLatestPointerKey(type))
+                .orElseThrow(() -> new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_NOT_FOUND));
+
+        List<UUID> rows = findRecipeIdsByRank(rankingKey, 1, PAGE_SIZE + 1).stream()
+                .map(UUID::fromString)
+                .toList();
+
+        return CursorPages.of(
+                rows, PAGE_SIZE, lastItem -> cursorCodec.encode(new RankCursor(rankingKey, 1 + PAGE_SIZE - 1)));
+    }
+
+    @Override
+    public CursorPage<UUID> getRecipeIds(RankingType type, String cursor) {
+        RankCursor rankCursor = cursorCodec.decode(cursor);
+
+        List<UUID> rows =
+                findRecipeIdsByRank(rankCursor.rankingKey(), rankCursor.lastRank() + 1, PAGE_SIZE + 1).stream()
+                        .map(UUID::fromString)
+                        .toList();
+
+        return CursorPages.of(
+                rows,
+                PAGE_SIZE,
+                lastItem ->
+                        cursorCodec.encode(new RankCursor(rankCursor.rankingKey(), rankCursor.lastRank() + PAGE_SIZE)));
     }
 }

@@ -36,7 +36,8 @@ class RecipeCreationCleanupStepTest {
             void setUp() {
                 fileUri = "s3://bucket/file.mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(UUID.randomUUID(), "video-123", URI.create("https://youtu.be/123"), "test-title"),
+                        RecipeCreationExecutionContext.of(
+                                UUID.randomUUID(), "video-123", URI.create("https://youtu.be/123"), "test-title"),
                         fileUri,
                         "video/mp4");
             }
@@ -86,7 +87,8 @@ class RecipeCreationCleanupStepTest {
 
             @BeforeEach
             void setUp() {
-                context = RecipeCreationExecutionContext.of(UUID.randomUUID(), "video-123", URI.create("https://youtu.be/123"), null);
+                context = RecipeCreationExecutionContext.of(
+                        UUID.randomUUID(), "video-123", URI.create("https://youtu.be/123"), null);
             }
 
             @Nested
