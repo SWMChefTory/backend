@@ -1,6 +1,7 @@
 HELP.md
 PR.md
 .gradle
+.serena
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/

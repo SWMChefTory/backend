@@ -1,7 +1,6 @@
 package com.cheftory.api.auth.verifier.client;
 
 import com.cheftory.api.auth.verifier.exception.VerificationException;
-import com.nimbusds.jose.jwk.JWKSet;
 
 /**
  * Apple JWKS (JSON Web Key Set) 조회용 클라이언트

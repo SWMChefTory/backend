@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.time.Duration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,6 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import java.time.Duration;
 
 @Configuration
 @EnableRedisRepositories(basePackages = "com.cheftory.api")
@@ -54,11 +54,8 @@ public class RedisConfig {
     public RedisCacheConfiguration cacheConfiguration(GenericJackson2JsonRedisSerializer serializer) {
         return RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(
-                        RedisSerializationContext.SerializationPair
-                                .fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair
-                                .fromSerializer(serializer));
+                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer));
     }
 
     @Bean
@@ -66,11 +63,9 @@ public class RedisConfig {
             RedisConnectionFactory connectionFactory, RedisCacheConfiguration redisCacheConfiguration) {
         RedisCacheConfiguration jwksCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(
-                        RedisSerializationContext.SerializationPair
-                                .fromSerializer(new StringRedisSerializer()))
+                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair
-                                .fromSerializer(new StringRedisSerializer()))
+                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .entryTtl(Duration.ofHours(1));
 
         return RedisCacheManager.builder(connectionFactory)
