@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.util.Base64URL;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -74,24 +76,13 @@ public record AppleJwksResponse(List<AppleJwk> keys) {
 
         public RSAKey toRsaKey() {
             try {
-                // Decode Base64URL-encoded modulus and exponent
-                byte[] modulusBytes = java.util.Base64.getUrlDecoder().decode(n);
-                byte[] exponentBytes = java.util.Base64.getUrlDecoder().decode(e);
+                Base64URL modulusB64 = new Base64URL(n);
+                Base64URL exponentB64 = new Base64URL(e);
 
-                java.math.BigInteger modulus = new java.math.BigInteger(1, modulusBytes);
-                java.math.BigInteger publicExponent = new java.math.BigInteger(1, exponentBytes);
-
-                // Convert to Base64URL for RSAKey.Builder
-                com.nimbusds.jose.util.Base64URL modulusB64 = com.nimbusds.jose.util.Base64URL.encode(modulusBytes);
-                com.nimbusds.jose.util.Base64URL exponentB64 = com.nimbusds.jose.util.Base64URL.encode(exponentBytes);
-
-                // Create RSAKey using the builder with Base64URL parameters
-                com.nimbusds.jose.jwk.RSAKey.Builder builder = new com.nimbusds.jose.jwk.RSAKey.Builder(
-                                modulusB64, exponentB64)
-                        .keyID(kid())
-                        .algorithm(com.nimbusds.jose.JWSAlgorithm.parse(alg));
-
-                return builder.build();
+                return new com.nimbusds.jose.jwk.RSAKey.Builder(modulusB64, exponentB64)
+                    .keyID(kid())
+                    .algorithm(com.nimbusds.jose.JWSAlgorithm.parse(alg))
+                    .build();
             } catch (Exception e) {
                 throw new IllegalArgumentException("Failed to convert to RSAKey: " + kid, e);
             }

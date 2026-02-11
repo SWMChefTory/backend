@@ -27,7 +27,7 @@ public class GoogleTokenExternalClient implements GoogleTokenClient {
     @Qualifier("googleClient")
     private final WebClient webClient;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
 
     @Value("${google.token-info-url:" + DEFAULT_TOKEN_INFO_URL + "}")
     private String tokenInfoUrl = DEFAULT_TOKEN_INFO_URL;
