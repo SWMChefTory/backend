@@ -30,7 +30,7 @@ public class AppleTokenExternalClient implements AppleTokenClient {
 
     @Override
     @Cacheable("apple-jwks")
-    public AppleJwksResponse fetchJwks() throws VerificationException {
+    public String fetchJwks() throws VerificationException {
         try {
             String response = webClient
                     .get()
@@ -45,7 +45,7 @@ public class AppleTokenExternalClient implements AppleTokenClient {
                 throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
             }
 
-            return AppleJwksResponse.fromJson(response);
+            return response;
 
         } catch (WebClientException e) {
             log.error("[AppleTokenExternalClient] JWKS 조회 중 WebClient 오류 발생", e);

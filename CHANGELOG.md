@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 향후 수정될 버그들
 
+
+## [1.1.25] - 2026-02-11
+
+### Changed
+- **애플 로그인**: 회귀버그 수정
+
 ---
 
 ## [1.1.24] - 2026-02-11

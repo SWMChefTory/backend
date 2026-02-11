@@ -56,7 +56,7 @@ public class AppleTokenVerifier {
                 throw new VerificationException(VerificationErrorCode.APPLE_INVALID_ALGORITHM);
             }
 
-            JWKSet jwkSet = appleTokenClient.fetchJwks().toJwkSet();
+            JWKSet jwkSet = JWKSet.parse(appleTokenClient.fetchJwks());
             JWK jwk = jwkSet.getKeyByKeyId(header.getKeyID());
 
             if (!(jwk instanceof RSAKey rsaKey)) {

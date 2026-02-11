@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import com.cheftory.api.auth.verifier.client.AppleJwksResponse;
-import com.cheftory.api.auth.verifier.client.AppleJwksResponse.AppleJwk;
 import com.cheftory.api.auth.verifier.client.AppleTokenClient;
 import com.cheftory.api.auth.verifier.exception.VerificationErrorCode;
 import com.cheftory.api.auth.verifier.exception.VerificationException;
@@ -14,6 +12,7 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -55,16 +54,11 @@ class AppleTokenVerifierTest {
         org.mockito.Mockito.doReturn("com.cheftory.test").when(appleProperties).getAppId();
         org.mockito.Mockito.doReturn("com.cheftory.web").when(appleProperties).getServiceId();
 
-        // AppleTokenClient Mock - 테스트용 JWKSet 반환
+        // AppleTokenClient Mock - 테스트용 JWKSet JSON 반환
         mockAppleTokenClient = new AppleTokenClient() {
             @Override
-            public AppleJwksResponse fetchJwks() throws VerificationException {
-                // Base64URL 인코딩된 값 가져오기
-                com.nimbusds.jose.util.Base64URL modulus = testRsaKey.getModulus();
-                com.nimbusds.jose.util.Base64URL exponent = testRsaKey.getPublicExponent();
-
-                AppleJwk jwk = AppleJwk.fromBase64URL("RSA", testRsaKey.getKeyID(), "sig", "RS256", modulus, exponent);
-                return new AppleJwksResponse(java.util.List.of(jwk));
+            public String fetchJwks() throws VerificationException {
+                return new JWKSet(testRsaKey).toString();
             }
         };
 
