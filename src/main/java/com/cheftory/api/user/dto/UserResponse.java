@@ -35,6 +35,10 @@ public record UserResponse(
          */
         @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt,
         /**
+         * 튜토리얼 완료일시
+         */
+        @JsonProperty("tutorial_at") LocalDateTime tutorialAt,
+        /**
          * 소셜 로그인 제공자별 유저 고유 식별자
          */
         @JsonProperty("provider_sub") String providerSub) {
@@ -52,6 +56,7 @@ public record UserResponse(
                 user.getTermsOfUseAgreedAt(),
                 user.getPrivacyAgreedAt(),
                 user.getMarketingAgreedAt(),
+                user.getTutorialAt(),
                 user.getProviderSub());
     }
 }
