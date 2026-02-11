@@ -10,8 +10,11 @@ import lombok.Getter;
  */
 @Getter
 public enum IntentModel {
+    /** GPT-4.1 모델 */
     GPT4_1("GPT4.1"),
+    /** 정규표현식 기반 모델 */
     REGEX("REGEX"),
+    /** NLU 기반 모델 */
     NLU("NLU");
 
     private final String value;

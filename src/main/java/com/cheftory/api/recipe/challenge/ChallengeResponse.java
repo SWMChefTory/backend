@@ -16,6 +16,13 @@ public record ChallengeResponse(
         @JsonProperty("start_at") LocalDateTime startAt,
         @JsonProperty("end_at") LocalDateTime endAt,
         @JsonProperty("type") String type) {
+
+    /**
+     * Challenge 엔티티로부터 ChallengeResponse DTO 생성.
+     *
+     * @param challenge 챌린지 엔티티
+     * @return 챌린지 응답 DTO
+     */
     public static ChallengeResponse of(Challenge challenge) {
         return new ChallengeResponse(
                 challenge.getId().toString(),

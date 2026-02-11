@@ -9,8 +9,14 @@ import lombok.Getter;
  */
 @Getter
 public class ExternalServerNetworkException extends RuntimeException {
+    /** 외부 서버 네트워크 예외 코드 */
     private final ExternalServerNetworkExceptionCode errorCode;
 
+    /**
+     * 외부 서버 네트워크 예외를 생성합니다.
+     *
+     * @param error 외부 서버 네트워크 예외 코드
+     */
     public ExternalServerNetworkException(ExternalServerNetworkExceptionCode error) {
         this.errorCode = error;
     }

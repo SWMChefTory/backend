@@ -52,12 +52,13 @@ public class AsyncRecipeCreationService {
      * @param creditCost 소비된 크레딧 양
      * @param videoId YouTube 비디오 ID
      * @param videoUrl YouTube 비디오 URL
+     * @param title 레시피 제목
      * @throws RecipeInfoException 레시피 정보 처리 실패 시
      * @throws YoutubeMetaException YouTube 메타데이터 처리 실패 시
      */
     @Async("recipeCreateExecutor")
     public void create(UUID recipeId, long creditCost, String videoId, URI videoUrl, String title)
-            throws RecipeInfoException, YoutubeMetaException {
+				throws RecipeInfoException, YoutubeMetaException {
         try {
             recipeCreationPipeline.run(RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl, title));
 

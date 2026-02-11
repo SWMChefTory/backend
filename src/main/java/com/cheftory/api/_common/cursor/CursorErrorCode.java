@@ -6,6 +6,7 @@ import com.cheftory.api.exception.Error;
  * 커서 관련 에러 코드
  */
 public enum CursorErrorCode implements Error {
+    /** 유효하지 않은 커서 */
     INVALID_CURSOR("CURSOR_001", "유효하지 않은 커서입니다.");
 
     private final String code;

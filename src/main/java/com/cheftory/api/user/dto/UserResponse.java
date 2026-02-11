@@ -8,40 +8,20 @@ import java.time.LocalDateTime;
 
 /**
  * 유저 관련 응답 DTO
+ *
+ * @param nickname 유저 닉네임
+ * @param gender 성별
+ * @param dateOfBirth 생년월일
+ * @param termsOfUseAgreedAt 이용약관 동의일시
+ * @param privacyAgreedAt 개인정보 처리방침 동의일시
+ * @param marketingAgreedAt 마케팅 정보 수신 동의일시
+ * @param tutorialAt 튜토리얼 완료일시
+ * @param providerSub 소셜 로그인 제공자별 유저 고유 식별자
  */
-public record UserResponse(
-        /**
-         * 유저 닉네임
-         */
-        @JsonProperty("nickname") String nickname,
-        /**
-         * 성별
-         */
-        @JsonProperty("gender") Gender gender,
-        /**
-         * 생년월일
-         */
-        @JsonProperty("date_of_birth") LocalDate dateOfBirth,
-        /**
-         * 이용약관 동의일시
-         */
-        @JsonProperty("terms_of_use_agreed_at") LocalDateTime termsOfUseAgreedAt,
-        /**
-         * 개인정보 처리방침 동의일시
-         */
-        @JsonProperty("privacy_agreed_at") LocalDateTime privacyAgreedAt,
-        /**
-         * 마케팅 정보 수신 동의일시
-         */
-        @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt,
-        /**
-         * 튜토리얼 완료일시
-         */
-        @JsonProperty("tutorial_at") LocalDateTime tutorialAt,
-        /**
-         * 소셜 로그인 제공자별 유저 고유 식별자
-         */
-        @JsonProperty("provider_sub") String providerSub) {
+public record UserResponse(@JsonProperty("nickname") String nickname, @JsonProperty("gender") Gender gender, @JsonProperty("date_of_birth") LocalDate dateOfBirth,
+													 @JsonProperty("terms_of_use_agreed_at") LocalDateTime termsOfUseAgreedAt, @JsonProperty("privacy_agreed_at") LocalDateTime privacyAgreedAt,
+													 @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt, @JsonProperty("tutorial_at") LocalDateTime tutorialAt,
+													 @JsonProperty("provider_sub") String providerSub) {
     /**
      * User 엔티티로부터 UserResponse 생성
      *

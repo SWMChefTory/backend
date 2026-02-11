@@ -8,6 +8,7 @@ import com.cheftory.api.exception.Error;
  * <p>쿠팡 API 요청 실패 시 발생할 수 있는 에러 코드를 정의합니다.</p>
  */
 public enum CoupangErrorCode implements Error {
+    /** 쿠팡 API 요청 실패 */
     COUPANG_API_REQUEST_FAIL("COUPANG_001", "쿠팡 API 요청에 실패했습니다.");
 
     final String errorCode;

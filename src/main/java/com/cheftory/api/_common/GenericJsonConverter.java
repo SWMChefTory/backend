@@ -6,12 +6,26 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * 제네릭 JSON 변환기.
+ *
+ * <p>JPA 엔티티의 JSON 타입 필드를 데이터베이스 문자열로 변환합니다.</p>
+ *
+ * @param <T> 변환할 제네릭 타입
+ */
 @Converter
 public class GenericJsonConverter<T> implements AttributeConverter<T, String> {
 
+    /** JSON 변환을 위한 ObjectMapper */
     private final ObjectMapper objectMapper = new ObjectMapper();
+    /** 타입 레퍼런스 */
     private final TypeReference<T> typeReference;
 
+    /**
+     * GenericJsonConverter 인스턴스를 생성합니다.
+     *
+     * @param typeReference 타입 레퍼런스
+     */
     protected GenericJsonConverter(TypeReference<T> typeReference) {
         this.typeReference = typeReference;
     }

@@ -5,6 +5,8 @@ import java.util.List;
 
 /**
  * 레시피 재료 목록 응답 DTO
+ *
+ * @param ingredients 재료 목록
  */
 public record RecipeIngredientsResponse(List<Ingredient> ingredients) {
 

@@ -25,6 +25,12 @@ public class CoupangProduct {
     Integer productPrice;
     String productUrl;
 
+    /**
+     * CoupangSearchResponse.Product DTO로부터 CoupangProduct 엔티티 생성.
+     *
+     * @param dto 쿠팡 검색 응답 Product DTO
+     * @return CoupangProduct 엔티티
+     */
     public static CoupangProduct from(CoupangSearchResponse.Product dto) {
         return new CoupangProduct(
                 dto.keyword(),
