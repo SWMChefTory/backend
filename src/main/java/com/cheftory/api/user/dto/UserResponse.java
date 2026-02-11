@@ -18,10 +18,15 @@ import java.time.LocalDateTime;
  * @param tutorialAt 튜토리얼 완료일시
  * @param providerSub 소셜 로그인 제공자별 유저 고유 식별자
  */
-public record UserResponse(@JsonProperty("nickname") String nickname, @JsonProperty("gender") Gender gender, @JsonProperty("date_of_birth") LocalDate dateOfBirth,
-													 @JsonProperty("terms_of_use_agreed_at") LocalDateTime termsOfUseAgreedAt, @JsonProperty("privacy_agreed_at") LocalDateTime privacyAgreedAt,
-													 @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt, @JsonProperty("tutorial_at") LocalDateTime tutorialAt,
-													 @JsonProperty("provider_sub") String providerSub) {
+public record UserResponse(
+        @JsonProperty("nickname") String nickname,
+        @JsonProperty("gender") Gender gender,
+        @JsonProperty("date_of_birth") LocalDate dateOfBirth,
+        @JsonProperty("terms_of_use_agreed_at") LocalDateTime termsOfUseAgreedAt,
+        @JsonProperty("privacy_agreed_at") LocalDateTime privacyAgreedAt,
+        @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt,
+        @JsonProperty("tutorial_at") LocalDateTime tutorialAt,
+        @JsonProperty("provider_sub") String providerSub) {
     /**
      * User 엔티티로부터 UserResponse 생성
      *

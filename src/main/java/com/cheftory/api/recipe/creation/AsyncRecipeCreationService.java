@@ -58,7 +58,7 @@ public class AsyncRecipeCreationService {
      */
     @Async("recipeCreateExecutor")
     public void create(UUID recipeId, long creditCost, String videoId, URI videoUrl, String title)
-				throws RecipeInfoException, YoutubeMetaException {
+            throws RecipeInfoException, YoutubeMetaException {
         try {
             recipeCreationPipeline.run(RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl, title));
 

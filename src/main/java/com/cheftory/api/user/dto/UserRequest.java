@@ -16,5 +16,6 @@ public record UserRequest() {
      * @param gender 수정할 성별 (null 가능)
      * @param dateOfBirth 수정할 생년월일 (null 가능)
      */
-    public record Update(String nickname, @Nullable Gender gender, @JsonProperty("date_of_birth") @Nullable LocalDate dateOfBirth) {}
+    public record Update(
+            String nickname, @Nullable Gender gender, @JsonProperty("date_of_birth") @Nullable LocalDate dateOfBirth) {}
 }
