@@ -1,15 +1,19 @@
 package com.cheftory.api.credit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.entity.CreditUserBalance;
+import com.cheftory.api.credit.exception.CreditErrorCode;
 import com.cheftory.api.credit.exception.CreditException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @DisplayName("CreditService Test")
 class CreditServiceTest {
@@ -33,7 +37,7 @@ class CreditServiceTest {
 
         long balance = creditService.getBalance(userId);
 
-        org.assertj.core.api.Assertions.assertThat(balance).isEqualTo(0L);
+        assertThat(balance).isEqualTo(0L);
     }
 
     @Test
@@ -47,7 +51,7 @@ class CreditServiceTest {
 
         long balance = creditService.getBalance(userId);
 
-        org.assertj.core.api.Assertions.assertThat(balance).isEqualTo(55L);
+        assertThat(balance).isEqualTo(55L);
     }
 
     @Test
@@ -68,5 +72,19 @@ class CreditServiceTest {
         creditService.spend(credit);
 
         verify(creditTxService).spendTx(credit);
+    }
+
+    @Test
+    @DisplayName("recover - 낙관적 잠금 재시도 실패 시 CREDIT_CONCURRENCY_CONFLICT 예외")
+    void recover_shouldThrowConcurrencyConflict() throws CreditException {
+        UUID userId = UUID.randomUUID();
+        Credit credit = Credit.signupBonus(userId);
+        ObjectOptimisticLockingFailureException exception =
+                new ObjectOptimisticLockingFailureException("optimistic lock failed", null);
+
+        assertThatThrownBy(() -> creditService.recover(exception, credit))
+                .isInstanceOf(CreditException.class)
+                .extracting(e -> ((CreditException) e).getError())
+                .isEqualTo(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
     }
 }

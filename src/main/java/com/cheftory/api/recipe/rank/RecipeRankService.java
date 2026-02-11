@@ -1,18 +1,14 @@
 package com.cheftory.api.recipe.rank;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
-import com.cheftory.api._common.cursor.CursorPages;
-import com.cheftory.api._common.cursor.RankCursor;
-import com.cheftory.api._common.cursor.RankCursorCodec;
 import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.rank.entity.RecipeRanking;
-import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
-import com.cheftory.api.recipe.rank.exception.RecipeRankException;
 import com.cheftory.api.recipe.rank.port.RecipeRankingPort;
 import com.cheftory.api.recipe.rank.repository.RecipeRankRepository;
 import java.util.List;
@@ -32,7 +28,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class RecipeRankService {
     private final RecipeRankRepository repository;
-    private final RankCursorCodec cursorCodec;
     private final RecipeRankingPort port;
     private final Clock clock;
 
@@ -62,28 +57,12 @@ public class RecipeRankService {
      * @param cursor 페이징 커서
      * @return 레시피 ID 목록
      * @throws CheftoryException 랭킹 정보를 찾을 수 없는 경우
+     * @throws CursorException 유효하지 않은 커서일 때
      */
-    public CursorPage<UUID> getRecipeIds(RankingType type, String cursor) throws CheftoryException {
-        final int limit = PAGE_SIZE;
-        final int fetch = limit + 1;
-        final boolean first = (cursor == null || cursor.isBlank());
+    public CursorPage<UUID> getRecipeIds(RankingType type, String cursor) throws CheftoryException, CursorException {
+        boolean first = (cursor == null || cursor.isBlank());
 
-        final RankCursor rankCursor = first ? null : cursorCodec.decode(cursor);
-
-        final String rankingKey = first
-                ? repository
-                        .findLatest(RecipeRanking.getLatestPointerKey(type))
-                        .orElseThrow(() -> new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_NOT_FOUND))
-                : rankCursor.rankingKey();
-
-        final int startRank = first ? 1 : rankCursor.lastRank() + 1;
-
-        final List<UUID> rows = repository.findRecipeIdsByRank(rankingKey, startRank, fetch).stream()
-                .map(UUID::fromString)
-                .toList();
-
-        return CursorPages.of(
-                rows, limit, lastItem -> cursorCodec.encode(new RankCursor(rankingKey, startRank + limit - 1)));
+        return first ? repository.getRecipeIdsFirst(type) : repository.getRecipeIds(type, cursor);
     }
 
     /**

@@ -263,7 +263,8 @@ class RecipeCreationFacadeTest {
                     verify(recipeCreationTxService).createWithIdentifyWithVideoInfo(videoInfo);
                     verify(recipeBookmarkService).create(userId, recipeId);
                     verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
-                    verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri, videoInfo.getTitle());
+                    verify(asyncRecipeCreationService)
+                            .create(recipeId, creditCost, videoInfo.getVideoId(), uri, videoInfo.getTitle());
                 }
             }
         }
@@ -367,7 +368,8 @@ class RecipeCreationFacadeTest {
                     UUID result = sut.createBookmark(new RecipeCreationTarget.User(uri, userId));
 
                     assertThat(result).isEqualTo(recipeId);
-                    verify(asyncRecipeCreationService).create(recipeId, creditCost, videoInfo.getVideoId(), uri, videoInfo.getTitle());
+                    verify(asyncRecipeCreationService)
+                            .create(recipeId, creditCost, videoInfo.getVideoId(), uri, videoInfo.getTitle());
                 }
             }
         }

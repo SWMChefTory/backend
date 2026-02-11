@@ -49,7 +49,8 @@ class RecipeDetailServiceTest {
                 mimeType = "video/mp4";
                 clientResponse = mock(ClientRecipeDetailResponse.class);
 
-                expectedRecipeDetail = RecipeDetail.of(null, 
+                expectedRecipeDetail = RecipeDetail.of(
+                        null,
                         "맛있는 김치찌개 만들기",
                         List.of(
                                 RecipeDetail.Ingredient.of("김치", 200, "g"),
@@ -115,7 +116,8 @@ class RecipeDetailServiceTest {
                 mimeType = "video/mp4";
                 clientResponse = mock(ClientRecipeDetailResponse.class);
 
-                simpleRecipeDetail = RecipeDetail.of(null, 
+                simpleRecipeDetail = RecipeDetail.of(
+                        null,
                         "간단한 계란찜",
                         List.of(RecipeDetail.Ingredient.of("계란", 3, "개"), RecipeDetail.Ingredient.of("물", 50, "ml")),
                         List.of("간식"),
@@ -227,8 +229,8 @@ class RecipeDetailServiceTest {
                         new ClientRecipeDetailResponse.Ingredient("돼지고기", 150, "g"),
                         new ClientRecipeDetailResponse.Ingredient("두부", 1, "모"));
 
-                clientResponse =
-                        new ClientRecipeDetailResponse(null, "맛있는 김치찌개 만들기", ingredients, List.of("한식", "찌개", "김치"), 2, 30);
+                clientResponse = new ClientRecipeDetailResponse(
+                        null, "맛있는 김치찌개 만들기", ingredients, List.of("한식", "찌개", "김치"), 2, 30);
             }
 
             @Nested

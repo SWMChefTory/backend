@@ -86,7 +86,11 @@ public class RecipeCreationFacade {
             try {
                 createBookmark(target, recipeInfo);
                 asyncRecipeCreationService.create(
-                        recipeInfo.getId(), recipeInfo.getCreditCost(), videoInfo.getVideoId(), target.uri(), videoInfo.getTitle());
+                        recipeInfo.getId(),
+                        recipeInfo.getCreditCost(),
+                        videoInfo.getVideoId(),
+                        target.uri(),
+                        videoInfo.getTitle());
                 return recipeInfo.getId();
             } catch (Exception e) {
                 recipeIdentifyService.delete(target.uri());

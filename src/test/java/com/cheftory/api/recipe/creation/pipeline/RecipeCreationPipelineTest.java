@@ -97,7 +97,8 @@ class RecipeCreationPipelineTest {
             @BeforeEach
             void setUp() throws RecipeException {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(recipeId, "video-123", URI.create("https://youtu.be/video-123"), null);
+                context = RecipeCreationExecutionContext.of(
+                        recipeId, "video-123", URI.create("https://youtu.be/video-123"), null);
                 updatedContext =
                         RecipeCreationExecutionContext.withFileInfo(context, "s3://bucket/file.mp4", "video/mp4");
 
@@ -141,7 +142,8 @@ class RecipeCreationPipelineTest {
             @BeforeEach
             void setUp() throws RecipeException {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(recipeId, "video-456", URI.create("https://youtu.be/video-456"), null);
+                context = RecipeCreationExecutionContext.of(
+                        recipeId, "video-456", URI.create("https://youtu.be/video-456"), null);
                 updatedContext =
                         RecipeCreationExecutionContext.withFileInfo(context, "s3://bucket/file.mp4", "video/mp4");
 

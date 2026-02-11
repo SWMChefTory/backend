@@ -82,6 +82,7 @@ public class AsyncRecipeCreationService {
             }
         }
     }
+
     private void bannedRecipe(UUID recipeId, long creditCost) throws YoutubeMetaException, RecipeInfoException {
         recipeYoutubeMetaService.ban(recipeId);
         cleanup(recipeId, creditCost);
