@@ -20,6 +20,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.24] - 2026-02-11
+
+### Added
+- **인증 클라이언트 인터페이스**: `AppleTokenClient`, `GoogleTokenClient` 인터페이스 도입으로 모듈성 및 테스트 용이성 개선
+- **WebClient 기반 외부 API 클라이언트**: `AppleTokenExternalClient`, `GoogleTokenExternalClient`로 외부 API 호출 WebClient로 마이그레이션
+- **외부 API 응답 DTO**: `AppleJwksResponse` 등 외부 API 응답을 위한 전용 DTO 추가
+- **WebClient 설정 추가**: `WebclientConfig`에 Apple 및 Google 인증 서비스를 위한 `WebClient` 빈 추가
+- **광범위한 단위 테스트 추가**: 다음 컴포넌트에 대한 포괄적인 단위 테스트 도입
+  - `AppleTokenVerifier`, `GoogleTokenVerifier` - 인증 토큰 검증 로직
+  - `RecipeCategoryService` - 레시피 카테고리 관리
+  - `RecipeChallengeService` - 레시피 챌린지 기능
+  - `RecipeCreationTxService` - 레시피 생성 트랜잭션 처리
+  - `RecipeSearchAdapter` - 레시피 검색 어댑터
+  - `Iso8601DurationToSecondConverter` - ISO 8601 기간 변환
+  - `RecipeCategoryCounts` - 카테고리별 집계
+  - `YoutubeMetaExternalClient` - YouTube 메타데이터 외부 클라이언트
+
+### Changed
+- **인증 토큰 검증 리팩토링**: `AppleTokenVerifier`, `GoogleTokenVerifier`를 전용 클라이언트 인터페이스 사용하도록 리팩토링
+- **HttpClient → WebClient 마이그레이션**: 기존 `HttpClient` 기반 구현을 Spring WebFlux의 `WebClient`로 마이그레이션으로 비동기 처리 및 확장성 확보
+- **캐싱 전략 개선**: 수동 캐싱(`AtomicReference`)에서 Spring의 `@Cacheable` 어노테이션 기반 캐싱으로 전환
+- **레시피 랭킹 서비스 개선**: `RecipeRankService`의 커서 기반 페이지네이션 로직을 `RecipeRankRepository`로 위임하여 서비스 계층 간소화 및 데이터 액세스 관심사 분리
+
+---
+
 ## [1.1.23] - 2026-02-10
 
 ### Added
