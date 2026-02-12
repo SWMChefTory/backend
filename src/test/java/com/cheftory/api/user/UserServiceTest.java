@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.entity.*;
+import com.cheftory.api.user.exception.UserCreditException;
 import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.user.exception.UserException;
 import com.cheftory.api.user.repository.UserRepository;
@@ -380,7 +381,7 @@ class UserServiceTest {
                 LocalDateTime now = LocalDateTime.of(2024, 1, 1, 0, 0);
                 when(clock.now()).thenReturn(now);
                 when(userRepository.exist(userId)).thenReturn(true);
-                CreditException exception = new CreditException(null);
+                CreditException exception = new UserCreditException(null);
                 doThrow(exception).when(userCreditPort).grantUserTutorial(userId);
 
                 CreditException thrown = assertThrows(CreditException.class, () -> userService.tutorial(userId));

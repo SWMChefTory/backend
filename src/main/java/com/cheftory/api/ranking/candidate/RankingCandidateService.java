@@ -3,8 +3,6 @@ package com.cheftory.api.ranking.candidate;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
-import com.cheftory.api.search.exception.SearchException;
-import com.cheftory.api.search.query.SearchPage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +21,9 @@ public class RankingCandidateService {
      * Point In Time (PIT)을 생성합니다.
      *
      * @return PIT ID
-     * @throws SearchException 검색 예외
+     * @throws RankingCandidateException 처리 예외
      */
-    public String openPit() throws SearchException {
+    public String openPit() throws RankingCandidateException {
         return candidateSearchPort.openPit();
     }
 
@@ -39,16 +37,16 @@ public class RankingCandidateService {
      * @param pitId PIT ID
      * @param searchAfter 검색 후 커서
      * @return 검색 결과 페이지
-     * @throws SearchException 검색 예외
+     * @throws RankingCandidateException 처리 예외
      */
-    public SearchPage searchWithPit(
+    public RankingCandidatePage searchWithPit(
             RankingSurfaceType surfaceType,
             RankingItemType itemType,
             int pageSize,
             PersonalizationProfile profile,
             String pitId,
             String searchAfter)
-            throws SearchException {
+            throws RankingCandidateException {
 
         return candidateSearchPort.searchWithPit(surfaceType, itemType, pageSize, profile, pitId, searchAfter);
     }

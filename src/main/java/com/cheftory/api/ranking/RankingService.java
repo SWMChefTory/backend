@@ -4,12 +4,12 @@ import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.RankingCursor;
 import com.cheftory.api._common.cursor.RankingCursorCodec;
 import com.cheftory.api.exception.CheftoryException;
+import com.cheftory.api.ranking.candidate.RankingCandidatePage;
 import com.cheftory.api.ranking.candidate.RankingCandidateService;
 import com.cheftory.api.ranking.interaction.RankingInteractionService;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.ranking.personalization.RankingPersonalizationService;
 import com.cheftory.api.ranking.snapshot.RankingSnapshotService;
-import com.cheftory.api.search.query.SearchPage;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +93,7 @@ public class RankingService {
                 profile.channelsTop() != null ? profile.channelsTop().size() : -1,
                 profile.channelsTop());
 
-        SearchPage page =
+        RankingCandidatePage page =
                 rankingCandidateService.searchWithPit(surfaceType, itemType, pageSize, profile, pitId, searchAfter);
 
         log.info(

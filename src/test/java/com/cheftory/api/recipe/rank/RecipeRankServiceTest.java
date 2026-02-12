@@ -12,8 +12,6 @@ import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api.exception.CheftoryException;
-import com.cheftory.api.ranking.RankingItemType;
-import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.rank.port.RecipeRankingPort;
 import com.cheftory.api.recipe.rank.repository.RecipeRankRepository;
@@ -186,13 +184,11 @@ public class RecipeRankServiceTest {
         String cursor = "cursor";
         CursorPage<UUID> expected = CursorPage.of(List.of(UUID.randomUUID()), "next-cursor");
 
-        doReturn(expected)
-                .when(port)
-                .recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, cursor, 10);
+        doReturn(expected).when(port).recommend(userId, RecipeCuisineType.KOREAN, cursor, 10);
 
         CursorPage<UUID> result = service.getCuisineRecipes(userId, RecipeCuisineType.KOREAN, cursor);
 
         assertThat(result).isEqualTo(expected);
-        verify(port).recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, cursor, 10);
+        verify(port).recommend(userId, RecipeCuisineType.KOREAN, cursor, 10);
     }
 }

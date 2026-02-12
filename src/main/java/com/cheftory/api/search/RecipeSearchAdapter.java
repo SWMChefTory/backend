@@ -2,6 +2,8 @@ package com.cheftory.api.search;
 
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.search.RecipeSearchPort;
+import com.cheftory.api.recipe.search.exception.RecipeSearchErrorCode;
+import com.cheftory.api.recipe.search.exception.RecipeSearchException;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.SearchQueryScope;
 import com.cheftory.api.search.query.entity.SearchQuery;
@@ -29,13 +31,18 @@ public class RecipeSearchAdapter implements RecipeSearchPort {
      * @param query 검색어
      * @param cursor 커서
      * @return 레시피 ID 커서 페이지
-     * @throws SearchException 검색 예외
+     * @throws RecipeSearchException 처리 예외
      */
     @Override
-    public CursorPage<UUID> searchRecipeIds(UUID userId, String query, String cursor) throws SearchException {
-        CursorPage<SearchQuery> results = searchFacade.search(SearchQueryScope.RECIPE, userId, query, cursor);
-        List<UUID> items =
-                results.items().stream().map(s -> UUID.fromString(s.getId())).toList();
-        return CursorPage.of(items, results.nextCursor());
+    public CursorPage<UUID> searchRecipeIds(UUID userId, String query, String cursor) throws RecipeSearchException {
+        try {
+            CursorPage<SearchQuery> results = searchFacade.search(SearchQueryScope.RECIPE, userId, query, cursor);
+            List<UUID> items = results.items().stream()
+                    .map(s -> UUID.fromString(s.getId()))
+                    .toList();
+            return CursorPage.of(items, results.nextCursor());
+        } catch (SearchException exception) {
+            throw new RecipeSearchException(RecipeSearchErrorCode.RECIPE_SEARCH_FAILED);
+        }
     }
 }

@@ -1,11 +1,13 @@
 package com.cheftory.api.search;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.cursor.CursorPage;
+import com.cheftory.api.recipe.search.exception.RecipeSearchErrorCode;
+import com.cheftory.api.recipe.search.exception.RecipeSearchException;
+import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.SearchQueryScope;
 import com.cheftory.api.search.query.entity.SearchQuery;
@@ -42,7 +44,7 @@ class RecipeSearchAdapterTest {
             SearchQuery searchQuery2;
 
             @BeforeEach
-            void setUp() throws SearchException {
+            void setUp() throws Exception {
                 userId = UUID.randomUUID();
                 query = "파스타";
                 cursor = null;
@@ -65,13 +67,13 @@ class RecipeSearchAdapterTest {
                 CursorPage<UUID> result;
 
                 @BeforeEach
-                void setUp() throws SearchException {
+                void setUp() throws Exception {
                     result = adapter.searchRecipeIds(userId, query, cursor);
                 }
 
                 @Test
                 @DisplayName("Then - 레시피 ID 목록을 반환한다")
-                void thenReturnsRecipeIds() throws SearchException {
+                void thenReturnsRecipeIds() throws Exception {
                     assertThat(result.items()).hasSize(2);
                     assertThat(result.nextCursor()).isEqualTo("next-cursor");
                     verify(searchFacade).search(SearchQueryScope.RECIPE, userId, query, cursor);
@@ -87,7 +89,7 @@ class RecipeSearchAdapterTest {
             String cursor;
 
             @BeforeEach
-            void setUp() throws SearchException {
+            void setUp() throws Exception {
                 userId = UUID.randomUUID();
                 query = "없는레시피";
                 cursor = null;
@@ -102,7 +104,7 @@ class RecipeSearchAdapterTest {
                 CursorPage<UUID> result;
 
                 @BeforeEach
-                void setUp() throws SearchException {
+                void setUp() throws Exception {
                     result = adapter.searchRecipeIds(userId, query, cursor);
                 }
 
@@ -121,16 +123,15 @@ class RecipeSearchAdapterTest {
             UUID userId;
             String query;
             String cursor;
-            SearchException exception;
 
             @BeforeEach
-            void setUp() throws SearchException {
+            void setUp() throws Exception {
                 userId = UUID.randomUUID();
                 query = "파스타";
                 cursor = null;
-                exception = mock(SearchException.class);
-
-                doThrow(exception).when(searchFacade).search(SearchQueryScope.RECIPE, userId, query, cursor);
+                doThrow(new SearchException(SearchErrorCode.SEARCH_FAILED))
+                        .when(searchFacade)
+                        .search(SearchQueryScope.RECIPE, userId, query, cursor);
             }
 
             @Nested
@@ -140,9 +141,10 @@ class RecipeSearchAdapterTest {
                 @Test
                 @DisplayName("Then - 예외를 전파한다")
                 void thenPropagatesException() {
-                    SearchException thrown =
-                            assertThrows(SearchException.class, () -> adapter.searchRecipeIds(userId, query, cursor));
-                    assertSame(exception, thrown);
+                    assertThatThrownBy(() -> adapter.searchRecipeIds(userId, query, cursor))
+                            .isInstanceOf(RecipeSearchException.class)
+                            .extracting("error")
+                            .isEqualTo(RecipeSearchErrorCode.RECIPE_SEARCH_FAILED);
                 }
             }
         }

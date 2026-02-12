@@ -4,11 +4,9 @@ import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.exception.CheftoryException;
-import com.cheftory.api.ranking.RankingEventType;
-import com.cheftory.api.ranking.RankingItemType;
-import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.rank.entity.RecipeRanking;
+import com.cheftory.api.recipe.rank.port.RecipeRankEventType;
 import com.cheftory.api.recipe.rank.port.RecipeRankingPort;
 import com.cheftory.api.recipe.rank.repository.RecipeRankRepository;
 import java.util.List;
@@ -77,7 +75,7 @@ public class RecipeRankService {
     public CursorPage<UUID> getCuisineRecipes(UUID userId, RecipeCuisineType type, String cursor)
             throws CheftoryException {
         final int limit = PAGE_SIZE;
-        return port.recommend(userId, toSurface(type), RankingItemType.RECIPE, cursor, limit);
+        return port.recommend(userId, type, cursor, limit);
     }
 
     /**
@@ -90,21 +88,7 @@ public class RecipeRankService {
      * @param eventType 이벤트 타입
      * @throws CheftoryException 이벤트 로깅 실패 시
      */
-    public void logEvent(UUID userId, UUID recipeId, RankingEventType eventType) throws CheftoryException {
-        port.logEvent(userId, RankingItemType.RECIPE, recipeId, eventType, null);
-    }
-
-    private RankingSurfaceType toSurface(RecipeCuisineType type) {
-        return switch (type) {
-            case KOREAN -> RankingSurfaceType.CUISINE_KOREAN;
-            case SNACK -> RankingSurfaceType.CUISINE_SNACK;
-            case CHINESE -> RankingSurfaceType.CUISINE_CHINESE;
-            case JAPANESE -> RankingSurfaceType.CUISINE_JAPANESE;
-            case WESTERN -> RankingSurfaceType.CUISINE_WESTERN;
-            case DESSERT -> RankingSurfaceType.CUISINE_DESSERT;
-            case HEALTHY -> RankingSurfaceType.CUISINE_HEALTHY;
-            case BABY -> RankingSurfaceType.CUISINE_BABY;
-            case SIMPLE -> RankingSurfaceType.CUISINE_SIMPLE;
-        };
+    public void logEvent(UUID userId, UUID recipeId, RecipeRankEventType eventType) throws CheftoryException {
+        port.logEvent(userId, recipeId, eventType, null);
     }
 }

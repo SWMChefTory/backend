@@ -2,8 +2,6 @@ package com.cheftory.api.ranking.personalization;
 
 import static java.util.Objects.requireNonNull;
 
-import com.cheftory.api.search.exception.SearchException;
-import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,20 +29,20 @@ public class RankingPersonalizationService {
      *
      * @param seedIds 시드 아이템 ID 목록
      * @return 개인화 프로필
-     * @throws SearchException 검색 예외
+     * @throws RankingPersonalizationException 처리 예외
      */
-    public PersonalizationProfile aggregateProfile(List<UUID> seedIds) throws SearchException {
+    public PersonalizationProfile aggregateProfile(List<UUID> seedIds) throws RankingPersonalizationException {
         List<String> ids = seedIds.stream().map(UUID::toString).toList();
-        List<SearchQuery> seedDocs = rankingPersonalizationSearchPort.mgetSearchQueries(ids);
+        List<RankingPersonalizationSeed> seedDocs = rankingPersonalizationSearchPort.mgetSeeds(ids);
 
         Function<String, Integer> one = v -> 1;
 
         Map<String, Integer> keywordCounts = seedDocs.stream()
-                .flatMap(seedDoc -> requireNonNull(seedDoc.getKeywords(), "seedDoc.keywords is null").stream())
+                .flatMap(seedDoc -> requireNonNull(seedDoc.keywords(), "seedDoc.keywords is null").stream())
                 .collect(Collectors.toMap(Function.identity(), one, Integer::sum));
 
         Map<String, Integer> channelCounts = seedDocs.stream()
-                .map(seedDoc -> requireNonNull(seedDoc.getChannelTitle(), "seedDoc.channelTitle is null"))
+                .map(seedDoc -> requireNonNull(seedDoc.channelTitle(), "seedDoc.channelTitle is null"))
                 .collect(Collectors.toMap(Function.identity(), one, Integer::sum));
 
         return new PersonalizationProfile(topK(keywordCounts, KEYWORDS_TOP_N), topK(channelCounts, CHANNELS_TOP_N));

@@ -20,7 +20,7 @@ import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.dto.RecipeOverview;
-import com.cheftory.api.search.exception.SearchException;
+import com.cheftory.api.recipe.search.exception.RecipeSearchException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,7 +59,7 @@ class RecipeSearchFacadeTest {
 
     @Test
     @DisplayName("커서 기반 검색 결과를 반환한다")
-    void shouldSearchRecipesWithCursor() throws SearchException {
+    void shouldSearchRecipesWithCursor() throws RecipeSearchException {
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
         String cursor = "cursor-1";

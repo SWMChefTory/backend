@@ -12,7 +12,7 @@ import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.dto.RecipeOverview;
-import com.cheftory.api.search.exception.SearchException;
+import com.cheftory.api.recipe.search.exception.RecipeSearchException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +47,10 @@ public class RecipeSearchFacade {
      * @param userId 사용자 ID
      * @param cursor 페이징 커서
      * @return 레시피 개요 목록
-     * @throws SearchException 검색 실패 시
+     * @throws RecipeSearchException 검색 실패 시
      */
-    public CursorPage<RecipeOverview> searchRecipes(String query, UUID userId, String cursor) throws SearchException {
+    public CursorPage<RecipeOverview> searchRecipes(String query, UUID userId, String cursor)
+            throws RecipeSearchException {
         CursorPage<UUID> recipeIdsPage = recipeSearchPort.searchRecipeIds(userId, query, cursor);
 
         List<RecipeInfo> recipes = recipeInfoService.gets(recipeIdsPage.items());
