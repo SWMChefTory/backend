@@ -6,12 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 유저 공유 응답 DTO
  *
  * <p>유저의 공유 횟수 정보를 응답으로 전달하기 위한 DTO입니다.</p>
+ *
+ * @param shareCount 공유 횟수
  */
-public record UserShareResponse(
-        /**
-         * 공유 횟수
-         */
-        @JsonProperty("share_count") int shareCount) {
+public record UserShareResponse(@JsonProperty("share_count") int shareCount) {
 
     /**
      * 공유 횟수로부터 UserShareResponse 생성

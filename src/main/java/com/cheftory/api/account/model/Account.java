@@ -20,6 +20,14 @@ public class Account {
     private String refreshToken;
     private User user;
 
+    /**
+     * Account 인스턴스 생성.
+     *
+     * @param accessToken 액세스 토큰
+     * @param refreshToken 리프레시 토큰
+     * @param user 사용자 정보
+     * @return Account 인스턴스
+     */
     public static Account of(String accessToken, String refreshToken, User user) {
         return new Account(accessToken, refreshToken, user);
     }

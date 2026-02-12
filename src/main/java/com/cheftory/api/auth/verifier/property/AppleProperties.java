@@ -27,10 +27,20 @@ public class AppleProperties {
     @Deprecated
     private String clientId;
 
+    /**
+     * App ID를 설정합니다.
+     *
+     * @param appId iOS/Android App ID
+     */
     public void setAppId(String appId) {
         this.appId = appId;
     }
 
+    /**
+     * Service ID를 설정합니다.
+     *
+     * @param serviceId Web Service ID
+     */
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
     }

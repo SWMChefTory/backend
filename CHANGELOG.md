@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 향후 수정될 버그들
 
 
+## [1.1.26] - 2026-02-12
+
+### Added
+- **레시피 신고 기능**: 사용자가 부적절한 레시피를 신고할 수 있는 기능 추가
+  - `RecipeReport` 엔티티: 신고자 ID, 레시피 ID, 신고 사유, 상세 설명, 생성일시 포함
+  - 중복 신고 방지를 위한 유니크 제약조건 (`reporter_id`, `recipe_id`)
+  - `RecipeReportReason` enum: INAPPROPRIATE_CONTENT, MISINFORMATION, LOW_QUALITY, OTHER
+  - `RecipeReportErrorCode.DUPLICATE_REPORT`: 이미 신고한 레시피일 때 예외
+  - `RecipeReportService.report()`: 레시피 신고 생성
+  - `POST /api/v1/recipes/{recipeId}/reports` 엔드포인트
+- **테스트 추가**: 엔티티, 서비스, 리포지토리, 컨트롤러 테스트 추가
+
+### Changed
+- **사용자 정보 조회**: `UserResponse`에 `tutorialAt` 필드 추가 (JSON: `tutorial_at`)
+  - 클라이언트에서 사용자 정보 조회 시 튜토리얼 완료 시간 확인 가능
+
+
 ## [1.1.25] - 2026-02-11
 
 ### Changed
