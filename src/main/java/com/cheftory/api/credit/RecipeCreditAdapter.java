@@ -2,6 +2,7 @@ package com.cheftory.api.credit;
 
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.exception.CreditException;
+import com.cheftory.api.recipe.creation.credit.RecipeCreditException;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +23,15 @@ public class RecipeCreditAdapter implements RecipeCreditPort {
      * @param userId 사용자 ID
      * @param recipeId 레시피 ID
      * @param creditCost 소비할 크레딧 양
-     * @throws CreditException 크레딧 관련 예외 발생 시
+     * @throws RecipeCreditException 크레딧 관련 예외 발생 시
      */
     @Override
-    public void spendRecipeCreate(UUID userId, UUID recipeId, long creditCost) throws CreditException {
-        creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
+    public void spendRecipeCreate(UUID userId, UUID recipeId, long creditCost) throws RecipeCreditException {
+        try {
+            creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
+        } catch (CreditException exception) {
+            throw new RecipeCreditException(exception.getError());
+        }
     }
 
     /**
@@ -35,10 +40,14 @@ public class RecipeCreditAdapter implements RecipeCreditPort {
      * @param userId 사용자 ID
      * @param recipeId 레시피 ID
      * @param creditCost 환불할 크레딧 양
-     * @throws CreditException 크레딧 관련 예외 발생 시
+     * @throws RecipeCreditException 크레딧 관련 예외 발생 시
      */
     @Override
-    public void refundRecipeCreate(UUID userId, UUID recipeId, long creditCost) throws CreditException {
-        creditService.grant(Credit.recipeCreateRefund(userId, recipeId, creditCost));
+    public void refundRecipeCreate(UUID userId, UUID recipeId, long creditCost) throws RecipeCreditException {
+        try {
+            creditService.grant(Credit.recipeCreateRefund(userId, recipeId, creditCost));
+        } catch (CreditException exception) {
+            throw new RecipeCreditException(exception.getError());
+        }
     }
 }

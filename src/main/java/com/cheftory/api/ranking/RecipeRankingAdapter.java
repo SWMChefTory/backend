@@ -2,6 +2,10 @@ package com.cheftory.api.ranking;
 
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.exception.CheftoryException;
+import com.cheftory.api.recipe.dto.RecipeCuisineType;
+import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
+import com.cheftory.api.recipe.rank.exception.RecipeRankException;
+import com.cheftory.api.recipe.rank.port.RecipeRankEventType;
 import com.cheftory.api.recipe.rank.port.RecipeRankingPort;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -23,33 +27,59 @@ public class RecipeRankingAdapter implements RecipeRankingPort {
      * 랭킹 이벤트를 기록합니다.
      *
      * @param userId 사용자 ID
-     * @param itemType 아이템 타입
-     * @param itemId 아이템 ID
+     * @param recipeId 레시피 ID
      * @param eventType 이벤트 타입
      * @param requestId 요청 ID
-     * @throws CheftoryException Cheftory 예외
+     * @throws RecipeRankException 처리 예외
      */
     @Override
-    public void logEvent(UUID userId, RankingItemType itemType, UUID itemId, RankingEventType eventType, UUID requestId)
-            throws CheftoryException {
-        rankingService.event(userId, itemType, itemId, eventType, requestId);
+    public void logEvent(UUID userId, UUID recipeId, RecipeRankEventType eventType, UUID requestId)
+            throws RecipeRankException {
+        try {
+            rankingService.event(userId, RankingItemType.RECIPE, recipeId, toRankingEvent(eventType), requestId);
+        } catch (CheftoryException exception) {
+            throw new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_EVENT_FAILED);
+        }
     }
 
     /**
      * 개인화된 랭킹 추천을 반환합니다.
      *
      * @param userId 사용자 ID
-     * @param surfaceType 서피스 타입
-     * @param itemType 아이템 타입
+     * @param cuisineType 요리 타입
      * @param cursor 커서
      * @param pageSize 페이지 크기
      * @return 커서 페이지
-     * @throws CheftoryException Cheftory 예외
+     * @throws RecipeRankException 처리 예외
      */
     @Override
-    public CursorPage<UUID> recommend(
-            UUID userId, RankingSurfaceType surfaceType, RankingItemType itemType, String cursor, int pageSize)
-            throws CheftoryException {
-        return rankingService.recommend(userId, surfaceType, itemType, cursor, pageSize);
+    public CursorPage<UUID> recommend(UUID userId, RecipeCuisineType cuisineType, String cursor, int pageSize)
+            throws RecipeRankException {
+        try {
+            return rankingService.recommend(userId, toSurface(cuisineType), RankingItemType.RECIPE, cursor, pageSize);
+        } catch (CheftoryException exception) {
+            throw new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_RECOMMEND_FAILED);
+        }
+    }
+
+    private RankingEventType toRankingEvent(RecipeRankEventType eventType) {
+        return switch (eventType) {
+            case VIEW -> RankingEventType.VIEW;
+            case CATEGORIES -> RankingEventType.CATEGORIES;
+        };
+    }
+
+    private RankingSurfaceType toSurface(RecipeCuisineType type) {
+        return switch (type) {
+            case KOREAN -> RankingSurfaceType.CUISINE_KOREAN;
+            case SNACK -> RankingSurfaceType.CUISINE_SNACK;
+            case CHINESE -> RankingSurfaceType.CUISINE_CHINESE;
+            case JAPANESE -> RankingSurfaceType.CUISINE_JAPANESE;
+            case WESTERN -> RankingSurfaceType.CUISINE_WESTERN;
+            case DESSERT -> RankingSurfaceType.CUISINE_DESSERT;
+            case HEALTHY -> RankingSurfaceType.CUISINE_HEALTHY;
+            case BABY -> RankingSurfaceType.CUISINE_BABY;
+            case SIMPLE -> RankingSurfaceType.CUISINE_SIMPLE;
+        };
     }
 }

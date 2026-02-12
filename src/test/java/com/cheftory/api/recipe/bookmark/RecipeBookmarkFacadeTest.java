@@ -13,6 +13,7 @@ import com.cheftory.api.recipe.bookmark.exception.RecipeBookmarkException;
 import com.cheftory.api.recipe.content.info.RecipeInfoService;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
+import com.cheftory.api.recipe.creation.credit.RecipeCreditException;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -140,7 +141,7 @@ class RecipeBookmarkFacadeTest {
                 when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
                 when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
 
-                doThrow(new CreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
+                doThrow(new RecipeCreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
                         .when(creditPort)
                         .spendRecipeCreate(userId, recipeId, creditCost);
             }
@@ -179,7 +180,7 @@ class RecipeBookmarkFacadeTest {
                 when(recipeInfoService.get(recipeId)).thenReturn(recipeInfo);
                 when(recipeBookmarkService.create(userId, recipeId)).thenReturn(true);
 
-                doThrow(new CreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT))
+                doThrow(new RecipeCreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT))
                         .when(creditPort)
                         .spendRecipeCreate(userId, recipeId, creditCost);
             }

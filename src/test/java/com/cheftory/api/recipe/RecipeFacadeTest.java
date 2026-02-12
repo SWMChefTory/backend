@@ -13,7 +13,6 @@ import static org.mockito.Mockito.verify;
 import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.exception.CheftoryException;
-import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
@@ -57,6 +56,7 @@ import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.recipe.rank.RankingType;
 import com.cheftory.api.recipe.rank.RecipeRankService;
+import com.cheftory.api.recipe.rank.port.RecipeRankEventType;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -178,7 +178,7 @@ class RecipeFacadeTest {
             assertThat(result).isNotNull();
             verify(recipeInfoService).getSuccess(recipeId);
             verify(recipeInfoService).increaseCount(recipeId);
-            verify(recipeRankService).logEvent(userId, recipeId, RankingEventType.VIEW);
+            verify(recipeRankService).logEvent(userId, recipeId, RecipeRankEventType.VIEW);
         }
 
         @Test

@@ -1,7 +1,5 @@
 package com.cheftory.api.ranking.personalization;
 
-import com.cheftory.api.search.exception.SearchException;
-import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 
 /**
@@ -14,8 +12,8 @@ public interface RankingPersonalizationSearchPort {
      * 검색 쿼리들을 일괄 조회합니다.
      *
      * @param ids 검색 쿼리 ID 목록
-     * @return 검색 쿼리 목록
-     * @throws SearchException 검색 예외
+     * @return 개인화 집계용 시드 문서 목록
+     * @throws RankingPersonalizationException 처리 예외
      */
-    List<SearchQuery> mgetSearchQueries(List<String> ids) throws SearchException;
+    List<RankingPersonalizationSeed> mgetSeeds(List<String> ids) throws RankingPersonalizationException;
 }

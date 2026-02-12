@@ -6,6 +6,8 @@ import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.exception.CheftoryException;
+import com.cheftory.api.recipe.dto.RecipeCuisineType;
+import com.cheftory.api.recipe.rank.port.RecipeRankEventType;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -29,12 +31,12 @@ class RecipeRankingAdapterTest {
     @DisplayName("logEvent delegates to rankingService")
     void logEventDelegates() throws CheftoryException {
         UUID userId = UUID.randomUUID();
-        UUID itemId = UUID.randomUUID();
+        UUID recipeId = UUID.randomUUID();
         UUID requestId = UUID.randomUUID();
 
-        adapter.logEvent(userId, RankingItemType.RECIPE, itemId, RankingEventType.VIEW, requestId);
+        adapter.logEvent(userId, recipeId, RecipeRankEventType.VIEW, requestId);
 
-        verify(rankingService).event(userId, RankingItemType.RECIPE, itemId, RankingEventType.VIEW, requestId);
+        verify(rankingService).event(userId, RankingItemType.RECIPE, recipeId, RankingEventType.VIEW, requestId);
     }
 
     @Test
@@ -47,8 +49,7 @@ class RecipeRankingAdapterTest {
                 .when(rankingService)
                 .recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "cursor", 10);
 
-        CursorPage<UUID> result =
-                adapter.recommend(userId, RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, "cursor", 10);
+        CursorPage<UUID> result = adapter.recommend(userId, RecipeCuisineType.KOREAN, "cursor", 10);
 
         assertThat(result).isEqualTo(expected);
         verify(rankingService)

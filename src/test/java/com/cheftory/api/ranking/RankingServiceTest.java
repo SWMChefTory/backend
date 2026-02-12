@@ -10,12 +10,12 @@ import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.RankingCursor;
 import com.cheftory.api._common.cursor.RankingCursorCodec;
 import com.cheftory.api.exception.CheftoryException;
+import com.cheftory.api.ranking.candidate.RankingCandidatePage;
 import com.cheftory.api.ranking.candidate.RankingCandidateService;
 import com.cheftory.api.ranking.interaction.RankingInteractionService;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.ranking.personalization.RankingPersonalizationService;
 import com.cheftory.api.ranking.snapshot.RankingSnapshotService;
-import com.cheftory.api.search.query.SearchPage;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -64,7 +64,7 @@ class RankingServiceTest {
                 .when(rankingInteractionService)
                 .getRecentSeeds(userId, RankingItemType.RECIPE, 10);
         doReturn(profile).when(rankingPersonalizationService).aggregateProfile(any());
-        doReturn(new SearchPage(items, "next"))
+        doReturn(new RankingCandidatePage(items, "next"))
                 .when(rankingCandidateService)
                 .searchWithPit(RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, 2, profile, "pit-1", null);
         doReturn(0L).when(rankingSnapshotService).allocateImpressionPositions(requestId, items.size());
@@ -100,7 +100,7 @@ class RankingServiceTest {
                 .when(rankingInteractionService)
                 .getRecentSeeds(userId, RankingItemType.RECIPE, 10);
         doReturn(profile).when(rankingPersonalizationService).aggregateProfile(any());
-        doReturn(new SearchPage(items, null))
+        doReturn(new RankingCandidatePage(items, null))
                 .when(rankingCandidateService)
                 .searchWithPit(RankingSurfaceType.CUISINE_KOREAN, RankingItemType.RECIPE, 2, profile, "pit-1", "after");
         doReturn(0L).when(rankingSnapshotService).allocateImpressionPositions(requestId, items.size());
