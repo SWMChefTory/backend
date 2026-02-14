@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.credit.exception.CreditErrorCode;
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.entity.*;
 import com.cheftory.api.user.exception.UserCreditException;
@@ -381,7 +382,7 @@ class UserServiceTest {
                 LocalDateTime now = LocalDateTime.of(2024, 1, 1, 0, 0);
                 when(clock.now()).thenReturn(now);
                 when(userRepository.exist(userId)).thenReturn(true);
-                CreditException exception = new UserCreditException(null);
+                CreditException exception = new UserCreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
                 doThrow(exception).when(userCreditPort).grantUserTutorial(userId);
 
                 CreditException thrown = assertThrows(CreditException.class, () -> userService.tutorial(userId));

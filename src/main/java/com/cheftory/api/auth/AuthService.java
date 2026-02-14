@@ -48,7 +48,7 @@ public class AuthService {
                 default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
             };
         } catch (VerificationException e) {
-            throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN, e);
         }
     }
 

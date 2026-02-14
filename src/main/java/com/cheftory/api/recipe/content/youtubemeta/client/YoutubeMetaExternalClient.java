@@ -100,10 +100,10 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
             throw e;
         } catch (WebClientException e) {
             log.error("YouTube API 호출 실패 - videoId: {}, error: {}", videoId, e.getMessage());
-            throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_API_ERROR);
+            throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_API_ERROR, e);
         } catch (Exception e) {
             log.error("비디오 정보 조회 중 예상치 못한 오류 - videoId: {}", videoId, e);
-            throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_API_ERROR);
+            throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_API_ERROR, e);
         }
     }
 

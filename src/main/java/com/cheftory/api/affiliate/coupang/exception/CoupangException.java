@@ -17,4 +17,8 @@ public class CoupangException extends RecipeException {
     public CoupangException(CoupangErrorCode e) {
         super(e);
     }
+
+    public CoupangException(CoupangErrorCode e, Throwable cause) {
+        super(e, cause);
+    }
 }

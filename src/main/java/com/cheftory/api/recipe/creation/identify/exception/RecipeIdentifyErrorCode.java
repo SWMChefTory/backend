@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.creation.identify.exception;
 
 import com.cheftory.api.exception.Error;
+import com.cheftory.api.exception.ErrorType;
 import lombok.Getter;
 
 /**
@@ -13,10 +14,11 @@ public enum RecipeIdentifyErrorCode implements Error {
     /**
      * 레시피 생성이 이미 진행중인 경우
      */
-    RECIPE_IDENTIFY_PROGRESSING("RECIPE_IDENTIFY_001", "레시피 생성이 진행중입니다.");
+    RECIPE_IDENTIFY_PROGRESSING("RECIPE_IDENTIFY_001", "레시피 생성이 진행중입니다.", ErrorType.VALIDATION);
 
     private final String errorCode;
     private final String message;
+    private final ErrorType type;
 
     /**
      * RecipeIdentifyErrorCode 생성자
@@ -24,9 +26,10 @@ public enum RecipeIdentifyErrorCode implements Error {
      * @param errorCode 에러 코드
      * @param message 에러 메시지
      */
-    RecipeIdentifyErrorCode(String errorCode, String message) {
+    RecipeIdentifyErrorCode(String errorCode, String message, ErrorType type) {
         this.errorCode = errorCode;
         this.message = message;
+        this.type = type;
     }
 
     @Override
@@ -37,5 +40,10 @@ public enum RecipeIdentifyErrorCode implements Error {
     @Override
     public String getMessage() {
         return message;
+    }
+
+    @Override
+    public ErrorType getType() {
+        return type;
     }
 }

@@ -6,4 +6,8 @@ public class RankingPersonalizationException extends RankingException {
     public RankingPersonalizationException(RankingPersonalizationErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RankingPersonalizationException(RankingPersonalizationErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

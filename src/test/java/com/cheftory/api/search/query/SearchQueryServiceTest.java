@@ -1,18 +1,22 @@
 package com.cheftory.api.search.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.I18nTranslator;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.ScoreIdCursor;
 import com.cheftory.api._common.cursor.ScoreIdCursorCodec;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
+import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
@@ -76,7 +80,7 @@ class SearchQueryServiceTest {
 
     @Test
     @DisplayName("cursor가 있으면 keyset을 조회한다")
-    void shouldSearchWithCursorKeyset() throws SearchException {
+    void shouldSearchWithCursorKeyset() throws SearchException, CursorException {
         String keyword = "김치찌개";
         ScoreIdCursor decoded = new ScoreIdCursor(1.2, "id-10", "now", "pit");
 
@@ -190,7 +194,7 @@ class SearchQueryServiceTest {
 
     @Test
     @DisplayName("추천 후보 keyset 조회는 cursor를 갱신한다")
-    void searchCandidatesWithPitKeyset() throws SearchException {
+    void searchCandidatesWithPitKeyset() throws SearchException, CursorException {
         RankingSurfaceType surfaceType = RankingSurfaceType.CUISINE_KOREAN;
         PersonalizationProfile profile = new PersonalizationProfile(List.of("kimchi"), List.of("channel"));
         String pitId = "pit-1";
@@ -238,5 +242,37 @@ class SearchQueryServiceTest {
                         eq(decoded.score()),
                         eq(decoded.id()),
                         any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("키워드 검색에서 커서가 유효하지 않으면 SEARCH_FAILED를 던진다")
+    void searchByKeywordInvalidCursor() throws CursorException {
+        doThrow(new CursorException(com.cheftory.api._common.cursor.CursorErrorCode.INVALID_CURSOR))
+                .when(scoreIdCursorCodec)
+                .decode("invalid");
+
+        assertThatThrownBy(() -> searchQueryService.searchByKeyword(SearchQueryScope.RECIPE, "kimchi", "invalid"))
+                .isInstanceOf(SearchException.class)
+                .extracting("error")
+                .isEqualTo(SearchErrorCode.SEARCH_FAILED);
+    }
+
+    @Test
+    @DisplayName("후보 검색에서 커서가 유효하지 않으면 SEARCH_FAILED를 던진다")
+    void searchCandidatesWithPitInvalidCursor() throws CursorException {
+        doThrow(new CursorException(com.cheftory.api._common.cursor.CursorErrorCode.INVALID_CURSOR))
+                .when(scoreIdCursorCodec)
+                .decode("invalid");
+
+        assertThatThrownBy(() -> searchQueryService.searchCandidatesWithPit(
+                        RankingSurfaceType.CUISINE_KOREAN,
+                        RankingItemType.RECIPE,
+                        10,
+                        new PersonalizationProfile(List.of(), List.of()),
+                        "pit-1",
+                        "invalid"))
+                .isInstanceOf(SearchException.class)
+                .extracting("error")
+                .isEqualTo(SearchErrorCode.SEARCH_FAILED);
     }
 }

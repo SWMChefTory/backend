@@ -14,4 +14,8 @@ public class RecipeChallengeException extends RecipeException {
     public RecipeChallengeException(RecipeChallengeErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeChallengeException(RecipeChallengeErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

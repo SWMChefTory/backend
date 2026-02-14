@@ -64,7 +64,7 @@ public class AutocompleteRepository {
             return response.hits().hits().stream().map(Hit::source).toList();
         } catch (Exception e) {
             log.error(SearchErrorCode.AUTOCOMPLETE_FAILED.getMessage(), keyword, e);
-            throw new SearchException(SearchErrorCode.AUTOCOMPLETE_FAILED);
+            throw new SearchException(SearchErrorCode.AUTOCOMPLETE_FAILED, e);
         }
     }
 
@@ -166,7 +166,6 @@ public class AutocompleteRepository {
      * 현재 마켓 키를 반환합니다.
      *
      * @return 마켓 키
-     * @throws Exception 마켓 컨텍스트 조회 실패 시 예외
      */
     @SneakyThrows
     private String currentMarketKey() {

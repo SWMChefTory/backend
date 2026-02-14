@@ -32,7 +32,7 @@ public class UserIdValidator implements ConstraintValidator<ExistsUserId, UUID> 
 
         if (!exists) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(UserErrorCode.USER_NOT_FOUND.name())
+            context.buildConstraintViolationWithTemplate(UserErrorCode.USER_NOT_FOUND.getErrorCode())
                     .addConstraintViolation();
             return false;
         }

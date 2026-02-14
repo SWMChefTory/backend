@@ -7,19 +7,21 @@ import org.springframework.stereotype.Component;
  * CountIdCursor 커서를 인코딩/디코딩하는 코덱.
  */
 @Component
-public class CountIdCursorCodec implements CursorCodec<CountIdCursor> {
+public class CountIdCursorCodec extends AbstractCursorCodecSupport implements CursorCodec<CountIdCursor> {
     private static final String SEP = "|";
 
     @Override
     public CountIdCursor decode(String cursor) throws CursorException {
 
         try {
-            int idx = cursor.lastIndexOf(SEP);
-            long c = Long.parseLong(cursor.substring(0, idx));
-            UUID id = UUID.fromString(cursor.substring(idx + 1));
-            return new CountIdCursor(c, id);
+            requireNonBlank(cursor);
+            int separatorIndex = cursor.lastIndexOf(SEP);
+            requireSeparatorInMiddle(separatorIndex, cursor.length());
+            long lastCount = Long.parseLong(cursor.substring(0, separatorIndex));
+            UUID id = UUID.fromString(cursor.substring(separatorIndex + 1));
+            return new CountIdCursor(lastCount, id);
         } catch (Exception e) {
-            throw new CursorException(CursorErrorCode.INVALID_CURSOR);
+            throw invalidCursor(e);
         }
     }
 

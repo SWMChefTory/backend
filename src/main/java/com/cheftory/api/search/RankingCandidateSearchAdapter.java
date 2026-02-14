@@ -35,7 +35,7 @@ public class RankingCandidateSearchAdapter implements RankingCandidateSearchPort
         try {
             return searchQueryService.openPitForCandidates();
         } catch (SearchException exception) {
-            throw new RankingCandidateException(RankingCandidateErrorCode.RANKING_CANDIDATE_OPEN_FAILED);
+            throw new RankingCandidateException(RankingCandidateErrorCode.RANKING_CANDIDATE_OPEN_FAILED, exception);
         }
     }
 
@@ -65,7 +65,7 @@ public class RankingCandidateSearchAdapter implements RankingCandidateSearchPort
             return new RankingCandidatePage(page.items(), page.nextCursor());
 
         } catch (SearchException exception) {
-            throw new RankingCandidateException(RankingCandidateErrorCode.RANKING_CANDIDATE_SEARCH_FAILED);
+            throw new RankingCandidateException(RankingCandidateErrorCode.RANKING_CANDIDATE_SEARCH_FAILED, exception);
         }
     }
 

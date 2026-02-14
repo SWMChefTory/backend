@@ -46,7 +46,7 @@ public class BriefingExternalClient implements BriefingClient {
 
         } catch (Exception e) {
             log.error("브리핑 생성 중 예상치 못한 오류 발생 - videoId: {}", videoId, e);
-            throw new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+            throw new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL, e);
         }
     }
 }

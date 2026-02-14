@@ -8,4 +8,8 @@ public class RankingException extends CheftoryException {
     public RankingException(Error error) {
         super(error);
     }
+
+    public RankingException(Error error, Throwable cause) {
+        super(error, cause);
+    }
 }

@@ -163,7 +163,7 @@ public class RecipeReportControllerTest extends RestDocsTest {
                         .when()
                         .post("/api/v1/recipes/{recipeId}/reports", recipeId)
                         .then()
-                        .status(HttpStatus.BAD_REQUEST)
+                        .status(HttpStatus.CONFLICT)
                         .apply(document(
                                 getNestedClassPath(this.getClass()) + "/{method-name}",
                                 requestPreprocessor(),

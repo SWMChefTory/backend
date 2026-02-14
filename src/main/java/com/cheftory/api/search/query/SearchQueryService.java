@@ -1,6 +1,7 @@
 package com.cheftory.api.search.query;
 
 import com.cheftory.api._common.I18nTranslator;
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.CursorPages;
 import com.cheftory.api._common.cursor.ScoreIdCursor;
@@ -8,6 +9,7 @@ import com.cheftory.api._common.cursor.ScoreIdCursorCodec;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
+import com.cheftory.api.search.exception.SearchErrorCode;
 import com.cheftory.api.search.exception.SearchException;
 import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
@@ -56,7 +58,12 @@ public class SearchQueryService {
         boolean first = (cursor == null || cursor.isBlank());
         Pageable pageable = PageRequest.of(0, CURSOR_PAGE_SIZE + 1);
 
-        ScoreIdCursor scoreIdCursor = first ? null : scoreIdCursorCodec.decode(cursor);
+        ScoreIdCursor scoreIdCursor;
+        try {
+            scoreIdCursor = first ? null : scoreIdCursorCodec.decode(cursor);
+        } catch (CursorException exception) {
+            throw new SearchException(SearchErrorCode.SEARCH_FAILED, exception);
+        }
 
         String anchorNowIso = first ? scoreIdCursorCodec.newAnchorNow() : scoreIdCursor.anchorNowIso();
         String pitId = first ? searchQueryRepository.createPitId() : scoreIdCursor.pitId();
@@ -139,7 +146,12 @@ public class SearchQueryService {
         boolean first = (cursor == null || cursor.isBlank());
         Pageable pageable = PageRequest.of(0, size + 1);
 
-        ScoreIdCursor scoreIdCursor = first ? null : scoreIdCursorCodec.decode(cursor);
+        ScoreIdCursor scoreIdCursor;
+        try {
+            scoreIdCursor = first ? null : scoreIdCursorCodec.decode(cursor);
+        } catch (CursorException exception) {
+            throw new SearchException(SearchErrorCode.SEARCH_FAILED, exception);
+        }
         String anchorNowIso = first ? scoreIdCursorCodec.newAnchorNow() : scoreIdCursor.anchorNowIso();
 
         SearchQueryScope scope = toScope(itemType);
