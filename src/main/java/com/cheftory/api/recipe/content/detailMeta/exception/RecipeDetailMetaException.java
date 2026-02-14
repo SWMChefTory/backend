@@ -17,4 +17,8 @@ public class RecipeDetailMetaException extends RecipeException {
     public RecipeDetailMetaException(RecipeDetailMetaErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeDetailMetaException(RecipeDetailMetaErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

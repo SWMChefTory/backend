@@ -21,7 +21,7 @@ public class RecipeReportRepositoryImpl implements RecipeReportRepository {
         try {
             jpaRepository.save(report);
         } catch (DataIntegrityViolationException e) {
-            throw new RecipeReportException(RecipeReportErrorCode.DUPLICATE_REPORT);
+            throw new RecipeReportException(RecipeReportErrorCode.DUPLICATE_REPORT, e);
         }
     }
 }

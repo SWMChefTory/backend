@@ -17,4 +17,8 @@ public class RecipeBriefingException extends RecipeException {
     public RecipeBriefingException(RecipeBriefingErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeBriefingException(RecipeBriefingErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

@@ -6,4 +6,8 @@ public class RecipeSearchException extends RecipeException {
     public RecipeSearchException(RecipeSearchErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeSearchException(RecipeSearchErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

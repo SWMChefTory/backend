@@ -25,7 +25,8 @@ public class RecipeCreationParallelSteps {
                             } catch (RecipeException e) {
                                 throw new CompletionException(e);
                             } catch (Exception e) {
-                                throw new CompletionException(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
+                                throw new CompletionException(
+                                        new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL, e));
                             }
                         },
                         executor))
@@ -38,7 +39,7 @@ public class RecipeCreationParallelSteps {
             if (cause instanceof RecipeException re) {
                 throw re;
             }
-            throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
+            throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL, cause);
         }
 
         return context;

@@ -23,7 +23,8 @@ public class RecipeCategoryIdValidator implements ConstraintValidator<ExistsReci
 
         if (!exists) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND.name())
+            context.buildConstraintViolationWithTemplate(
+                            RecipeCategoryErrorCode.RECIPE_CATEGORY_NOT_FOUND.getErrorCode())
                     .addConstraintViolation();
             return false;
         }

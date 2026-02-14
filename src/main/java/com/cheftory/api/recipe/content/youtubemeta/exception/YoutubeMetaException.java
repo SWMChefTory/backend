@@ -15,4 +15,8 @@ public class YoutubeMetaException extends RecipeException {
     public YoutubeMetaException(YoutubeMetaErrorCode errorCode) {
         super(errorCode);
     }
+
+    public YoutubeMetaException(YoutubeMetaErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

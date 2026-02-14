@@ -17,4 +17,8 @@ public class UserException extends CheftoryException {
     public UserException(UserErrorCode errorCode) {
         super(errorCode);
     }
+
+    public UserException(UserErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

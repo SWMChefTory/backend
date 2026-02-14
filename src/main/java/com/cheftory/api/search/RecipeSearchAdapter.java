@@ -42,7 +42,7 @@ public class RecipeSearchAdapter implements RecipeSearchPort {
                     .toList();
             return CursorPage.of(items, results.nextCursor());
         } catch (SearchException exception) {
-            throw new RecipeSearchException(RecipeSearchErrorCode.RECIPE_SEARCH_FAILED);
+            throw new RecipeSearchException(RecipeSearchErrorCode.RECIPE_SEARCH_FAILED, exception);
         }
     }
 }

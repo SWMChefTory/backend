@@ -4,17 +4,24 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RankingCursorCodec implements CursorCodec<RankingCursor> {
+public class RankingCursorCodec extends AbstractCursorCodecSupport implements CursorCodec<RankingCursor> {
     private static final String SEP = "|";
 
     @Override
-    public RankingCursor decode(String cursor) {
-        int a = cursor.indexOf(SEP);
+    public RankingCursor decode(String cursor) throws CursorException {
+        try {
+            requireNonBlank(cursor);
 
-        UUID requestId = UUID.fromString(cursor.substring(0, a));
-        String searchAfter = cursor.substring(a + 1);
+            int separatorIndex = cursor.indexOf(SEP);
+            requireSeparatorInMiddle(separatorIndex, cursor.length());
 
-        return new RankingCursor(requestId, searchAfter);
+            UUID requestId = UUID.fromString(cursor.substring(0, separatorIndex));
+            String searchAfter = cursor.substring(separatorIndex + 1);
+
+            return new RankingCursor(requestId, searchAfter);
+        } catch (Exception exception) {
+            throw invalidCursor(exception);
+        }
     }
 
     @Override

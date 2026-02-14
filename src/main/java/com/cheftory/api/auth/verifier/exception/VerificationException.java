@@ -17,4 +17,8 @@ public class VerificationException extends CheftoryException {
     public VerificationException(VerificationErrorCode errorCode) {
         super(errorCode);
     }
+
+    public VerificationException(VerificationErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

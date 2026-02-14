@@ -33,7 +33,7 @@ public class UserCreditAdapter implements UserShareCreditPort, UserCreditPort {
         try {
             creditService.grant(Credit.share(userId, count, clock));
         } catch (CreditException exception) {
-            throw new UserShareCreditException(exception.getError());
+            throw new UserShareCreditException(exception.getError(), exception);
         }
     }
 
@@ -48,7 +48,7 @@ public class UserCreditAdapter implements UserShareCreditPort, UserCreditPort {
         try {
             creditService.grant(Credit.tutorial(userId));
         } catch (CreditException exception) {
-            throw new UserCreditException(exception.getError());
+            throw new UserCreditException(exception.getError(), exception);
         }
     }
 }

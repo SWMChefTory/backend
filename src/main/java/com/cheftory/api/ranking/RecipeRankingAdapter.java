@@ -38,7 +38,7 @@ public class RecipeRankingAdapter implements RecipeRankingPort {
         try {
             rankingService.event(userId, RankingItemType.RECIPE, recipeId, toRankingEvent(eventType), requestId);
         } catch (CheftoryException exception) {
-            throw new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_EVENT_FAILED);
+            throw new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_EVENT_FAILED, exception);
         }
     }
 
@@ -58,7 +58,7 @@ public class RecipeRankingAdapter implements RecipeRankingPort {
         try {
             return rankingService.recommend(userId, toSurface(cuisineType), RankingItemType.RECIPE, cursor, pageSize);
         } catch (CheftoryException exception) {
-            throw new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_RECOMMEND_FAILED);
+            throw new RecipeRankException(RecipeRankErrorCode.RECIPE_RANK_RECOMMEND_FAILED, exception);
         }
     }
 

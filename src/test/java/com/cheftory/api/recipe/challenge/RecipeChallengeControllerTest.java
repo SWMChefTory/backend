@@ -96,7 +96,7 @@ class RecipeChallengeControllerTest extends RestDocsTest {
         }
 
         @Test
-        @DisplayName("Given - 참여 중인 챌린지가 없을 때 Then - 400 에러를 반환한다")
+        @DisplayName("Given - 참여 중인 챌린지가 없을 때 Then - 404 에러를 반환한다")
         void shouldReturnErrorWhenChallengeNotFound() throws RecipeChallengeException {
             doThrow(new RecipeChallengeException(RecipeChallengeErrorCode.RECIPE_CHALLENGE_NOT_FOUND))
                     .when(recipeChallengeService)
@@ -107,7 +107,7 @@ class RecipeChallengeControllerTest extends RestDocsTest {
                     .header("Authorization", "Bearer accessToken")
                     .get("/api/v1/recipes/challenge")
                     .then()
-                    .status(HttpStatus.BAD_REQUEST);
+                    .status(HttpStatus.NOT_FOUND);
 
             var responseBody = response.extract().jsonPath();
             assertThat(responseBody.getString("errorCode"))

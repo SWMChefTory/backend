@@ -23,7 +23,7 @@ public class RecipeIdValidator implements ConstraintValidator<ExistsRecipeId, UU
 
         if (!exists) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.name())
+            context.buildConstraintViolationWithTemplate(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND.getErrorCode())
                     .addConstraintViolation();
             return false;
         }

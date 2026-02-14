@@ -185,7 +185,7 @@ public class AccountControllerTest extends RestDocsTest {
                         .when()
                         .post("/api/v1/account/login/oauth")
                         .then()
-                        .status(HttpStatus.BAD_REQUEST)
+                        .status(HttpStatus.NOT_FOUND)
                         .apply(document(
                                 getNestedClassPath(this.getClass()) + "/{method-name}",
                                 requestPreprocessor(),

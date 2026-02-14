@@ -17,4 +17,8 @@ public class SearchException extends RecipeException {
     public SearchException(SearchErrorCode errorCode) {
         super(errorCode);
     }
+
+    public SearchException(SearchErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

@@ -17,4 +17,8 @@ public class RecipeStepException extends RecipeException {
     public RecipeStepException(RecipeStepErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeStepException(RecipeStepErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

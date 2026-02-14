@@ -71,11 +71,11 @@ public class RecipeCreationFacade {
             }
             if (e.getError() == YoutubeMetaErrorCode.YOUTUBE_META_BANNED) {
                 log.warn("create failed. reason={}", e.getError(), e);
-                throw new RecipeException(RecipeErrorCode.RECIPE_BANNED);
+                throw new RecipeException(RecipeErrorCode.RECIPE_BANNED, e);
             }
 
             log.warn("create failed. reason={}", e.getError(), e);
-            throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
+            throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL, e);
         }
     }
 
@@ -125,10 +125,10 @@ public class RecipeCreationFacade {
                     recipeBookmarkService.delete(userId, recipeInfo.getId());
 
                     if (e.getError() == CreditErrorCode.CREDIT_INSUFFICIENT) {
-                        throw new RecipeException(CreditErrorCode.CREDIT_INSUFFICIENT);
+                        throw new RecipeException(CreditErrorCode.CREDIT_INSUFFICIENT, e);
                     }
                     if (e.getError() == CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT) {
-                        throw new RecipeException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
+                        throw new RecipeException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT, e);
                     }
                     throw e;
                 }

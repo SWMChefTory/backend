@@ -108,12 +108,12 @@ public class AppleTokenVerifier {
 
         } catch (ParseException e) {
             log.error("[AppleTokenVerifier] 토큰 파싱 실패", e);
-            throw new VerificationException(VerificationErrorCode.APPLE_INVALID_FORMAT);
+            throw new VerificationException(VerificationErrorCode.APPLE_INVALID_FORMAT, e);
         } catch (VerificationException e) {
             throw e;
         } catch (Exception e) {
             log.error("[AppleTokenVerifier] 알 수 없는 예외 발생", e);
-            throw new VerificationException(VerificationErrorCode.UNKNOWN_ERROR);
+            throw new VerificationException(VerificationErrorCode.UNKNOWN_ERROR, e);
         }
     }
 }

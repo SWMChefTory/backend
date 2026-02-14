@@ -10,4 +10,8 @@ public class CreditException extends CheftoryException {
     public CreditException(Error errorCode) {
         super(errorCode);
     }
+
+    public CreditException(Error errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

@@ -78,10 +78,10 @@ public class CoupangClient {
             throw e;
         } catch (WebClientException e) {
             log.error("쿠팡 파트너스 API 요청 중 WebClient 오류 발생", e);
-            throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
+            throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL, e);
         } catch (Exception e) {
             log.error("쿠팡 파트너스 API 요청 중 알 수 없는 오류 발생", e);
-            throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
+            throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL, e);
         }
     }
 }

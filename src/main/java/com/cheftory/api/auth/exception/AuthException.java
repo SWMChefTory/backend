@@ -17,4 +17,14 @@ public class AuthException extends CheftoryException {
     public AuthException(AuthErrorCode errorCode) {
         super(errorCode);
     }
+
+    /**
+     * 원인 예외를 포함한 AuthException 생성.
+     *
+     * @param errorCode 인증 에러 코드
+     * @param cause 원인 예외
+     */
+    public AuthException(AuthErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

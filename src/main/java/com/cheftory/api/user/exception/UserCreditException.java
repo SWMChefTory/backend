@@ -7,4 +7,8 @@ public class UserCreditException extends CreditException {
     public UserCreditException(Error error) {
         super(error);
     }
+
+    public UserCreditException(Error error, Throwable cause) {
+        super(error, cause);
+    }
 }

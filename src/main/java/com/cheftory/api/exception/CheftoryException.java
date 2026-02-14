@@ -17,6 +17,18 @@ public class CheftoryException extends Exception {
      * @param error 에러 코드
      */
     public CheftoryException(Error error) {
+        super(error.getMessage());
+        this.error = error;
+    }
+
+    /**
+     * 원인 예외를 포함한 CheftoryException 생성자.
+     *
+     * @param error 에러 코드
+     * @param cause 원인 예외
+     */
+    public CheftoryException(Error error, Throwable cause) {
+        super(error.getMessage(), cause);
         this.error = error;
     }
 }

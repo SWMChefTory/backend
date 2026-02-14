@@ -17,4 +17,8 @@ public class RecipeIdentifyException extends RecipeException {
     public RecipeIdentifyException(RecipeIdentifyErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeIdentifyException(RecipeIdentifyErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

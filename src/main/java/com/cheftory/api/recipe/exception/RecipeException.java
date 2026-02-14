@@ -8,4 +8,8 @@ public class RecipeException extends CheftoryException {
     public RecipeException(Error error) {
         super(error);
     }
+
+    public RecipeException(Error error, Throwable cause) {
+        super(error, cause);
+    }
 }

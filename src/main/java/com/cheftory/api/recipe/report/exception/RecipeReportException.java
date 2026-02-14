@@ -10,4 +10,8 @@ public class RecipeReportException extends CheftoryException {
     public RecipeReportException(RecipeReportErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeReportException(RecipeReportErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

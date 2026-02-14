@@ -135,7 +135,7 @@ public class UserControllerTest extends RestDocsTest {
             class WhenGetting {
 
                 @Test
-                @DisplayName("Then - 400 Bad Request를 반환한다")
+                @DisplayName("Then - 404 Not Found를 반환한다")
                 void thenReturnsBadRequest() {
                     given().contentType(ContentType.JSON)
                             .attribute("userId", fixedUserId.toString())
@@ -143,7 +143,7 @@ public class UserControllerTest extends RestDocsTest {
                             .when()
                             .get("/api/v1/users/me")
                             .then()
-                            .status(HttpStatus.BAD_REQUEST)
+                            .status(HttpStatus.NOT_FOUND)
                             .body("message", equalTo(UserErrorCode.USER_NOT_FOUND.getMessage()))
                             .body("errorCode", equalTo(UserErrorCode.USER_NOT_FOUND.getErrorCode()));
                 }
@@ -493,14 +493,15 @@ public class UserControllerTest extends RestDocsTest {
                 @Test
                 @DisplayName("Then - USER_NOT_FOUND 에러를 반환한다")
                 void thenReturnsError() {
-                    var response = given().contentType(ContentType.JSON)
+                    given().contentType(ContentType.JSON)
                             .attribute("userId", fixedUserId.toString())
                             .header("Authorization", "Bearer accessToken")
                             .when()
                             .post("/api/v1/users/tutorial")
-                            .then();
-
-                    assertErrorResponse(response, UserErrorCode.USER_NOT_FOUND);
+                            .then()
+                            .status(HttpStatus.NOT_FOUND)
+                            .body("message", equalTo(UserErrorCode.USER_NOT_FOUND.getMessage()))
+                            .body("errorCode", equalTo(UserErrorCode.USER_NOT_FOUND.getErrorCode()));
                 }
             }
         }
@@ -523,14 +524,15 @@ public class UserControllerTest extends RestDocsTest {
                 @Test
                 @DisplayName("Then - TUTORIAL_ALREADY_FINISHED 에러를 반환한다")
                 void thenReturnsError() {
-                    var response = given().contentType(ContentType.JSON)
+                    given().contentType(ContentType.JSON)
                             .attribute("userId", fixedUserId.toString())
                             .header("Authorization", "Bearer accessToken")
                             .when()
                             .post("/api/v1/users/tutorial")
-                            .then();
-
-                    assertErrorResponse(response, UserErrorCode.TUTORIAL_ALREADY_FINISHED);
+                            .then()
+                            .status(HttpStatus.CONFLICT)
+                            .body("message", equalTo(UserErrorCode.TUTORIAL_ALREADY_FINISHED.getMessage()))
+                            .body("errorCode", equalTo(UserErrorCode.TUTORIAL_ALREADY_FINISHED.getErrorCode()));
                 }
             }
         }

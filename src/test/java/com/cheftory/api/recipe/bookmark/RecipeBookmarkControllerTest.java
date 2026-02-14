@@ -158,7 +158,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
 
             @Test
             @DisplayName("Then - 예외가 발생해야 한다")
-            void thenShouldThrowException() throws Exception {
+            void thenShouldThrowException() {
                 given().contentType(ContentType.JSON)
                         .attribute("userId", userId)
                         .header("Authorization", "Bearer accessToken")
@@ -308,7 +308,7 @@ public class RecipeBookmarkControllerTest extends RestDocsTest {
                         .when()
                         .post("/api/v1/recipes/{recipeId}/bookmark", recipeId)
                         .then()
-                        .status(HttpStatus.BAD_REQUEST)
+                        .status(HttpStatus.NOT_FOUND)
                         .apply(document(
                                 getNestedClassPath(this.getClass()) + "/{method-name}",
                                 requestPreprocessor(),

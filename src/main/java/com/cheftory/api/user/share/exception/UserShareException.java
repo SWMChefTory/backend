@@ -17,4 +17,8 @@ public class UserShareException extends CheftoryException {
     public UserShareException(UserShareErrorCode errorCode) {
         super(errorCode);
     }
+
+    public UserShareException(UserShareErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

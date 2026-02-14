@@ -68,7 +68,7 @@ public enum RecipeCuisineType {
         try {
             return valueOf(type.trim().toUpperCase());
         } catch (Exception e) {
-            throw new RecipeException(RecipeErrorCode.INVALID_CUISINE_TYPE);
+            throw new RecipeException(RecipeErrorCode.INVALID_CUISINE_TYPE, e);
         }
     }
 }
