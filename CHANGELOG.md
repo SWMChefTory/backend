@@ -18,6 +18,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 향후 수정될 버그들
 
+## [1.1.27] - 2026-02-15
+
+### Added
+- **에러 타입/상태 해석 체계 도입**: `ErrorType`, `ErrorStatusResolver`, `ValidationErrorMapper` 추가로 예외 타입별 HTTP 상태 및 검증 오류 매핑 표준화
+- **도메인 경계 전용 예외 추가**: 랭킹/검색/크레딧 경계에서 사용하는 전용 예외 및 에러코드 추가
+  - `RankingException`, `RankingCandidateException`, `RankingPersonalizationException`
+  - `RecipeSearchException`, `RecipeCreditException`
+  - `UserCreditException`, `UserShareCreditException`
+- **커서 코덱 공통 지원 추가**: `AbstractCursorCodecSupport` 도입 및 코덱별 단위 테스트 확장
+
+### Changed
+- **예외 처리 일관성 강화**: 다수 도메인 예외(`*Exception`)가 공통 cause 전달 패턴을 따르도록 정비
+- **전역 예외 처리 리팩토링**: `GlobalExceptionHandler`가 에러 타입 기반 상태 결정 및 검증 에러 응답 매핑을 사용하도록 개선
+- **도메인 경계 리팩토링**: Adapter/Port 계층에서 외부/인프라 예외를 도메인 전용 예외로 변환하도록 정리
+  - 대상: 레시피 검색, 랭킹 후보/개인화, 레시피 랭킹, 사용자/공유 크레딧 등
+- **커서 인코딩/디코딩 구조 정리**: `CountId`, `Rank`, `Ranking`, `ScoreId`, `ViewedAt` 코덱의 공통 로직 및 오류 처리 개선
+
+### Fixed
+- **검증 오류 응답 누락/불일치 개선**: 필드 검증 실패 시 에러 응답 구조와 메시지 매핑 정확도 개선
+- **커서 파싱 실패 처리 개선**: 잘못된 커서 입력에 대한 예외 코드 반환 일관성 강화
+
+### Removed
+- **중복 네트워크 예외 타입 제거**: `ExternalServerNetworkException`, `ExternalServerNetworkExceptionCode` 삭제 후 공통 에러 타입 체계로 통합
+
+### Technical
+- **JavaDoc/포맷 정비**: 전반적인 JavaDoc 보강 및 lint 포맷 정리(`chore: format java doc`, `chore: format lint`)
+
 
 ## [1.1.26] - 2026-02-12
 
