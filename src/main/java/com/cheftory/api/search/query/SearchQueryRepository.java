@@ -74,7 +74,7 @@ public class SearchQueryRepository {
                     .pitId();
         } catch (Exception e) {
             log.error("create PIT failed", e);
-            throw new SearchException(SearchErrorCode.SEARCH_FAILED);
+            throw new SearchException(SearchErrorCode.SEARCH_FAILED, e);
         }
     }
 
@@ -106,7 +106,7 @@ public class SearchQueryRepository {
             SearchQueryScope scope, String keyword, String anchorNowIso, String pitId, Pageable pageable)
             throws SearchException {
         Query q = buildFunctionScoreQuery(scope, keyword, anchorNowIso);
-        return searchHits(cursorTemplateRequest(pitId, pageable, q, null, null), keyword);
+        return searchHits(cursorTemplateRequest(pitId, pageable, q, null, null));
     }
 
     /**
@@ -147,7 +147,7 @@ public class SearchQueryRepository {
 
         } catch (Exception e) {
             log.error("mget seeds failed: size={}", ids.size(), e);
-            throw new SearchException(SearchErrorCode.SEARCH_FAILED);
+            throw new SearchException(SearchErrorCode.SEARCH_FAILED, e);
         }
     }
 
@@ -174,7 +174,7 @@ public class SearchQueryRepository {
             Pageable pageable)
             throws SearchException {
         Query q = buildFunctionScoreQuery(scope, keyword, anchorNowIso);
-        return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId), keyword);
+        return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId));
     }
 
     /**
@@ -198,7 +198,7 @@ public class SearchQueryRepository {
             Pageable pageable)
             throws SearchException {
         Query q = buildCandidatesFunctionScoreQuery(scope, label, anchorNowIso, profile);
-        return searchHits(cursorTemplateRequest(pitId, pageable, q, null, null), "candidates");
+        return searchHits(cursorTemplateRequest(pitId, pageable, q, null, null));
     }
 
     /**
@@ -226,7 +226,7 @@ public class SearchQueryRepository {
             Pageable pageable)
             throws SearchException {
         Query q = buildCandidatesFunctionScoreQuery(scope, label, anchorNowIso, profile);
-        return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId), "candidates");
+        return searchHits(cursorTemplateRequest(pitId, pageable, q, lastScore, lastId));
     }
 
     /**
@@ -357,16 +357,14 @@ public class SearchQueryRepository {
      * 검색을 수행하고 히트 목록을 반환합니다.
      *
      * @param request 검색 요청
-     * @param keywordForLog 로그용 검색어
      * @return 검색 결과 히트 목록
      * @throws SearchException 검색 예외
      */
-    private List<Hit<SearchQuery>> searchHits(SearchRequest request, String keywordForLog) throws SearchException {
+    private List<Hit<SearchQuery>> searchHits(SearchRequest request) throws SearchException {
         try {
             return openSearchClient.search(request, SearchQuery.class).hits().hits();
         } catch (Exception e) {
-            log.error(SearchErrorCode.SEARCH_FAILED.getMessage(), keywordForLog, e);
-            throw new SearchException(SearchErrorCode.SEARCH_FAILED);
+            throw new SearchException(SearchErrorCode.SEARCH_FAILED, e);
         }
     }
 
@@ -374,27 +372,10 @@ public class SearchQueryRepository {
      * 현재 마켓 키를 반환합니다.
      *
      * @return 마켓 키
-     * @throws Exception 마켓 컨텍스트 조회 실패 시 예외
      */
     @SneakyThrows
     private String currentMarketKey() {
         Market market = MarketContext.required().market();
         return market.name().toLowerCase();
-    }
-
-    /**
-     * 가우스 감소 함수를 생성합니다.
-     *
-     * @param targetTime 목표 시간
-     * @param scale 스케일
-     * @param decay 감소율
-     * @return 함수 점수 목록
-     */
-    private List<FunctionScore> buildGaussDecayFunction(String targetTime, String scale, Double decay) {
-        return List.of(FunctionScore.of(functionScore ->
-                functionScore.gauss(gauss -> gauss.field(FIELD_CREATED_AT).placement(placement -> placement
-                        .origin(JsonData.of(targetTime))
-                        .scale(JsonData.of(scale))
-                        .decay(decay)))));
     }
 }

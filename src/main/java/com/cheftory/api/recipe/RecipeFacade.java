@@ -4,7 +4,6 @@ import com.cheftory.api._common.PocOnly;
 import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.exception.CheftoryException;
-import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.recipe.bookmark.RecipeBookmarkService;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmark;
 import com.cheftory.api.recipe.bookmark.entity.RecipeBookmarkCategorizedCount;
@@ -51,6 +50,7 @@ import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.recipe.rank.RankingType;
 import com.cheftory.api.recipe.rank.RecipeRankService;
+import com.cheftory.api.recipe.rank.port.RecipeRankEventType;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -107,7 +107,7 @@ public class RecipeFacade {
             List<RecipeTag> tags = recipeTagService.gets(recipeId);
             List<RecipeBriefing> briefings = recipeBriefingService.gets(recipeId);
             RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
-            recipeRankService.logEvent(userId, recipeId, RankingEventType.VIEW);
+            recipeRankService.logEvent(userId, recipeId, RecipeRankEventType.VIEW);
             if (recipeBookmarkService.exist(userId, recipeId)) {
                 RecipeBookmark bookmark = recipeBookmarkService.get(userId, recipeId);
                 return FullRecipe.owned(
@@ -119,10 +119,10 @@ public class RecipeFacade {
         } catch (CheftoryException e) {
             if (e.getError() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND
                     || e.getError() == RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND) {
-                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND);
+                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND, e);
             }
             if (e.getError() == RecipeInfoErrorCode.RECIPE_FAILED) {
-                throw new RecipeException(RecipeErrorCode.RECIPE_FAILED);
+                throw new RecipeException(RecipeErrorCode.RECIPE_FAILED, e);
             }
             throw e;
         }
@@ -347,7 +347,7 @@ public class RecipeFacade {
         } catch (RecipeException e) {
             if (e.getError() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO) {
                 log.warn("차단되지 않은 영상에 대해 레시피 차단 시도 recipeId={}", recipeId);
-                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
+                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO, e);
             }
             throw e;
         }

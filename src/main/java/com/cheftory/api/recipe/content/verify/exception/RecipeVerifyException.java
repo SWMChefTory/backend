@@ -15,4 +15,8 @@ public class RecipeVerifyException extends RecipeException {
     public RecipeVerifyException(RecipeVerifyErrorCode e) {
         super(e);
     }
+
+    public RecipeVerifyException(RecipeVerifyErrorCode e, Throwable cause) {
+        super(e, cause);
+    }
 }

@@ -32,6 +32,13 @@ public record AffiliateSearchResponse(CoupangProducts coupangProducts) {
             String productName,
             Integer productPrice,
             String productUrl) {
+
+        /**
+         * CoupangProduct 엔티티로부터 Product DTO 생성.
+         *
+         * @param coupangProduct 쿠팡 제품 엔티티
+         * @return 제품 정보 DTO
+         */
         public static Product from(CoupangProduct coupangProduct) {
             return new Product(
                     coupangProduct.getKeyword(),
@@ -46,6 +53,12 @@ public record AffiliateSearchResponse(CoupangProducts coupangProducts) {
         }
     }
 
+    /**
+     * CoupangProducts 엔티티로부터 AffiliateSearchResponse DTO 생성.
+     *
+     * @param coupangProducts 쿠팡 제품 목록 엔티티
+     * @return 제휴사 검색 응답 DTO
+     */
     public static AffiliateSearchResponse from(CoupangProducts coupangProducts) {
         return new AffiliateSearchResponse(coupangProducts);
     }

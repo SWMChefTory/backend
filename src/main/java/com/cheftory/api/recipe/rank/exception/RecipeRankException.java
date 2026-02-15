@@ -11,4 +11,8 @@ public class RecipeRankException extends RecipeException {
     public RecipeRankException(RecipeRankErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeRankException(RecipeRankErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

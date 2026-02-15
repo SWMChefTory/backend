@@ -3,8 +3,6 @@ package com.cheftory.api.ranking.candidate;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
-import com.cheftory.api.search.exception.SearchException;
-import com.cheftory.api.search.query.SearchPage;
 
 /**
  * 랭킹 후보 검색 포트.
@@ -17,9 +15,9 @@ public interface RankingCandidateSearchPort {
      * Point In Time (PIT)을 생성합니다.
      *
      * @return PIT ID
-     * @throws SearchException 검색 예외
+     * @throws RankingCandidateException 처리 예외
      */
-    String openPit() throws SearchException;
+    String openPit() throws RankingCandidateException;
 
     /**
      * PIT를 사용하여 랭킹 후보를 검색합니다.
@@ -31,16 +29,16 @@ public interface RankingCandidateSearchPort {
      * @param pitId PIT ID
      * @param cursor 검색 커서
      * @return 검색 결과 페이지
-     * @throws SearchException 검색 예외
+     * @throws RankingCandidateException 처리 예외
      */
-    SearchPage searchWithPit(
+    RankingCandidatePage searchWithPit(
             RankingSurfaceType surfaceType,
             RankingItemType itemType,
             int size,
             PersonalizationProfile profile,
             String pitId,
             String cursor)
-            throws SearchException;
+            throws RankingCandidateException;
 
     /**
      * PIT를 닫습니다.

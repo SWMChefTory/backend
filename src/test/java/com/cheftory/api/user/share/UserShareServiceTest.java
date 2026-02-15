@@ -5,8 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api.credit.exception.CreditErrorCode;
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.share.entity.UserShare;
+import com.cheftory.api.user.share.exception.UserShareCreditException;
+import com.cheftory.api.user.share.exception.UserShareErrorCode;
 import com.cheftory.api.user.share.exception.UserShareException;
 import com.cheftory.api.user.share.port.UserShareCreditPort;
 import com.cheftory.api.user.share.repository.UserShareRepository;
@@ -85,7 +88,8 @@ class UserShareServiceTest {
                 increasedShare.increase(3);
                 when(userShareRepository.shareTx(createdShare.getId(), 3)).thenReturn(increasedShare);
 
-                CreditException creditException = mock(CreditException.class);
+                CreditException creditException =
+                        new UserShareCreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
                 doThrow(creditException).when(userShareCreditPort).grantUserShare(userId, 1);
 
                 assertThrows(CreditException.class, () -> userShareService.share(userId));
@@ -110,9 +114,10 @@ class UserShareServiceTest {
                 increasedShare.increase(3);
                 when(userShareRepository.shareTx(createdShare.getId(), 3)).thenReturn(increasedShare);
 
-                CreditException creditException = mock(CreditException.class);
+                CreditException creditException =
+                        new UserShareCreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT);
                 doThrow(creditException).when(userShareCreditPort).grantUserShare(userId, 1);
-                doThrow(new UserShareException(null))
+                doThrow(new UserShareException(UserShareErrorCode.USER_SHARE_CREATE_FAIL))
                         .when(userShareRepository)
                         .compensateTx(createdShare.getId(), today);
 

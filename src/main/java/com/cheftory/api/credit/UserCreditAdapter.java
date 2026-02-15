@@ -4,6 +4,8 @@ import com.cheftory.api._common.Clock;
 import com.cheftory.api.credit.entity.Credit;
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.UserCreditPort;
+import com.cheftory.api.user.exception.UserCreditException;
+import com.cheftory.api.user.share.exception.UserShareCreditException;
 import com.cheftory.api.user.share.port.UserShareCreditPort;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -24,21 +26,29 @@ public class UserCreditAdapter implements UserShareCreditPort, UserCreditPort {
      *
      * @param userId 사용자 ID
      * @param count 공유 횟수
-     * @throws CreditException 크레딧 관련 예외 발생 시
+     * @throws UserShareCreditException 크레딧 관련 예외 발생 시
      */
     @Override
-    public void grantUserShare(UUID userId, int count) throws CreditException {
-        creditService.grant(Credit.share(userId, count, clock));
+    public void grantUserShare(UUID userId, int count) throws UserShareCreditException {
+        try {
+            creditService.grant(Credit.share(userId, count, clock));
+        } catch (CreditException exception) {
+            throw new UserShareCreditException(exception.getError(), exception);
+        }
     }
 
     /**
      * 튜토리얼 완료 보상으로 크레딧을 지급합니다.
      *
      * @param userId 사용자 ID
-     * @throws CreditException 크레딧 관련 예외 발생 시
+     * @throws UserCreditException 크레딧 관련 예외 발생 시
      */
     @Override
-    public void grantUserTutorial(UUID userId) throws CreditException {
-        creditService.grant(Credit.tutorial(userId));
+    public void grantUserTutorial(UUID userId) throws UserCreditException {
+        try {
+            creditService.grant(Credit.tutorial(userId));
+        } catch (CreditException exception) {
+            throw new UserCreditException(exception.getError(), exception);
+        }
     }
 }

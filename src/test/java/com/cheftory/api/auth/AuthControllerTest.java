@@ -133,9 +133,9 @@ public class AuthControllerTest extends RestDocsTest {
                 }
 
                 @Test
-                @DisplayName("Then - 400 Bad Request를 반환한다")
+                @DisplayName("Then - 401 Unauthorized를 반환한다")
                 void thenReturnsBadRequest() throws AuthException {
-                    response.status(HttpStatus.BAD_REQUEST)
+                    response.status(HttpStatus.UNAUTHORIZED)
                             .apply(document(
                                     getNestedClassPath(AuthControllerTest.this.getClass()) + "/{method-name}",
                                     requestPreprocessor(),
@@ -213,9 +213,9 @@ public class AuthControllerTest extends RestDocsTest {
                 }
 
                 @Test
-                @DisplayName("Then - 400 Bad Request를 반환한다")
+                @DisplayName("Then - 401 Unauthorized를 반환한다")
                 void thenReturnsBadRequest() throws AuthException {
-                    response.status(HttpStatus.BAD_REQUEST)
+                    response.status(HttpStatus.UNAUTHORIZED)
                             .apply(document(
                                     RestDocsUtils.getNestedClassPath(AuthControllerTest.this.getClass())
                                             + "/{method-name}",
@@ -318,9 +318,9 @@ public class AuthControllerTest extends RestDocsTest {
                 }
 
                 @Test
-                @DisplayName("Then - 400 Bad Request를 반환한다")
+                @DisplayName("Then - 401 Unauthorized를 반환한다")
                 void thenReturnsBadRequest() {
-                    response.statusCode(HttpStatus.BAD_REQUEST.value())
+                    response.statusCode(HttpStatus.UNAUTHORIZED.value())
                             .body("errorCode", equalTo(AuthErrorCode.INVALID_REFRESH_TOKEN.getErrorCode()));
                 }
             }

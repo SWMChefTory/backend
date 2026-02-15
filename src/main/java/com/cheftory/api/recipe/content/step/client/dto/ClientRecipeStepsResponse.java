@@ -10,11 +10,17 @@ import java.util.stream.IntStream;
 
 /**
  * 외부 API로부터 받은 레시피 단계 정보 응답 DTO
+ *
+ * @param steps 단계 목록
  */
 public record ClientRecipeStepsResponse(@JsonProperty("steps") @NotNull List<Step> steps) {
 
     /**
      * 개별 단계 정보 레코드
+     *
+     * @param subtitle 부제목
+     * @param start 시작 시간
+     * @param descriptions 상세 설명 목록
      */
     public record Step(
             @JsonProperty("subtitle") @NotNull String subtitle,

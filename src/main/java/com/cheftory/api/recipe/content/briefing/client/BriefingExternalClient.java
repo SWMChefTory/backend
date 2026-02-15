@@ -10,11 +10,21 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+/**
+ * 레시피 브리핑 생성 외부 API 클라이언트 구현체.
+ *
+ * <p>WebClient를 사용하여 브리핑 생성 API를 호출합니다.</p>
+ */
 @Slf4j
 @Component
 public class BriefingExternalClient implements BriefingClient {
     private final WebClient webClient;
 
+    /**
+     * BriefingExternalClient 생성자.
+     *
+     * @param webClient 레시피 생성용 WebClient
+     */
     public BriefingExternalClient(@Qualifier("recipeCreateClient") WebClient webClient) {
         this.webClient = webClient;
     }
@@ -36,7 +46,7 @@ public class BriefingExternalClient implements BriefingClient {
 
         } catch (Exception e) {
             log.error("브리핑 생성 중 예상치 못한 오류 발생 - videoId: {}", videoId, e);
-            throw new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
+            throw new RecipeBriefingException(RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL, e);
         }
     }
 }

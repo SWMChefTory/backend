@@ -2,10 +2,12 @@ package com.cheftory.api.search;
 
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
+import com.cheftory.api.ranking.candidate.RankingCandidateErrorCode;
+import com.cheftory.api.ranking.candidate.RankingCandidateException;
+import com.cheftory.api.ranking.candidate.RankingCandidatePage;
 import com.cheftory.api.ranking.candidate.RankingCandidateSearchPort;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
 import com.cheftory.api.search.exception.SearchException;
-import com.cheftory.api.search.query.SearchPage;
 import com.cheftory.api.search.query.SearchQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,11 +28,15 @@ public class RankingCandidateSearchAdapter implements RankingCandidateSearchPort
      * PIT를 엽니다.
      *
      * @return PIT ID
-     * @throws SearchException 검색 예외
+     * @throws RankingCandidateException 처리 예외
      */
     @Override
-    public String openPit() throws SearchException {
-        return searchQueryService.openPitForCandidates();
+    public String openPit() throws RankingCandidateException {
+        try {
+            return searchQueryService.openPitForCandidates();
+        } catch (SearchException exception) {
+            throw new RankingCandidateException(RankingCandidateErrorCode.RANKING_CANDIDATE_OPEN_FAILED, exception);
+        }
     }
 
     /**
@@ -43,18 +49,24 @@ public class RankingCandidateSearchAdapter implements RankingCandidateSearchPort
      * @param pitId PIT ID
      * @param cursor 커서
      * @return 검색 페이지
-     * @throws SearchException 검색 예외
+     * @throws RankingCandidateException 처리 예외
      */
     @Override
-    public SearchPage searchWithPit(
+    public RankingCandidatePage searchWithPit(
             RankingSurfaceType surfaceType,
             RankingItemType itemType,
             int size,
             PersonalizationProfile profile,
             String pitId,
             String cursor)
-            throws SearchException {
-        return searchQueryService.searchCandidatesWithPit(surfaceType, itemType, size, profile, pitId, cursor);
+            throws RankingCandidateException {
+        try {
+            var page = searchQueryService.searchCandidatesWithPit(surfaceType, itemType, size, profile, pitId, cursor);
+            return new RankingCandidatePage(page.items(), page.nextCursor());
+
+        } catch (SearchException exception) {
+            throw new RankingCandidateException(RankingCandidateErrorCode.RANKING_CANDIDATE_SEARCH_FAILED, exception);
+        }
     }
 
     /**

@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * 토큰 재발급 응답 모델
+ *
+ * @param accessToken 액세스 토큰
+ * @param refreshToken 리프레시 토큰
  */
 public record TokenReissueResponse(
         @JsonProperty("access_token") String accessToken, @JsonProperty("refresh_token") String refreshToken) {

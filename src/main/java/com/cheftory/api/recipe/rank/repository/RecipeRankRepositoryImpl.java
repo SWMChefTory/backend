@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.rank.repository;
 
+import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api._common.cursor.CursorPages;
 import com.cheftory.api._common.cursor.RankCursor;
@@ -85,7 +86,7 @@ public class RecipeRankRepositoryImpl implements RecipeRankRepository {
     }
 
     @Override
-    public CursorPage<UUID> getRecipeIds(RankingType type, String cursor) {
+    public CursorPage<UUID> getRecipeIds(RankingType type, String cursor) throws CursorException {
         RankCursor rankCursor = cursorCodec.decode(cursor);
 
         List<UUID> rows =

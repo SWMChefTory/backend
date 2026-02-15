@@ -30,7 +30,7 @@ public class RecipeBookmarkRepositoryImpl implements RecipeBookmarkRepository {
             repository.save(recipeBookmark);
             return true;
         } catch (DataIntegrityViolationException e) {
-            throw new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_ALREADY_EXISTS);
+            throw new RecipeBookmarkException(RecipeBookmarkErrorCode.RECIPE_BOOKMARK_ALREADY_EXISTS, e);
         }
     }
 

@@ -5,19 +5,21 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ViewedAtCursorCodec implements CursorCodec<ViewedAtCursor> {
+public class ViewedAtCursorCodec extends AbstractCursorCodecSupport implements CursorCodec<ViewedAtCursor> {
 
     private static final String SEP = "|";
 
     public ViewedAtCursor decode(String cursor) throws CursorException {
         try {
-            int idx = cursor.lastIndexOf(SEP);
+            requireNonBlank(cursor);
+            int separatorIndex = cursor.lastIndexOf(SEP);
+            requireSeparatorInMiddle(separatorIndex, cursor.length());
 
-            LocalDateTime t = LocalDateTime.parse(cursor.substring(0, idx));
-            UUID id = UUID.fromString(cursor.substring(idx + 1));
-            return new ViewedAtCursor(t, id);
+            LocalDateTime lastViewedAt = LocalDateTime.parse(cursor.substring(0, separatorIndex));
+            UUID id = UUID.fromString(cursor.substring(separatorIndex + 1));
+            return new ViewedAtCursor(lastViewedAt, id);
         } catch (Exception e) {
-            throw new CursorException(CursorErrorCode.INVALID_CURSOR);
+            throw invalidCursor(e);
         }
     }
 

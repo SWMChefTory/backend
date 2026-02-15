@@ -110,9 +110,9 @@ public class TokenProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            throw new AuthException(AuthErrorCode.EXPIRED_TOKEN);
+            throw new AuthException(AuthErrorCode.EXPIRED_TOKEN, e);
         } catch (Exception e) {
-            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN, e);
         }
     }
 }

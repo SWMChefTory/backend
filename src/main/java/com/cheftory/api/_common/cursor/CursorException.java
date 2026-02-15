@@ -14,4 +14,8 @@ public class CursorException extends CheftoryException {
     public CursorException(CursorErrorCode errorCode) {
         super(errorCode);
     }
+
+    public CursorException(CursorErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

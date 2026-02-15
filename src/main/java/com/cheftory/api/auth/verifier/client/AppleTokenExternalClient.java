@@ -49,10 +49,10 @@ public class AppleTokenExternalClient implements AppleTokenClient {
 
         } catch (WebClientException e) {
             log.error("[AppleTokenExternalClient] JWKS 조회 중 WebClient 오류 발생", e);
-            throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
+            throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND, e);
         } catch (Exception e) {
             log.error("[AppleTokenExternalClient] JWKS 조회 중 알 수 없는 오류 발생", e);
-            throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
+            throw new VerificationException(VerificationErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND, e);
         }
     }
 }

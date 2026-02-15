@@ -8,8 +8,6 @@ import static org.mockito.Mockito.*;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
 import com.cheftory.api.ranking.personalization.PersonalizationProfile;
-import com.cheftory.api.search.exception.SearchException;
-import com.cheftory.api.search.query.SearchPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -37,7 +35,7 @@ class RankingCandidateServiceTest {
             String pitId;
 
             @BeforeEach
-            void setUp() throws SearchException {
+            void setUp() throws Exception {
                 pitId = "test-pit-id";
                 doReturn(pitId).when(candidateSearchPort).openPit();
             }
@@ -48,13 +46,13 @@ class RankingCandidateServiceTest {
                 String result;
 
                 @BeforeEach
-                void setUp() throws SearchException {
+                void setUp() throws Exception {
                     result = service.openPit();
                 }
 
                 @Test
                 @DisplayName("Then - PIT ID를 반환한다")
-                void thenReturnsPitId() throws SearchException {
+                void thenReturnsPitId() throws Exception {
                     assertThat(result).isEqualTo(pitId);
                     verify(candidateSearchPort).openPit();
                 }
@@ -62,13 +60,13 @@ class RankingCandidateServiceTest {
         }
 
         @Nested
-        @DisplayName("Given - 검색 예외 발생 시")
-        class GivenSearchException {
-            SearchException exception;
+        @DisplayName("Given - 후보 예외 발생 시")
+        class GivenCandidateException {
+            RankingCandidateException exception;
 
             @BeforeEach
-            void setUp() throws SearchException {
-                exception = mock(SearchException.class);
+            void setUp() throws Exception {
+                exception = new RankingCandidateException(RankingCandidateErrorCode.RANKING_CANDIDATE_OPEN_FAILED);
                 doThrow(exception).when(candidateSearchPort).openPit();
             }
 
@@ -79,7 +77,8 @@ class RankingCandidateServiceTest {
                 @Test
                 @DisplayName("Then - 예외를 전파한다")
                 void thenPropagatesException() {
-                    SearchException thrown = assertThrows(SearchException.class, () -> service.openPit());
+                    RankingCandidateException thrown =
+                            assertThrows(RankingCandidateException.class, () -> service.openPit());
                     assertSame(exception, thrown);
                 }
             }
@@ -99,17 +98,17 @@ class RankingCandidateServiceTest {
             PersonalizationProfile profile;
             String pitId;
             String searchAfter;
-            SearchPage searchPage;
+            RankingCandidatePage searchPage;
 
             @BeforeEach
-            void setUp() throws SearchException {
+            void setUp() throws Exception {
                 surfaceType = RankingSurfaceType.CUISINE_BABY;
                 itemType = RankingItemType.RECIPE;
                 pageSize = 10;
                 profile = mock(PersonalizationProfile.class);
                 pitId = "test-pit-id";
                 searchAfter = null;
-                searchPage = mock(SearchPage.class);
+                searchPage = mock(RankingCandidatePage.class);
                 doReturn(searchPage)
                         .when(candidateSearchPort)
                         .searchWithPit(surfaceType, itemType, pageSize, profile, pitId, searchAfter);
@@ -118,16 +117,16 @@ class RankingCandidateServiceTest {
             @Nested
             @DisplayName("When - 검색을 요청하면")
             class WhenSearching {
-                SearchPage result;
+                RankingCandidatePage result;
 
                 @BeforeEach
-                void setUp() throws SearchException {
+                void setUp() throws Exception {
                     result = service.searchWithPit(surfaceType, itemType, pageSize, profile, pitId, searchAfter);
                 }
 
                 @Test
                 @DisplayName("Then - 검색 결과를 반환한다")
-                void thenReturnsSearchPage() throws SearchException {
+                void thenReturnsSearchPage() throws Exception {
                     assertThat(result).isEqualTo(searchPage);
                     verify(candidateSearchPort)
                             .searchWithPit(surfaceType, itemType, pageSize, profile, pitId, searchAfter);
@@ -136,25 +135,25 @@ class RankingCandidateServiceTest {
         }
 
         @Nested
-        @DisplayName("Given - 검색 예외 발생 시")
-        class GivenSearchException {
+        @DisplayName("Given - 후보 예외 발생 시")
+        class GivenCandidateException {
             RankingSurfaceType surfaceType;
             RankingItemType itemType;
             int pageSize;
             PersonalizationProfile profile;
             String pitId;
             String searchAfter;
-            SearchException exception;
+            RankingCandidateException exception;
 
             @BeforeEach
-            void setUp() throws SearchException {
+            void setUp() throws Exception {
                 surfaceType = RankingSurfaceType.CUISINE_BABY;
                 itemType = RankingItemType.RECIPE;
                 pageSize = 10;
                 profile = mock(PersonalizationProfile.class);
                 pitId = "test-pit-id";
                 searchAfter = null;
-                exception = mock(SearchException.class);
+                exception = new RankingCandidateException(RankingCandidateErrorCode.RANKING_CANDIDATE_SEARCH_FAILED);
                 doThrow(exception)
                         .when(candidateSearchPort)
                         .searchWithPit(surfaceType, itemType, pageSize, profile, pitId, searchAfter);
@@ -167,8 +166,8 @@ class RankingCandidateServiceTest {
                 @Test
                 @DisplayName("Then - 예외를 전파한다")
                 void thenPropagatesException() {
-                    SearchException thrown = assertThrows(
-                            SearchException.class,
+                    RankingCandidateException thrown = assertThrows(
+                            RankingCandidateException.class,
                             () -> service.searchWithPit(surfaceType, itemType, pageSize, profile, pitId, searchAfter));
                     assertSame(exception, thrown);
                 }

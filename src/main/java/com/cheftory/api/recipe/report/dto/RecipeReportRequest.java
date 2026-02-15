@@ -7,6 +7,9 @@ import jakarta.validation.constraints.Size;
 
 /**
  * 레시피 신고 요청 DTO
+ *
+ * @param reason 신고 사유
+ * @param description 상세 설명
  */
 public record RecipeReportRequest(
         @JsonProperty("reason") @NotNull RecipeReportReason reason,

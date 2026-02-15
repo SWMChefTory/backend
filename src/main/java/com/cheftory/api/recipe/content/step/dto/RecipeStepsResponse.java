@@ -7,6 +7,8 @@ import java.util.UUID;
 
 /**
  * 레시피 단계 목록 응답 DTO
+ *
+ * @param steps 레시피 단계 목록
  */
 public record RecipeStepsResponse(@JsonProperty("steps") List<RecipeStepResponse> steps) {
 
@@ -24,6 +26,12 @@ public record RecipeStepsResponse(@JsonProperty("steps") List<RecipeStepResponse
 
     /**
      * 개별 레시피 단계 응답 레코드
+     *
+     * @param id 단계 ID
+     * @param stepOrder 단계 순서
+     * @param subtitle 부제목
+     * @param details 상세 내용 목록
+     * @param start 시작 시간
      */
     public record RecipeStepResponse(
             @JsonProperty("id") UUID id,
@@ -34,6 +42,9 @@ public record RecipeStepsResponse(@JsonProperty("steps") List<RecipeStepResponse
 
         /**
          * 단계 상세 내용 응답 레코드
+         *
+         * @param text 텍스트
+         * @param start 시작 시간
          */
         public record RecipeStepDetailResponse(@JsonProperty("text") String text, @JsonProperty("start") Double start) {
 

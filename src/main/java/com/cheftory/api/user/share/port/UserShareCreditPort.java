@@ -1,6 +1,6 @@
 package com.cheftory.api.user.share.port;
 
-import com.cheftory.api.credit.exception.CreditException;
+import com.cheftory.api.user.share.exception.UserShareCreditException;
 import java.util.UUID;
 
 /**
@@ -14,5 +14,5 @@ public interface UserShareCreditPort {
      * @param userId 크레딧을 지급할 유저 ID
      * @param count 지급할 크레딧 수량
      */
-    void grantUserShare(UUID userId, int count) throws CreditException;
+    void grantUserShare(UUID userId, int count) throws UserShareCreditException;
 }

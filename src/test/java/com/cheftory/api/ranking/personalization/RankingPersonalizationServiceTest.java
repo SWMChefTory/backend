@@ -7,8 +7,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.cheftory.api.search.exception.SearchException;
-import com.cheftory.api.search.query.entity.SearchQuery;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -19,47 +17,34 @@ class RankingPersonalizationServiceTest {
 
     @Test
     @DisplayName("aggregateProfile aggregates keywords and channels")
-    void aggregateProfileAggregatesKeywordsAndChannels() throws SearchException {
+    void aggregateProfileAggregatesKeywordsAndChannels() throws Exception {
         RankingPersonalizationSearchPort searchPort = mock(RankingPersonalizationSearchPort.class);
         RankingPersonalizationService service = new RankingPersonalizationService(searchPort);
 
-        SearchQuery query1 = SearchQuery.builder()
-                .id("id-1")
-                .keywords(List.of("kimchi", "soup"))
-                .channelTitle("channel-a")
-                .build();
-        SearchQuery query2 = SearchQuery.builder()
-                .id("id-2")
-                .keywords(List.of("kimchi", "noodle"))
-                .channelTitle("channel-b")
-                .build();
-        SearchQuery query3 = SearchQuery.builder()
-                .id("id-3")
-                .keywords(List.of("noodle"))
-                .channelTitle("channel-a")
-                .build();
+        RankingPersonalizationSeed query1 = new RankingPersonalizationSeed(List.of("kimchi", "soup"), "channel-a");
+        RankingPersonalizationSeed query2 = new RankingPersonalizationSeed(List.of("kimchi", "noodle"), "channel-b");
+        RankingPersonalizationSeed query3 = new RankingPersonalizationSeed(List.of("noodle"), "channel-a");
 
         List<UUID> seedIds = List.of(UUID.randomUUID(), UUID.randomUUID());
         List<String> expectedIds =
                 List.of(seedIds.get(0).toString(), seedIds.get(1).toString());
-        doReturn(List.of(query1, query2, query3)).when(searchPort).mgetSearchQueries(expectedIds);
+        doReturn(List.of(query1, query2, query3)).when(searchPort).mgetSeeds(expectedIds);
 
         PersonalizationProfile result = service.aggregateProfile(seedIds);
 
         assertThat(result.keywordsTop()).containsExactly("kimchi", "noodle", "soup");
         assertThat(result.channelsTop()).containsExactly("channel-a", "channel-b");
-        verify(searchPort).mgetSearchQueries(expectedIds);
+        verify(searchPort).mgetSeeds(expectedIds);
     }
 
     @Test
     @DisplayName("aggregateProfile throws when keywords are null")
-    void aggregateProfileThrowsWhenKeywordsNull() throws SearchException {
+    void aggregateProfileThrowsWhenKeywordsNull() throws Exception {
         RankingPersonalizationSearchPort searchPort = mock(RankingPersonalizationSearchPort.class);
         RankingPersonalizationService service = new RankingPersonalizationService(searchPort);
 
-        SearchQuery query =
-                SearchQuery.builder().id("id-1").channelTitle("channel-a").build();
-        doReturn(List.of(query)).when(searchPort).mgetSearchQueries(anyList());
+        RankingPersonalizationSeed query = new RankingPersonalizationSeed(null, "channel-a");
+        doReturn(List.of(query)).when(searchPort).mgetSeeds(anyList());
 
         assertThatThrownBy(() ->
                         service.aggregateProfile(List.of(UUID.fromString("00000000-0000-0000-0000-000000000001"))))
@@ -69,13 +54,12 @@ class RankingPersonalizationServiceTest {
 
     @Test
     @DisplayName("aggregateProfile throws when channelTitle is null")
-    void aggregateProfileThrowsWhenChannelTitleNull() throws SearchException {
+    void aggregateProfileThrowsWhenChannelTitleNull() throws Exception {
         RankingPersonalizationSearchPort searchPort = mock(RankingPersonalizationSearchPort.class);
         RankingPersonalizationService service = new RankingPersonalizationService(searchPort);
 
-        SearchQuery query =
-                SearchQuery.builder().id("id-1").keywords(List.of("kimchi")).build();
-        doReturn(List.of(query)).when(searchPort).mgetSearchQueries(anyList());
+        RankingPersonalizationSeed query = new RankingPersonalizationSeed(List.of("kimchi"), null);
+        doReturn(List.of(query)).when(searchPort).mgetSeeds(anyList());
 
         assertThatThrownBy(() ->
                         service.aggregateProfile(List.of(UUID.fromString("00000000-0000-0000-0000-000000000001"))))

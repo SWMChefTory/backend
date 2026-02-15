@@ -48,7 +48,7 @@ public class AuthService {
                 default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
             };
         } catch (VerificationException e) {
-            throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN, e);
         }
     }
 
@@ -99,6 +99,7 @@ public class AuthService {
      *
      * @param userId 유저 ID
      * @param refreshToken 저장할 리프레시 토큰
+     * @throws AuthException 토큰 만료 시간 조회 실패 시
      */
     public void saveLoginSession(UUID userId, String refreshToken) throws AuthException {
         LocalDateTime refreshTokenExpiredAt = jwtProvider.getExpiration(refreshToken);

@@ -1,7 +1,7 @@
 package com.cheftory.api.recipe.search;
 
 import com.cheftory.api._common.security.UserPrincipal;
-import com.cheftory.api.search.exception.SearchException;
+import com.cheftory.api.recipe.search.exception.RecipeSearchException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,14 +28,14 @@ public class RecipeSearchController {
      * @param cursor 커서
      * @param userId 사용자 ID
      * @return 검색된 레시피 목록 응답
-     * @throws SearchException 검색 실패 시
+     * @throws RecipeSearchException 검색 실패 시
      */
     @GetMapping("/api/v1/recipes/search")
     public SearchedRecipesResponse searchRecipes(
             @RequestParam("query") String query,
             @RequestParam(required = false) String cursor,
             @UserPrincipal UUID userId)
-            throws SearchException {
+            throws RecipeSearchException {
         return SearchedRecipesResponse.from(recipeSearchFacade.searchRecipes(query, userId, cursor));
     }
 }

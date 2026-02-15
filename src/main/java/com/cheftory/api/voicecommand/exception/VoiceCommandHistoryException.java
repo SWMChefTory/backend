@@ -9,4 +9,8 @@ public class VoiceCommandHistoryException extends CheftoryException {
     public VoiceCommandHistoryException(VoiceCommandErrorCode errorCode) {
         super(errorCode);
     }
+
+    public VoiceCommandHistoryException(VoiceCommandErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

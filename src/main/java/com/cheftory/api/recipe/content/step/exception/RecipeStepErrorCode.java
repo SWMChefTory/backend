@@ -1,6 +1,7 @@
 package com.cheftory.api.recipe.content.step.exception;
 
 import com.cheftory.api.exception.Error;
+import com.cheftory.api.exception.ErrorType;
 
 /**
  * 레시피 단계 도메인 에러 코드 열거형
@@ -11,10 +12,11 @@ public enum RecipeStepErrorCode implements Error {
     /**
      * 레시피 단계 생성 실패
      */
-    RECIPE_STEP_CREATE_FAIL("RECIPE_STEP_001", "레시피 단계 생성에 실패 했습니다."),
+    RECIPE_STEP_CREATE_FAIL("RECIPE_STEP_001", "레시피 단계 생성에 실패 했습니다.", ErrorType.INTERNAL),
     ;
     private final String errorCode;
     private final String message;
+    private final ErrorType type;
 
     /**
      * RecipeStepErrorCode 생성자
@@ -22,9 +24,10 @@ public enum RecipeStepErrorCode implements Error {
      * @param errorCode 에러 코드
      * @param message 에러 메시지
      */
-    RecipeStepErrorCode(String errorCode, String message) {
+    RecipeStepErrorCode(String errorCode, String message, ErrorType type) {
         this.errorCode = errorCode;
         this.message = message;
+        this.type = type;
     }
 
     @Override
@@ -35,5 +38,10 @@ public enum RecipeStepErrorCode implements Error {
     @Override
     public String getMessage() {
         return message;
+    }
+
+    @Override
+    public ErrorType getType() {
+        return type;
     }
 }
