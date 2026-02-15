@@ -37,7 +37,7 @@ public class RankingPersonalizationSearchAdapter implements RankingPersonalizati
                     .toList();
         } catch (SearchException exception) {
             throw new RankingPersonalizationException(
-                    RankingPersonalizationErrorCode.RANKING_PERSONALIZATION_SEARCH_FAILED);
+                    RankingPersonalizationErrorCode.RANKING_PERSONALIZATION_SEARCH_FAILED, exception);
         }
     }
 }

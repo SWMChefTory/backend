@@ -15,4 +15,8 @@ public class RecipeBookmarkException extends RecipeException {
     public RecipeBookmarkException(RecipeBookmarkErrorCode errorCode) {
         super(errorCode);
     }
+
+    public RecipeBookmarkException(RecipeBookmarkErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

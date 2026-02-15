@@ -33,7 +33,7 @@ public enum RecipeInfoRecommendType {
         try {
             return RecipeInfoRecommendType.valueOf(type.toUpperCase());
         } catch (Exception e) {
-            throw new RecipeException(RecipeErrorCode.INVALID_RECOMMEND_TYPE);
+            throw new RecipeException(RecipeErrorCode.INVALID_RECOMMEND_TYPE, e);
         }
     }
 }

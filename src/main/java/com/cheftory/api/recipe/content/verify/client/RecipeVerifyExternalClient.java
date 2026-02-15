@@ -56,7 +56,7 @@ public class RecipeVerifyExternalClient implements RecipeVerifyClient {
                 throw e;
             }
             log.error("영상 검증 중 예상치 못한 오류 발생 - videoId: {}", videoId, e);
-            throw new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR);
+            throw new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR, e);
         }
     }
 

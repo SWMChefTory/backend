@@ -7,4 +7,8 @@ public class UserShareCreditException extends CreditException {
     public UserShareCreditException(Error error) {
         super(error);
     }
+
+    public UserShareCreditException(Error error, Throwable cause) {
+        super(error, cause);
+    }
 }

@@ -33,7 +33,7 @@ public class RecipeDetailClient {
                     .block();
         } catch (Exception e) {
             log.warn(e.getMessage());
-            throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
+            throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL, e);
         }
     }
 }

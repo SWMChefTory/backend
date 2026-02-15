@@ -10,6 +10,7 @@ import com.cheftory.api.auth.exception.AuthException;
 import com.cheftory.api.auth.util.BearerAuthorizationUtils;
 import com.cheftory.api.credit.exception.CreditException;
 import com.cheftory.api.user.exception.UserException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,7 +54,7 @@ public class AccountController {
      * @throws CreditException 크레딧 지급 실패 시
      */
     @PostMapping("/signup/oauth")
-    public LoginResponse signupWithOAuth(@RequestBody SignupRequest request)
+    public LoginResponse signupWithOAuth(@RequestBody @Valid SignupRequest request)
             throws AuthException, UserException, CreditException {
         Account account = facade.signup(
                 request.idToken(),

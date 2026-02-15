@@ -3,15 +3,23 @@ package com.cheftory.api._common.cursor;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RankCursorCodec implements CursorCodec<RankCursor> {
+public class RankCursorCodec extends AbstractCursorCodecSupport implements CursorCodec<RankCursor> {
     private static final String SEP = "|";
 
-    public RankCursor decode(String cursor) {
-        int idx = cursor.lastIndexOf(SEP);
+    @Override
+    public RankCursor decode(String cursor) throws CursorException {
+        try {
+            requireNonBlank(cursor);
 
-        String key = cursor.substring(0, idx);
-        int lastRank = Integer.parseInt(cursor.substring(idx + 1));
-        return new RankCursor(key, lastRank);
+            int separatorIndex = cursor.lastIndexOf(SEP);
+            requireSeparatorInMiddle(separatorIndex, cursor.length());
+
+            String key = cursor.substring(0, separatorIndex);
+            int lastRank = Integer.parseInt(cursor.substring(separatorIndex + 1));
+            return new RankCursor(key, lastRank);
+        } catch (Exception exception) {
+            throw invalidCursor(exception);
+        }
     }
 
     @Override

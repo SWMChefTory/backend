@@ -119,10 +119,10 @@ public class RecipeFacade {
         } catch (CheftoryException e) {
             if (e.getError() == RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND
                     || e.getError() == RecipeDetailMetaErrorCode.DETAIL_META_NOT_FOUND) {
-                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND);
+                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND, e);
             }
             if (e.getError() == RecipeInfoErrorCode.RECIPE_FAILED) {
-                throw new RecipeException(RecipeErrorCode.RECIPE_FAILED);
+                throw new RecipeException(RecipeErrorCode.RECIPE_FAILED, e);
             }
             throw e;
         }
@@ -347,7 +347,7 @@ public class RecipeFacade {
         } catch (RecipeException e) {
             if (e.getError() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO) {
                 log.warn("차단되지 않은 영상에 대해 레시피 차단 시도 recipeId={}", recipeId);
-                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
+                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO, e);
             }
             throw e;
         }

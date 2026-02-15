@@ -23,7 +23,7 @@ public class RecipeIdentifyRepositoryImpl implements RecipeIdentifyRepository {
         try {
             return repository.save(recipeIdentify);
         } catch (DataIntegrityViolationException e) {
-            throw new RecipeIdentifyException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING);
+            throw new RecipeIdentifyException(RecipeIdentifyErrorCode.RECIPE_IDENTIFY_PROGRESSING, e);
         }
     }
 

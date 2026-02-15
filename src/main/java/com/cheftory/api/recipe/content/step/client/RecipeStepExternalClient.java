@@ -39,7 +39,7 @@ public class RecipeStepExternalClient implements RecipeStepClient {
                     .block();
         } catch (Exception e) {
             log.warn("레시피 생성중 오류 발생", e);
-            throw new RecipeStepException(RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
+            throw new RecipeStepException(RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL, e);
         }
     }
 }

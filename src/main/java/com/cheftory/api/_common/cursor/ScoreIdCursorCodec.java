@@ -6,21 +6,31 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ScoreIdCursorCodec implements CursorCodec<ScoreIdCursor> {
+public class ScoreIdCursorCodec extends AbstractCursorCodecSupport implements CursorCodec<ScoreIdCursor> {
     private static final String SEP = "|";
     private final Clock clock;
 
-    public ScoreIdCursor decode(String cursor) {
-        int a = cursor.indexOf(SEP);
-        int b = cursor.indexOf(SEP, a + 1);
-        int c = cursor.lastIndexOf(SEP);
+    @Override
+    public ScoreIdCursor decode(String cursor) throws CursorException {
+        try {
+            requireNonBlank(cursor);
 
-        double score = Double.parseDouble(cursor.substring(0, a));
-        String id = cursor.substring(a + 1, b);
-        String anchorNowIso = cursor.substring(b + 1, c);
-        String pitId = cursor.substring(c + 1);
+            int firstSeparator = cursor.indexOf(SEP);
+            int secondSeparator = cursor.indexOf(SEP, firstSeparator + 1);
+            int lastSeparator = cursor.lastIndexOf(SEP);
+            requireSeparatorInMiddle(firstSeparator, cursor.length());
+            requireSeparatorInMiddle(lastSeparator, cursor.length());
+            if (secondSeparator <= firstSeparator + 1 || lastSeparator <= secondSeparator + 1) throw invalidCursor();
 
-        return new ScoreIdCursor(score, id, anchorNowIso, pitId);
+            double score = Double.parseDouble(cursor.substring(0, firstSeparator));
+            String id = cursor.substring(firstSeparator + 1, secondSeparator);
+            String anchorNowIso = cursor.substring(secondSeparator + 1, lastSeparator);
+            String pitId = cursor.substring(lastSeparator + 1);
+
+            return new ScoreIdCursor(score, id, anchorNowIso, pitId);
+        } catch (Exception exception) {
+            throw invalidCursor(exception);
+        }
     }
 
     @Override

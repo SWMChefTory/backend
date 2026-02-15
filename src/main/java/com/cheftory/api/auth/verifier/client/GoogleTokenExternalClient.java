@@ -57,10 +57,10 @@ public class GoogleTokenExternalClient implements GoogleTokenClient {
 
         } catch (WebClientException e) {
             log.error("[GoogleTokenExternalClient] Token Info 조회 중 WebClient 오류 발생", e);
-            throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
+            throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK, e);
         } catch (Exception e) {
             log.error("[GoogleTokenExternalClient] Token Info 조회 중 알 수 없는 오류 발생", e);
-            throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
+            throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK, e);
         }
     }
 }

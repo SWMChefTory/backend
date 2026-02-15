@@ -30,7 +30,7 @@ public class RecipeCreditAdapter implements RecipeCreditPort {
         try {
             creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
         } catch (CreditException exception) {
-            throw new RecipeCreditException(exception.getError());
+            throw new RecipeCreditException(exception.getError(), exception);
         }
     }
 
@@ -47,7 +47,7 @@ public class RecipeCreditAdapter implements RecipeCreditPort {
         try {
             creditService.grant(Credit.recipeCreateRefund(userId, recipeId, creditCost));
         } catch (CreditException exception) {
-            throw new RecipeCreditException(exception.getError());
+            throw new RecipeCreditException(exception.getError(), exception);
         }
     }
 }
