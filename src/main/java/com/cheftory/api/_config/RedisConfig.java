@@ -1,10 +1,5 @@
 package com.cheftory.api._config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -14,9 +9,11 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 @Configuration
 @EnableRedisRepositories(basePackages = "com.cheftory.api")
@@ -24,22 +21,22 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Bean
-    public GenericJackson2JsonRedisSerializer redisValueSerializer() {
-        ObjectMapper om = new ObjectMapper();
-        om.registerModule(new JavaTimeModule());
-        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        om.activateDefaultTyping(
-                BasicPolymorphicTypeValidator.builder()
-                        .allowIfBaseType(Object.class)
-                        .build(),
-                ObjectMapper.DefaultTyping.NON_FINAL,
-                JsonTypeInfo.As.PROPERTY);
-        return new GenericJackson2JsonRedisSerializer(om);
+    public GenericJacksonJsonRedisSerializer redisValueSerializer() {
+        var ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfSubType("com.cheftory.api.")
+                .allowIfSubType("java.util.")
+                .allowIfSubType("java.time.")
+                .build();
+
+        return GenericJacksonJsonRedisSerializer.builder()
+                .customize(b -> b.disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS))
+                .enableDefaultTyping(ptv)
+                .build();
     }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(
-            RedisConnectionFactory connectionFactory, GenericJackson2JsonRedisSerializer serializer) {
+            RedisConnectionFactory connectionFactory, GenericJacksonJsonRedisSerializer serializer) {
         RedisTemplate<String, Object> t = new RedisTemplate<>();
         t.setConnectionFactory(connectionFactory);
         t.setKeySerializer(new StringRedisSerializer());
@@ -51,7 +48,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisCacheConfiguration cacheConfiguration(GenericJackson2JsonRedisSerializer serializer) {
+    public RedisCacheConfiguration cacheConfiguration(GenericJacksonJsonRedisSerializer serializer) {
         return RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))

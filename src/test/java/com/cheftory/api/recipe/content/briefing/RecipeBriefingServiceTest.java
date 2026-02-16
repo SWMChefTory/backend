@@ -225,8 +225,7 @@ public class RecipeBriefingServiceTest {
             void setUp() throws Exception {
                 recipeId = UUID.randomUUID();
                 mockClock = mock(Clock.class);
-                String jsonResponse =
-                        """
+                String jsonResponse = """
                         {
                             "briefings": [
                                 "이 요리는 매우 맛있습니다",
@@ -273,8 +272,7 @@ public class RecipeBriefingServiceTest {
             void setUp() throws Exception {
                 recipeId = UUID.randomUUID();
                 mockClock = mock(Clock.class);
-                String jsonResponse =
-                        """
+                String jsonResponse = """
                         {
                             "briefings": []
                         }

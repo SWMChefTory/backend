@@ -1,8 +1,8 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.3'
+	id 'org.springframework.boot' version '4.0.2'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.asciidoctor.jvm.convert' version '4.0.4'
+	id 'org.asciidoctor.jvm.convert' version '4.0.5'
 	id 'jacoco'
 	id "io.sentry.jvm.gradle" version "5.9.0"
 	id 'com.diffplug.spotless' version '6.25.0'
@@ -11,7 +11,7 @@ plugins {
 spotless {
 	java {
 		target '**/*.java'
-		palantirJavaFormat('2.50.0')
+		palantirJavaFormat('2.87.0')
 		removeUnusedImports()
 		trimTrailingWhitespace()
 		endWithNewline()
@@ -29,7 +29,7 @@ java {
 }
 
 jacoco {
-	toolVersion = "0.8.13"
+	toolVersion = "0.8.14"
 }
 
 configurations {
@@ -41,7 +41,7 @@ configurations {
 
 repositories {
 	mavenCentral()
-	maven { url 'https://jitpack.io' }
+	maven { url = 'https://jitpack.io' }
 }
 
 def isProd = System.getenv('SPRING_PROFILES_ACTIVE') == 'prod'
@@ -59,11 +59,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-aop'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
-	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+	implementation 'org.springframework.boot:spring-boot-starter-aspectj'
+	implementation "org.springframework.boot:spring-boot-starter-validation"
+	implementation 'me.paulschwarz:spring-dotenv:5.1.0'
+	implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2'
 	implementation "org.openapitools:jackson-databind-nullable:0.2.6"
 
 	implementation(platform("io.sentry:sentry-bom:8.20.0"))
@@ -82,6 +81,7 @@ dependencies {
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -92,20 +92,23 @@ dependencies {
 	testRuntimeOnly 'com.h2database:h2'
 
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-	testImplementation 'io.rest-assured:spring-mock-mvc'
-	testImplementation("com.squareup.okhttp3:mockwebserver3-junit5:5.3.0") {
+	testImplementation "io.rest-assured:spring-mock-mvc:6.0.0"
+	testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-data-redis-test"
+	testImplementation("com.squareup.okhttp3:mockwebserver3-junit5:5.3.2") {
 		exclude group: "junit", module: "junit"
 		exclude group: "org.hamcrest", module: "hamcrest"
 	}
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 	
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	runtimeOnly  'io.micrometer:micrometer-registry-prometheus'
 
-	implementation("org.opensearch.client:spring-data-opensearch-starter:2.0.2") {
+	implementation("org.opensearch.client:spring-data-opensearch-starter:3.0.2") {
 		exclude group: "org.opensearch.client", module: "opensearch-rest-high-level-client"
 	}
-	implementation("org.opensearch.client:opensearch-java:3.1.0")
+	implementation("org.opensearch.client:opensearch-java:3.6.0")
 
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
 	testImplementation 'org.springframework.batch:spring-batch-test'

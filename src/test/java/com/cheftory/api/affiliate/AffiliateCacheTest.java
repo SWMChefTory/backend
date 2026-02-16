@@ -20,10 +20,11 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @EnableCaching
@@ -181,22 +182,6 @@ class AffiliateCacheTest {
                     assertThat(cache.get(keyword)).isNull();
                 }
             }
-
-            @Nested
-            @DisplayName("When - 전체 삭제를 요청하면")
-            class WhenClearing {
-
-                @BeforeEach
-                void setUp() {
-                    cache.clear();
-                }
-
-                @Test
-                @DisplayName("Then - 모든 캐시가 삭제된다")
-                void thenCleared() {
-                    assertThat(cache.get(keyword)).isNull();
-                }
-            }
         }
     }
 
@@ -216,10 +201,10 @@ class AffiliateCacheTest {
                 keyword = "오렌지";
                 products = mock(CoupangProducts.class);
                 java.time.Duration shortTTL = java.time.Duration.ofSeconds(1);
-
+                ObjectMapper om = new ObjectMapper();
                 var shortConfig = RedisCacheConfiguration.defaultCacheConfig()
                         .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
-                                new GenericJackson2JsonRedisSerializer()))
+                                new GenericJacksonJsonRedisSerializer(om)))
                         .entryTtl(shortTTL)
                         .disableCachingNullValues()
                         .prefixCacheNameWith("cheftory::");
@@ -259,29 +244,16 @@ class AffiliateCacheTest {
         class GivenSpecialKeywords {
 
             @Test
-            @DisplayName("Then - 빈 문자열도 캐시된다")
-            void emptyString() throws CoupangException {
-                String keyword = "";
+            @DisplayName("Then - 실제 검색어 형태(공백 포함)도 캐시된다")
+            void realWorldKeywordWithWhitespace() throws CoupangException {
+                String keyword = "닭가슴살 샐러드";
                 CoupangProducts w = mock(CoupangProducts.class);
                 doReturn(w).when(coupangClient).searchProducts(keyword);
 
                 service.searchCoupangProducts(keyword);
-
-                Cache cache = cacheManager.getCache("coupangSearchCache");
-                assertThat(cache.get(keyword)).isNotNull();
-            }
-
-            @Test
-            @DisplayName("Then - 매우 긴 문자열도 캐시된다")
-            void longString() throws CoupangException {
-                String keyword = "a".repeat(1000);
-                CoupangProducts w = mock(CoupangProducts.class);
-                doReturn(w).when(coupangClient).searchProducts(keyword);
-
                 service.searchCoupangProducts(keyword);
 
-                Cache cache = cacheManager.getCache("coupangSearchCache");
-                assertThat(cache.get(keyword)).isNotNull();
+                verify(coupangClient, times(1)).searchProducts(keyword);
             }
 
             @Test

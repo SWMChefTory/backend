@@ -10,7 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param recipeId 레시피 ID
  */
 @PocOnly(until = "2025-12-31")
-public record RecipeCompleteChallengeResponse(@JsonProperty("recipe_id") String recipeId) {
+public record RecipeCompleteChallengeResponse(
+        @JsonProperty("recipe_id") String recipeId) {
 
     /**
      * RecipeCompleteChallenge 엔티티로부터 응답 DTO 생성

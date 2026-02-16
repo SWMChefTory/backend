@@ -13,7 +13,8 @@ import java.util.stream.IntStream;
  *
  * @param steps 단계 목록
  */
-public record ClientRecipeStepsResponse(@JsonProperty("steps") @NotNull List<Step> steps) {
+public record ClientRecipeStepsResponse(
+        @JsonProperty("steps") @NotNull List<Step> steps) {
 
     /**
      * 개별 단계 정보 레코드
@@ -31,7 +32,8 @@ public record ClientRecipeStepsResponse(@JsonProperty("steps") @NotNull List<Ste
          * 단계 상세 설명 레코드
          */
         private record Description(
-                @JsonProperty("text") @NotNull String text, @JsonProperty("start") @NotNull Double start) {
+                @JsonProperty("text") @NotNull String text,
+                @JsonProperty("start") @NotNull Double start) {
 
             /**
              * 엔티티의 Detail 객체로 변환

@@ -20,8 +20,7 @@ public interface ChallengeRepository extends JpaRepository<Challenge, UUID> {
      * @param now 현재 시간
      * @return 진행 중인 챌린지 목록
      */
-    @Query(
-            """
+    @Query("""
       select c
       from Challenge c
       where c.startAt <= :now

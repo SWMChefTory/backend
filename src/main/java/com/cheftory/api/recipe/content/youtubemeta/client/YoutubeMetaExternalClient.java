@@ -7,11 +7,10 @@ import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCod
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import java.net.URI;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
 
 /**
@@ -19,19 +18,20 @@ import org.springframework.web.reactive.function.client.WebClientException;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class YoutubeMetaExternalClient implements YoutubeMetaClient {
 
-    private final WebClient webClient;
+    private static final String VIDEO_PARTS = "snippet,contentDetails,status";
+    private static final String PLAYLIST_PARTS = "snippet";
+    private static final String SHORTS_PLAYLIST_PREFIX = "UUSH";
+
+    private final YoutubeMetaHttpApi youtubeMetaHttpApi;
 
     @Value("${youtube.api-token-default}")
     private String youtubeDefaultKey;
 
     @Value("${youtube.api-token-block-check}")
     private String youtubeBlockCheckKey;
-
-    public YoutubeMetaExternalClient(@Qualifier("youtubeClient") WebClient webClient) {
-        this.webClient = webClient;
-    }
 
     /**
      * 유튜브 비디오 정보 조회
@@ -47,17 +47,8 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
         String videoId = youtubeUri.getVideoId();
 
         try {
-            YoutubeVideoResponse youtubeVideoResponse = webClient
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/videos")
-                            .queryParam("id", videoId)
-                            .queryParam("key", youtubeDefaultKey)
-                            .queryParam("part", "snippet,contentDetails,status")
-                            .build())
-                    .retrieve()
-                    .bodyToMono(YoutubeVideoResponse.class)
-                    .block();
+            YoutubeVideoResponse youtubeVideoResponse =
+                    youtubeMetaHttpApi.fetchVideo(videoId, youtubeDefaultKey, VIDEO_PARTS);
 
             if (youtubeVideoResponse == null || youtubeVideoResponse.items().isEmpty()) {
                 throw new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_VIDEO_NOT_FOUND);
@@ -78,7 +69,7 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
 
             boolean isShorts = Optional.ofNullable(channelId)
                     .filter(id -> id.startsWith("UC"))
-                    .map(id -> "UUSH" + id.substring(2))
+                    .map(id -> SHORTS_PLAYLIST_PREFIX + id.substring(2))
                     .map(playlistId -> checkIfVideoInShortsPlaylist(videoId, playlistId))
                     .orElse(false);
 
@@ -109,18 +100,8 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
 
     private boolean checkIfVideoInShortsPlaylist(String videoId, String shortsPlaylistId) {
         try {
-            YoutubePlaylistResponse playlistResponse = webClient
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/playlistItems")
-                            .queryParam("part", "snippet")
-                            .queryParam("playlistId", shortsPlaylistId)
-                            .queryParam("videoId", videoId)
-                            .queryParam("key", youtubeDefaultKey)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(YoutubePlaylistResponse.class)
-                    .block();
+            YoutubePlaylistResponse playlistResponse =
+                    youtubeMetaHttpApi.fetchPlaylistItems(PLAYLIST_PARTS, shortsPlaylistId, videoId, youtubeDefaultKey);
 
             return playlistResponse != null && playlistResponse.hasItems();
 
@@ -146,17 +127,8 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
         String videoId = youtubeUri.getVideoId();
 
         try {
-            YoutubeVideoResponse youtubeVideoResponse = webClient
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/videos")
-                            .queryParam("id", videoId)
-                            .queryParam("key", youtubeBlockCheckKey)
-                            .queryParam("part", "status")
-                            .build())
-                    .retrieve()
-                    .bodyToMono(YoutubeVideoResponse.class)
-                    .block();
+            YoutubeVideoResponse youtubeVideoResponse =
+                    youtubeMetaHttpApi.fetchVideo(videoId, youtubeBlockCheckKey, "status");
 
             if (youtubeVideoResponse == null || youtubeVideoResponse.items().isEmpty()) {
                 return true;

@@ -8,14 +8,16 @@ import java.util.List;
  *
  * @param autocompletes 자동완성 검색어 목록
  */
-public record AutocompletesResponse(@JsonProperty("autocompletes") List<Autocomplete> autocompletes) {
+public record AutocompletesResponse(
+        @JsonProperty("autocompletes") List<Autocomplete> autocompletes) {
 
     /**
      * 자동완성 검색어.
      *
      * @param autocomplete 자동완성 텍스트
      */
-    private record Autocomplete(@JsonProperty("autocomplete") String autocomplete) {
+    private record Autocomplete(
+            @JsonProperty("autocomplete") String autocomplete) {
         private static Autocomplete from(com.cheftory.api.search.autocomplete.Autocomplete autocomplete) {
             return new Autocomplete(autocomplete.getText());
         }

@@ -5,10 +5,9 @@ import com.cheftory.api.recipe.content.briefing.client.dto.BriefingClientRespons
 import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingErrorCode;
 import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingException;
 import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * 레시피 브리핑 생성 외부 API 클라이언트 구현체.
@@ -17,17 +16,9 @@ import org.springframework.web.reactive.function.client.WebClient;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class BriefingExternalClient implements BriefingClient {
-    private final WebClient webClient;
-
-    /**
-     * BriefingExternalClient 생성자.
-     *
-     * @param webClient 레시피 생성용 WebClient
-     */
-    public BriefingExternalClient(@Qualifier("recipeCreateClient") WebClient webClient) {
-        this.webClient = webClient;
-    }
+    private final BriefingHttpApi briefingHttpApi;
 
     @Override
     public BriefingClientResponse fetchBriefing(String videoId) throws RecipeBriefingException {
@@ -36,13 +27,7 @@ public class BriefingExternalClient implements BriefingClient {
         log.debug("브리핑 생성 요청 - videoId: {}", videoId);
 
         try {
-            return webClient
-                    .post()
-                    .uri("/briefings")
-                    .bodyValue(BriefingClientRequest.from(videoId))
-                    .retrieve()
-                    .bodyToMono(BriefingClientResponse.class)
-                    .block();
+            return briefingHttpApi.fetchBriefing(BriefingClientRequest.from(videoId));
 
         } catch (Exception e) {
             log.error("브리핑 생성 중 예상치 못한 오류 발생 - videoId: {}", videoId, e);

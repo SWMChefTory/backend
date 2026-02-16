@@ -9,6 +9,7 @@ import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingExceptio
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import mockwebserver3.MockResponse;
 import mockwebserver3.MockWebServer;
 import mockwebserver3.RecordedRequest;
@@ -20,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @DisplayName("BriefingExternalClient 테스트")
 public class BriefingExternalClientTest {
@@ -37,12 +40,15 @@ public class BriefingExternalClientTest {
 
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+        BriefingHttpApi briefingHttpApi = HttpServiceProxyFactory.builderFor(WebClientAdapter.create(webClient))
+                .build()
+                .createClient(BriefingHttpApi.class);
 
-        briefingExternalClient = new BriefingExternalClient(webClient);
+        briefingExternalClient = new BriefingExternalClient(briefingHttpApi);
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         mockWebServer.close();
     }
 
@@ -93,7 +99,8 @@ public class BriefingExternalClientTest {
                     assertThat(recordedRequest.getHeaders().get(HttpHeaders.CONTENT_TYPE))
                             .contains(MediaType.APPLICATION_JSON_VALUE);
 
-                    String requestBody = recordedRequest.getBody().utf8();
+                    String requestBody =
+                            Objects.requireNonNull(recordedRequest.getBody()).utf8();
                     assertThat(requestBody).contains("\"video_id\":\"" + videoId + "\"");
                 }
             }
@@ -202,7 +209,7 @@ public class BriefingExternalClientTest {
             class WhenNetworkFail {
 
                 @BeforeEach
-                void setUp() throws IOException {
+                void setUp() {
                     mockWebServer.close();
                 }
 

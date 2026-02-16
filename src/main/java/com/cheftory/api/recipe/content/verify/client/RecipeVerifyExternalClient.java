@@ -6,22 +6,21 @@ import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientResponse;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
 import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * 레시피 검증 외부 클라이언트 구현체
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class RecipeVerifyExternalClient implements RecipeVerifyClient {
-    private final WebClient webClient;
-
-    public RecipeVerifyExternalClient(@Qualifier("recipeCreateClient") WebClient webClient) {
-        this.webClient = webClient;
-    }
+    private final RecipeVerifyHttpApi recipeVerifyHttpApi;
+    private final ObjectMapper objectMapper;
 
     /**
      * 레시피 영상 검증 요청
@@ -39,18 +38,10 @@ public class RecipeVerifyExternalClient implements RecipeVerifyClient {
         log.debug("영상 검증 요청 - videoId: {}", videoId);
 
         try {
-            return webClient
-                    .post()
-                    .uri("/verify")
-                    .bodyValue(RecipeVerifyClientRequest.from(videoId))
-                    .retrieve()
-                    .onStatus(status -> !status.is2xxSuccessful(), response -> response.bodyToMono(
-                                    RecipeVerifyClientErrorResponse.class)
-                            .map(this::mapToException)
-                            .onErrorReturn(new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR)))
-                    .bodyToMono(RecipeVerifyClientResponse.class)
-                    .block();
+            return recipeVerifyHttpApi.verify(RecipeVerifyClientRequest.from(videoId));
 
+        } catch (WebClientResponseException e) {
+            throw mapToException(e.getResponseBodyAsString());
         } catch (Exception e) {
             if (e instanceof RecipeVerifyException) {
                 throw e;
@@ -74,17 +65,19 @@ public class RecipeVerifyExternalClient implements RecipeVerifyClient {
         log.debug("영상 리소스 정리 요청 - fileUri: {}", fileUri);
 
         try {
-            webClient
-                    .delete()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/cleanup")
-                            .queryParam("file_uri", fileUri)
-                            .build())
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block();
+            recipeVerifyHttpApi.cleanupVideo(fileUri);
         } catch (Exception e) {
             log.warn("영상 리소스 정리 중 오류 발생 - fileUri: {}", fileUri, e);
+        }
+    }
+
+    private RecipeVerifyException mapToException(String responseBody) {
+        try {
+            RecipeVerifyClientErrorResponse errorResponse =
+                    objectMapper.readValue(responseBody, RecipeVerifyClientErrorResponse.class);
+            return mapToException(errorResponse);
+        } catch (Exception e) {
+            return new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR);
         }
     }
 

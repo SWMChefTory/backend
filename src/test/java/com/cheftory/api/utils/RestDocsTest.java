@@ -1,8 +1,6 @@
 package com.cheftory.api.utils;
 
 import com.cheftory.api.exception.Error;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import io.restassured.module.mockmvc.specification.MockMvcRequestSpecification;
@@ -15,7 +13,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
@@ -25,13 +23,16 @@ import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(RestDocumentationExtension.class)
 public abstract class RestDocsTest {
 
     protected MockMvcRequestSpecification mockMvc;
     private RestDocumentationContextProvider restDocumentation;
-    private static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
+    private static final JsonMapper.Builder JSON_MAPPER_BUILDER = createJsonMapperBuilder();
+    private static final JsonMapper JSON_MAPPER = JSON_MAPPER_BUILDER.build();
 
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
@@ -58,18 +59,16 @@ public abstract class RestDocsTest {
 
     protected String jsonBody(Object obj) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(obj);
+            return JSON_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
             throw new RuntimeException("JSON serialization failed", e);
         }
     }
 
-    private static ObjectMapper createObjectMapper() {
-        ObjectMapper om = new ObjectMapper();
-        om.findAndRegisterModules();
-        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        om.disable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS);
-        return om;
+    private static JsonMapper.Builder createJsonMapperBuilder() {
+        return JsonMapper.builder()
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.WRITE_DURATIONS_AS_TIMESTAMPS);
     }
 
     public class MockMvcBuilder {
@@ -111,7 +110,7 @@ public abstract class RestDocsTest {
         }
 
         public MockMvcRequestSpecification build() {
-            MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(OBJECT_MAPPER);
+            JacksonJsonHttpMessageConverter converter = new JacksonJsonHttpMessageConverter(JSON_MAPPER);
 
             StandaloneMockMvcBuilder builder = MockMvcBuilders.standaloneSetup(controller)
                     .apply(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))

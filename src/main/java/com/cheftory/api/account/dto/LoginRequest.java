@@ -11,4 +11,5 @@ import jakarta.validation.constraints.NotNull;
  * @param provider OAuth 제공자 (Apple, Kakao, etc.)
  */
 public record LoginRequest(
-        @JsonProperty("id_token") @NotNull String idToken, @JsonProperty("provider") @NotNull Provider provider) {}
+        @JsonProperty("id_token") @NotNull String idToken,
+        @JsonProperty("provider") @NotNull Provider provider) {}

@@ -9,62 +9,42 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
-/**
- * 쿠팡 파트너스 API와 통신하는 클라이언트.
- *
- * <p>HTTP 요청 생성, HMAC 서명 생성, API 호출을 담당합니다.</p>
- */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class CoupangClient {
 
-    @Qualifier("coupangClient")
-    private final WebClient webClient;
+    private static final String SEARCH_PATH = "/v2/providers/affiliate_open_api/apis/openapi/products/search";
 
+    private final CoupangHttpApi coupangHttpApi;
     private final CoupangPartnersProperties properties;
 
-    /**
-     * 쿠팡 파트너스 API를 통해 제품을 검색합니다.
-     *
-     * @param keyword 검색 키워드
-     * @return 검색된 쿠팡 제품 목록
-     * @throws CoupangException API 요청 실패 시
-     */
     public CoupangProducts searchProducts(String keyword) throws CoupangException {
         try {
-            URI uri = UriComponentsBuilder.fromPath("/v2/providers/affiliate_open_api/apis/openapi/products/search")
+            URI uri = UriComponentsBuilder.fromPath(SEARCH_PATH)
                     .queryParam("keyword", keyword)
                     .build()
                     .encode(StandardCharsets.UTF_8)
                     .toUri();
 
-            if (uri.getRawQuery() == null || uri.getRawPath() == null) {
+            String rawPath = uri.getRawPath();
+            String rawQuery = uri.getRawQuery();
+            if (rawPath == null || rawQuery == null) {
                 throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL);
             }
 
-            String pathAndQueryForSign = uri.getRawPath() + "?" + uri.getRawQuery();
+            String pathAndQueryForSign = rawPath + "?" + rawQuery;
 
             String authorization = HmacGenerator.generate(
                     "GET", pathAndQueryForSign, properties.getSecretKey(), properties.getAccessKey());
 
-            String pathAndQuery = uri.getRawPath() + "?" + uri.getRawQuery();
-
-            CoupangSearchResponse response = webClient
-                    .get()
-                    .uri(pathAndQuery)
-                    .header("Authorization", authorization)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .retrieve()
-                    .bodyToMono(CoupangSearchResponse.class)
-                    .block();
+            CoupangSearchResponse response =
+                    coupangHttpApi.searchProducts(keyword, authorization, MediaType.APPLICATION_JSON_VALUE);
 
             if (response == null) {
                 throw new CoupangException(CoupangErrorCode.COUPANG_API_REQUEST_FAIL);

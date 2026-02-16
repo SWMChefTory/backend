@@ -18,8 +18,7 @@ import org.springframework.data.repository.query.Param;
  */
 public interface RecipeBookmarkJpaRepository extends JpaRepository<RecipeBookmark, UUID> {
 
-    @Query(
-            """
+    @Query("""
   select h
   from RecipeBookmark as h
   where h.userId = :userId
@@ -28,8 +27,7 @@ public interface RecipeBookmarkJpaRepository extends JpaRepository<RecipeBookmar
 """)
     List<RecipeBookmark> findRecentsFirst(UUID userId, RecipeBookmarkStatus status, Pageable pageable);
 
-    @Query(
-            """
+    @Query("""
   select h
   from RecipeBookmark as h
   where h.userId = :userId
@@ -45,8 +43,7 @@ public interface RecipeBookmarkJpaRepository extends JpaRepository<RecipeBookmar
 
     Optional<RecipeBookmark> findByRecipeIdAndUserIdAndStatus(UUID recipeId, UUID userId, RecipeBookmarkStatus status);
 
-    @Query(
-            """
+    @Query("""
     select h
     from RecipeBookmark as h
     where h.userId = :userId
@@ -57,8 +54,7 @@ public interface RecipeBookmarkJpaRepository extends JpaRepository<RecipeBookmar
     List<RecipeBookmark> findCategorizedFirst(
             UUID userId, UUID categoryId, RecipeBookmarkStatus status, Pageable pageable);
 
-    @Query(
-            """
+    @Query("""
     select h
     from RecipeBookmark as h
     where h.userId = :userId
@@ -88,8 +84,7 @@ public interface RecipeBookmarkJpaRepository extends JpaRepository<RecipeBookmar
     List<RecipeBookmarkCategorizedCountProjection> countByCategoryIdsAndStatus(
             @Param("categoryIds") List<UUID> categoryIds, @Param("status") RecipeBookmarkStatus status);
 
-    @Query(
-            """
+    @Query("""
     SELECT COUNT(r) as count
       FROM RecipeBookmark r
      WHERE r.userId = :userId

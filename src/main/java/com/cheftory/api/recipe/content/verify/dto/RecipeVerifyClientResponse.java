@@ -9,4 +9,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param mimeType MIME 타입
  */
 public record RecipeVerifyClientResponse(
-        @JsonProperty("file_uri") String fileUri, @JsonProperty("mime_type") String mimeType) {}
+        @JsonProperty("file_uri") String fileUri,
+        @JsonProperty("mime_type") String mimeType) {}

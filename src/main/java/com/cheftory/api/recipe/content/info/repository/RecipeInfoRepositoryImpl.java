@@ -101,8 +101,8 @@ public class RecipeInfoRepositoryImpl implements RecipeInfoRepository {
         List<RecipeInfo> infos =
                 switch (videoQuery) {
                     case ALL -> repository.findPopularFirst(RecipeStatus.SUCCESS, probe);
-                    case NORMAL, SHORTS -> repository.findPopularByVideoTypeFirst(
-                            RecipeStatus.SUCCESS, videoQuery.name(), probe);
+                    case NORMAL, SHORTS ->
+                        repository.findPopularByVideoTypeFirst(RecipeStatus.SUCCESS, videoQuery.name(), probe);
                 };
 
         return CursorPages.of(
@@ -129,10 +129,16 @@ public class RecipeInfoRepositoryImpl implements RecipeInfoRepository {
 
         List<RecipeInfo> recipeInfos =
                 switch (videoQuery) {
-                    case ALL -> repository.findPopularKeyset(
-                            RecipeStatus.SUCCESS, idCursor.lastCount(), idCursor.lastId(), probe);
-                    case NORMAL, SHORTS -> repository.findPopularByVideoTypeKeyset(
-                            RecipeStatus.SUCCESS, videoQuery.name(), idCursor.lastCount(), idCursor.lastId(), probe);
+                    case ALL ->
+                        repository.findPopularKeyset(
+                                RecipeStatus.SUCCESS, idCursor.lastCount(), idCursor.lastId(), probe);
+                    case NORMAL, SHORTS ->
+                        repository.findPopularByVideoTypeKeyset(
+                                RecipeStatus.SUCCESS,
+                                videoQuery.name(),
+                                idCursor.lastCount(),
+                                idCursor.lastId(),
+                                probe);
                 };
         return toCursorPage(recipeInfos, probe);
     }

@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.cheftory.api.recipe.content.verify.dto.RecipeVerifyClientResponse;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import mockwebserver3.MockResponse;
 import mockwebserver3.MockWebServer;
@@ -20,6 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
+import tools.jackson.databind.ObjectMapper;
 
 @DisplayName("RecipeVerifyClient 테스트")
 class RecipeVerifyClientTest {
@@ -35,8 +37,11 @@ class RecipeVerifyClientTest {
 
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+        RecipeVerifyHttpApi recipeVerifyHttpApi = HttpServiceProxyFactory.builderFor(WebClientAdapter.create(webClient))
+                .build()
+                .createClient(RecipeVerifyHttpApi.class);
 
-        verifyClient = new RecipeVerifyExternalClient(webClient);
+        verifyClient = new RecipeVerifyExternalClient(recipeVerifyHttpApi, new ObjectMapper());
         objectMapper = new ObjectMapper();
     }
 
@@ -66,8 +71,7 @@ class RecipeVerifyClientTest {
 
                 @BeforeEach
                 void setUp() throws Exception {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                               "file_uri": "s3://bucket/file.mp4",
                               "mime_type": "video/mp4"
@@ -94,7 +98,7 @@ class RecipeVerifyClientTest {
                     assertThat(recordedRequest.getBody()).isNotNull();
                     var requestNode =
                             objectMapper.readTree(recordedRequest.getBody().utf8());
-                    assertThat(requestNode.get("video_id").asText()).isEqualTo(videoId);
+                    assertThat(requestNode.get("video_id").asString()).isEqualTo(videoId);
                 }
             }
 
@@ -104,8 +108,7 @@ class RecipeVerifyClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String errorResponseBody =
-                            """
+                    String errorResponseBody = """
                             {
                               "error_code": "SERVER_001",
                               "error_message": "server error"

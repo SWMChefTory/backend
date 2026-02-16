@@ -13,5 +13,6 @@ public record RecipeCategoryRequest() {
      *
      * @param name 카테고리 이름
      */
-    public record Create(@JsonProperty("name") @NotNull @NotBlank String name) {}
+    public record Create(
+            @JsonProperty("name") @NotNull @NotBlank String name) {}
 }

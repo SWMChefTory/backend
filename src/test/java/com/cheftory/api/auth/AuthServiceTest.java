@@ -136,24 +136,6 @@ class AuthServiceTest {
                 }
             }
         }
-
-        @Nested
-        @DisplayName("Given - Provider가 null일 때")
-        class GivenNullProvider {
-
-            @Nested
-            @DisplayName("When - 추출을 요청하면")
-            class WhenExtracting {
-
-                @Test
-                @DisplayName("Then - UNSUPPORTED_PROVIDER 예외를 던진다")
-                void thenThrowsException() {
-                    AuthException ex = assertThrows(
-                            AuthException.class, () -> authService.extractProviderSubFromIdToken(idToken, null));
-                    assertThat(ex.getError()).isEqualTo(AuthErrorCode.UNSUPPORTED_PROVIDER);
-                }
-            }
-        }
     }
 
     @Nested

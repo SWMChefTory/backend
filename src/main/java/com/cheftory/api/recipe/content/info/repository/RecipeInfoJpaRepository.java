@@ -23,8 +23,7 @@ public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID>
 
     List<RecipeInfo> findRecipesByIdInAndRecipeStatus(List<UUID> recipeIds, RecipeStatus statuses);
 
-    @Query(
-            """
+    @Query("""
   select r
   from RecipeInfo r
   where r.recipeStatus = :status
@@ -39,8 +38,7 @@ public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID>
     List<RecipeInfo> findCuisineFirst(
             @Param("tag") String tag, @Param("status") RecipeStatus status, Pageable pageable);
 
-    @Query(
-            """
+    @Query("""
   select r
   from RecipeInfo r
   where r.recipeStatus = :status
@@ -63,8 +61,7 @@ public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID>
             @Param("lastId") UUID lastId,
             Pageable pageable);
 
-    @Query(
-            """
+    @Query("""
   select r
   from RecipeInfo r
   where r.recipeStatus = :status
@@ -72,8 +69,7 @@ public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID>
 """)
     List<RecipeInfo> findPopularFirst(@Param("status") RecipeStatus status, Pageable pageable);
 
-    @Query(
-            """
+    @Query("""
   select r
   from RecipeInfo r
   where r.recipeStatus = :status
@@ -89,8 +85,7 @@ public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID>
             @Param("lastId") UUID lastId,
             Pageable pageable);
 
-    @Query(
-            """
+    @Query("""
   select r
   from RecipeInfo r
   where r.recipeStatus = :status
@@ -105,8 +100,7 @@ public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID>
     List<RecipeInfo> findPopularByVideoTypeFirst(
             @Param("status") RecipeStatus status, @Param("videoType") String videoType, Pageable pageable);
 
-    @Query(
-            """
+    @Query("""
   select r
   from RecipeInfo r
   where r.recipeStatus = :status

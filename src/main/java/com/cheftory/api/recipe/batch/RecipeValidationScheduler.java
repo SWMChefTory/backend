@@ -3,11 +3,11 @@ package com.cheftory.api.recipe.batch;
 import com.cheftory.api._common.region.Market;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.job.parameters.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class RecipeValidationScheduler {
 
-    private final JobLauncher jobLauncher;
+    private final JobOperator jobOperator;
     private final Job youtubeValidationJob;
 
     /**
@@ -49,7 +49,7 @@ public class RecipeValidationScheduler {
                     .addString("runId", market + "-" + System.currentTimeMillis())
                     .toJobParameters();
 
-            JobExecution jobExecution = jobLauncher.run(youtubeValidationJob, jobParameters);
+            JobExecution jobExecution = jobOperator.start(youtubeValidationJob, jobParameters);
             log.info("YouTube validation job started. market={}, executionId={}", market, jobExecution.getId());
         } catch (Exception e) {
             log.error("Failed to start YouTube validation job. market={}", market, e);

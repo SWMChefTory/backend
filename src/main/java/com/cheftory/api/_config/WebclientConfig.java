@@ -2,6 +2,14 @@ package com.cheftory.api._config;
 
 import com.cheftory.api._common.region.MarketContext;
 import com.cheftory.api._common.region.MarketHeaders;
+import com.cheftory.api.affiliate.coupang.CoupangHttpApi;
+import com.cheftory.api.auth.verifier.client.AppleTokenHttpApi;
+import com.cheftory.api.auth.verifier.client.GoogleTokenHttpApi;
+import com.cheftory.api.recipe.content.briefing.client.BriefingHttpApi;
+import com.cheftory.api.recipe.content.detail.client.RecipeDetailHttpApi;
+import com.cheftory.api.recipe.content.step.client.RecipeStepHttpApi;
+import com.cheftory.api.recipe.content.verify.client.RecipeVerifyHttpApi;
+import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaHttpApi;
 import io.micrometer.observation.ObservationRegistry;
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
@@ -13,6 +21,8 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import reactor.netty.http.client.HttpClient;
 
@@ -58,22 +68,51 @@ public class WebclientConfig {
     }
 
     @Bean
-    @Qualifier("youtubeClient")
-    public WebClient webClientForYoutube() {
+    public RecipeStepHttpApi recipeStepHttpApi(@Qualifier("recipeCreateClient") WebClient recipeCreateClient) {
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(recipeCreateClient))
+                .build()
+                .createClient(RecipeStepHttpApi.class);
+    }
+
+    @Bean
+    public RecipeVerifyHttpApi recipeVerifyHttpApi(@Qualifier("recipeCreateClient") WebClient recipeCreateClient) {
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(recipeCreateClient))
+                .build()
+                .createClient(RecipeVerifyHttpApi.class);
+    }
+
+    @Bean
+    public RecipeDetailHttpApi recipeDetailHttpApi(@Qualifier("recipeCreateClient") WebClient recipeCreateClient) {
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(recipeCreateClient))
+                .build()
+                .createClient(RecipeDetailHttpApi.class);
+    }
+
+    @Bean
+    public BriefingHttpApi briefingHttpApi(@Qualifier("recipeCreateClient") WebClient recipeCreateClient) {
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(recipeCreateClient))
+                .build()
+                .createClient(BriefingHttpApi.class);
+    }
+
+    @Bean
+    public YoutubeMetaHttpApi youtubeMetaHttpApi() {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .responseTimeout(Duration.ofSeconds(20));
 
-        return WebClient.builder()
+        WebClient youtubeClient = WebClient.builder()
                 .baseUrl("https://www.googleapis.com/youtube/v3")
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .observationRegistry(observationRegistry)
                 .build();
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(youtubeClient))
+                .build()
+                .createClient(YoutubeMetaHttpApi.class);
     }
 
     @Bean
-    @Qualifier("coupangClient")
-    public WebClient webClientForCoupang() {
+    public CoupangHttpApi coupangHttpApi() {
         DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory("https://api-gateway.coupang.com");
         factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY);
 
@@ -81,38 +120,48 @@ public class WebclientConfig {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .responseTimeout(Duration.ofSeconds(30));
 
-        return WebClient.builder()
+        WebClient coupangClient = WebClient.builder()
                 .uriBuilderFactory(factory)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .observationRegistry(observationRegistry)
                 .build();
+        HttpServiceProxyFactory proxyFactory = HttpServiceProxyFactory.builderFor(
+                        WebClientAdapter.create(coupangClient))
+                .build();
+        return proxyFactory.createClient(CoupangHttpApi.class);
     }
 
     @Bean
-    @Qualifier("appleClient")
-    public WebClient webClientForApple() {
+    public AppleTokenHttpApi appleTokenHttpApi() {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .responseTimeout(Duration.ofSeconds(10));
 
-        return WebClient.builder()
+        WebClient appleClient = WebClient.builder()
                 .baseUrl("https://appleid.apple.com")
                 .observationRegistry(observationRegistry)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
+        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(WebClientAdapter.create(appleClient))
+                .build();
+        return factory.createClient(AppleTokenHttpApi.class);
     }
 
     @Bean
-    @Qualifier("googleClient")
-    public WebClient webClientForGoogle() {
+    public GoogleTokenHttpApi googleTokenHttpApi() {
+
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .responseTimeout(Duration.ofSeconds(10));
 
-        return WebClient.builder()
+        WebClient client = WebClient.builder()
                 .baseUrl("https://oauth2.googleapis.com")
                 .observationRegistry(observationRegistry)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
+
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(client))
+                .build()
+                .createClient(GoogleTokenHttpApi.class);
     }
 }
