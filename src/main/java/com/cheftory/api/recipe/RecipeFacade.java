@@ -338,7 +338,7 @@ public class RecipeFacade {
      * @param recipeId 차단할 레시피 ID
      * @throws RecipeException 레시피 차단 실패 시
      */
-    @Transactional
+    @Transactional(rollbackFor = RecipeException.class)
     public void blockRecipe(UUID recipeId) throws RecipeException {
         try {
             recipeYoutubeMetaService.block(recipeId);

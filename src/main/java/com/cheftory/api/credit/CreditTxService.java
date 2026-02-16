@@ -30,7 +30,7 @@ public class CreditTxService {
      * @param credit 지급할 크레딧 정보
      * @throws CreditException 크레딧 관련 예외 발생 시
      */
-    @Transactional
+    @Transactional(rollbackFor = CreditException.class)
     public void grantTx(Credit credit) throws CreditException {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
@@ -50,7 +50,7 @@ public class CreditTxService {
      * @param credit 사용할 크레딧 정보
      * @throws CreditException 크레딧 관련 예외 발생 시
      */
-    @Transactional
+    @Transactional(rollbackFor = CreditException.class)
     public void spendTx(Credit credit) throws CreditException {
         CreditUserBalance balance = loadOrCreateBalance(credit.userId());
 
