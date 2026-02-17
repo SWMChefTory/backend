@@ -18,6 +18,10 @@ import com.cheftory.api.recipe.creation.RecipeCreationFacade;
 import com.cheftory.api.recipe.dto.CategorizedRecipesResponse;
 import com.cheftory.api.recipe.dto.ChallengeRecipesResponse;
 import com.cheftory.api.recipe.dto.CuisineRecipesResponse;
+import com.cheftory.api.recipe.dto.PublicRecipeDetail;
+import com.cheftory.api.recipe.dto.PublicRecipeOverview;
+import com.cheftory.api.recipe.dto.PublicRecipeSitemapResponse;
+import com.cheftory.api.recipe.dto.PublicRecipesResponse;
 import com.cheftory.api.recipe.dto.FullRecipe;
 import com.cheftory.api.recipe.dto.FullRecipeResponse;
 import com.cheftory.api.recipe.dto.RecentRecipesResponse;
@@ -301,5 +305,50 @@ public class RecipeController {
         Pair<List<RecipeCompleteChallenge>, CursorPage<RecipeOverview>> result =
                 recipeFacade.getChallengeRecipes(challengeId, userId, cursor);
         return ChallengeRecipesResponse.from(result.getFirst(), result.getSecond());
+    }
+
+    // ── 공개 레시피 SEO API (인증 불필요, /papi/v1/) ──
+
+    /**
+     * 공개 레시피 목록을 조회합니다.
+     *
+     * @param cursor 커서
+     * @param cuisine 요리 종류 (선택)
+     * @return 공개 레시피 목록 응답
+     * @throws CheftoryException 조회 실패 시
+     */
+    @GetMapping("/papi/v1/recipes/seo")
+    public PublicRecipesResponse getPublicRecipes(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false) String cuisine)
+            throws CheftoryException {
+        CursorPage<PublicRecipeOverview> page = recipeFacade.getPublicRecipes(cuisine, cursor);
+        return PublicRecipesResponse.from(page);
+    }
+
+    /**
+     * 공개 레시피 상세 정보를 조회합니다.
+     *
+     * @param recipeId 레시피 ID
+     * @return 공개 레시피 상세 응답
+     * @throws CheftoryException 조회 실패 시
+     */
+    @GetMapping("/papi/v1/recipes/seo/{recipeId}")
+    public PublicRecipeDetail getPublicRecipeDetail(@PathVariable UUID recipeId) throws CheftoryException {
+        return recipeFacade.getPublicRecipeById(recipeId);
+    }
+
+    /**
+     * 사이트맵 데이터를 조회합니다.
+     *
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @return 사이트맵 응답
+     */
+    @GetMapping("/papi/v1/recipes/sitemap")
+    public PublicRecipeSitemapResponse getSitemapEntries(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return recipeFacade.getSitemapEntries(page, size);
     }
 }

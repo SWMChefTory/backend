@@ -247,4 +247,57 @@ public class RecipeInfoRepositoryImpl implements RecipeInfoRepository {
     public boolean exists(UUID recipeId) {
         return repository.existsById(recipeId);
     }
+
+    // ── 공개 레시피 API용 구현 ──
+
+    @Override
+    public java.util.Optional<RecipeInfo> findByIdPublic(UUID id) {
+        return repository.findByIdAndIsPublicTrueAndRecipeStatus(id, RecipeStatus.SUCCESS);
+    }
+
+    @Override
+    public CursorPage<RecipeInfo> publicFirst() {
+        Pageable pageable = CursorPageable.firstPage();
+        Pageable probe = CursorPageable.probe(pageable);
+        List<RecipeInfo> infos = repository.findPublicFirst(RecipeStatus.SUCCESS, probe);
+        return toCursorPage(infos, probe);
+    }
+
+    @Override
+    public CursorPage<RecipeInfo> publicKeyset(String cursor) throws CursorException {
+        Pageable pageable = CursorPageable.firstPage();
+        Pageable probe = CursorPageable.probe(pageable);
+        CountIdCursor idCursor = countIdCursorCodec.decode(cursor);
+        List<RecipeInfo> infos =
+                repository.findPublicKeyset(RecipeStatus.SUCCESS, idCursor.lastCount(), idCursor.lastId(), probe);
+        return toCursorPage(infos, probe);
+    }
+
+    @Override
+    public CursorPage<RecipeInfo> publicCuisineFirst(String tag) {
+        Pageable pageable = CursorPageable.firstPage();
+        Pageable probe = CursorPageable.probe(pageable);
+        List<RecipeInfo> infos = repository.findPublicCuisineFirst(tag, RecipeStatus.SUCCESS, probe);
+        return toCursorPage(infos, probe);
+    }
+
+    @Override
+    public CursorPage<RecipeInfo> publicCuisineKeyset(String tag, String cursor) throws CursorException {
+        Pageable pageable = CursorPageable.firstPage();
+        Pageable probe = CursorPageable.probe(pageable);
+        CountIdCursor idCursor = countIdCursorCodec.decode(cursor);
+        List<RecipeInfo> infos = repository.findPublicCuisineKeyset(
+                tag, RecipeStatus.SUCCESS, idCursor.lastCount(), idCursor.lastId(), probe);
+        return toCursorPage(infos, probe);
+    }
+
+    @Override
+    public List<RecipeInfo> findAllPublicForSitemap(int page, int size) {
+        return repository.findAllPublic(RecipeStatus.SUCCESS, org.springframework.data.domain.PageRequest.of(page, size));
+    }
+
+    @Override
+    public long countPublic() {
+        return repository.countPublic(RecipeStatus.SUCCESS);
+    }
 }
