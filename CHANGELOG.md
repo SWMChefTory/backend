@@ -18,6 +18,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 향후 수정될 버그들
 
+## [1.1.28] - 2026-02-18
+
+### Added
+- **SEO 공개 레시피 API**: 인증 없이 접근 가능한 공개 레시피 API 3개 추가 (`/papi/v1/` 경로)
+  - `GET /papi/v1/recipes/seo` — 공개 레시피 목록 (keyset cursor pagination + cuisine 필터)
+  - `GET /papi/v1/recipes/seo/{recipeId}` — 공개 레시피 상세 조회
+  - `GET /papi/v1/recipes/sitemap` — 사이트맵용 레시피 데이터 (offset pagination)
+- **공개 레시피 DTO 7개**: `PublicRecipeOverview`, `PublicRecipeDetail`, `PublicIngredient`, `PublicStep`, `PublicRecipesResponse`, `PublicRecipeSitemapResponse`, `SitemapEntry`
+- **RecipeInfo 엔티티 `isPublic` 필드**: 레시피 공개 여부 제어 (기본값 `false`, 기존 레시피에 영향 없음)
+- **공개 레시피 전용 Repository 쿼리**: 공개 + 성공 상태 필터링, cuisine 태그 필터, 사이트맵용 전체 조회, 카운트 쿼리
+
+### Technical
+- **유료 콘텐츠 보호**: `PublicStep`에서 `details[]`, `start` 필드 의도적 미포함
+- **viewCount 미증가**: 공개 API 호출 시 조회수 증가하지 않음 (SEO 봇 트래픽 오염 방지)
+- **N+1 방지**: `makePublicOverviews()` 배치 조회 헬퍼로 목록 조회 최적화
+- **기존 API 영향 없음**: 모든 변경은 필드/메서드 추가만 수행, 기존 동작 변경 없음
+
+### Database Migration (배포 시 수동 실행)
+```sql
+ALTER TABLE recipe ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
+```
+
 ## [1.1.27] - 2026-02-15
 
 ### Added
