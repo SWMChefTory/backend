@@ -29,6 +29,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **RecipeInfo 엔티티 `isPublic` 필드**: 레시피 공개 여부 제어 (기본값 `false`, 기존 레시피에 영향 없음)
 - **공개 레시피 전용 Repository 쿼리**: 공개 + 성공 상태 필터링, cuisine 태그 필터, 사이트맵용 전체 조회, 카운트 쿼리
 
+### Fixed
+- **checked 예외 트랜잭션 롤백 누락 수정**: `@Transactional`에 `rollbackFor` 명시 추가
+  - `CreditTxService.grantTx/spendTx` → `rollbackFor = CreditException.class`
+  - `RecipeCreationTxService.createWithIdentifyWithVideoInfo` → `rollbackFor = RecipeIdentifyException.class`
+  - `RecipeFacade.blockRecipe` → `rollbackFor = RecipeException.class`
+- **`RankingInteractionService` 트랜잭션 import 수정**: `jakarta.transaction.Transactional` → `org.springframework.transaction.annotation.Transactional`로 변경 (rollbackFor 지원)
+
+### Added (Test)
+- **트랜잭션 롤백 검증 테스트 추가**: `CreditTxServiceTxTest`, `RecipeCreationTxServiceTxTest`, `RecipeFacadeTxTest`
+
 ### Technical
 - **유료 콘텐츠 보호**: `PublicStep`에서 `details[]`, `start` 필드 의도적 미포함
 - **viewCount 미증가**: 공개 API 호출 시 조회수 증가하지 않음 (SEO 봇 트래픽 오염 방지)
