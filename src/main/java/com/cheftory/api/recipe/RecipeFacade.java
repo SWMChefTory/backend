@@ -41,8 +41,12 @@ import com.cheftory.api.recipe.dto.FullRecipe;
 import com.cheftory.api.recipe.dto.RecipeBookmarkOverview;
 import com.cheftory.api.recipe.dto.RecipeCategoryCount;
 import com.cheftory.api.recipe.dto.RecipeCategoryCounts;
+import com.cheftory.api.recipe.dto.PublicRecipeDetail;
+import com.cheftory.api.recipe.dto.PublicRecipeOverview;
+import com.cheftory.api.recipe.dto.PublicRecipeSitemapResponse;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoRecommendType;
+import com.cheftory.api.recipe.dto.SitemapEntry;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeOverview;
 import com.cheftory.api.recipe.dto.RecipeProgressStatus;
@@ -338,7 +342,7 @@ public class RecipeFacade {
      * @param recipeId 차단할 레시피 ID
      * @throws RecipeException 레시피 차단 실패 시
      */
-    @Transactional
+    @Transactional(rollbackFor = RecipeException.class)
     public void blockRecipe(UUID recipeId) throws RecipeException {
         try {
             recipeYoutubeMetaService.block(recipeId);
@@ -442,5 +446,95 @@ public class RecipeFacade {
                 rankedIds.stream().map(map::get).filter(Objects::nonNull).toList();
 
         return CursorPage.of(ordered, rankedIdsPage.nextCursor());
+    }
+
+    // ── 공개 레시피 API용 ──
+
+    /**
+     * 공개 레시피 목록 조회 (cuisine 필터 옵션)
+     *
+     * @param cuisine 요리 종류 (null이면 전체)
+     * @param cursor 페이징 커서
+     * @return 공개 레시피 개요 커서 페이지
+     * @throws CheftoryException 조회 실패 시
+     */
+    public CursorPage<PublicRecipeOverview> getPublicRecipes(String cuisine, String cursor) throws CheftoryException {
+        CursorPage<RecipeInfo> page;
+        if (cuisine != null && !cuisine.isBlank()) {
+            RecipeCuisineType type = RecipeCuisineType.fromString(cuisine);
+            page = recipeInfoService.getPublicCuisineRecipes(type, cursor);
+        } else {
+            page = recipeInfoService.getPublicRecipes(cursor);
+        }
+
+        List<PublicRecipeOverview> overviews = makePublicOverviews(page.items());
+        return CursorPage.of(overviews, page.nextCursor());
+    }
+
+    /**
+     * 공개 레시피 상세 조회 (viewCount 증가 안함 — SEO 봇 트래픽 오염 방지)
+     *
+     * @param recipeId 레시피 ID
+     * @return 공개 레시피 상세 정보
+     * @throws CheftoryException 레시피를 찾을 수 없을 때
+     */
+    public PublicRecipeDetail getPublicRecipeById(UUID recipeId) throws CheftoryException {
+        RecipeInfo recipe = recipeInfoService.getByIdPublic(recipeId)
+                .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
+
+        RecipeDetailMeta detailMeta = recipeDetailMetaService.get(recipeId);
+        RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
+        List<RecipeIngredient> ingredients = recipeIngredientService.gets(recipeId);
+        List<RecipeStep> steps = recipeStepService.gets(recipeId);
+        List<RecipeTag> tags = recipeTagService.gets(recipeId);
+        List<RecipeBriefing> briefings = recipeBriefingService.gets(recipeId);
+
+        return PublicRecipeDetail.of(recipe, detailMeta, youtubeMeta, ingredients, steps, tags, briefings);
+    }
+
+    /**
+     * 사이트맵 데이터 조회
+     *
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @return 사이트맵 응답
+     */
+    public PublicRecipeSitemapResponse getSitemapEntries(int page, int size) {
+        List<SitemapEntry> entries = recipeInfoService.getPublicForSitemap(page, size).stream()
+                .map(r -> new SitemapEntry(r.getId(), r.getUpdatedAt()))
+                .toList();
+        long total = recipeInfoService.countPublicRecipes();
+        return new PublicRecipeSitemapResponse(entries, total);
+    }
+
+    /**
+     * 공개 레시피 목록용 배치 조회 헬퍼 (N+1 방지)
+     */
+    private List<PublicRecipeOverview> makePublicOverviews(List<RecipeInfo> recipes) {
+        List<UUID> recipeIds = recipes.stream().map(RecipeInfo::getId).toList();
+
+        Map<UUID, RecipeYoutubeMeta> youtubeMetaMap = recipeYoutubeMetaService.gets(recipeIds).stream()
+                .collect(Collectors.toMap(RecipeYoutubeMeta::getRecipeId, Function.identity(), (a, b) -> a));
+
+        Map<UUID, RecipeDetailMeta> detailMetaMap = recipeDetailMetaService.getIn(recipeIds).stream()
+                .collect(Collectors.toMap(RecipeDetailMeta::getRecipeId, Function.identity()));
+
+        Map<UUID, List<RecipeTag>> tagsMap =
+                recipeTagService.gets(recipeIds).stream().collect(Collectors.groupingBy(RecipeTag::getRecipeId));
+
+        return recipes.stream()
+                .map(recipe -> {
+                    UUID recipeId = recipe.getId();
+                    RecipeYoutubeMeta youtubeMeta = youtubeMetaMap.get(recipeId);
+                    if (youtubeMeta == null) {
+                        log.warn("공개 레시피 유튜브 메타 누락: recipeId={}", recipeId);
+                        return null;
+                    }
+                    RecipeDetailMeta detailMeta = detailMetaMap.get(recipeId);
+                    List<RecipeTag> tags = tagsMap.getOrDefault(recipeId, Collections.emptyList());
+                    return PublicRecipeOverview.of(recipe, youtubeMeta, detailMeta, tags);
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 }

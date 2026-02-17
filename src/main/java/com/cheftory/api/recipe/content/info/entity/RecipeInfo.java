@@ -40,6 +40,17 @@ public class RecipeInfo extends MarketScope {
     @Column(nullable = false)
     private long creditCost;
 
+    @Column(nullable = false)
+    private boolean isPublic = false;
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public boolean isPublic() {
+        return this.isPublic;
+    }
+
     /**
      * 레시피 기본 정보 생성
      *
@@ -49,7 +60,7 @@ public class RecipeInfo extends MarketScope {
     public static RecipeInfo create(Clock clock) {
         LocalDateTime now = clock.now();
         return new RecipeInfo(
-                UUID.randomUUID(), INITIAL_VIEW_COUNT, now, now, RecipeStatus.IN_PROGRESS, DEFAULT_CREDIT_COST);
+                UUID.randomUUID(), INITIAL_VIEW_COUNT, now, now, RecipeStatus.IN_PROGRESS, DEFAULT_CREDIT_COST, false);
     }
 
     /**

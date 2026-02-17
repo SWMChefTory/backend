@@ -5,7 +5,6 @@ import com.cheftory.api.exception.CheftoryException;
 import com.cheftory.api.ranking.RankingEventType;
 import com.cheftory.api.ranking.RankingItemType;
 import com.cheftory.api.ranking.RankingSurfaceType;
-import jakarta.transaction.Transactional;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +12,7 @@ import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 랭킹 상호작용 서비스.

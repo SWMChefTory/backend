@@ -6,9 +6,9 @@ import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipe.creation.identify.RecipeIdentifyService;
 import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 레시피 생성 트랜잭션 서비스.
@@ -31,7 +31,7 @@ public class RecipeCreationTxService {
      * @return 생성된 레시피 정보
      * @throws RecipeIdentifyException 레시피 식별 정보 생성 실패 시 (이미 진행 중인 경우)
      */
-    @Transactional
+    @Transactional(rollbackFor = RecipeIdentifyException.class)
     public RecipeInfo createWithIdentifyWithVideoInfo(YoutubeVideoInfo videoInfo) throws RecipeIdentifyException {
         RecipeInfo recipeInfo = recipeInfoService.create();
         recipeIdentifyService.create(videoInfo.getVideoUri());

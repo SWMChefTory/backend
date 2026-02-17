@@ -125,4 +125,64 @@ public interface RecipeInfoRepository {
      * @return 존재 여부
      */
     boolean exists(UUID recipeId);
+
+    // ── 공개 레시피 API용 ──
+
+    /**
+     * 공개 레시피 단건 조회
+     *
+     * @param id 레시피 ID
+     * @return 공개 레시피 정보 (없으면 Optional.empty())
+     */
+    java.util.Optional<RecipeInfo> findByIdPublic(UUID id);
+
+    /**
+     * 공개 레시피 첫 페이지 조회
+     *
+     * @return 공개 레시피 커서 페이지
+     */
+    CursorPage<RecipeInfo> publicFirst();
+
+    /**
+     * 공개 레시피 다음 페이지 조회 (커서 기반)
+     *
+     * @param cursor 페이징 커서
+     * @return 공개 레시피 커서 페이지
+     * @throws CursorException 커서 처리 중 예외 발생 시
+     */
+    CursorPage<RecipeInfo> publicKeyset(String cursor) throws CursorException;
+
+    /**
+     * 공개 + cuisine 필터 첫 페이지 조회
+     *
+     * @param tag 요리 종류 태그
+     * @return 요리 종류별 공개 레시피 커서 페이지
+     */
+    CursorPage<RecipeInfo> publicCuisineFirst(String tag);
+
+    /**
+     * 공개 + cuisine 필터 다음 페이지 조회 (커서 기반)
+     *
+     * @param tag 요리 종류 태그
+     * @param cursor 페이징 커서
+     * @return 요리 종류별 공개 레시피 커서 페이지
+     * @throws CursorException 커서 처리 중 예외 발생 시
+     */
+    CursorPage<RecipeInfo> publicCuisineKeyset(String tag, String cursor) throws CursorException;
+
+    /**
+     * 사이트맵용 공개 레시피 목록 조회
+     *
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @return 공개 레시피 목록
+     */
+    List<RecipeInfo> findAllPublicForSitemap(int page, int size);
+
+    /**
+     * 공개 레시피 총 수
+     *
+     * @return 공개 레시피 수
+     */
+    long countPublic();
 }
