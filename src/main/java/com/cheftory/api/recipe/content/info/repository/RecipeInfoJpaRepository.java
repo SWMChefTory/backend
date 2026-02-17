@@ -4,6 +4,7 @@ import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -128,4 +129,81 @@ public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID>
             @Param("lastViewCount") long lastViewCount,
             @Param("lastId") UUID lastId,
             Pageable pageable);
+
+    // ── 공개 레시피 API용 쿼리 ──
+
+    Optional<RecipeInfo> findByIdAndIsPublicTrueAndRecipeStatus(UUID id, RecipeStatus status);
+
+    @Query("""
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status and r.isPublic = true
+  order by r.viewCount desc, r.id desc
+""")
+    List<RecipeInfo> findPublicFirst(@Param("status") RecipeStatus status, Pageable pageable);
+
+    @Query("""
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status and r.isPublic = true
+    and (
+      r.viewCount < :lastViewCount
+      or (r.viewCount = :lastViewCount and r.id < :lastId)
+    )
+  order by r.viewCount desc, r.id desc
+""")
+    List<RecipeInfo> findPublicKeyset(
+            @Param("status") RecipeStatus status,
+            @Param("lastViewCount") long lastViewCount,
+            @Param("lastId") UUID lastId,
+            Pageable pageable);
+
+    @Query("""
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status and r.isPublic = true
+    and exists (
+      select 1
+      from RecipeTag t
+      where t.recipeId = r.id
+        and t.tag = :tag
+    )
+  order by r.viewCount desc, r.id desc
+""")
+    List<RecipeInfo> findPublicCuisineFirst(
+            @Param("tag") String tag, @Param("status") RecipeStatus status, Pageable pageable);
+
+    @Query("""
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status and r.isPublic = true
+    and exists (
+      select 1
+      from RecipeTag t
+      where t.recipeId = r.id
+        and t.tag = :tag
+    )
+    and (
+      r.viewCount < :lastViewCount
+      or (r.viewCount = :lastViewCount and r.id < :lastId)
+    )
+  order by r.viewCount desc, r.id desc
+""")
+    List<RecipeInfo> findPublicCuisineKeyset(
+            @Param("tag") String tag,
+            @Param("status") RecipeStatus status,
+            @Param("lastViewCount") long lastViewCount,
+            @Param("lastId") UUID lastId,
+            Pageable pageable);
+
+    @Query("""
+  select r
+  from RecipeInfo r
+  where r.recipeStatus = :status and r.isPublic = true
+  order by r.updatedAt desc
+""")
+    List<RecipeInfo> findAllPublic(@Param("status") RecipeStatus status, Pageable pageable);
+
+    @Query("select count(r) from RecipeInfo r where r.recipeStatus = :status and r.isPublic = true")
+    long countPublic(@Param("status") RecipeStatus status);
 }

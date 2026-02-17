@@ -173,4 +173,63 @@ public class RecipeInfoService {
         boolean first = (cursor == null || cursor.isBlank());
         return first ? repository.cusineFirst(tag) : repository.cuisineKeyset(tag, cursor);
     }
+
+    // ── 공개 레시피 API용 ──
+
+    /**
+     * 공개 레시피 단건 조회
+     *
+     * @param recipeId 레시피 ID
+     * @return 공개 레시피 정보 (없으면 Optional.empty())
+     */
+    public java.util.Optional<RecipeInfo> getByIdPublic(UUID recipeId) {
+        return repository.findByIdPublic(recipeId);
+    }
+
+    /**
+     * 공개 레시피 목록 조회 (커서 기반 페이징)
+     *
+     * @param cursor 페이징 커서
+     * @return 공개 레시피 커서 페이지
+     * @throws CursorException 커서 처리 중 예외 발생 시
+     */
+    public CursorPage<RecipeInfo> getPublicRecipes(String cursor) throws CursorException {
+        boolean first = (cursor == null || cursor.isBlank());
+        return first ? repository.publicFirst() : repository.publicKeyset(cursor);
+    }
+
+    /**
+     * 공개 + cuisine 필터 레시피 목록 조회 (커서 기반 페이징)
+     *
+     * @param type 요리 종류
+     * @param cursor 페이징 커서
+     * @return 요리 종류별 공개 레시피 커서 페이지
+     * @throws CursorException 커서 처리 중 예외 발생 시
+     */
+    public CursorPage<RecipeInfo> getPublicCuisineRecipes(RecipeCuisineType type, String cursor)
+            throws CursorException {
+        String tag = translator.translate(type.messageKey());
+        boolean first = (cursor == null || cursor.isBlank());
+        return first ? repository.publicCuisineFirst(tag) : repository.publicCuisineKeyset(tag, cursor);
+    }
+
+    /**
+     * 사이트맵용 공개 레시피 목록 조회
+     *
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @return 공개 레시피 목록
+     */
+    public List<RecipeInfo> getPublicForSitemap(int page, int size) {
+        return repository.findAllPublicForSitemap(page, size);
+    }
+
+    /**
+     * 공개 레시피 총 수
+     *
+     * @return 공개 레시피 수
+     */
+    public long countPublicRecipes() {
+        return repository.countPublic();
+    }
 }
