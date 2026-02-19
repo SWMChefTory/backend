@@ -38,6 +38,7 @@ services:
       COUPANG_PARTNERS_ACCESS_KEY: ${COUPANG_PARTNERS_ACCESS_KEY}
       COUPANG_PARTNERS_SECRET_KEY: ${COUPANG_PARTNERS_SECRET_KEY}
       TZ: Asia/Seoul
+      JAVA_TOOL_OPTIONS: "-Xms256m -Xmx384m"
     networks:
       - cheftory_network
     restart: always
