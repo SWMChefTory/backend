@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 향후 수정될 버그들
 
+## [1.1.29] - 2026-02-23
+
+### Added
+- **SEO 공개 레시피 API 비디오 타입 필드 추가**: `PublicRecipeDetail`에 `videoType` (NORMAL/SHORTS) 필드 추가
+  - `YoutubeMetaType` 기반 비디오 타입을 공개 API 응답에 포함
+  - JSON 필드명: `video_type`
+
 ## [1.1.28] - 2026-02-18
 
 ### Added

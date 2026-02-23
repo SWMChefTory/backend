@@ -7,6 +7,7 @@ import com.cheftory.api.recipe.content.ingredient.entity.RecipeIngredient;
 import com.cheftory.api.recipe.content.step.entity.RecipeStep;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
+import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ import java.util.UUID;
  * @param steps 조리 단계 (details[], start 제외)
  * @param tags 태그 목록
  * @param briefings 브리핑 목록 (content 문자열만)
+ * @param videoType 비디오 타입 (NORMAL/SHORTS)
  * @param creditCost 크레딧 비용
  * @param createdAt 생성 일시
  * @param updatedAt 수정 일시
@@ -47,6 +49,7 @@ public record PublicRecipeDetail(
         @JsonProperty("video_title") String videoTitle,
         @JsonProperty("channel_title") String channelTitle,
         @JsonProperty("video_seconds") Integer videoSeconds,
+        @JsonProperty("video_type") YoutubeMetaType videoType,
         @JsonProperty("ingredients") List<PublicIngredient> ingredients,
         @JsonProperty("steps") List<PublicStep> steps,
         @JsonProperty("tags") List<String> tags,
@@ -78,6 +81,7 @@ public record PublicRecipeDetail(
                 youtubeMeta.getTitle(),
                 youtubeMeta.getChannelTitle(),
                 youtubeMeta.getVideoSeconds(),
+                youtubeMeta.getType(),
                 ingredients.stream().map(PublicIngredient::from).toList(),
                 steps.stream().map(PublicStep::from).toList(),
                 tags.stream().map(RecipeTag::getTag).toList(),
