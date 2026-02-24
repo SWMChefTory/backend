@@ -8,7 +8,8 @@ import java.util.UUID;
  *
  * @param recipeId 생성된 레시피 ID
  */
-public record RecipeCreateResponse(@JsonProperty("recipe_id") UUID recipeId) {
+public record RecipeCreateResponse(
+        @JsonProperty("recipe_id") UUID recipeId) {
     /**
      * 레시피 ID로부터 응답을 생성합니다.
      *

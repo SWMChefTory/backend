@@ -198,7 +198,9 @@ public record FullRecipeResponse(
          * @param text 텍스트
          * @param start 시작 시간 (초)
          */
-        private record Detail(@JsonProperty("text") String text, @JsonProperty("start") Double start) {
+        private record Detail(
+                @JsonProperty("text") String text,
+                @JsonProperty("start") Double start) {
 
             /**
              * RecipeStep.Detail로부터 변환
@@ -260,7 +262,8 @@ public record FullRecipeResponse(
      * @param detail 상세 단계
      */
     private record Progress(
-            @JsonProperty("step") RecipeProgressStep step, @JsonProperty("detail") RecipeProgressDetail detail) {
+            @JsonProperty("step") RecipeProgressStep step,
+            @JsonProperty("detail") RecipeProgressDetail detail) {
 
         /**
          * RecipeProgress로부터 변환

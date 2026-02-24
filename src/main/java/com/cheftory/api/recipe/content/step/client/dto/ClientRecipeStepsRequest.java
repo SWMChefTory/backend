@@ -9,7 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param mimeType 파일 MIME 타입
  */
 public record ClientRecipeStepsRequest(
-        @JsonProperty("file_uri") String fileUri, @JsonProperty("mime_type") String mimeType) {
+        @JsonProperty("file_uri") String fileUri,
+        @JsonProperty("mime_type") String mimeType) {
 
     /**
      * 요청 DTO 생성 팩토리 메서드

@@ -46,7 +46,9 @@ public record RecipeStepsResponse(@JsonProperty("steps") List<RecipeStepResponse
          * @param text 텍스트
          * @param start 시작 시간
          */
-        public record RecipeStepDetailResponse(@JsonProperty("text") String text, @JsonProperty("start") Double start) {
+        public record RecipeStepDetailResponse(
+                @JsonProperty("text") String text,
+                @JsonProperty("start") Double start) {
 
             /**
              * 엔티티의 Detail 객체로부터 DTO 생성

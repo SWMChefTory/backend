@@ -8,4 +8,5 @@ import jakarta.validation.constraints.NotNull;
  *
  * @param refreshToken 리프레시 토큰
  */
-public record LogoutRequest(@JsonProperty("refresh_token") @NotNull String refreshToken) {}
+public record LogoutRequest(
+        @JsonProperty("refresh_token") @NotNull String refreshToken) {}

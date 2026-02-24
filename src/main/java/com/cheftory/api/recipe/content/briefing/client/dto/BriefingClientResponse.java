@@ -14,7 +14,8 @@ import java.util.UUID;
  *
  * @param briefings 브리핑 내용 목록
  */
-public record BriefingClientResponse(@JsonProperty("briefings") @NotNull List<String> briefings) {
+public record BriefingClientResponse(
+        @JsonProperty("briefings") @NotNull List<String> briefings) {
     /**
      * 응답 DTO를 RecipeBriefing 엔티티 목록으로 변환
      *

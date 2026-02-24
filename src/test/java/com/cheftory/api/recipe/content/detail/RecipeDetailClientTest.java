@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailClient;
+import com.cheftory.api.recipe.content.detail.client.RecipeDetailHttpApi;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailRequest;
 import com.cheftory.api.recipe.content.detail.client.dto.ClientRecipeDetailResponse;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
@@ -22,6 +23,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @DisplayName("RecipeDetailClient 테스트")
 class RecipeDetailClientTest {
@@ -37,13 +40,16 @@ class RecipeDetailClientTest {
 
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+        RecipeDetailHttpApi recipeDetailHttpApi = HttpServiceProxyFactory.builderFor(WebClientAdapter.create(webClient))
+                .build()
+                .createClient(RecipeDetailHttpApi.class);
 
-        recipeDetailClient = new RecipeDetailClient(webClient);
+        recipeDetailClient = new RecipeDetailClient(recipeDetailHttpApi);
         objectMapper = new ObjectMapper();
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         mockWebServer.close();
     }
 
@@ -74,8 +80,7 @@ class RecipeDetailClientTest {
 
                 @BeforeEach
                 void setUp() throws Exception {
-                    String responseJson =
-                            """
+                    String responseJson = """
 {
 	"description": "간단한 요리 설명",
 	"cook_time": 30,
@@ -176,8 +181,7 @@ class RecipeDetailClientTest {
 
                 @BeforeEach
                 void setUp() throws Exception {
-                    String responseJson =
-                            """
+                    String responseJson = """
 {
 	"description": "",
 	"cook_time": 0,

@@ -20,8 +20,7 @@ public interface RecipeChallengeRepository extends JpaRepository<RecipeChallenge
      * @param pageable 페이지 정보
      * @return 레시피 챌린지 목록
      */
-    @Query(
-            """
+    @Query("""
             select c
             from RecipeChallenge c
       where c.challengeId = :challengeId
@@ -38,8 +37,7 @@ public interface RecipeChallengeRepository extends JpaRepository<RecipeChallenge
      * @param pageable 페이지 정보
      * @return 레시피 챌린지 목록
      */
-    @Query(
-            """
+    @Query("""
       select c
       from RecipeChallenge c
       where c.challengeId = :challengeId

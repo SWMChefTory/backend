@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaExternalClient;
+import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaHttpApi;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
@@ -25,6 +26,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @DisplayName("YoutubeMetaExternalClient 테스트")
 public class YoutubeMetaExternalClientTest {
@@ -41,8 +44,11 @@ public class YoutubeMetaExternalClientTest {
 
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+        YoutubeMetaHttpApi youtubeMetaHttpApi = HttpServiceProxyFactory.builderFor(WebClientAdapter.create(webClient))
+                .build()
+                .createClient(YoutubeMetaHttpApi.class);
 
-        youtubeMetaExternalClient = new YoutubeMetaExternalClient(webClient);
+        youtubeMetaExternalClient = new YoutubeMetaExternalClient(youtubeMetaHttpApi);
         ReflectionTestUtils.setField(youtubeMetaExternalClient, "youtubeDefaultKey", YOUTUBE_API_DEFAULT_KEY);
         ReflectionTestUtils.setField(youtubeMetaExternalClient, "youtubeBlockCheckKey", YOUTUBE_API_BLOCK_CHECK_KEY);
     }
@@ -78,8 +84,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": [
                                     {
@@ -88,7 +93,9 @@ public class YoutubeMetaExternalClientTest {
                                             "channelTitle": "맛있는 집밥 채널",
                                             "thumbnails": {
                                                 "maxres": {
-                                                    "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+                                                    "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+                                                    "width": 1280,
+                                                    "height": 720
                                                 }
                                             }
                                         },
@@ -132,8 +139,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": []
                             }
@@ -161,8 +167,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": [
                                     {
@@ -171,7 +176,9 @@ public class YoutubeMetaExternalClientTest {
                                             "channelTitle": "채널",
                                             "thumbnails": {
                                                 "maxres": {
-                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg",
+                                                    "width": 1280,
+                                                    "height": 720
                                                 }
                                             }
                                         },
@@ -209,8 +216,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": [
                                     {
@@ -219,7 +225,9 @@ public class YoutubeMetaExternalClientTest {
                                             "channelTitle": "채널",
                                             "thumbnails": {
                                                 "maxres": {
-                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg",
+                                                    "width": 1280,
+                                                    "height": 720
                                                 }
                                             }
                                         },
@@ -255,8 +263,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": [
                                     {
@@ -265,7 +272,9 @@ public class YoutubeMetaExternalClientTest {
                                             "channelTitle": "쇼츠 채널",
                                             "thumbnails": {
                                                 "maxres": {
-                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg",
+                                                    "width": 1280,
+                                                    "height": 720
                                                 }
                                             }
                                         },
@@ -322,8 +331,7 @@ public class YoutubeMetaExternalClientTest {
                 @BeforeEach
                 void setUp() {
                     // 메인 비디오 응답
-                    String videoResponseBody =
-                            """
+                    String videoResponseBody = """
                             {
                                 "items": [
                                     {
@@ -333,7 +341,9 @@ public class YoutubeMetaExternalClientTest {
                                             "channelId": "UC123456789",
                                             "thumbnails": {
                                                 "maxres": {
-                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg",
+                                                    "width": 1280,
+                                                    "height": 720
                                                 }
                                             }
                                         },
@@ -355,8 +365,7 @@ public class YoutubeMetaExternalClientTest {
                             .build());
 
                     // 쇼츠 플레이리스트 응답 (비디오가 있음)
-                    String playlistResponseBody =
-                            """
+                    String playlistResponseBody = """
                             {
                                 "items": [
                                     {
@@ -392,8 +401,7 @@ public class YoutubeMetaExternalClientTest {
                 @BeforeEach
                 void setUp() {
                     // 메인 비디오 응답 (2분 - 60초 초과)
-                    String videoResponseBody =
-                            """
+                    String videoResponseBody = """
                             {
                                 "items": [
                                     {
@@ -403,7 +411,9 @@ public class YoutubeMetaExternalClientTest {
                                             "channelId": "UC123456789",
                                             "thumbnails": {
                                                 "maxres": {
-                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg"
+                                                    "url": "https://i.ytimg.com/vi/test/maxresdefault.jpg",
+                                                    "width": 1280,
+                                                    "height": 720
                                                 }
                                             }
                                         },
@@ -463,8 +473,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": []
                             }
@@ -491,8 +500,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": [
                                     {
@@ -525,8 +533,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": [
                                     {
@@ -559,8 +566,7 @@ public class YoutubeMetaExternalClientTest {
 
                 @BeforeEach
                 void setUp() {
-                    String responseBody =
-                            """
+                    String responseBody = """
                             {
                                 "items": [
                                     {

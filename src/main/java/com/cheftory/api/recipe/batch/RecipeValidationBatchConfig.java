@@ -17,21 +17,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.listener.StepExecutionListener;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.Step;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.data.RepositoryItemReader;
-import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
-import org.springframework.batch.item.database.JdbcBatchItemWriter;
-import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
-import org.springframework.batch.item.support.CompositeItemWriter;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
+import org.springframework.batch.infrastructure.item.ItemWriter;
+import org.springframework.batch.infrastructure.item.data.RepositoryItemReader;
+import org.springframework.batch.infrastructure.item.data.builder.RepositoryItemReaderBuilder;
+import org.springframework.batch.infrastructure.item.database.JdbcBatchItemWriter;
+import org.springframework.batch.infrastructure.item.database.builder.JdbcBatchItemWriterBuilder;
+import org.springframework.batch.infrastructure.item.support.CompositeItemWriter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -93,7 +93,8 @@ public class RecipeValidationBatchConfig {
             RepositoryItemReader<RecipeYoutubeMeta> youtubeMetaReader,
             CompositeItemWriter<RecipeYoutubeMeta> compositeWriter) {
         return new StepBuilder("youtubeValidationStep", jobRepository)
-                .<RecipeYoutubeMeta, RecipeYoutubeMeta>chunk(50, transactionManager)
+                .<RecipeYoutubeMeta, RecipeYoutubeMeta>chunk(50)
+                .transactionManager(transactionManager)
                 .listener(marketContextListener)
                 .reader(youtubeMetaReader)
                 .processor(youtubeUrlProcessor())
@@ -117,8 +118,7 @@ public class RecipeValidationBatchConfig {
     public JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter(
             @Value("#{jobParameters['market']}") String marketParam) {
         return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-                .sql(
-                        """
+                .sql("""
           UPDATE recipe_youtube_meta
           SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
           WHERE id = ? AND market = ?
@@ -137,8 +137,7 @@ public class RecipeValidationBatchConfig {
     public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter(
             @Value("#{jobParameters['market']}") String marketParam) {
         return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-                .sql(
-                        """
+                .sql("""
           UPDATE recipe
           SET recipe_status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
           WHERE id = ? AND market = ?
@@ -157,8 +156,7 @@ public class RecipeValidationBatchConfig {
     public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeBookmarkJdbcWriter(
             @Value("#{jobParameters['market']}") String marketParam) {
         return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-                .sql(
-                        """
+                .sql("""
           UPDATE recipe_bookmark
           SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
           WHERE recipe_id = ? AND market = ?
@@ -178,8 +176,7 @@ public class RecipeValidationBatchConfig {
             RecipeCreditPort recipeCreditPort,
             NamedParameterJdbcTemplate namedJdbc,
             @Value("#{jobParameters['market']}") String marketParam) {
-        final String sql =
-                """
+        final String sql = """
       SELECT
         rh.user_id AS user_id,
         r.id      AS recipe_id,
