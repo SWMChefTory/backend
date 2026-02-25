@@ -58,6 +58,6 @@ public class RecipeBriefingService {
      * @return 브리핑이 하나 이상 존재하면 {@code true}
      */
     public boolean exists(UUID recipeId) {
-        return !repository.findAllByRecipeId(recipeId).isEmpty();
+        return repository.existsByRecipeId(recipeId);
     }
 }

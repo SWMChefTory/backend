@@ -40,7 +40,7 @@ public class RecipeTagService {
     }
 
     public boolean exists(UUID recipeId) {
-        return !recipeTagRepository.finds(recipeId).isEmpty();
+        return recipeTagRepository.existsByRecipeId(recipeId);
     }
 
     /**

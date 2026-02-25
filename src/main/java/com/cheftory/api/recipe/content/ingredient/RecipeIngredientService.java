@@ -45,6 +45,6 @@ public class RecipeIngredientService {
     }
 
     public boolean exists(UUID recipeId) {
-        return !recipeIngredientRepository.finds(recipeId).isEmpty();
+        return recipeIngredientRepository.existsByRecipeId(recipeId);
     }
 }

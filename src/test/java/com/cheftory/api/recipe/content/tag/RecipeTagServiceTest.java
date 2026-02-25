@@ -261,6 +261,35 @@ public class RecipeTagServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("레시피 태그 존재 여부 확인 (exists)")
+    class Exists {
+
+        @Test
+        @DisplayName("태그가 존재하면 true를 반환하고 existsByRecipeId를 호출한다")
+        void returnsTrueWhenExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(true).when(recipeTagRepository).existsByRecipeId(recipeId);
+
+            boolean result = recipeTagService.exists(recipeId);
+
+            assertThat(result).isTrue();
+            verify(recipeTagRepository).existsByRecipeId(recipeId);
+        }
+
+        @Test
+        @DisplayName("태그가 없으면 false를 반환하고 existsByRecipeId를 호출한다")
+        void returnsFalseWhenNotExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(false).when(recipeTagRepository).existsByRecipeId(recipeId);
+
+            boolean result = recipeTagService.exists(recipeId);
+
+            assertThat(result).isFalse();
+            verify(recipeTagRepository).existsByRecipeId(recipeId);
+        }
+    }
+
     private RecipeTag createMockRecipeTag(String tagName, UUID recipeId) {
         RecipeTag tag = mock(RecipeTag.class);
         UUID tagId = UUID.randomUUID();

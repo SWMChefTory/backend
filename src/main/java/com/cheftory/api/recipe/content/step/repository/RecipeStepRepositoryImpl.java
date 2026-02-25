@@ -22,6 +22,11 @@ public class RecipeStepRepositoryImpl implements RecipeStepRepository {
         return repository.findAllByRecipeId(recipeId, sort);
     }
 
+    @Override
+    public boolean existsByRecipeId(UUID recipeId) {
+        return repository.existsByRecipeId(recipeId);
+    }
+
     @DbThrottled
     @Override
     public List<UUID> create(List<RecipeStep> recipeSteps) {

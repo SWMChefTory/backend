@@ -32,12 +32,7 @@ public class RecipeDetailMetaService {
     }
 
     public boolean exists(UUID recipeId) {
-        try {
-            repository.get(recipeId);
-            return true;
-        } catch (RecipeDetailMetaException e) {
-            return false;
-        }
+        return repository.exists(recipeId);
     }
 
     /**

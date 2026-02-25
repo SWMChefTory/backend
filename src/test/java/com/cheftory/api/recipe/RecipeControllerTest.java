@@ -212,6 +212,8 @@ public class RecipeControllerTest extends RestDocsTest {
                 .then()
                 .status(HttpStatus.OK)
                 .body("categorized_recipes", hasSize(1))
+                .body("categorized_recipes[0].recipe_status", equalTo("SUCCESS"))
+                .body("categorized_recipes[0].video_type", equalTo("NORMAL"))
                 .body("has_next", equalTo(true))
                 .body("next_cursor", equalTo(nextCursor));
 

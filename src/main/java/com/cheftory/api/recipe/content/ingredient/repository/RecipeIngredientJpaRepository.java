@@ -16,4 +16,6 @@ public interface RecipeIngredientJpaRepository extends JpaRepository<RecipeIngre
      * @return 재료 엔티티 목록
      */
     List<RecipeIngredient> findAllByRecipeId(UUID recipeId);
+
+    boolean existsByRecipeId(UUID recipeId);
 }
