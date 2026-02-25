@@ -2,7 +2,6 @@ package com.cheftory.api.recipe.creation.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 
@@ -18,13 +17,13 @@ class RecipeCreationExecutionContextTest {
         class GivenValidParameters {
             UUID recipeId;
             String videoId;
-            URI videoUrl;
+            UUID jobId;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
                 videoId = "test-video-id";
-                videoUrl = URI.create("https://youtu.be/test");
+                jobId = UUID.randomUUID();
             }
 
             @Nested
@@ -34,7 +33,7 @@ class RecipeCreationExecutionContextTest {
 
                 @BeforeEach
                 void setUp() {
-                    context = RecipeCreationExecutionContext.of(recipeId, videoId, videoUrl, "test-title");
+                    context = RecipeCreationExecutionContext.of(recipeId, videoId, "test-title", jobId);
                 }
 
                 @Test
@@ -43,10 +42,31 @@ class RecipeCreationExecutionContextTest {
                     assertThat(context).isNotNull();
                     assertThat(context.getRecipeId()).isEqualTo(recipeId);
                     assertThat(context.getVideoId()).isEqualTo(videoId);
-                    assertThat(context.getVideoUrl()).isEqualTo(videoUrl);
+                    assertThat(context.getTitle()).isEqualTo("test-title");
+                    assertThat(context.getJobId()).isEqualTo(jobId);
                     assertThat(context.getFileUri()).isNull();
                     assertThat(context.getMimeType()).isNull();
                 }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - title 없이 최소 파라미터가 주어졌을 때")
+        class GivenMinimalParams {
+            @Test
+            @DisplayName("Then - title/file 정보 없이 생성된다")
+            void thenCreatedWithoutTitle() {
+                UUID recipeId = UUID.randomUUID();
+                UUID jobId = UUID.randomUUID();
+
+                RecipeCreationExecutionContext context =
+                        RecipeCreationExecutionContext.of(recipeId, "video-min", jobId);
+
+                assertThat(context.getRecipeId()).isEqualTo(recipeId);
+                assertThat(context.getVideoId()).isEqualTo("video-min");
+                assertThat(context.getJobId()).isEqualTo(jobId);
+                assertThat(context.getTitle()).isNull();
+                assertThat(context.getFileUri()).isNull();
             }
         }
     }
@@ -65,7 +85,7 @@ class RecipeCreationExecutionContextTest {
             @BeforeEach
             void setUp() {
                 context = RecipeCreationExecutionContext.of(
-                        UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title");
+                        UUID.randomUUID(), "test-video-id", "test-title", UUID.randomUUID());
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
             }
@@ -86,7 +106,8 @@ class RecipeCreationExecutionContextTest {
                     assertThat(newContext).isNotNull();
                     assertThat(newContext.getRecipeId()).isEqualTo(context.getRecipeId());
                     assertThat(newContext.getVideoId()).isEqualTo(context.getVideoId());
-                    assertThat(newContext.getVideoUrl()).isEqualTo(context.getVideoUrl());
+                    assertThat(newContext.getTitle()).isEqualTo(context.getTitle());
+                    assertThat(newContext.getJobId()).isEqualTo(context.getJobId());
                     assertThat(newContext.getFileUri()).isEqualTo(fileUri);
                     assertThat(newContext.getMimeType()).isEqualTo(mimeType);
                 }
@@ -106,7 +127,7 @@ class RecipeCreationExecutionContextTest {
             @BeforeEach
             void setUp() {
                 context = RecipeCreationExecutionContext.of(
-                        UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title");
+                        UUID.randomUUID(), "test-video-id", "test-title", UUID.randomUUID());
             }
 
             @Test
@@ -130,7 +151,7 @@ class RecipeCreationExecutionContextTest {
                 mimeType = "video/mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
                         RecipeCreationExecutionContext.of(
-                                UUID.randomUUID(), "test-video-id", URI.create("https://youtu.be/test"), "test-title"),
+                                UUID.randomUUID(), "test-video-id", "test-title", UUID.randomUUID()),
                         fileUri,
                         mimeType);
             }
@@ -141,6 +162,31 @@ class RecipeCreationExecutionContextTest {
                 assertThat(context.getFileUri()).isEqualTo(fileUri);
                 assertThat(context.getMimeType()).isEqualTo(mimeType);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("유튜브 메타 반영 (withYoutubeMeta)")
+    class WithYoutubeMeta {
+        @Test
+        @DisplayName("기존 컨텍스트의 file/jobId는 유지하고 videoId/title만 갱신한다")
+        void updatesVideoIdAndTitleOnly() {
+            UUID recipeId = UUID.randomUUID();
+            UUID jobId = UUID.randomUUID();
+            RecipeCreationExecutionContext original = RecipeCreationExecutionContext.withFileInfo(
+                    RecipeCreationExecutionContext.of(recipeId, "old-video", "old-title", jobId),
+                    "s3://bucket/file.mp4",
+                    "video/mp4");
+
+            RecipeCreationExecutionContext updated =
+                    RecipeCreationExecutionContext.withYoutubeMeta(original, "new-video", "new-title");
+
+            assertThat(updated.getRecipeId()).isEqualTo(recipeId);
+            assertThat(updated.getJobId()).isEqualTo(jobId);
+            assertThat(updated.getFileUri()).isEqualTo("s3://bucket/file.mp4");
+            assertThat(updated.getMimeType()).isEqualTo("video/mp4");
+            assertThat(updated.getVideoId()).isEqualTo("new-video");
+            assertThat(updated.getTitle()).isEqualTo("new-title");
         }
     }
 }

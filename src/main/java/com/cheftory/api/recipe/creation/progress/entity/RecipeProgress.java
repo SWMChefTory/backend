@@ -17,7 +17,8 @@ import lombok.NoArgsConstructor;
 /**
  * 레시피 생성 진행 상태 엔티티
  *
- * <p>비동기 레시피 생성 파이프라인의 진행 상태를 추적합니다.</p>
+ * <p>비동기 레시피 생성 파이프라인의 진행 이벤트를 저장합니다.
+ * 동일 `recipeId`에 대해 여러 실행이 발생할 수 있으므로 `jobId`로 실행 단위를 구분합니다.</p>
  */
 @Entity
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -29,6 +30,12 @@ public class RecipeProgress extends MarketScope {
      */
     @Id
     private UUID id;
+
+    /**
+     * 동일 recipeId 내 비동기 실행 식별자
+     */
+    @Column(nullable = false)
+    private UUID jobId;
 
     /**
      * 생성 일시
@@ -67,6 +74,7 @@ public class RecipeProgress extends MarketScope {
      * 레시피 진행 상태 생성
      *
      * @param recipeId 레시피 ID
+     * @param jobId 비동기 실행 식별자
      * @param clock 현재 시간 제공 객체
      * @param step 진행 단계
      * @param detail 상세 단계
@@ -75,11 +83,12 @@ public class RecipeProgress extends MarketScope {
      */
     public static RecipeProgress create(
             UUID recipeId,
+            UUID jobId,
             Clock clock,
             RecipeProgressStep step,
             RecipeProgressDetail detail,
             RecipeProgressState state) {
 
-        return new RecipeProgress(UUID.randomUUID(), clock.now(), step, detail, state, recipeId);
+        return new RecipeProgress(UUID.randomUUID(), jobId, clock.now(), step, detail, state, recipeId);
     }
 }

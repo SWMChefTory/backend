@@ -39,6 +39,10 @@ public class RecipeTagService {
         return recipeTagRepository.finds(recipeIds);
     }
 
+    public boolean exists(UUID recipeId) {
+        return !recipeTagRepository.finds(recipeId).isEmpty();
+    }
+
     /**
      * 레시피 태그 목록 생성
      *

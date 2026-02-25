@@ -4,6 +4,7 @@ import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.I18nTranslator;
 import com.cheftory.api._common.cursor.*;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.entity.RecipeSourceType;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.info.repository.RecipeInfoRepository;
@@ -11,13 +12,15 @@ import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * 레시피 기본 정보 도메인의 비즈니스 로직을 처리하는 서비스
+ * 레시피 기본 정보 도메인 서비스.
+ *
+ * <p>`recipe`의 상태 전이(`IN_PROGRESS/SUCCESS/FAILED/BANNED/BLOCKED`), 소스 식별자(`sourceType/sourceKey`)
+ * 기반 조회, retry(조건부 `FAILED -> IN_PROGRESS`)를 담당합니다.</p>
  */
 @Service
 @Slf4j
@@ -45,6 +48,10 @@ public class RecipeInfoService {
             throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_BANNED);
         }
 
+        if (recipeInfo.isBanned()) {
+            throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_BANNED);
+        }
+
         return recipeInfo;
     }
 
@@ -57,13 +64,8 @@ public class RecipeInfoService {
         repository.increaseCount(recipeId);
     }
 
-    /**
-     * 레시피 기본 정보 생성
-     *
-     * @return 생성된 레시피 정보 엔티티
-     */
-    public RecipeInfo create() {
-        RecipeInfo recipeInfo = RecipeInfo.create(clock);
+    public RecipeInfo create(RecipeSourceType sourceType, String sourceKey) throws RecipeInfoException {
+        RecipeInfo recipeInfo = RecipeInfo.create(clock, sourceType, sourceKey);
         repository.create(recipeInfo);
         return recipeInfo;
     }
@@ -86,12 +88,6 @@ public class RecipeInfoService {
      */
     public List<RecipeInfo> gets(List<UUID> recipeIds) {
         return repository.gets(recipeIds);
-    }
-
-    @Deprecated
-    public List<RecipeInfo> getValidRecipes(List<UUID> recipeIds) {
-        return Stream.concat(repository.gets(recipeIds).stream(), repository.getProgressRecipes(recipeIds).stream())
-                .toList();
     }
 
     /**
@@ -139,6 +135,22 @@ public class RecipeInfoService {
         repository.block(recipeId, clock);
     }
 
+    public void banned(UUID recipeId) throws RecipeInfoException {
+        repository.banned(recipeId, clock);
+    }
+
+    /**
+     * 실패한 레시피를 재시도 가능한 상태로 전환합니다.
+     *
+     * <p>내부적으로 `FAILED -> IN_PROGRESS` 조건부 상태 전이를 수행하며, 성공 시 새 `currentJobId`가 발급됩니다.</p>
+     *
+     * @return 상태 전이에 성공하면 {@code true}, 경쟁 요청 등으로 전환 실패하면 {@code false}
+     */
+    public boolean retry(UUID recipeId) {
+        UUID newJobId = UUID.randomUUID();
+        return repository.retry(recipeId, clock, newJobId);
+    }
+
     /**
      * 레시피 존재 여부 확인
      *
@@ -150,6 +162,15 @@ public class RecipeInfoService {
     }
 
     /**
+     * 특정 레시피와 실행 식별자(jobId)가 일치하는 레코드를 조회합니다.
+     *
+     * <p>비동기 생성 제출 직후 재조회 시점에 현재 실행(`currentJobId`) 일치를 검증하는 용도로 사용됩니다.</p>
+     */
+    public RecipeInfo get(UUID recipeId, UUID jobId) throws RecipeInfoException {
+        return repository.get(recipeId, jobId);
+    }
+
+    /**
      * 레시피 정보 조회
      *
      * @param recipeId 레시피 ID
@@ -158,6 +179,13 @@ public class RecipeInfoService {
      */
     public RecipeInfo get(UUID recipeId) throws RecipeInfoException {
         return repository.get(recipeId);
+    }
+
+    /**
+     * 소스 식별자(`sourceKey`)로 레시피를 조회합니다.
+     */
+    public RecipeInfo getBySource(String sourceKey, RecipeSourceType sourceType) throws RecipeInfoException {
+        return repository.get(sourceKey, sourceType);
     }
 
     /**

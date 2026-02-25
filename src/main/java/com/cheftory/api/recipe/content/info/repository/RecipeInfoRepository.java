@@ -4,6 +4,7 @@ import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.entity.RecipeSourceType;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import java.util.List;
@@ -22,6 +23,8 @@ public interface RecipeInfoRepository {
      */
     RecipeInfo get(UUID recipeId) throws RecipeInfoException;
 
+    RecipeInfo get(String sourceKey, RecipeSourceType sourceType) throws RecipeInfoException;
+
     /**
      * 레시피 조회수 증가
      *
@@ -35,7 +38,7 @@ public interface RecipeInfoRepository {
      * @param recipeInfo 저장할 레시피 정보 엔티티
      * @return 저장된 레시피 정보 엔티티
      */
-    RecipeInfo create(RecipeInfo recipeInfo);
+    RecipeInfo create(RecipeInfo recipeInfo) throws RecipeInfoException;
 
     /**
      * 진행 중인 레시피 목록 조회
@@ -108,6 +111,10 @@ public interface RecipeInfoRepository {
      */
     void block(UUID recipeId, Clock clock) throws RecipeInfoException;
 
+    void banned(UUID recipeId, Clock clock) throws RecipeInfoException;
+
+    boolean retry(UUID recipeId, Clock clock, UUID newJobId);
+
     /**
      * 레시피 상태를 성공으로 변경
      *
@@ -125,4 +132,6 @@ public interface RecipeInfoRepository {
      * @return 존재 여부
      */
     boolean exists(UUID recipeId);
+
+    RecipeInfo get(UUID recipeId, UUID jobId) throws RecipeInfoException;
 }

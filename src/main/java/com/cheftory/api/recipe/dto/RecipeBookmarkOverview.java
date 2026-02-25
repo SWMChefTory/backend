@@ -7,6 +7,7 @@ import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
+import jakarta.annotation.Nullable;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.lang.Nullable;
 
 /**
  * 레시피 북마크 개요 정보
@@ -123,11 +123,13 @@ public class RecipeBookmarkOverview {
     public static RecipeBookmarkOverview of(
             RecipeInfo recipe,
             RecipeBookmark recipeBookmark,
-            RecipeYoutubeMeta youtubeMeta,
+            @Nullable RecipeYoutubeMeta youtubeMeta,
             @Nullable RecipeDetailMeta detailMeta,
             @Nullable List<RecipeTag> tags) {
 
         String title = detailMeta == null ? null : detailMeta.getTitle();
+        String youtubeTitle = youtubeMeta == null ? null : youtubeMeta.getTitle();
+        String resolvedTitle = (title != null && !title.isBlank()) ? title : youtubeTitle;
         return new RecipeBookmarkOverview(
                 recipe.getId(),
                 recipe.getRecipeStatus(),
@@ -137,13 +139,13 @@ public class RecipeBookmarkOverview {
                 recipeBookmark.getViewedAt(),
                 recipeBookmark.getLastPlaySeconds(),
                 recipeBookmark.getRecipeCategoryId(),
-                (title != null && !title.isBlank()) ? title : youtubeMeta.getTitle(),
-                youtubeMeta.getChannelTitle(),
-                youtubeMeta.getVideoId(),
-                youtubeMeta.getVideoUri(),
-                youtubeMeta.getThumbnailUrl(),
-                youtubeMeta.getVideoSeconds(),
-                youtubeMeta.getType(),
+                resolvedTitle,
+                youtubeMeta == null ? null : youtubeMeta.getChannelTitle(),
+                youtubeMeta == null ? null : youtubeMeta.getVideoId(),
+                youtubeMeta == null ? null : youtubeMeta.getVideoUri(),
+                youtubeMeta == null ? null : youtubeMeta.getThumbnailUrl(),
+                youtubeMeta == null ? null : youtubeMeta.getVideoSeconds(),
+                youtubeMeta == null ? null : youtubeMeta.getType(),
                 detailMeta == null ? null : detailMeta.getDescription(),
                 detailMeta == null ? null : detailMeta.getServings(),
                 detailMeta == null ? null : detailMeta.getCookTime(),

@@ -1,11 +1,14 @@
 package com.cheftory.api.recipe.content.info.repository;
 
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.entity.RecipeSourceType;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,13 +18,37 @@ import org.springframework.data.repository.query.Param;
  * 레시피 기본 정보 JPA Repository
  */
 public interface RecipeInfoJpaRepository extends JpaRepository<RecipeInfo, UUID> {
+    /**
+     * 배치 reader용 상태 기준 페이지 조회.
+     */
+    Slice<RecipeInfo> findByRecipeStatus(RecipeStatus recipeStatus, Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("update RecipeInfo r set r.viewCount = r.viewCount + 1 where r.id = :id")
     void increaseCount(@Param("id") UUID id);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("""
+      update RecipeInfo r
+      set r.recipeStatus = :toStatus,
+          r.currentJobId = :newJobId,
+          r.updatedAt = CURRENT_TIMESTAMP
+      where r.id = :id
+        and r.recipeStatus = :fromStatus
+    """)
+    int updateStatusAndJobIdIfStatus(
+            @Param("id") UUID id,
+            @Param("fromStatus") RecipeStatus fromStatus,
+            @Param("toStatus") RecipeStatus toStatus,
+            @Param("newJobId") UUID newJobId);
+
     List<RecipeInfo> findRecipesByIdInAndRecipeStatus(List<UUID> recipeIds, RecipeStatus statuses);
+
+    Optional<RecipeInfo> findBySourceKeyAndSourceType(String sourceKey, RecipeSourceType sourceType);
+
+    Optional<RecipeInfo> findByIdAndCurrentJobId(UUID recipeId, UUID jobId);
 
     @Query("""
   select r

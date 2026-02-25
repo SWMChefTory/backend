@@ -71,7 +71,7 @@ public class RecipeController {
     @PostMapping("/api/v1/recipes")
     public RecipeCreateResponse create(@RequestBody RecipeCreateRequest request, @UserPrincipal UUID userId)
             throws RecipeException, CreditException {
-        UUID recipeId = recipeCreationFacade.createBookmark(request.toUserTarget(userId));
+        UUID recipeId = recipeCreationFacade.create(request.toUserTarget(userId));
         return RecipeCreateResponse.from(recipeId);
     }
 
@@ -247,7 +247,7 @@ public class RecipeController {
     @PostMapping("/papi/v1/recipes")
     public RecipeCreateResponse createCrawledRecipe(@RequestBody RecipeCreateRequest request)
             throws RecipeException, CreditException {
-        UUID recipeId = recipeCreationFacade.createBookmark(request.toCrawlerTarget());
+        UUID recipeId = recipeCreationFacade.create(request.toCrawlerTarget());
         return RecipeCreateResponse.from(recipeId);
     }
 

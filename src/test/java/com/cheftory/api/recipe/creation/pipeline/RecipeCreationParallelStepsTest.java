@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api.recipe.exception.RecipeException;
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -38,8 +37,7 @@ class RecipeCreationParallelStepsTest {
                 step2 = mock(RecipeCreationPipelineStep.class);
                 step3 = mock(RecipeCreationPipelineStep.class);
                 sut = new RecipeCreationParallelSteps(directExecutor, List.of(step1, step2, step3));
-                context = RecipeCreationExecutionContext.of(
-                        UUID.randomUUID(), "video-123", URI.create("https://youtu.be/video-123"), null);
+                context = RecipeCreationExecutionContext.of(UUID.randomUUID(), "video-123", UUID.randomUUID());
             }
 
             @Nested

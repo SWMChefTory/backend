@@ -2,6 +2,7 @@ package com.cheftory.api.recipe.content.info;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -11,6 +12,7 @@ import com.cheftory.api._common.I18nTranslator;
 import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.entity.RecipeSourceType;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
 import com.cheftory.api.recipe.content.info.repository.RecipeInfoRepository;
@@ -55,6 +57,7 @@ class RecipeInfoServiceTest {
                 recipeInfo = mock(RecipeInfo.class);
                 doReturn(false).when(recipeInfo).isFailed();
                 doReturn(false).when(recipeInfo).isBlocked();
+                doReturn(false).when(recipeInfo).isBanned();
                 doReturn(recipeInfo).when(repository).get(recipeId);
             }
 
@@ -117,6 +120,7 @@ class RecipeInfoServiceTest {
                 recipeInfo = mock(RecipeInfo.class);
                 doReturn(false).when(recipeInfo).isFailed();
                 doReturn(true).when(recipeInfo).isBlocked();
+                doReturn(false).when(recipeInfo).isBanned();
                 doReturn(recipeInfo).when(repository).get(recipeId);
             }
 
@@ -131,6 +135,31 @@ class RecipeInfoServiceTest {
                             .isInstanceOf(RecipeInfoException.class)
                             .hasFieldOrPropertyWithValue("error", RecipeInfoErrorCode.RECIPE_BANNED);
                 }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - banned 상태의 레시피가 있을 때")
+        class GivenBannedRecipe {
+            UUID recipeId;
+            RecipeInfo recipeInfo;
+
+            @BeforeEach
+            void setUp() throws RecipeInfoException {
+                recipeId = UUID.randomUUID();
+                recipeInfo = mock(RecipeInfo.class);
+                doReturn(false).when(recipeInfo).isFailed();
+                doReturn(false).when(recipeInfo).isBlocked();
+                doReturn(true).when(recipeInfo).isBanned();
+                doReturn(recipeInfo).when(repository).get(recipeId);
+            }
+
+            @Test
+            @DisplayName("Then - RECIPE_BANNED 예외를 던진다")
+            void thenThrowsException() {
+                assertThatThrownBy(() -> service.getSuccess(recipeId))
+                        .isInstanceOf(RecipeInfoException.class)
+                        .hasFieldOrPropertyWithValue("error", RecipeInfoErrorCode.RECIPE_BANNED);
             }
         }
     }
@@ -156,8 +185,8 @@ class RecipeInfoServiceTest {
         class Create {
             @Test
             @DisplayName("신규 레시피를 생성해 repository로 위임한다")
-            void delegates() {
-                RecipeInfo created = service.create();
+            void delegates() throws RecipeInfoException {
+                RecipeInfo created = service.create(RecipeSourceType.YOUTUBE, "video-" + UUID.randomUUID());
                 assertThat(created).isNotNull();
                 verify(repository).create(created);
             }
@@ -244,6 +273,34 @@ class RecipeInfoServiceTest {
         }
 
         @Nested
+        @DisplayName("banned")
+        class Banned {
+            @Test
+            @DisplayName("repository.banned로 위임한다")
+            void delegates() throws RecipeInfoException {
+                UUID recipeId = UUID.randomUUID();
+                service.banned(recipeId);
+                verify(repository).banned(recipeId, clock);
+            }
+        }
+
+        @Nested
+        @DisplayName("retry")
+        class Retry {
+            @Test
+            @DisplayName("repository.retry 결과를 반환한다")
+            void delegates() {
+                UUID recipeId = UUID.randomUUID();
+                doReturn(true).when(repository).retry(eq(recipeId), eq(clock), org.mockito.ArgumentMatchers.any());
+
+                boolean result = service.retry(recipeId);
+
+                assertThat(result).isTrue();
+                verify(repository).retry(eq(recipeId), eq(clock), org.mockito.ArgumentMatchers.any());
+            }
+        }
+
+        @Nested
         @DisplayName("exists")
         class Exists {
             @Test
@@ -271,6 +328,36 @@ class RecipeInfoServiceTest {
 
                 assertThat(result).isEqualTo(expected);
                 verify(repository).get(recipeId);
+            }
+
+            @Test
+            @DisplayName("repository.get(recipeId, jobId)로 위임한다")
+            void delegatesWithJobId() throws RecipeInfoException {
+                UUID recipeId = UUID.randomUUID();
+                UUID jobId = UUID.randomUUID();
+                RecipeInfo expected = mock(RecipeInfo.class);
+                doReturn(expected).when(repository).get(recipeId, jobId);
+
+                RecipeInfo result = service.get(recipeId, jobId);
+
+                assertThat(result).isEqualTo(expected);
+                verify(repository).get(recipeId, jobId);
+            }
+        }
+
+        @Nested
+        @DisplayName("getBySource")
+        class GetBySource {
+            @Test
+            @DisplayName("repository.get(sourceKey, sourceType)로 위임한다")
+            void delegates() throws RecipeInfoException {
+                RecipeInfo expected = mock(RecipeInfo.class);
+                doReturn(expected).when(repository).get("video-1", RecipeSourceType.YOUTUBE);
+
+                RecipeInfo result = service.getBySource("video-1", RecipeSourceType.YOUTUBE);
+
+                assertThat(result).isEqualTo(expected);
+                verify(repository).get("video-1", RecipeSourceType.YOUTUBE);
             }
         }
     }

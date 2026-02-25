@@ -31,6 +31,15 @@ public class RecipeDetailMetaService {
         return repository.get(recipeId);
     }
 
+    public boolean exists(UUID recipeId) {
+        try {
+            repository.get(recipeId);
+            return true;
+        } catch (RecipeDetailMetaException e) {
+            return false;
+        }
+    }
+
     /**
      * 여러 레시피의 상세 메타 정보 목록 조회
      *

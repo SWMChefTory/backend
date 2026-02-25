@@ -2,15 +2,15 @@ package com.cheftory.api.recipe.batch;
 
 import com.cheftory.api._common.region.Market;
 import com.cheftory.api._common.region.MarketContext;
+import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
+import com.cheftory.api.recipe.content.info.repository.RecipeInfoJpaRepository;
 import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaExternalClient;
-import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
-import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaStatus;
-import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
-import com.cheftory.api.recipe.content.youtubemeta.repository.RecipeYoutubeMetaJpaRepository;
 import com.cheftory.api.recipe.creation.credit.RecipeCreditPort;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +47,11 @@ public class RecipeValidationBatchConfig {
 
     private final DataSource dataSource;
     private final YoutubeMetaExternalClient youtubeMetaExternalClient;
-    private final RecipeYoutubeMetaJpaRepository youtubeMetaRepository;
+    private final RecipeInfoJpaRepository recipeInfoRepository;
 
     record RefundInfo(UUID userId, UUID recipeId, long creditCost) {}
+
+    public record RecipeValidationTarget(UUID recipeId, String videoId) {}
 
     @Bean
     public Job youtubeValidationJob(JobRepository jobRepository, Step youtubeValidationStep) {
@@ -90,23 +92,25 @@ public class RecipeValidationBatchConfig {
             JobRepository jobRepository,
             PlatformTransactionManager transactionManager,
             StepExecutionListener marketContextListener,
-            RepositoryItemReader<RecipeYoutubeMeta> youtubeMetaReader,
-            CompositeItemWriter<RecipeYoutubeMeta> compositeWriter) {
+            RepositoryItemReader<RecipeInfo> recipeInfoReader,
+            CompositeItemWriter<RecipeValidationTarget> compositeWriter) {
         return new StepBuilder("youtubeValidationStep", jobRepository)
-                .<RecipeYoutubeMeta, RecipeYoutubeMeta>chunk(50)
+                .<RecipeInfo, RecipeValidationTarget>chunk(50)
                 .transactionManager(transactionManager)
                 .listener(marketContextListener)
-                .reader(youtubeMetaReader)
+                .reader(recipeInfoReader)
                 .processor(youtubeUrlProcessor())
                 .writer(compositeWriter)
                 .build();
     }
 
     @Bean
-    public RepositoryItemReader<RecipeYoutubeMeta> youtubeMetaReader() {
-        return new RepositoryItemReaderBuilder<RecipeYoutubeMeta>()
-                .name("youtubeMetaReader")
-                .repository(youtubeMetaRepository)
+    public RepositoryItemReader<RecipeInfo> recipeInfoReader() {
+        return new RepositoryItemReaderBuilder<RecipeInfo>()
+                .name("recipeInfoReader")
+                .repository(recipeInfoRepository)
+                // Read all recipes in market scope and filter SUCCESS in processor.
+                // This avoids offset paging skip when writer mutates recipe_status during the same step.
                 .methodName("findAll")
                 .pageSize(50)
                 .sorts(Collections.singletonMap("id", Sort.Direction.ASC))
@@ -115,28 +119,9 @@ public class RecipeValidationBatchConfig {
 
     @Bean
     @StepScope
-    public JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter(
+    public JdbcBatchItemWriter<RecipeValidationTarget> recipeStatusJdbcWriter(
             @Value("#{jobParameters['market']}") String marketParam) {
-        return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
-                .sql("""
-          UPDATE recipe_youtube_meta
-          SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
-          WHERE id = ? AND market = ?
-          """)
-                .dataSource(dataSource)
-                .assertUpdates(false)
-                .itemPreparedStatementSetter((item, ps) -> {
-                    ps.setBytes(1, uuidToBytes(item.getId()));
-                    ps.setString(2, marketParam);
-                })
-                .build();
-    }
-
-    @Bean
-    @StepScope
-    public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter(
-            @Value("#{jobParameters['market']}") String marketParam) {
-        return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
+        return new JdbcBatchItemWriterBuilder<RecipeValidationTarget>()
                 .sql("""
           UPDATE recipe
           SET recipe_status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
@@ -145,7 +130,7 @@ public class RecipeValidationBatchConfig {
                 .dataSource(dataSource)
                 .assertUpdates(false)
                 .itemPreparedStatementSetter((item, ps) -> {
-                    ps.setBytes(1, uuidToBytes(item.getRecipeId()));
+                    ps.setBytes(1, uuidToBytes(item.recipeId()));
                     ps.setString(2, marketParam);
                 })
                 .build();
@@ -153,9 +138,9 @@ public class RecipeValidationBatchConfig {
 
     @Bean
     @StepScope
-    public JdbcBatchItemWriter<RecipeYoutubeMeta> recipeBookmarkJdbcWriter(
+    public JdbcBatchItemWriter<RecipeValidationTarget> recipeBookmarkJdbcWriter(
             @Value("#{jobParameters['market']}") String marketParam) {
-        return new JdbcBatchItemWriterBuilder<RecipeYoutubeMeta>()
+        return new JdbcBatchItemWriterBuilder<RecipeValidationTarget>()
                 .sql("""
           UPDATE recipe_bookmark
           SET status = 'BLOCKED', updated_at = CURRENT_TIMESTAMP
@@ -164,7 +149,7 @@ public class RecipeValidationBatchConfig {
                 .dataSource(dataSource)
                 .assertUpdates(false)
                 .itemPreparedStatementSetter((item, ps) -> {
-                    ps.setBytes(1, uuidToBytes(item.getRecipeId()));
+                    ps.setBytes(1, uuidToBytes(item.recipeId()));
                     ps.setString(2, marketParam);
                 })
                 .build();
@@ -172,7 +157,7 @@ public class RecipeValidationBatchConfig {
 
     @Bean
     @StepScope
-    public ItemWriter<RecipeYoutubeMeta> recipeCreateRefundWriter(
+    public ItemWriter<RecipeValidationTarget> recipeCreateRefundWriter(
             RecipeCreditPort recipeCreditPort,
             NamedParameterJdbcTemplate namedJdbc,
             @Value("#{jobParameters['market']}") String marketParam) {
@@ -191,9 +176,8 @@ public class RecipeValidationBatchConfig {
 
         return items -> {
             var recipeIds = items.getItems().stream()
-                    .filter(java.util.Objects::nonNull)
-                    .filter(i -> i.getStatus() == YoutubeMetaStatus.BLOCKED)
-                    .map(RecipeYoutubeMeta::getRecipeId)
+                    .filter(Objects::nonNull)
+                    .map(RecipeValidationTarget::recipeId)
                     .distinct()
                     .toList();
 
@@ -234,40 +218,42 @@ public class RecipeValidationBatchConfig {
 
     @Bean
     @StepScope
-    public CompositeItemWriter<RecipeYoutubeMeta> compositeWriter(
-            JdbcBatchItemWriter<RecipeYoutubeMeta> youtubeMetaJdbcWriter,
-            JdbcBatchItemWriter<RecipeYoutubeMeta> recipeStatusJdbcWriter,
-            JdbcBatchItemWriter<RecipeYoutubeMeta> recipeBookmarkJdbcWriter,
-            ItemWriter<RecipeYoutubeMeta> recipeCreateRefundWriter) {
-        var writer = new CompositeItemWriter<RecipeYoutubeMeta>();
-        writer.setDelegates(List.of(
-                youtubeMetaJdbcWriter, recipeStatusJdbcWriter, recipeCreateRefundWriter, recipeBookmarkJdbcWriter));
+    public CompositeItemWriter<RecipeValidationTarget> compositeWriter(
+            JdbcBatchItemWriter<RecipeValidationTarget> recipeStatusJdbcWriter,
+            JdbcBatchItemWriter<RecipeValidationTarget> recipeBookmarkJdbcWriter,
+            ItemWriter<RecipeValidationTarget> recipeCreateRefundWriter) {
+        var writer = new CompositeItemWriter<RecipeValidationTarget>();
+        writer.setDelegates(List.of(recipeStatusJdbcWriter, recipeCreateRefundWriter, recipeBookmarkJdbcWriter));
         return writer;
     }
 
     @Bean
-    public ItemProcessor<RecipeYoutubeMeta, RecipeYoutubeMeta> youtubeUrlProcessor() {
+    public ItemProcessor<RecipeInfo, RecipeValidationTarget> youtubeUrlProcessor() {
         return item -> {
-            if (item.getStatus() != YoutubeMetaStatus.ACTIVE) {
+            if (item.getRecipeStatus() != RecipeStatus.SUCCESS) {
                 return null;
             }
 
-            boolean isValid = checkYoutubeUrlWithApi(item);
+            String videoId = item.getSourceKey();
+            if (videoId == null || videoId.isBlank()) {
+                log.warn("Recipe sourceKey(videoId) not found for recipeId={}", item.getId());
+                return null;
+            }
+
+            boolean isValid = checkYoutubeUrlWithApi(videoId);
             if (!isValid) {
-                log.warn("Invalid video - ID: {}, URI: {}", item.getVideoId(), item.getVideoUri());
-                item.block();
-                return item;
+                log.warn("Invalid video - ID: {}, recipeId: {}", videoId, item.getId());
+                return new RecipeValidationTarget(item.getId(), videoId);
             }
             return null;
         };
     }
 
-    private boolean checkYoutubeUrlWithApi(RecipeYoutubeMeta item) {
+    private boolean checkYoutubeUrlWithApi(String videoId) {
         try {
-            YoutubeUri youtubeUri = YoutubeUri.from(item.getVideoUri());
-            return !youtubeMetaExternalClient.isBlocked(youtubeUri);
+            return !youtubeMetaExternalClient.isBlocked(videoId);
         } catch (Exception e) {
-            log.error("API 호출 실패 - Video ID: {}, Error: {}", item.getVideoId(), e.getMessage());
+            log.error("API 호출 실패 - Video ID: {}, Error: {}", videoId, e.getMessage());
             return false;
         }
     }

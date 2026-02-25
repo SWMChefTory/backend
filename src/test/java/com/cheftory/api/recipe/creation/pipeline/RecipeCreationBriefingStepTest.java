@@ -7,6 +7,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.cheftory.api.recipe.content.briefing.RecipeBriefingService;
 import com.cheftory.api.recipe.content.briefing.exception.RecipeBriefingErrorCode;
@@ -17,7 +18,6 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import java.lang.reflect.Constructor;
-import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,12 +59,13 @@ class RecipeCreationBriefingStepTest {
         class GivenNoFileInfo {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, "video-123", URI.create("https://youtu.be/video-123"), "test-title");
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(recipeId, "video-123", "test-title", jobId);
             }
 
             @Nested
@@ -79,7 +80,7 @@ class RecipeCreationBriefingStepTest {
                             .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
                     verify(recipeProgressService, never())
-                            .start(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
+                            .start(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING, jobId);
                 }
             }
         }
@@ -90,14 +91,15 @@ class RecipeCreationBriefingStepTest {
             RecipeCreationExecutionContext context;
             UUID recipeId;
             String videoId;
+            UUID jobId;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
                 videoId = "video-456";
+                jobId = UUID.randomUUID();
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, videoId, URI.create("https://youtu.be/video-456"), "test-title"),
+                        RecipeCreationExecutionContext.of(recipeId, videoId, "test-title", jobId),
                         "s3://bucket/file.mp4",
                         "video/mp4");
             }
@@ -116,12 +118,44 @@ class RecipeCreationBriefingStepTest {
                 void thenCreatesBriefingAndUpdatesProgress() throws RecipeBriefingException {
                     InOrder order = inOrder(recipeProgressService);
                     order.verify(recipeProgressService)
-                            .start(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
+                            .start(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING, jobId);
                     order.verify(recipeProgressService)
-                            .success(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
+                            .success(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING, jobId);
 
                     verify(recipeBriefingService).create(videoId, recipeId);
                 }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 브리핑이 이미 존재할 때")
+        class GivenAlreadyExists {
+            RecipeCreationExecutionContext context;
+            UUID recipeId;
+            UUID jobId;
+
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.withFileInfo(
+                        RecipeCreationExecutionContext.of(recipeId, "video-skip", "title", jobId),
+                        "s3://bucket/file.mp4",
+                        "video/mp4");
+                when(recipeBriefingService.exists(recipeId)).thenReturn(true);
+            }
+
+            @Test
+            @DisplayName("Then - create 호출 없이 success만 기록하고 그대로 반환한다")
+            void thenSkipCreate() throws Exception {
+                RecipeCreationExecutionContext result = sut.run(context);
+
+                org.assertj.core.api.Assertions.assertThat(result).isEqualTo(context);
+                verify(recipeBriefingService, never()).create(any(), any());
+                verify(recipeProgressService)
+                        .success(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING, jobId);
+                verify(recipeProgressService, never())
+                        .start(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING, jobId);
             }
         }
 
@@ -130,13 +164,14 @@ class RecipeCreationBriefingStepTest {
         class GivenException {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
 
             @BeforeEach
             void setUp() throws RecipeBriefingException {
                 recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, "video-789", URI.create("https://youtu.be/video-789"), "test-title"),
+                        RecipeCreationExecutionContext.of(recipeId, "video-789", "test-title", jobId),
                         "s3://bucket/file.mp4",
                         "video/mp4");
 
@@ -157,7 +192,7 @@ class RecipeCreationBriefingStepTest {
                             .hasFieldOrPropertyWithValue("error", RecipeBriefingErrorCode.BRIEFING_CREATE_FAIL);
 
                     verify(recipeProgressService)
-                            .failed(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING);
+                            .failed(recipeId, RecipeProgressStep.BRIEFING, RecipeProgressDetail.BRIEFING, jobId);
                 }
             }
         }

@@ -16,7 +16,6 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.exception.RecipeException;
 import java.lang.reflect.Constructor;
-import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,13 +60,14 @@ class RecipeCreationVerifyStepTest {
             RecipeCreationExecutionContext context;
             String fileUri;
             String mimeType;
+            UUID jobId;
 
             @BeforeEach
             void setUp() throws RecipeVerifyException {
                 recipeId = UUID.randomUUID();
                 videoId = "video-123";
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, videoId, URI.create("https://youtu.be/video-123"), "test-title");
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(recipeId, videoId, "test-title", jobId);
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
 
@@ -89,9 +89,9 @@ class RecipeCreationVerifyStepTest {
                 void thenVerifiesAndReturnsContext() throws RecipeVerifyException {
                     InOrder order = inOrder(recipeProgressService);
                     order.verify(recipeProgressService)
-                            .start(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
+                            .start(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION, jobId);
                     order.verify(recipeProgressService)
-                            .success(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
+                            .success(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION, jobId);
 
                     verify(recipeVerifyService).verify(videoId);
 
@@ -107,13 +107,14 @@ class RecipeCreationVerifyStepTest {
             UUID recipeId;
             String videoId;
             RecipeCreationExecutionContext context;
+            UUID jobId;
 
             @BeforeEach
             void setUp() throws RecipeVerifyException {
                 recipeId = UUID.randomUUID();
                 videoId = "video-456";
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, videoId, URI.create("https://youtu.be/video-456"), "test-title");
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(recipeId, videoId, "test-title", jobId);
 
                 when(recipeVerifyService.verify(videoId))
                         .thenThrow(new RecipeVerifyException(RecipeVerifyErrorCode.SERVER_ERROR));
@@ -131,7 +132,7 @@ class RecipeCreationVerifyStepTest {
                             .hasFieldOrPropertyWithValue("error", RecipeVerifyErrorCode.SERVER_ERROR);
 
                     verify(recipeProgressService)
-                            .failed(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION);
+                            .failed(recipeId, RecipeProgressStep.CAPTION, RecipeProgressDetail.CAPTION, jobId);
                     verify(recipeVerifyService).verify(videoId);
                 }
             }

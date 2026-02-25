@@ -3,6 +3,7 @@ package com.cheftory.api.recipe.content.info.repository;
 import com.cheftory.api._common.Clock;
 import com.cheftory.api._common.cursor.*;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.entity.RecipeSourceType;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -40,6 +42,13 @@ public class RecipeInfoRepositoryImpl implements RecipeInfoRepository {
                 .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
     }
 
+    @Override
+    public RecipeInfo get(String sourceKey, RecipeSourceType sourceType) throws RecipeInfoException {
+        return repository
+                .findBySourceKeyAndSourceType(sourceKey, sourceType)
+                .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
+    }
+
     /**
      * 레시피 조회수 증가
      *
@@ -57,9 +66,13 @@ public class RecipeInfoRepositoryImpl implements RecipeInfoRepository {
      * @return 저장된 레시피 정보 엔티티
      */
     @Override
-    public RecipeInfo create(RecipeInfo recipeInfo) {
-        repository.save(recipeInfo);
-        return recipeInfo;
+    public RecipeInfo create(RecipeInfo recipeInfo) throws RecipeInfoException {
+        try {
+            repository.save(recipeInfo);
+            return recipeInfo;
+        } catch (DataIntegrityViolationException e) {
+            throw new RecipeInfoException(RecipeInfoErrorCode.RECIPE_DUPLICATE_SOURCE, e);
+        }
     }
 
     /**
@@ -226,6 +239,22 @@ public class RecipeInfoRepositoryImpl implements RecipeInfoRepository {
         repository.save(recipeInfo);
     }
 
+    @Override
+    public void banned(UUID recipeId, Clock clock) throws RecipeInfoException {
+        RecipeInfo recipeInfo = repository
+                .findById(recipeId)
+                .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
+        recipeInfo.banned(clock);
+        repository.save(recipeInfo);
+    }
+
+    @Override
+    public boolean retry(UUID recipeId, Clock clock, UUID newJobId) {
+        int updated = repository.updateStatusAndJobIdIfStatus(
+                recipeId, RecipeStatus.FAILED, RecipeStatus.IN_PROGRESS, newJobId);
+        return updated > 0;
+    }
+
     /**
      * 레시피 상태를 성공으로 변경
      *
@@ -252,5 +281,12 @@ public class RecipeInfoRepositoryImpl implements RecipeInfoRepository {
     @Override
     public boolean exists(UUID recipeId) {
         return repository.existsById(recipeId);
+    }
+
+    @Override
+    public RecipeInfo get(UUID recipeId, UUID jobId) throws RecipeInfoException {
+        return repository
+                .findByIdAndCurrentJobId(recipeId, jobId)
+                .orElseThrow(() -> new RecipeInfoException(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND));
     }
 }

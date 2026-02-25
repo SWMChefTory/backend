@@ -94,7 +94,7 @@ public record RecentRecipesResponse(
                             : null,
                     info.getRecipeStatus().name(),
                     info.getCreditCost(),
-                    info.getVideoType().name());
+                    info.getVideoType() == null ? null : info.getVideoType().name());
         }
 
         /**

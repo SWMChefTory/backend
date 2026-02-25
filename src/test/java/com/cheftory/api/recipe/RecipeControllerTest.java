@@ -84,7 +84,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         setUser(userId);
 
-        doReturn(recipeId).when(recipeCreationFacade).createBookmark(any(RecipeCreationTarget.User.class));
+        doReturn(recipeId).when(recipeCreationFacade).create(any(RecipeCreationTarget.User.class));
 
         given().contentType(ContentType.JSON)
                 .header("Authorization", "Bearer accessToken")

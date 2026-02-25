@@ -8,14 +8,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 유튜브 비디오 정보 Value Object
+ * YouTube 비디오 메타 정보 Value Object.
  */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Embeddable
 public class YoutubeVideoInfo {
-    private URI videoUri;
     private String videoId;
     private String title;
     private String channelTitle;
@@ -26,7 +25,7 @@ public class YoutubeVideoInfo {
     /**
      * 유튜브 비디오 정보 생성
      *
-     * @param youtubeUri 유튜브 URI 객체
+     * @param videoId 비디오 ID
      * @param title 제목
      * @param channelTitle 채널명
      * @param thumbnailUrl 썸네일 URL
@@ -35,20 +34,13 @@ public class YoutubeVideoInfo {
      * @return 유튜브 비디오 정보 객체
      */
     public static YoutubeVideoInfo from(
-            YoutubeUri youtubeUri,
+            String videoId,
             String title,
             String channelTitle,
             URI thumbnailUrl,
             Integer videoSeconds,
             YoutubeMetaType videoType) {
 
-        return new YoutubeVideoInfo(
-                youtubeUri.getNormalizedUrl(),
-                youtubeUri.getVideoId(),
-                title,
-                channelTitle,
-                thumbnailUrl,
-                videoSeconds,
-                videoType);
+        return new YoutubeVideoInfo(videoId, title, channelTitle, thumbnailUrl, videoSeconds, videoType);
     }
 }

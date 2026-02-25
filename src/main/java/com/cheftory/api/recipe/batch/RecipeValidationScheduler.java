@@ -46,7 +46,7 @@ public class RecipeValidationScheduler {
             JobParameters jobParameters = new JobParametersBuilder()
                     .addLong("timestamp", System.currentTimeMillis())
                     .addString("market", market.name())
-                    .addString("runId", market + "-" + System.currentTimeMillis())
+                    .addString("jobId", market + "-" + System.currentTimeMillis())
                     .toJobParameters();
 
             JobExecution jobExecution = jobOperator.start(youtubeValidationJob, jobParameters);
