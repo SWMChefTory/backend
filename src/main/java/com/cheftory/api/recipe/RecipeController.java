@@ -18,12 +18,12 @@ import com.cheftory.api.recipe.creation.RecipeCreationFacade;
 import com.cheftory.api.recipe.dto.CategorizedRecipesResponse;
 import com.cheftory.api.recipe.dto.ChallengeRecipesResponse;
 import com.cheftory.api.recipe.dto.CuisineRecipesResponse;
+import com.cheftory.api.recipe.dto.FullRecipe;
+import com.cheftory.api.recipe.dto.FullRecipeResponse;
 import com.cheftory.api.recipe.dto.PublicRecipeDetail;
 import com.cheftory.api.recipe.dto.PublicRecipeOverview;
 import com.cheftory.api.recipe.dto.PublicRecipeSitemapResponse;
 import com.cheftory.api.recipe.dto.PublicRecipesResponse;
-import com.cheftory.api.recipe.dto.FullRecipe;
-import com.cheftory.api.recipe.dto.FullRecipeResponse;
 import com.cheftory.api.recipe.dto.RecentRecipesResponse;
 import com.cheftory.api.recipe.dto.RecipeCategoryCounts;
 import com.cheftory.api.recipe.dto.RecipeCategoryCountsResponse;
@@ -319,8 +319,7 @@ public class RecipeController {
      */
     @GetMapping("/papi/v1/recipes/seo")
     public PublicRecipesResponse getPublicRecipes(
-            @RequestParam(required = false) String cursor,
-            @RequestParam(required = false) String cuisine)
+            @RequestParam(required = false) String cursor, @RequestParam(required = false) String cuisine)
             throws CheftoryException {
         CursorPage<PublicRecipeOverview> page = recipeFacade.getPublicRecipes(cuisine, cursor);
         return PublicRecipesResponse.from(page);
@@ -347,8 +346,7 @@ public class RecipeController {
      */
     @GetMapping("/papi/v1/recipes/sitemap")
     public PublicRecipeSitemapResponse getSitemapEntries(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "1000") int size) {
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "1000") int size) {
         return recipeFacade.getSitemapEntries(page, size);
     }
 }

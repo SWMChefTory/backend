@@ -38,18 +38,18 @@ import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaExceptio
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
 import com.cheftory.api.recipe.dto.FullRecipe;
-import com.cheftory.api.recipe.dto.RecipeBookmarkOverview;
-import com.cheftory.api.recipe.dto.RecipeCategoryCount;
-import com.cheftory.api.recipe.dto.RecipeCategoryCounts;
 import com.cheftory.api.recipe.dto.PublicRecipeDetail;
 import com.cheftory.api.recipe.dto.PublicRecipeOverview;
 import com.cheftory.api.recipe.dto.PublicRecipeSitemapResponse;
+import com.cheftory.api.recipe.dto.RecipeBookmarkOverview;
+import com.cheftory.api.recipe.dto.RecipeCategoryCount;
+import com.cheftory.api.recipe.dto.RecipeCategoryCounts;
 import com.cheftory.api.recipe.dto.RecipeCuisineType;
 import com.cheftory.api.recipe.dto.RecipeInfoRecommendType;
-import com.cheftory.api.recipe.dto.SitemapEntry;
 import com.cheftory.api.recipe.dto.RecipeInfoVideoQuery;
 import com.cheftory.api.recipe.dto.RecipeOverview;
 import com.cheftory.api.recipe.dto.RecipeProgressStatus;
+import com.cheftory.api.recipe.dto.SitemapEntry;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import com.cheftory.api.recipe.rank.RankingType;
@@ -479,7 +479,8 @@ public class RecipeFacade {
      * @throws CheftoryException 레시피를 찾을 수 없을 때
      */
     public PublicRecipeDetail getPublicRecipeById(UUID recipeId) throws CheftoryException {
-        RecipeInfo recipe = recipeInfoService.getByIdPublic(recipeId)
+        RecipeInfo recipe = recipeInfoService
+                .getByIdPublic(recipeId)
                 .orElseThrow(() -> new RecipeException(RecipeErrorCode.RECIPE_NOT_FOUND));
 
         RecipeDetailMeta detailMeta = recipeDetailMetaService.get(recipeId);

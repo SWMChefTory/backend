@@ -85,3 +85,8 @@ apple:
 coupang-partners:
   access-key: ${COUPANG_PARTNERS_ACCESS_KEY}
   secret-key: ${COUPANG_PARTNERS_SECRET_KEY}
+
+expo:
+  notification:
+    enabled: true
+    send-url: https://exp.host/--/api/v2/push/send

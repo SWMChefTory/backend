@@ -37,10 +37,7 @@ public record PublicRecipeOverview(
         @JsonProperty("created_at") LocalDateTime createdAt) {
 
     public static PublicRecipeOverview of(
-            RecipeInfo recipe,
-            RecipeYoutubeMeta youtubeMeta,
-            RecipeDetailMeta detailMeta,
-            List<RecipeTag> tags) {
+            RecipeInfo recipe, RecipeYoutubeMeta youtubeMeta, RecipeDetailMeta detailMeta, List<RecipeTag> tags) {
 
         String title = detailMeta == null ? null : detailMeta.getTitle();
 
