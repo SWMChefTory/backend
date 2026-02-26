@@ -4,7 +4,6 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.asciidoctor.jvm.convert' version '4.0.5'
 	id 'jacoco'
-	id "io.sentry.jvm.gradle" version "5.9.0"
 	id 'com.diffplug.spotless' version '6.25.0'
 }
 
@@ -44,17 +43,6 @@ repositories {
 	maven { url = 'https://jitpack.io' }
 }
 
-def isProd = System.getenv('SPRING_PROFILES_ACTIVE') == 'prod'
-
-if (isProd) {
-	sentry {
-		includeSourceContext = true
-		org = "cheftory"
-		projectName = "cheftory-backend"
-		authToken = System.getenv("SENTRY_AUTH_TOKEN")
-	}
-}
-
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework:spring-webflux'
@@ -63,9 +51,6 @@ dependencies {
 	implementation 'me.paulschwarz:spring-dotenv:5.1.0'
 	implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2'
 	implementation "org.openapitools:jackson-databind-nullable:0.2.6"
-
-	implementation(platform("io.sentry:sentry-bom:8.20.0"))
-	implementation("io.sentry:sentry-spring-boot-starter-jakarta")
 
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
