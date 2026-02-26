@@ -12,7 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param refreshToken 리프레시 토큰
  */
 public record TokenReissueResponse(
-        @JsonProperty("access_token") String accessToken, @JsonProperty("refresh_token") String refreshToken) {
+        @JsonProperty("access_token") String accessToken,
+        @JsonProperty("refresh_token") String refreshToken) {
 
     /**
      * AuthTokens에서 TokenReissueResponse 인스턴스 생성

@@ -6,9 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.cheftory.api.auth.verifier.client.GoogleTokenClient;
 import com.cheftory.api.auth.verifier.exception.VerificationErrorCode;
 import com.cheftory.api.auth.verifier.exception.VerificationException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import mockwebserver3.MockResponse;
 import mockwebserver3.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -19,13 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 @DisplayName("GoogleTokenVerifier 테스트")
 class GoogleTokenVerifierTest {
 
     private MockWebServer mockWebServer;
     private GoogleTokenVerifier googleTokenVerifier;
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() throws Exception {
@@ -35,29 +34,26 @@ class GoogleTokenVerifierTest {
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 
-        GoogleTokenClient mockClient = new GoogleTokenClient() {
-            @Override
-            public JsonNode fetchTokenInfo(String idToken) throws VerificationException {
-                try {
-                    String response = webClient
-                            .get()
-                            .uri(uriBuilder -> uriBuilder
-                                    .path("/")
-                                    .queryParam("id_token", idToken)
-                                    .build())
-                            .accept(MediaType.APPLICATION_JSON)
-                            .retrieve()
-                            .bodyToMono(String.class)
-                            .block();
+        GoogleTokenClient mockClient = idToken -> {
+            try {
+                String response = webClient
+                        .get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/")
+                                .queryParam("id_token", idToken)
+                                .build())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .block();
 
-                    if (response == null) {
-                        throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
-                    }
-
-                    return mapper.readTree(response);
-                } catch (Exception e) {
+                if (response == null) {
                     throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
                 }
+
+                return mapper.readTree(response);
+            } catch (Exception e) {
+                throw new VerificationException(VerificationErrorCode.GOOGLE_RESPONSE_NOT_OK);
             }
         };
 

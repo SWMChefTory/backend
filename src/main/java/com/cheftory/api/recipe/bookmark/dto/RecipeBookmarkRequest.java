@@ -14,5 +14,7 @@ public record RecipeBookmarkRequest() {
      *
      * @param categoryId 카테고리 ID
      */
-    public record UpdateCategory(@JsonProperty("category_id") @NotNull @ExistsRecipeCategoryId UUID categoryId) {}
+    public record UpdateCategory(
+            @JsonProperty("category_id") @NotNull @ExistsRecipeCategoryId
+            UUID categoryId) {}
 }

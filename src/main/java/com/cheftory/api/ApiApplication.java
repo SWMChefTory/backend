@@ -2,7 +2,6 @@ package com.cheftory.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -12,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * <p>Spring Boot 애플리케이션을 시작하고 REST API 서비스를 제공합니다.</p>
  */
 @EnableAsync
-@SpringBootApplication(exclude = {ElasticsearchDataAutoConfiguration.class})
+@SpringBootApplication
 @EnableScheduling
 public class ApiApplication {
     /**

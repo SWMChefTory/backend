@@ -44,7 +44,6 @@ public class AuthService {
             return switch (provider) {
                 case GOOGLE -> googleVerifier.getSubFromToken(idToken);
                 case APPLE -> appleVerifier.getSubFromToken(idToken);
-                case null -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
                 default -> throw new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER);
             };
         } catch (VerificationException e) {

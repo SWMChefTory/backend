@@ -1,7 +1,7 @@
 package com.cheftory.api.auth.verifier.client;
 
 import com.cheftory.api.auth.verifier.exception.VerificationException;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Google Token Info 조회용 클라이언트

@@ -3,10 +3,10 @@ package com.cheftory.api.auth.verifier;
 import com.cheftory.api.auth.verifier.client.GoogleTokenClient;
 import com.cheftory.api.auth.verifier.exception.VerificationErrorCode;
 import com.cheftory.api.auth.verifier.exception.VerificationException;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Google OAuth 토큰 검증기
@@ -33,6 +33,6 @@ public class GoogleTokenVerifier {
             throw new VerificationException(VerificationErrorCode.GOOGLE_MISSING_SUB);
         }
 
-        return subNode.asText();
+        return subNode.asString();
     }
 }

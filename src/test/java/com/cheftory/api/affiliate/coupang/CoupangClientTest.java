@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @DisplayName("CoupangClient 테스트")
 class CoupangClientTest {
@@ -36,12 +38,15 @@ class CoupangClientTest {
 
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+        CoupangHttpApi coupangHttpApi = HttpServiceProxyFactory.builderFor(WebClientAdapter.create(webClient))
+                .build()
+                .createClient(CoupangHttpApi.class);
 
         properties = new CoupangPartnersProperties();
         properties.setAccessKey("test-access-key-1234");
         properties.setSecretKey("test-secret-key-1234");
 
-        coupangClient = new CoupangClient(webClient, properties);
+        coupangClient = new CoupangClient(coupangHttpApi, properties);
     }
 
     @AfterEach
@@ -70,8 +75,7 @@ class CoupangClientTest {
 
                 @BeforeEach
                 void setUp() throws Exception {
-                    String json =
-                            """
+                    String json = """
                             {
                               "rCode": "0",
                               "rMessage": "",
@@ -133,8 +137,7 @@ class CoupangClientTest {
 
                 @BeforeEach
                 void setUp() throws Exception {
-                    String json =
-                            """
+                    String json = """
                             {
                               "rCode": "0",
                               "rMessage": "",
@@ -193,8 +196,7 @@ class CoupangClientTest {
 
                 @BeforeEach
                 void setUp() throws Exception {
-                    String json =
-                            """
+                    String json = """
                             {
                               "rCode": "0",
                               "rMessage": "",
@@ -305,7 +307,7 @@ class CoupangClientTest {
             class WhenConnectionFails {
 
                 @BeforeEach
-                void setUp() throws IOException {
+                void setUp() {
                     mockWebServer.close();
                 }
 

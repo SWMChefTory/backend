@@ -34,11 +34,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.job.parameters.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,7 +48,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class RecipeInfoValidationBatchConfigTest {
 
     @Autowired
-    private JobLauncher jobLauncher;
+    private JobOperator jobOperator;
 
     @Autowired
     private Job youtubeValidationJob;
@@ -335,7 +335,7 @@ class RecipeInfoValidationBatchConfigTest {
                 .addString("testId", UUID.randomUUID().toString())
                 .addString("market", market)
                 .toJobParameters();
-        return jobLauncher.run(youtubeValidationJob, jobParameters);
+        return jobOperator.start(youtubeValidationJob, jobParameters);
     }
 
     private void assertYoutubeMetaStatus(UUID metaId, YoutubeMetaStatus expectedStatus) {
@@ -363,15 +363,11 @@ class RecipeInfoValidationBatchConfigTest {
         RecipeInfo recipeInfo = RecipeInfo.create(clock);
         UUID recipeId = recipeInfoJpaRepository.save(recipeInfo).getId();
 
-        jdbcTemplate.update(
-                """
+        jdbcTemplate.update("""
         UPDATE recipe
         SET credit_cost = ?
         WHERE id = ? AND market = ?
-        """,
-                creditCost,
-                uuidToBytes(recipeId),
-                market);
+        """, creditCost, uuidToBytes(recipeId), market);
 
         return recipeId;
     }

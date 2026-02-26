@@ -3,7 +3,7 @@ package com.cheftory.api._config;
 import com.cheftory.api._common.region.MarketTenantIdentifierResolver;
 import java.util.Map;
 import org.hibernate.cfg.AvailableSettings;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

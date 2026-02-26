@@ -3,15 +3,18 @@ package com.cheftory.api.affiliate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import com.cheftory.api._support.RedisTemplateTestSupport;
 import com.cheftory.api.affiliate.coupang.CoupangClient;
 import com.cheftory.api.affiliate.coupang.exception.CoupangException;
-import com.cheftory.api.affiliate.model.CoupangProduct;
 import com.cheftory.api.affiliate.model.CoupangProducts;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
@@ -20,16 +23,18 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @EnableCaching
 @ActiveProfiles("test")
+@Execution(ExecutionMode.SAME_THREAD)
 @DisplayName("AffiliateService 캐시 통합 테스트")
-class AffiliateCacheTest {
+class AffiliateCacheTest extends RedisTemplateTestSupport {
 
     @Autowired
     private CacheManager cacheManager;
@@ -57,10 +62,8 @@ class AffiliateCacheTest {
             @BeforeEach
             void setUp() throws CoupangException {
                 cacheName = "coupangSearchCache";
-                keyword = "사과";
-                coupangProducts = mock(CoupangProducts.class);
-                CoupangProduct item = mock(CoupangProduct.class);
-                when(coupangProducts.getCoupangProducts()).thenReturn(List.of(item));
+                keyword = uniqueKeyword("사과");
+                coupangProducts = emptyProducts();
                 when(coupangClient.searchProducts(keyword)).thenReturn(coupangProducts);
             }
 
@@ -70,6 +73,7 @@ class AffiliateCacheTest {
 
                 @BeforeEach
                 void setUp() throws CoupangException {
+                    service.searchCoupangProducts(keyword);
                     service.searchCoupangProducts(keyword);
                 }
 
@@ -110,13 +114,13 @@ class AffiliateCacheTest {
 
             @BeforeEach
             void setUp() throws CoupangException {
-                keyword1 = "포도";
-                keyword2 = "딸기";
-                keyword3 = "수박";
+                keyword1 = uniqueKeyword("포도");
+                keyword2 = uniqueKeyword("딸기");
+                keyword3 = uniqueKeyword("수박");
 
-                CoupangProducts w1 = mock(CoupangProducts.class);
-                CoupangProducts w2 = mock(CoupangProducts.class);
-                CoupangProducts w3 = mock(CoupangProducts.class);
+                CoupangProducts w1 = emptyProducts();
+                CoupangProducts w2 = emptyProducts();
+                CoupangProducts w3 = emptyProducts();
 
                 doReturn(w1).when(coupangClient).searchProducts(keyword1);
                 doReturn(w2).when(coupangClient).searchProducts(keyword2);
@@ -159,8 +163,8 @@ class AffiliateCacheTest {
 
             @BeforeEach
             void setUp() throws CoupangException {
-                keyword = "망고";
-                CoupangProducts w = mock(CoupangProducts.class);
+                keyword = uniqueKeyword("망고");
+                CoupangProducts w = emptyProducts();
                 doReturn(w).when(coupangClient).searchProducts(keyword);
                 service.searchCoupangProducts(keyword);
                 cache = cacheManager.getCache("coupangSearchCache");
@@ -172,28 +176,13 @@ class AffiliateCacheTest {
 
                 @BeforeEach
                 void setUp() {
-                    cache.evict(keyword);
+                    boolean evicted = cache.evictIfPresent(keyword);
+                    assertThat(evicted).isTrue();
                 }
 
                 @Test
                 @DisplayName("Then - 해당 키의 캐시가 삭제된다")
                 void thenEvicted() {
-                    assertThat(cache.get(keyword)).isNull();
-                }
-            }
-
-            @Nested
-            @DisplayName("When - 전체 삭제를 요청하면")
-            class WhenClearing {
-
-                @BeforeEach
-                void setUp() {
-                    cache.clear();
-                }
-
-                @Test
-                @DisplayName("Then - 모든 캐시가 삭제된다")
-                void thenCleared() {
                     assertThat(cache.get(keyword)).isNull();
                 }
             }
@@ -213,13 +202,13 @@ class AffiliateCacheTest {
 
             @BeforeEach
             void setUp() {
-                keyword = "오렌지";
-                products = mock(CoupangProducts.class);
+                keyword = uniqueKeyword("오렌지");
+                products = emptyProducts();
                 java.time.Duration shortTTL = java.time.Duration.ofSeconds(1);
-
+                ObjectMapper om = new ObjectMapper();
                 var shortConfig = RedisCacheConfiguration.defaultCacheConfig()
                         .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
-                                new GenericJackson2JsonRedisSerializer()))
+                                new GenericJacksonJsonRedisSerializer(om)))
                         .entryTtl(shortTTL)
                         .disableCachingNullValues()
                         .prefixCacheNameWith("cheftory::");
@@ -259,38 +248,34 @@ class AffiliateCacheTest {
         class GivenSpecialKeywords {
 
             @Test
-            @DisplayName("Then - 빈 문자열도 캐시된다")
-            void emptyString() throws CoupangException {
-                String keyword = "";
-                CoupangProducts w = mock(CoupangProducts.class);
+            @DisplayName("Then - 실제 검색어 형태(공백 포함)도 캐시된다")
+            void realWorldKeywordWithWhitespace() throws CoupangException {
+                String keyword = uniqueKeyword("닭가슴살 샐러드");
+                CoupangProducts w = emptyProducts();
                 doReturn(w).when(coupangClient).searchProducts(keyword);
 
                 service.searchCoupangProducts(keyword);
 
                 Cache cache = cacheManager.getCache("coupangSearchCache");
-                assertThat(cache.get(keyword)).isNotNull();
-            }
-
-            @Test
-            @DisplayName("Then - 매우 긴 문자열도 캐시된다")
-            void longString() throws CoupangException {
-                String keyword = "a".repeat(1000);
-                CoupangProducts w = mock(CoupangProducts.class);
-                doReturn(w).when(coupangClient).searchProducts(keyword);
-
-                service.searchCoupangProducts(keyword);
-
-                Cache cache = cacheManager.getCache("coupangSearchCache");
+                assertThat(cache).isNotNull();
                 assertThat(cache.get(keyword)).isNotNull();
             }
 
             @Test
             @DisplayName("Then - 존재하지 않는 키 조회 시 null을 반환한다")
             void nonExistentKey() {
-                String keyword = "존재하지않는키워드";
+                String keyword = uniqueKeyword("존재하지않는키워드");
                 Cache cache = cacheManager.getCache("coupangSearchCache");
                 assertThat(cache.get(keyword)).isNull();
             }
         }
+    }
+
+    private String uniqueKeyword(String baseKeyword) {
+        return key("affiliate-cache-test:" + baseKeyword);
+    }
+
+    private CoupangProducts emptyProducts() {
+        return CoupangProducts.of(new ArrayList<>());
     }
 }

@@ -3,24 +3,20 @@ package com.cheftory.api.search.history;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cheftory.api._common.Clock;
+import com.cheftory.api._support.RedisTemplateTestSupport;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.boot.data.redis.test.autoconfigure.DataRedisTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataRedisTest
 @ActiveProfiles("test")
 @DisplayName("RecipeSearchHistoryRepository 통합 테스트")
-class SearchHistoryRepositoryTest {
-
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+class SearchHistoryRepositoryTest extends RedisTemplateTestSupport {
 
     private SearchHistoryRepository repository;
     private Clock clock;
@@ -29,8 +25,6 @@ class SearchHistoryRepositoryTest {
     void setUp() {
         repository = new SearchHistoryRepository(redisTemplate);
         clock = new Clock();
-
-        redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
     @Nested
@@ -40,7 +34,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("검색어를 저장할 수 있다")
         void shouldSaveSearchText() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "김치찌개";
 
             repository.save(key, searchText, clock);
@@ -52,7 +46,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("여러 검색어를 저장할 수 있다")
         void shouldSaveMultipleSearchTexts() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText1 = "김치찌개";
             String searchText2 = "된장찌개";
             String searchText3 = "부대찌개";
@@ -68,7 +62,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("동일한 검색어를 중복 저장할 수 있다")
         void shouldSaveDuplicateSearchText() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "김치찌개";
 
             repository.save(key, searchText, clock);
@@ -81,7 +75,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("빈 문자열을 저장할 수 있다")
         void shouldSaveEmptyString() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "";
 
             repository.save(key, searchText, clock);
@@ -93,7 +87,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("특수 문자가 포함된 검색어를 저장할 수 있다")
         void shouldSaveSearchTextWithSpecialCharacters() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "김치찌개!@#$%^&*()";
 
             repository.save(key, searchText, clock);
@@ -110,7 +104,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("최근 검색어를 조회할 수 있다")
         void shouldFindRecentSearchTexts() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText1 = "김치찌개";
             String searchText2 = "된장찌개";
             String searchText3 = "부대찌개";
@@ -129,7 +123,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("요청한 개수만큼 반환한다")
         void shouldReturnRequestedNumberOfItems() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             for (int i = 0; i < 10; i++) {
                 repository.save(key, "검색어" + i, clock);
             }
@@ -142,7 +136,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("저장된 개수보다 적게 요청하면 저장된 개수만큼 반환한다")
         void shouldReturnAvailableItemsWhenRequestedMoreThanStored() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             repository.save(key, "검색어1", clock);
             repository.save(key, "검색어2", clock);
 
@@ -154,7 +148,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("존재하지 않는 키로 조회하면 빈 목록을 반환한다")
         void shouldReturnEmptyListForNonExistentKey() {
-            String key = "test:nonexistent";
+            String key = key("test:nonexistent");
 
             List<String> result = repository.findRecent(key, 10);
 
@@ -164,7 +158,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("빈 키로 조회하면 빈 목록을 반환한다")
         void shouldReturnEmptyListForEmptyKey() {
-            String key = "test:empty";
+            String key = key("test:empty");
 
             List<String> result = repository.findRecent(key, 10);
 
@@ -174,7 +168,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("limit이 0이면 빈 목록을 반환한다")
         void shouldReturnEmptyListWhenLimitIsZero() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             repository.save(key, "검색어1", clock);
 
             List<String> result = repository.findRecent(key, 0);
@@ -185,7 +179,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("limit이 음수면 빈 목록을 반환한다")
         void shouldReturnEmptyListWhenLimitIsNegative() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             repository.save(key, "검색어1", clock);
 
             List<String> result = repository.findRecent(key, -1);
@@ -201,7 +195,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("검색어를 삭제할 수 있다")
         void shouldRemoveSearchText() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "김치찌개";
             repository.save(key, searchText, clock);
 
@@ -214,7 +208,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("존재하지 않는 검색어를 삭제해도 예외가 발생하지 않는다")
         void shouldNotThrowExceptionWhenRemovingNonExistentSearchText() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "존재하지않는검색어";
 
             repository.remove(key, searchText);
@@ -223,7 +217,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("여러 검색어 중 특정 검색어만 삭제할 수 있다")
         void shouldRemoveSpecificSearchTextFromMultiple() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText1 = "김치찌개";
             String searchText2 = "된장찌개";
             String searchText3 = "부대찌개";
@@ -242,7 +236,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("빈 문자열을 삭제할 수 있다")
         void shouldRemoveEmptyString() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "";
             repository.save(key, searchText, clock);
 
@@ -260,7 +254,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("최대 개수를 초과하면 오래된 항목을 삭제한다")
         void shouldRemoveOldEntriesWhenExceedingMaxSize() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             int maxSize = 3;
 
             for (int i = 0; i < 5; i++) {
@@ -276,7 +270,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("최대 개수 이하면 삭제하지 않는다")
         void shouldNotRemoveEntriesWhenWithinMaxSize() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             int maxSize = 5;
 
             for (int i = 0; i < 3; i++) {
@@ -292,7 +286,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("최대 개수가 0이면 모든 항목을 삭제한다")
         void shouldRemoveAllEntriesWhenMaxSizeIsZero() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             int maxSize = 0;
 
             repository.save(key, "검색어1", clock);
@@ -307,7 +301,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("존재하지 않는 키에 대해 삭제해도 예외가 발생하지 않는다")
         void shouldNotThrowExceptionWhenRemovingFromNonExistentKey() {
-            String key = "test:nonexistent";
+            String key = key("test:nonexistent");
             int maxSize = 5;
 
             repository.removeOldEntries(key, maxSize);
@@ -321,7 +315,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("키에 만료 시간을 설정할 수 있다")
         void shouldSetExpireTime() throws InterruptedException {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "김치찌개";
             Duration ttl = Duration.ofSeconds(1);
 
@@ -340,7 +334,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("긴 만료 시간을 설정할 수 있다")
         void shouldSetLongExpireTime() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText = "김치찌개";
             Duration ttl = Duration.ofHours(1);
 
@@ -354,7 +348,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("존재하지 않는 키에 만료 시간을 설정해도 예외가 발생하지 않는다")
         void shouldNotThrowExceptionWhenSettingExpireForNonExistentKey() {
-            String key = "test:nonexistent";
+            String key = key("test:nonexistent");
             Duration ttl = Duration.ofHours(1);
 
             repository.setExpire(key, ttl);
@@ -368,7 +362,7 @@ class SearchHistoryRepositoryTest {
         @Test
         @DisplayName("전체 검색 히스토리 관리 시나리오를 테스트할 수 있다")
         void shouldHandleCompleteSearchHistoryScenario() {
-            String key = "test:search:history";
+            String key = key("test:search:history");
             String searchText1 = "김치찌개";
             String searchText2 = "된장찌개";
             String searchText3 = "부대찌개";

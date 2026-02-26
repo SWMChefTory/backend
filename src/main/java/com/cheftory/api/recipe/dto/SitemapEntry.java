@@ -12,5 +12,4 @@ import java.util.UUID;
  */
 public record SitemapEntry(
         @JsonProperty("recipe_id") UUID recipeId,
-        @JsonProperty("updated_at") LocalDateTime updatedAt) {
-}
+        @JsonProperty("updated_at") LocalDateTime updatedAt) {}

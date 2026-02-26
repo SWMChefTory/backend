@@ -56,8 +56,7 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
      */
     @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query(
-            """
+    @Query("""
 update User u
    set u.tutorialAt = :now,
        u.updatedAt = :now
@@ -75,8 +74,7 @@ update User u
      */
     @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query(
-            """
+    @Query("""
 update User u
    set u.tutorialAt = null,
        u.updatedAt = :now

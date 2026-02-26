@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.cheftory.api.recipe.content.step.client.RecipeStepExternalClient;
+import com.cheftory.api.recipe.content.step.client.RecipeStepHttpApi;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsRequest;
 import com.cheftory.api.recipe.content.step.client.dto.ClientRecipeStepsResponse;
 import com.cheftory.api.recipe.content.step.exception.RecipeStepErrorCode;
@@ -22,6 +23,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @DisplayName("RecipeStepExternalClient 테스트")
 class RecipeStepClientTest {
@@ -37,13 +40,16 @@ class RecipeStepClientTest {
 
         WebClient webClient =
                 WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
+        RecipeStepHttpApi recipeStepHttpApi = HttpServiceProxyFactory.builderFor(WebClientAdapter.create(webClient))
+                .build()
+                .createClient(RecipeStepHttpApi.class);
 
-        recipeStepClient = new RecipeStepExternalClient(webClient);
+        recipeStepClient = new RecipeStepExternalClient(recipeStepHttpApi);
         objectMapper = new ObjectMapper();
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         mockWebServer.close();
     }
 
@@ -62,8 +68,7 @@ class RecipeStepClientTest {
             void setUp() {
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
-                responseJson =
-                        """
+                responseJson = """
                         {
                             "steps": [
                                 {
@@ -220,8 +225,7 @@ class RecipeStepClientTest {
             void setUp() {
                 fileUri = "s3://bucket/special.mp4";
                 mimeType = "video/mp4";
-                responseJson =
-                        """
+                responseJson = """
                         {
                             "steps": [
                                 {
