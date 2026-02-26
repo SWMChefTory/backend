@@ -3,6 +3,7 @@ package com.cheftory.api.recipe.rank;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cheftory.api._common.cursor.RankCursorCodec;
+import com.cheftory.api._support.RedisTemplateTestSupport;
 import com.cheftory.api.recipe.rank.repository.RecipeRankRepository;
 import com.cheftory.api.recipe.rank.repository.RecipeRankRepositoryImpl;
 import java.time.Duration;
@@ -13,18 +14,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.redis.test.autoconfigure.DataRedisTest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataRedisTest
 @ActiveProfiles("test")
 @DisplayName("RecipeRankRepository 통합 테스트")
-class RecipeRankRepositoryTest {
-
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+class RecipeRankRepositoryTest extends RedisTemplateTestSupport {
 
     private RecipeRankRepository recipeRankRepository;
 
@@ -34,7 +30,6 @@ class RecipeRankRepositoryTest {
         recipeRankRepository = new RecipeRankRepositoryImpl(redisTemplate, cursorCodec);
 
         Assertions.assertNotNull(redisTemplate.getConnectionFactory());
-        redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
     @Nested
@@ -44,7 +39,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("레시피 랭킹을 저장할 수 있다")
         void shouldSaveRecipeRanking() {
-            String key = "test:ranking";
+            String key = key("test:ranking");
             UUID recipeId = UUID.randomUUID();
             Integer rank = 1;
 
@@ -57,7 +52,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("여러 레시피 랭킹을 저장할 수 있다")
         void shouldSaveMultipleRecipeRankings() {
-            String key = "test:ranking";
+            String key = key("test:ranking");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();
@@ -74,7 +69,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("동일한 레시피 ID로 랭킹을 업데이트할 수 있다")
         void shouldUpdateExistingRecipeRanking() {
-            String key = "test:ranking";
+            String key = key("test:ranking");
             UUID recipeId = UUID.randomUUID();
 
             recipeRankRepository.saveRanking(key, recipeId, 1);
@@ -92,7 +87,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("키에 만료 시간을 설정할 수 있다")
         void shouldSetExpireTime() throws InterruptedException {
-            String key = "test:expire";
+            String key = key("test:expire");
             UUID recipeId = UUID.randomUUID();
             Duration expireDuration = Duration.ofSeconds(1);
 
@@ -109,7 +104,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("긴 만료 시간을 설정할 수 있다")
         void shouldSetLongExpireTime() {
-            String key = "test:long:expire";
+            String key = key("test:long:expire");
             UUID recipeId = UUID.randomUUID();
             Duration expireDuration = Duration.ofHours(1);
 
@@ -127,8 +122,8 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("최신 키 포인터를 저장하고 조회할 수 있다")
         void shouldSaveAndFindLatestKey() {
-            String pointerKey = "test:latest:pointer";
-            String realKey = "test:ranking:2024-01-01";
+            String pointerKey = key("test:latest:pointer");
+            String realKey = key("test:ranking:2024-01-01");
 
             recipeRankRepository.saveLatest(pointerKey, realKey);
             var result = recipeRankRepository.findLatest(pointerKey);
@@ -140,9 +135,9 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("최신 키 포인터를 업데이트할 수 있다")
         void shouldUpdateLatestKey() {
-            String pointerKey = "test:latest:pointer";
-            String realKey1 = "test:ranking:2024-01-01";
-            String realKey2 = "test:ranking:2024-01-02";
+            String pointerKey = key("test:latest:pointer");
+            String realKey1 = key("test:ranking:2024-01-01");
+            String realKey2 = key("test:ranking:2024-01-02");
 
             recipeRankRepository.saveLatest(pointerKey, realKey1);
             recipeRankRepository.saveLatest(pointerKey, realKey2);
@@ -155,7 +150,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("존재하지 않는 포인터 키를 조회하면 빈 Optional을 반환한다")
         void shouldReturnEmptyOptionalWhenPointerKeyNotFound() {
-            String pointerKey = "test:nonexistent:pointer";
+            String pointerKey = key("test:nonexistent:pointer");
 
             var result = recipeRankRepository.findLatest(pointerKey);
 
@@ -165,7 +160,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("빈 문자열 포인터 키를 조회하면 빈 Optional을 반환한다")
         void shouldReturnEmptyOptionalWhenPointerKeyIsBlank() {
-            String pointerKey = "test:blank:pointer";
+            String pointerKey = key("test:blank:pointer");
             String realKey = "";
 
             recipeRankRepository.saveLatest(pointerKey, realKey);
@@ -182,7 +177,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("전체 레시피 ID 목록을 조회할 수 있다")
         void shouldFindAllRecipeIds() {
-            String key = "test:ranking";
+            String key = key("test:ranking");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();
@@ -200,7 +195,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("범위로 레시피 ID 목록을 조회할 수 있다")
         void shouldFindRecipeIdsByRange() {
-            String key = "test:ranking";
+            String key = key("test:ranking");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();
@@ -217,7 +212,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("존재하지 않는 키로 조회하면 빈 결과를 반환한다")
         void shouldReturnEmptySetForNonExistentKey() {
-            String key = "test:nonexistent";
+            String key = key("test:nonexistent");
 
             Set<String> result = recipeRankRepository.findRecipeIds(key, 0, -1);
 
@@ -227,7 +222,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("상위 N개 레시피 ID를 조회할 수 있다")
         void shouldFindTopNRecipeIds() {
-            String key = "test:ranking";
+            String key = key("test:ranking");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();
@@ -251,7 +246,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("시작 랭크와 개수로 레시피 ID를 조회할 수 있다")
         void shouldFindRecipeIdsByRank() {
-            String key = "test:ranking";
+            String key = key("test:ranking");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();
@@ -270,7 +265,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("시작 랭크가 1 미만이면 첫 번째부터 조회한다")
         void shouldClampStartRankWhenLessThanOne() {
-            String key = "test:ranking:clamp";
+            String key = key("test:ranking:clamp");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();
@@ -287,7 +282,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("범위를 벗어난 랭크 조회는 빈 결과를 반환한다")
         void shouldReturnEmptyWhenStartRankOutOfBounds() {
-            String key = "test:ranking:out-of-bounds";
+            String key = key("test:ranking:out-of-bounds");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
 
@@ -307,7 +302,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("저장된 레시피 개수를 조회할 수 있다")
         void shouldCountRecipeIds() {
-            String key = "test:ranking";
+            String key = key("test:ranking");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();
@@ -324,7 +319,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("존재하지 않는 키의 개수는 0을 반환한다")
         void shouldReturnZeroForNonExistentKey() {
-            String key = "test:nonexistent";
+            String key = key("test:nonexistent");
 
             Long count = recipeRankRepository.count(key);
 
@@ -334,7 +329,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("빈 키의 개수는 0을 반환한다")
         void shouldReturnZeroForEmptyKey() {
-            String key = "test:empty";
+            String key = key("test:empty");
 
             Long count = recipeRankRepository.count(key);
 
@@ -344,7 +339,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("중복 저장 후 개수를 조회하면 1을 반환한다")
         void shouldReturnOneForDuplicateKeys() {
-            String key = "test:duplicate";
+            String key = key("test:duplicate");
             UUID recipeId = UUID.randomUUID();
 
             recipeRankRepository.saveRanking(key, recipeId, 1);
@@ -363,7 +358,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("매우 큰 랭킹 값을 저장할 수 있다")
         void shouldSaveVeryLargeRankingValue() {
-            String key = "test:large:ranking";
+            String key = key("test:large:ranking");
             UUID recipeId = UUID.randomUUID();
             Integer largeRank = Integer.MAX_VALUE;
 
@@ -376,7 +371,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("랭킹 값 0을 저장할 수 있다")
         void shouldSaveZeroRankingValue() {
-            String key = "test:zero:ranking";
+            String key = key("test:zero:ranking");
             UUID recipeId = UUID.randomUUID();
             Integer zeroRank = 0;
 
@@ -389,7 +384,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("음수 랭킹 값을 저장할 수 있다")
         void shouldSaveNegativeRankingValue() {
-            String key = "test:negative:ranking";
+            String key = key("test:negative:ranking");
             UUID recipeId = UUID.randomUUID();
             Integer negativeRank = -1;
 
@@ -402,7 +397,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("매우 긴 키 이름을 처리할 수 있다")
         void shouldHandleVeryLongKeyName() {
-            String longKey = "test:very:long:key:name:with:many:segments:" + "a".repeat(1000);
+            String longKey = key("test:very:long:key:name:with:many:segments:" + "a".repeat(1000));
             UUID recipeId = UUID.randomUUID();
             Integer rank = 1;
 
@@ -433,7 +428,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("동시에 여러 랭킹을 저장할 수 있다")
         void shouldSaveMultipleRankingsConcurrently() throws InterruptedException {
-            String key = "test:concurrent:ranking";
+            String key = key("test:concurrent:ranking");
             int threadCount = 10;
             int recipesPerThread = 5;
             Thread[] threads = new Thread[threadCount];
@@ -466,8 +461,8 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("전체 랭킹 시스템 시나리오를 테스트할 수 있다")
         void shouldHandleCompleteRankingScenario() {
-            String pointerKey = "test:latest:pointer";
-            String rankingKey = "test:ranking:2024-01-01";
+            String pointerKey = key("test:latest:pointer");
+            String rankingKey = key("test:ranking:2024-01-01");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();
@@ -498,7 +493,7 @@ class RecipeRankRepositoryTest {
         @Test
         @DisplayName("랭킹 업데이트 시나리오를 테스트할 수 있다")
         void shouldHandleRankingUpdateScenario() {
-            String rankingKey = "test:ranking:update";
+            String rankingKey = key("test:ranking:update");
             UUID recipeId1 = UUID.randomUUID();
             UUID recipeId2 = UUID.randomUUID();
             UUID recipeId3 = UUID.randomUUID();

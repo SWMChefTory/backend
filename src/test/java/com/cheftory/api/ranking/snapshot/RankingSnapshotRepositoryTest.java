@@ -2,31 +2,26 @@ package com.cheftory.api.ranking.snapshot;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.cheftory.api._support.RedisTemplateTestSupport;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.redis.test.autoconfigure.DataRedisTest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataRedisTest
 @ActiveProfiles("test")
 @DisplayName("RankingSnapshotRepository Tests")
-class RankingSnapshotRepositoryTest {
-
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+class RankingSnapshotRepositoryTest extends RedisTemplateTestSupport {
 
     private RankingSnapshotRepository repository;
 
     @BeforeEach
     void setUp() {
         repository = new RankingSnapshotRepository(redisTemplate);
-        redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
     @Nested
@@ -36,9 +31,10 @@ class RankingSnapshotRepositoryTest {
         @Test
         @DisplayName("should save and get string")
         void shouldSaveAndGetString() {
-            repository.saveString("key", "value", Duration.ofMinutes(1));
+            String key = key("value");
+            repository.saveString(key, "value", Duration.ofMinutes(1));
 
-            assertThat(repository.getString("key")).isEqualTo("value");
+            assertThat(repository.getString(key)).isEqualTo("value");
         }
     }
 
@@ -49,10 +45,11 @@ class RankingSnapshotRepositoryTest {
         @Test
         @DisplayName("should set ttl on key")
         void shouldSetTtlOnKey() {
-            repository.saveString("key", "value", Duration.ofMinutes(5));
-            repository.expire("key", Duration.ofSeconds(10));
+            String key = key("expire");
+            repository.saveString(key, "value", Duration.ofMinutes(5));
+            repository.expire(key, Duration.ofSeconds(10));
 
-            Long ttl = redisTemplate.getExpire("key", TimeUnit.SECONDS);
+            Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
             assertThat(ttl).isPositive();
         }
     }
@@ -64,10 +61,11 @@ class RankingSnapshotRepositoryTest {
         @Test
         @DisplayName("should increment value")
         void shouldIncrementValue() {
-            Long value = repository.incrementLong("counter", 3);
+            String counterKey = key("counter");
+            Long value = repository.incrementLong(counterKey, 3);
 
             assertThat(value).isEqualTo(3L);
-            assertThat(repository.getString("counter")).isEqualTo("3");
+            assertThat(repository.getString(counterKey)).isEqualTo("3");
         }
     }
 
@@ -78,11 +76,12 @@ class RankingSnapshotRepositoryTest {
         @Test
         @DisplayName("should delete key")
         void shouldDeleteKey() {
-            repository.saveString("key", "value", Duration.ofMinutes(1));
+            String key = key("delete");
+            repository.saveString(key, "value", Duration.ofMinutes(1));
 
-            repository.delete("key");
+            repository.delete(key);
 
-            assertThat(repository.getString("key")).isNull();
+            assertThat(repository.getString(key)).isNull();
         }
     }
 }

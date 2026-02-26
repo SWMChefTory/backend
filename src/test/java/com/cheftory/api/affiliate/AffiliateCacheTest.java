@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
@@ -29,6 +31,7 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest
 @EnableCaching
 @ActiveProfiles("test")
+@Execution(ExecutionMode.SAME_THREAD)
 @DisplayName("AffiliateService 캐시 통합 테스트")
 class AffiliateCacheTest {
 
