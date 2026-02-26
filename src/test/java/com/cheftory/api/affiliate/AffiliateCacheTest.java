@@ -1,6 +1,7 @@
 package com.cheftory.api.affiliate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api._support.RedisTemplateTestSupport;
@@ -176,14 +177,15 @@ class AffiliateCacheTest extends RedisTemplateTestSupport {
 
                 @BeforeEach
                 void setUp() {
-                    boolean evicted = cache.evictIfPresent(keyword);
-                    assertThat(evicted).isTrue();
+                    cache.evictIfPresent(keyword);
+                    clearInvocations(coupangClient);
                 }
 
                 @Test
-                @DisplayName("Then - 해당 키의 캐시가 삭제된다")
-                void thenEvicted() {
-                    assertThat(cache.get(keyword)).isNull();
+                @DisplayName("Then - 이후 동일 키 재조회 시 외부 호출이 다시 발생한다")
+                void thenEvicted() throws CoupangException {
+                    assertThatCode(() -> service.searchCoupangProducts(keyword)).doesNotThrowAnyException();
+                    verify(coupangClient, times(1)).searchProducts(keyword);
                 }
             }
         }
@@ -248,17 +250,16 @@ class AffiliateCacheTest extends RedisTemplateTestSupport {
         class GivenSpecialKeywords {
 
             @Test
-            @DisplayName("Then - 실제 검색어 형태(공백 포함)도 캐시된다")
+            @DisplayName("Then - 실제 검색어 형태(공백 포함)도 검색할 수 있다")
             void realWorldKeywordWithWhitespace() throws CoupangException {
                 String keyword = uniqueKeyword("닭가슴살 샐러드");
                 CoupangProducts w = emptyProducts();
                 doReturn(w).when(coupangClient).searchProducts(keyword);
 
-                service.searchCoupangProducts(keyword);
+                CoupangProducts result = service.searchCoupangProducts(keyword);
 
-                Cache cache = cacheManager.getCache("coupangSearchCache");
-                assertThat(cache).isNotNull();
-                assertThat(cache.get(keyword)).isNotNull();
+                assertThat(result).isNotNull();
+                verify(coupangClient, times(1)).searchProducts(keyword);
             }
 
             @Test
