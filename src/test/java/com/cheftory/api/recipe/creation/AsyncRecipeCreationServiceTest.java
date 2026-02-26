@@ -46,6 +46,7 @@ class AsyncRecipeCreationServiceTest {
     private RecipeBookmarkService recipeBookmarkService;
     private RecipeCreditPort creditPort;
     private RecipeCreationPipeline recipeCreationPipeline;
+    private RecipeCreationNotificationService recipeCreationNotificationService;
     private RecipeVerifyService recipeVerifyService;
 
     private AsyncRecipeCreationService sut;
@@ -59,6 +60,7 @@ class AsyncRecipeCreationServiceTest {
         recipeBookmarkService = mock(RecipeBookmarkService.class);
         creditPort = mock(RecipeCreditPort.class);
         recipeCreationPipeline = mock(RecipeCreationPipeline.class);
+        recipeCreationNotificationService = mock(RecipeCreationNotificationService.class);
 
         sut = new AsyncRecipeCreationService(
                 recipeProgressService,
@@ -67,7 +69,8 @@ class AsyncRecipeCreationServiceTest {
                 recipeIdentifyService,
                 recipeBookmarkService,
                 creditPort,
-                recipeCreationPipeline);
+                recipeCreationPipeline,
+                recipeCreationNotificationService);
     }
 
     @Nested

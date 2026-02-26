@@ -11,5 +11,4 @@ import java.util.List;
  */
 public record PublicRecipeSitemapResponse(
         @JsonProperty("entries") List<SitemapEntry> entries,
-        @JsonProperty("total") long total) {
-}
+        @JsonProperty("total") long total) {}

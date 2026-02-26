@@ -299,7 +299,8 @@ public class RecipeInfoRepositoryImpl implements RecipeInfoRepository {
 
     @Override
     public List<RecipeInfo> findAllPublicForSitemap(int page, int size) {
-        return repository.findAllPublic(RecipeStatus.SUCCESS, org.springframework.data.domain.PageRequest.of(page, size));
+        return repository.findAllPublic(
+                RecipeStatus.SUCCESS, org.springframework.data.domain.PageRequest.of(page, size));
     }
 
     @Override
