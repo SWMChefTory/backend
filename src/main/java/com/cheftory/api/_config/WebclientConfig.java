@@ -68,7 +68,7 @@ public class WebclientConfig {
                 .clientConnector(new JdkClientHttpConnector(httpClient))
                 .observationRegistry(observationRegistry)
                 .filter(marketHeaderPropagator)
-                .filter((req, next) -> next.exchange(req).timeout(Duration.ofMinutes(5)))
+                .filter((req, next) -> next.exchange(req).timeout(Duration.ofMinutes(15)))
                 .build();
     }
 
