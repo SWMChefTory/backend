@@ -57,6 +57,9 @@ public class RecipeInfo extends MarketScope {
     @Column(nullable = false)
     private UUID currentJobId;
 
+    @Column(nullable = false)
+    private boolean isPublic = false;
+
     /**
      * 신규 레시피를 생성합니다.
      *
@@ -73,7 +76,8 @@ public class RecipeInfo extends MarketScope {
                 sourceType,
                 sourceKey,
                 DEFAULT_CREDIT_COST,
-                UUID.randomUUID());
+                UUID.randomUUID(),
+						false);
     }
 
     /**

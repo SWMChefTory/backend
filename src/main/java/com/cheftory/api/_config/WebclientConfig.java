@@ -5,6 +5,8 @@ import com.cheftory.api._common.region.MarketHeaders;
 import com.cheftory.api.affiliate.coupang.CoupangHttpApi;
 import com.cheftory.api.auth.verifier.client.AppleTokenHttpApi;
 import com.cheftory.api.auth.verifier.client.GoogleTokenHttpApi;
+import com.cheftory.api.notification.client.ExpoNotificationHttpApi;
+import com.cheftory.api.notification.client.ExpoNotificationProperties;
 import com.cheftory.api.recipe.content.briefing.client.BriefingHttpApi;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailHttpApi;
 import com.cheftory.api.recipe.content.step.client.RecipeStepHttpApi;
@@ -167,5 +169,22 @@ public class WebclientConfig {
         return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(client))
                 .build()
                 .createClient(GoogleTokenHttpApi.class);
+    }
+
+    @Bean
+    public ExpoNotificationHttpApi expoPushHttpApi(ExpoNotificationProperties expoNotificationProperties) {
+        HttpClient jdkClient =
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+
+        WebClient client = WebClient.builder()
+                .baseUrl(expoNotificationProperties.getSendUrl())
+                .clientConnector(new JdkClientHttpConnector(jdkClient))
+                .observationRegistry(observationRegistry)
+                .filter((req, next) -> next.exchange(req).timeout(Duration.ofSeconds(10)))
+                .build();
+
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(client))
+                .build()
+                .createClient(ExpoNotificationHttpApi.class);
     }
 }

@@ -37,6 +37,7 @@ public class AsyncRecipeCreationService {
     private final RecipeBookmarkService recipeBookmarkService;
     private final RecipeCreditPort creditPort;
     private final RecipeCreationPipeline recipeCreationPipeline;
+    private final RecipeCreationNotificationService recipeCreationNotificationService;
 
     /**
      * 비동기로 레시피 생성 파이프라인을 실행합니다.
@@ -53,6 +54,8 @@ public class AsyncRecipeCreationService {
     public void create(UUID recipeId, long creditCost, String videoId, UUID jobId) {
         try {
             recipeCreationPipeline.run(RecipeCreationExecutionContext.of(recipeId, videoId, jobId));
+            recipeCreationNotificationService.notify(recipeId, title);
+
         } catch (RecipeException e) {
             log.error("레시피 생성 실패: recipeId={}, reason={}", recipeId, e.getError(), e);
             switch (e.getError()) {

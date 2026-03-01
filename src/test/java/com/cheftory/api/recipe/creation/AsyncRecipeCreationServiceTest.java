@@ -36,6 +36,7 @@ class AsyncRecipeCreationServiceTest {
     private RecipeBookmarkService recipeBookmarkService;
     private RecipeCreditPort creditPort;
     private RecipeCreationPipeline recipeCreationPipeline;
+
     private AsyncRecipeCreationService sut;
 
     @BeforeEach
@@ -45,7 +46,15 @@ class AsyncRecipeCreationServiceTest {
         recipeBookmarkService = mock(RecipeBookmarkService.class);
         creditPort = mock(RecipeCreditPort.class);
         recipeCreationPipeline = mock(RecipeCreationPipeline.class);
+        recipeCreationNotificationService = mock(RecipeCreationNotificationService.class);
+
         sut = new AsyncRecipeCreationService(
+                recipeProgressService,
+                recipeInfoService,
+                recipeBookmarkService,
+                creditPort,
+                recipeCreationPipeline,
+                recipeCreationNotificationService);
                 recipeProgressService, recipeInfoService, recipeBookmarkService, creditPort, recipeCreationPipeline);
     }
 
