@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 향후 수정될 버그들
 
+## [1.1.31] - 2026-03-01
+
+### Changed
+- **다음 배포 준비**: 프로덕션 배포 워크플로우를 VM 기반 배포에 맞게 정리
+  - Docker 이미지 빌드 플랫폼을 `linux/amd64`로 변경
+  - 배포 대상 시크릿을 `EC2_*`에서 `DEPLOY_*`(`DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`)로 전환
+  - 배포 명령을 `docker-compose`에서 `docker compose`로 통일
+
 ## [1.1.30] - 2026-02-26
 
 ### Added
