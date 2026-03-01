@@ -19,7 +19,7 @@ spotless {
 }
 
 group = 'com.cheftory'
-version = '1.1.30'
+version = '1.1.31'
 
 java {
 	toolchain {
