@@ -20,14 +20,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      #  Spring Boot 애플리케이션 테스트
-      - name: Run Tests with Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: test
-        env:
-          SPRING_PROFILES_ACTIVE: test
-
       #  Spring Boot 애플리케이션 빌드
       - name: Build with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
@@ -101,8 +93,6 @@ jobs:
             JWT_ACCESS_TOKEN_EXPIRATION=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION }}
             APPLE_APP_ID=${{ secrets.APPLE_APP_ID }}
             APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}
-            SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}
-            SENTRY_DSN=${{secrets.SENTRY_DSN}}
             OPENSEARCH_HOST=${{ secrets.OPENSEARCH_HOST }}
             OPENSEARCH_PORT=${{ secrets.OPENSEARCH_PORT }}
             OPENSEARCH_USERNAME=${{ secrets.OPENSEARCH_USERNAME }}

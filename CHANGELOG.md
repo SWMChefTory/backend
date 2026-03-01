@@ -18,6 +18,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 향후 수정될 버그들
 
+## [1.1.30] - 2026-02-26
+
+### Added
+- **알림(Notification) 도메인 및 Expo Push 전송 흐름 추가**
+  - `recipe.creation` 알림 포트 구현을 `notification` 패키지로 분리
+  - `NotificationService` 기반 레시피 생성 알림 푸시 전송 오케스트레이션 추가
+  - `NotificationPushTokenPort` / `NotificationPushTokenAdapter`로 `notification`과 `user.push` 경계 분리
+- **알림 도메인 엔티티 추가**
+  - `Notification`, `NotificationType`, `NotificationContent`, `NotificationTarget`, `NotificationMetadata`
+- **알림/푸시 테스트 보강**
+  - notification service/client/adapter, push token service/repository/entity 테스트 추가
+- **Redis 테스트 공통 지원 클래스 추가**
+  - `TestKeyNamespaceSupport`, `RedisTemplateTestSupport`
+
+### Changed
+- **Spring Boot 4 마이그레이션 반영**
+  - 프레임워크 및 설정 정비, 외부 HTTP 클라이언트 계층 리팩터링
+- **알림 모델 재정의**
+  - 푸시 전용 payload 모델 중심 구조에서 `notification.entity.Notification*` 중심으로 정리
+- **Expo 요청 DTO 변환 책임 정리**
+  - `ExpoNotificationSendRequest.from(String, Notification)`에서 push payload/action 매핑 처리
+- **PushToken DTO 검증 강화**
+  - `token` 필드에 `@NotBlank`, `@Size(max = 255)` 적용
+- **시간 생성 일관성 개선**
+  - `NotificationMessageFactory`, `PushToken`에 `Clock` 기반 시간 생성 적용
+- **Redis/캐시 테스트 안정화 방식 변경**
+  - 전역 flush 대신 테스트별 key namespace(prefix) 전략 적용
+
+### Fixed
+- **PushTokenRepository 업데이트 반영 누락 수정**
+  - 기존 토큰 재할당/비활성화 시 엔티티 수정 후 `save(...)` 명시 호출로 영속화 보장
+- **Affiliate 캐시 통합 테스트 flaky 개선**
+  - 캐시 값 mock 사용/캐시 검증 방식 등 불안정 요소 정리
+
+### Added (Test)
+- `NotificationServiceTest`, `RecipeCreationNotificationAdapterTest`
+- `ExpoNotificationClientTest`, `ExpoNotificationSendRequestTest`, `NotificationMessageFactoryTest`
+- `PushTokenServiceTest`, `PushTokenRepositoryTest`, `PushTokenTest`, `NotificationPushTokenAdapterTest`
+- `AsyncRecipeCreationServiceTest` 생성자 시그니처 변경 반영
+
+### Technical
+- **JavaDoc 보강**: notification/push 변경 범위 클래스 및 public 메서드 문서화
+
+### Database Migration
+- **추가 마이그레이션 없음** (기존 `push_token` 스키마 사용)
+
+## [1.1.29] - 2026-02-23
+
+### Added
+- **SEO 공개 레시피 API 비디오 타입 필드 추가**: `PublicRecipeDetail`에 `videoType` (NORMAL/SHORTS) 필드 추가
+  - `YoutubeMetaType` 기반 비디오 타입을 공개 API 응답에 포함
+  - JSON 필드명: `video_type`
+
 ## [1.1.28] - 2026-02-18
 
 ### Added

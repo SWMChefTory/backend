@@ -145,7 +145,8 @@ public class RecipeCreationFacade {
                 }
 
                 try {
-                    creditPort.refundRecipeCreate(userId, recipeInfo.getId(), recipeInfo.getCreditCost());
+                    creditPort.refundRecipeCreate(
+                            userId, recipeInfo.getId(), recipeInfo.getCurrentJobId(), recipeInfo.getCreditCost());
                 } catch (CreditException e) {
                     log.warn(
                             "credit rollback failed. recipeId={}, userId={}, cost={}",
@@ -199,7 +200,8 @@ public class RecipeCreationFacade {
                 if (!created) return;
 
                 try {
-                    creditPort.spendRecipeCreate(userId, recipeInfo.getId(), recipeInfo.getCreditCost());
+                    creditPort.spendRecipeCreate(
+                            userId, recipeInfo.getId(), recipeInfo.getCurrentJobId(), recipeInfo.getCreditCost());
                 } catch (CreditException e) {
                     recipeBookmarkService.delete(userId, recipeInfo.getId());
                     switch (e.getError()) {

@@ -49,7 +49,7 @@ public class RecipeValidationBatchConfig {
     private final YoutubeMetaExternalClient youtubeMetaExternalClient;
     private final RecipeInfoJpaRepository recipeInfoRepository;
 
-    record RefundInfo(UUID userId, UUID recipeId, long creditCost) {}
+    record RefundInfo(UUID userId, UUID recipeId, long creditCost, UUID jobId) {}
 
     public record RecipeValidationTarget(UUID recipeId, String videoId) {}
 
@@ -165,7 +165,8 @@ public class RecipeValidationBatchConfig {
       SELECT
         rh.user_id AS user_id,
         r.id      AS recipe_id,
-        r.credit_cost AS credit_cost
+        r.credit_cost AS credit_cost,
+        r.current_job_id AS job_id
       FROM recipe r
       JOIN recipe_bookmark rh
         ON rh.recipe_id = r.id
@@ -194,10 +195,12 @@ public class RecipeValidationBatchConfig {
                     (rs, rowNum) -> new RefundInfo(
                             bytesToUuid(rs.getBytes("user_id")),
                             bytesToUuid(rs.getBytes("recipe_id")),
-                            rs.getLong("credit_cost")));
+                            rs.getLong("credit_cost"),
+                            bytesToUuid(rs.getBytes("job_id"))
+                        ));
 
             for (RefundInfo info : refundInfos) {
-                recipeCreditPort.refundRecipeCreate(info.userId(), info.recipeId(), info.creditCost());
+                recipeCreditPort.refundRecipeCreate(info.userId(), info.recipeId(), info.jobId, info.creditCost());
             }
         };
     }

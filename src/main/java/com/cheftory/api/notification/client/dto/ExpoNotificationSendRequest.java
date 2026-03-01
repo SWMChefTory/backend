@@ -31,9 +31,9 @@ public record ExpoNotificationSendRequest(
 
     public record ExpoPushSendData(
             @JsonProperty("action") String action,
-            @JsonProperty("targetId") String targetId,
+            @JsonProperty("target_id") String targetId,
             @JsonProperty("type") String type,
-            @JsonProperty("sentAt") String sentAt) {
+            @JsonProperty("sent_at") String sentAt) {
 
         /**
          * 공통 알림 모델을 Expo data payload로 변환합니다.

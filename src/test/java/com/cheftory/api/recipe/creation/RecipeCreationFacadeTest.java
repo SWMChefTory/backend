@@ -96,7 +96,8 @@ class RecipeCreationFacadeTest {
                 assertThat(result).isEqualTo(recipeId);
                 verify(asyncRecipeCreationService, never())
                         .create(eq(recipeId), anyLong(), eq(videoId), org.mockito.ArgumentMatchers.any());
-                verify(creditPort).spendRecipeCreate(userId, recipeId, 3L);
+                verify(creditPort)
+                        .spendRecipeCreate(eq(userId), eq(recipeId), org.mockito.ArgumentMatchers.any(), eq(3L));
             }
         }
 
@@ -127,7 +128,7 @@ class RecipeCreationFacadeTest {
 
                 assertThat(result).isEqualTo(recipeId);
                 verify(asyncRecipeCreationService).create(recipeId, 5L, videoId, jobId);
-                verify(creditPort).spendRecipeCreate(userId, recipeId, 5L);
+                verify(creditPort).spendRecipeCreate(userId, recipeId, jobId, 5L);
             }
         }
 
@@ -162,7 +163,7 @@ class RecipeCreationFacadeTest {
                 assertThat(result).isEqualTo(recipeId);
                 verify(asyncRecipeCreationService).create(recipeId, 7L, videoId, newJobId);
                 verify(recipeInfoService).retry(recipeId);
-                verify(creditPort).spendRecipeCreate(userId, recipeId, 7L);
+                verify(creditPort).spendRecipeCreate(userId, recipeId, newJobId, 7L);
             }
         }
 
@@ -195,7 +196,7 @@ class RecipeCreationFacadeTest {
                 assertThat(result).isEqualTo(recipeId);
                 verify(asyncRecipeCreationService, never())
                         .create(eq(recipeId), anyLong(), eq(videoId), org.mockito.ArgumentMatchers.any());
-                verify(creditPort).spendRecipeCreate(userId, recipeId, 2L);
+                verify(creditPort).spendRecipeCreate(userId, recipeId, jobId, 2L);
             }
         }
 
@@ -267,7 +268,7 @@ class RecipeCreationFacadeTest {
 
                 verify(recipeInfoService).failed(recipeId);
                 verify(recipeBookmarkService).delete(userId, recipeId);
-                verify(creditPort).refundRecipeCreate(userId, recipeId, 4L);
+                verify(creditPort).refundRecipeCreate(userId, recipeId, jobId, 4L);
             }
         }
 
@@ -355,7 +356,11 @@ class RecipeCreationFacadeTest {
                 assertThat(result).isEqualTo(recipeId);
                 verify(recipeBookmarkService, never()).create(org.mockito.ArgumentMatchers.any(), eq(recipeId));
                 verify(creditPort, never())
-                        .spendRecipeCreate(org.mockito.ArgumentMatchers.any(), eq(recipeId), anyLong());
+                        .spendRecipeCreate(
+                                org.mockito.ArgumentMatchers.any(),
+                                eq(recipeId),
+                                org.mockito.ArgumentMatchers.any(),
+                                anyLong());
             }
         }
 
@@ -375,7 +380,11 @@ class RecipeCreationFacadeTest {
             void thenSkipCredit() throws Exception {
                 sut.create(userTarget);
                 verify(creditPort, never())
-                        .spendRecipeCreate(eq(userId), org.mockito.ArgumentMatchers.any(), anyLong());
+                        .spendRecipeCreate(
+                                eq(userId),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
+                                anyLong());
             }
         }
 
@@ -390,7 +399,8 @@ class RecipeCreationFacadeTest {
                 doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
                 doThrow(new RecipeCreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
                         .when(creditPort)
-                        .spendRecipeCreate(userId, recipeId, 9L);
+                        .spendRecipeCreate(
+                                eq(userId), eq(recipeId), org.mockito.ArgumentMatchers.any(), eq(9L));
             }
 
             @Test

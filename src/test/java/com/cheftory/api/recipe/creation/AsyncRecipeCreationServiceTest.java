@@ -36,6 +36,7 @@ class AsyncRecipeCreationServiceTest {
     private RecipeBookmarkService recipeBookmarkService;
     private RecipeCreditPort creditPort;
     private RecipeCreationPipeline recipeCreationPipeline;
+    private RecipeCreationNotificationService recipeCreationNotificationService;
 
     private AsyncRecipeCreationService sut;
 
@@ -55,7 +56,6 @@ class AsyncRecipeCreationServiceTest {
                 creditPort,
                 recipeCreationPipeline,
                 recipeCreationNotificationService);
-                recipeProgressService, recipeInfoService, recipeBookmarkService, creditPort, recipeCreationPipeline);
     }
 
     @Nested
@@ -95,6 +95,7 @@ class AsyncRecipeCreationServiceTest {
                 verify(recipeInfoService, never()).banned(recipeId);
                 verify(recipeProgressService, never())
                         .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, jobId);
+                verify(recipeCreationNotificationService).notify(recipeId);
             }
         }
 
@@ -120,10 +121,12 @@ class AsyncRecipeCreationServiceTest {
                 verify(recipeProgressService)
                         .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, jobId);
                 verify(recipeBookmarkService).deletes(anyList());
+                verify(recipeCreationNotificationService, never()).notify(org.mockito.ArgumentMatchers.any());
                 verify(creditPort, org.mockito.Mockito.times(2))
                         .refundRecipeCreate(
                                 org.mockito.ArgumentMatchers.any(),
                                 org.mockito.ArgumentMatchers.eq(recipeId),
+                                org.mockito.ArgumentMatchers.eq(jobId),
                                 org.mockito.ArgumentMatchers.eq(creditCost));
             }
         }
@@ -256,6 +259,7 @@ class AsyncRecipeCreationServiceTest {
                         .refundRecipeCreate(
                                 org.mockito.ArgumentMatchers.any(),
                                 org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
                                 org.mockito.ArgumentMatchers.anyLong());
             }
         }
@@ -276,6 +280,7 @@ class AsyncRecipeCreationServiceTest {
                         .refundRecipeCreate(
                                 org.mockito.ArgumentMatchers.any(),
                                 org.mockito.ArgumentMatchers.eq(recipeId),
+                                org.mockito.ArgumentMatchers.eq(jobId),
                                 org.mockito.ArgumentMatchers.eq(creditCost));
             }
 

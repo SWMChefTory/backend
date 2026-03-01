@@ -58,14 +58,17 @@ public class WebclientConfig {
     public WebClient webClientForRecipeServer(ExchangeFilterFunction marketHeaderPropagator) {
 
         HttpClient httpClient =
-                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+                HttpClient.newBuilder()
+                        .version(HttpClient.Version.HTTP_1_1)
+                        .connectTimeout(Duration.ofSeconds(5))
+                        .build();
 
         return WebClient.builder()
                 .baseUrl(recipeServerUrl)
                 .clientConnector(new JdkClientHttpConnector(httpClient))
                 .observationRegistry(observationRegistry)
                 .filter(marketHeaderPropagator)
-                .filter((req, next) -> next.exchange(req).timeout(Duration.ofMinutes(5)))
+                .filter((req, next) -> next.exchange(req).timeout(Duration.ofMinutes(15)))
                 .build();
     }
 

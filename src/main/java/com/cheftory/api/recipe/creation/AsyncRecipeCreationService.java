@@ -54,7 +54,7 @@ public class AsyncRecipeCreationService {
     public void create(UUID recipeId, long creditCost, String videoId, UUID jobId) {
         try {
             recipeCreationPipeline.run(RecipeCreationExecutionContext.of(recipeId, videoId, jobId));
-            recipeCreationNotificationService.notify(recipeId, title);
+            recipeCreationNotificationService.notify(recipeId);
 
         } catch (RecipeException e) {
             log.error("레시피 생성 실패: recipeId={}, reason={}", recipeId, e.getError(), e);
@@ -91,7 +91,6 @@ public class AsyncRecipeCreationService {
     }
 
     private void cleanup(UUID recipeId, long creditCost, UUID jobId) {
-        // jobId 단위로 FINISHED failed 이벤트를 남기고, 생성 요청 부수효과(북마크/과금)를 정리한다.
         recipeProgressService.failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, jobId);
         List<RecipeBookmark> bookmarks = recipeBookmarkService.gets(recipeId);
         recipeBookmarkService.deletes(
@@ -99,7 +98,7 @@ public class AsyncRecipeCreationService {
 
         bookmarks.forEach(h -> {
             try {
-                creditPort.refundRecipeCreate(h.getUserId(), recipeId, creditCost);
+                creditPort.refundRecipeCreate(h.getUserId(), recipeId, jobId, creditCost);
             } catch (CreditException e) {
                 log.warn("refund failed. recipeId={}, cost={}", recipeId, creditCost, e);
             }

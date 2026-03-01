@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -115,7 +116,8 @@ class RecipeInfoValidationBatchConfigTest {
             assertBookmarkStatus(invalidBookmarkId, RecipeBookmarkStatus.BLOCKED);
         }
 
-        verify(recipeCreditPort, times(1)).refundRecipeCreate(eq(userId), eq(invalidRecipeId), eq(creditCost));
+        verify(recipeCreditPort, times(1))
+                .refundRecipeCreate(eq(userId), eq(invalidRecipeId), notNull(), eq(creditCost));
     }
 
     @Test
@@ -143,7 +145,7 @@ class RecipeInfoValidationBatchConfigTest {
             assertBookmarkStatus(validBookmarkId, RecipeBookmarkStatus.ACTIVE);
         }
 
-        verify(recipeCreditPort, never()).refundRecipeCreate(any(), any(), anyLong());
+        verify(recipeCreditPort, never()).refundRecipeCreate(any(), any(), any(), anyLong());
     }
 
     @Test
@@ -168,7 +170,7 @@ class RecipeInfoValidationBatchConfigTest {
             assertRecipeStatus(recipeId, RecipeStatus.BLOCKED);
         }
 
-        verify(recipeCreditPort, times(1)).refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
+        verify(recipeCreditPort, times(1)).refundRecipeCreate(eq(userId), eq(recipeId), notNull(), eq(creditCost));
     }
 
     @Test
@@ -197,7 +199,7 @@ class RecipeInfoValidationBatchConfigTest {
             assertRecipeStatus(blockedRecipeId, RecipeStatus.BLOCKED);
         }
 
-        verify(recipeCreditPort, never()).refundRecipeCreate(any(), any(), anyLong());
+        verify(recipeCreditPort, never()).refundRecipeCreate(any(), any(), any(), anyLong());
     }
 
     @Test
@@ -247,9 +249,10 @@ class RecipeInfoValidationBatchConfigTest {
             assertBookmarkStatus(globalBookmarkId, RecipeBookmarkStatus.ACTIVE);
         }
 
-        verify(recipeCreditPort, times(1)).refundRecipeCreate(eq(koreaUserId), eq(koreaRecipeId), eq(koreaCreditCost));
+        verify(recipeCreditPort, times(1))
+                .refundRecipeCreate(eq(koreaUserId), eq(koreaRecipeId), notNull(), eq(koreaCreditCost));
         verify(recipeCreditPort, never())
-                .refundRecipeCreate(eq(globalUserId), eq(globalRecipeId), eq(globalCreditCost));
+                .refundRecipeCreate(eq(globalUserId), eq(globalRecipeId), any(), eq(globalCreditCost));
     }
 
     @Test
@@ -276,7 +279,7 @@ class RecipeInfoValidationBatchConfigTest {
             assertRecipeStatus(recipeId, RecipeStatus.SUCCESS);
         }
 
-        verify(recipeCreditPort, never()).refundRecipeCreate(eq(userId), eq(recipeId), eq(creditCost));
+        verify(recipeCreditPort, never()).refundRecipeCreate(eq(userId), eq(recipeId), any(), eq(creditCost));
     }
 
     @Test
@@ -310,7 +313,7 @@ class RecipeInfoValidationBatchConfigTest {
             assertThat(blockedBookmark).isEqualTo(51);
         }
 
-        verify(recipeCreditPort, times(51)).refundRecipeCreate(eq(userId), any(), eq(creditCost));
+        verify(recipeCreditPort, times(51)).refundRecipeCreate(eq(userId), any(), any(), eq(creditCost));
     }
 
     private JobExecution runBatchJob(String market) throws Exception {
