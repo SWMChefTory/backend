@@ -399,8 +399,7 @@ class RecipeCreationFacadeTest {
                 doReturn(true).when(recipeBookmarkService).create(userId, recipeId);
                 doThrow(new RecipeCreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
                         .when(creditPort)
-                        .spendRecipeCreate(
-                                eq(userId), eq(recipeId), org.mockito.ArgumentMatchers.any(), eq(9L));
+                        .spendRecipeCreate(eq(userId), eq(recipeId), org.mockito.ArgumentMatchers.any(), eq(9L));
             }
 
             @Test
