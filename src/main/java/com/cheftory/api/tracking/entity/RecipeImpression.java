@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
  * <p>사용자 뷰포트에 레시피 카드가 노출된 기록을 저장합니다.</p>
  */
 @Entity
-@Table(name = "recipe_impression")
+@Table
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Getter

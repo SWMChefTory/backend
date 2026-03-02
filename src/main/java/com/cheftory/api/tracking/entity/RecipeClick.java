@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
  * <p>사용자가 레시피 카드를 클릭(상세 이동)한 기록을 저장합니다.</p>
  */
 @Entity
-@Table(name = "recipe_click")
+@Table
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Getter

@@ -5,8 +5,8 @@ import com.cheftory.api.tracking.dto.TrackingClickRequest;
 import com.cheftory.api.tracking.dto.TrackingImpressionRequest;
 import com.cheftory.api.tracking.entity.RecipeClick;
 import com.cheftory.api.tracking.entity.RecipeImpression;
-import com.cheftory.api.tracking.repository.RecipeClickJpaRepository;
-import com.cheftory.api.tracking.repository.RecipeImpressionJpaRepository;
+import com.cheftory.api.tracking.repository.RecipeClickRepository;
+import com.cheftory.api.tracking.repository.RecipeImpressionRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TrackingService {
 
-    private final RecipeImpressionJpaRepository impressionRepository;
-    private final RecipeClickJpaRepository clickRepository;
+    private final RecipeImpressionRepository impressionRepository;
+    private final RecipeClickRepository clickRepository;
     private final Clock clock;
 
     /**
