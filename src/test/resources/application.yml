@@ -39,8 +39,6 @@ spring:
   batch:
     job:
       enabled: false
-    jdbc:
-      initialize-schema: always
 
 youtube:
   api-token-default: test1
@@ -74,3 +72,13 @@ expo:
   notification:
     enabled: true
     send-url: test
+
+search:
+  indexing:
+    enabled: false
+    batch-size: 500
+    timezone: Asia/Seoul
+    cron:
+      autocomplete: "0 0 0 * * *"
+      search-query-upsert: "0 0 0 * * *"
+      search-query-delete: "0 0 0 * * *"
