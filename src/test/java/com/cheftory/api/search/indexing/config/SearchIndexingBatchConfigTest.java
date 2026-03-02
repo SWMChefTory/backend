@@ -15,6 +15,7 @@ import com.cheftory.api.search.indexing.support.BulkIndexPayload;
 import com.cheftory.api.search.indexing.support.IndexingCursorJpaRepository;
 import com.cheftory.api.search.indexing.support.IndexingCursorRepository;
 import com.cheftory.api.search.indexing.support.SearchIndexingBulkClient;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -571,15 +572,18 @@ public class SearchIndexingBatchConfigTest {
         jdbcTemplate.update(
                 """
                 INSERT INTO recipe (
-                    id, view_count, created_at, updated_at, recipe_status, credit_cost, is_public, market, country_code
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    id, view_count, created_at, updated_at, recipe_status, source_type, source_key, credit_cost, current_job_id, is_public, market, country_code
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 id,
                 0,
                 Timestamp.valueOf(updatedAt.minusMinutes(10)),
                 Timestamp.valueOf(updatedAt),
                 recipeStatus,
+                "YOUTUBE",
+                id.toString(),
                 1L,
+                UUID.randomUUID(),
                 false,
                 "KR",
                 "KR");
@@ -607,17 +611,15 @@ public class SearchIndexingBatchConfigTest {
         jdbcTemplate.update(
                 """
                 INSERT INTO recipe_youtube_meta (
-                    id, video_uri, title, channel_title, thumbnail_url, video_seconds, created_at, status, updated_at, recipe_id, type, market, country_code
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    id, video_id, title, channel_title, thumbnail_url, video_seconds, created_at, recipe_id, type, market, country_code
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 UUID.randomUUID(),
-                ("https://youtube.com/watch?v=" + UUID.randomUUID()),
+                UUID.randomUUID().toString().replace("-", ""),
                 title,
                 channelTitle,
-                ("https://img.youtube.com/" + UUID.randomUUID()),
+                ("https://img.youtube.com/" + UUID.randomUUID()).getBytes(StandardCharsets.UTF_8),
                 30,
-                Timestamp.valueOf(at),
-                "ACTIVE",
                 Timestamp.valueOf(at),
                 recipeId,
                 "NORMAL",
