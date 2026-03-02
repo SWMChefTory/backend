@@ -3,7 +3,6 @@ package com.cheftory.api;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * ChefTory API 서비스의 메인 애플리케이션 클래스.
@@ -12,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @EnableAsync
 @SpringBootApplication
-@EnableScheduling
 public class ApiApplication {
     /**
      * 애플리케이션을 시작합니다.

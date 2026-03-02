@@ -57,11 +57,10 @@ public class WebclientConfig {
     @Qualifier("recipeCreateClient")
     public WebClient webClientForRecipeServer(ExchangeFilterFunction marketHeaderPropagator) {
 
-        HttpClient httpClient =
-                HttpClient.newBuilder()
-                        .version(HttpClient.Version.HTTP_1_1)
-                        .connectTimeout(Duration.ofSeconds(5))
-                        .build();
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(5))
+                .build();
 
         return WebClient.builder()
                 .baseUrl(recipeServerUrl)

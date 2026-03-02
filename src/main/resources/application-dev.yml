@@ -26,9 +26,7 @@ spring:
     encoding: UTF-8
   batch:
     job:
-      enabled: true
-    jdbc:
-      initialize-schema: always
+      enabled: false
 
 opensearch:
   host: ${OPENSEARCH_HOST}
@@ -90,3 +88,13 @@ expo:
   notification:
     enabled: true
     send-url: https://exp.host/--/api/v2/push/send
+
+search:
+  indexing:
+    enabled: true
+    batch-size: 500
+    timezone: Asia/Seoul
+    cron:
+      autocomplete: "0 * * * * *"
+      search-query-upsert: "*/30 * * * * *"
+      search-query-delete: "*/30 * * * * *"
