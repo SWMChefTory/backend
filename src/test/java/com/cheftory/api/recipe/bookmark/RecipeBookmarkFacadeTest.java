@@ -77,7 +77,7 @@ class RecipeBookmarkFacadeTest {
                 @DisplayName("Then - 북마크를 생성하고 크레딧을 차감한다")
                 void thenCreatesAndCharges() throws CreditException, RecipeBookmarkException {
                     verify(recipeBookmarkService).create(userId, recipeId);
-                    verify(creditPort).spendRecipeCreate(userId, recipeId, creditCost);
+                    verify(creditPort).spendRecipeCreate(userId, recipeId, null, creditCost);
                     verify(recipeBookmarkService, never()).delete(userId, recipeId);
                 }
             }
@@ -116,7 +116,7 @@ class RecipeBookmarkFacadeTest {
                 @DisplayName("Then - 북마크만 생성(활성화)하고 크레딧은 차감하지 않는다")
                 void thenCreatesOnly() throws CreditException, RecipeBookmarkException {
                     verify(recipeBookmarkService).create(userId, recipeId);
-                    verify(creditPort, never()).spendRecipeCreate(userId, recipeId, creditCost);
+                    verify(creditPort, never()).spendRecipeCreate(userId, recipeId, null, creditCost);
                 }
             }
         }
@@ -143,7 +143,7 @@ class RecipeBookmarkFacadeTest {
 
                 doThrow(new RecipeCreditException(CreditErrorCode.CREDIT_INSUFFICIENT))
                         .when(creditPort)
-                        .spendRecipeCreate(userId, recipeId, creditCost);
+                        .spendRecipeCreate(userId, recipeId, null, creditCost);
             }
 
             @Nested
@@ -182,7 +182,7 @@ class RecipeBookmarkFacadeTest {
 
                 doThrow(new RecipeCreditException(CreditErrorCode.CREDIT_CONCURRENCY_CONFLICT))
                         .when(creditPort)
-                        .spendRecipeCreate(userId, recipeId, creditCost);
+                        .spendRecipeCreate(userId, recipeId, null, creditCost);
             }
 
             @Nested

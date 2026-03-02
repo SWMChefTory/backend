@@ -22,13 +22,18 @@ public class RecipeCreditAdapter implements RecipeCreditPort {
      *
      * @param userId 사용자 ID
      * @param recipeId 레시피 ID
+     * @param jobId 레시피 생성 실행 ID
      * @param creditCost 소비할 크레딧 양
      * @throws RecipeCreditException 크레딧 관련 예외 발생 시
      */
     @Override
-    public void spendRecipeCreate(UUID userId, UUID recipeId, long creditCost) throws RecipeCreditException {
+    public void spendRecipeCreate(UUID userId, UUID recipeId, UUID jobId, long creditCost) throws RecipeCreditException {
         try {
-            creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
+            if (jobId == null) {
+                creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
+            } else {
+                creditService.spend(Credit.recipeCreate(userId, recipeId, jobId, creditCost));
+            }
         } catch (CreditException exception) {
             throw new RecipeCreditException(exception.getError(), exception);
         }
@@ -39,13 +44,14 @@ public class RecipeCreditAdapter implements RecipeCreditPort {
      *
      * @param userId 사용자 ID
      * @param recipeId 레시피 ID
+     * @param jobId 레시피 생성 실행 ID
      * @param creditCost 환불할 크레딧 양
      * @throws RecipeCreditException 크레딧 관련 예외 발생 시
      */
     @Override
-    public void refundRecipeCreate(UUID userId, UUID recipeId, long creditCost) throws RecipeCreditException {
+    public void refundRecipeCreate(UUID userId, UUID recipeId, UUID jobId, long creditCost) throws RecipeCreditException {
         try {
-            creditService.grant(Credit.recipeCreateRefund(userId, recipeId, creditCost));
+            creditService.grant(Credit.recipeCreateRefund(userId, recipeId, jobId, creditCost));
         } catch (CreditException exception) {
             throw new RecipeCreditException(exception.getError(), exception);
         }

@@ -13,18 +13,20 @@ public interface RecipeCreditPort {
      *
      * @param userId 사용자 ID
      * @param recipeId 레시피 ID
+     * @param jobId 레시피 생성 실행 ID
      * @param creditCost 지급할 크레딧 양
      * @throws RecipeCreditException 크레딧 처리 실패 시
      */
-    void spendRecipeCreate(UUID userId, UUID recipeId, long creditCost) throws RecipeCreditException;
+    void spendRecipeCreate(UUID userId, UUID recipeId, UUID jobId, long creditCost) throws RecipeCreditException;
 
     /**
      * 레시피 생성 크레딧 환불.
      *
      * @param userId 사용자 ID
      * @param recipeId 레시피 ID
+     * @param jobId 레시피 생성 실행 ID
      * @param creditCost 환불할 크레딧 양
      * @throws RecipeCreditException 크레딧 처리 실패 시
      */
-    void refundRecipeCreate(UUID userId, UUID recipeId, long creditCost) throws RecipeCreditException;
+    void refundRecipeCreate(UUID userId, UUID recipeId, UUID jobId, long creditCost) throws RecipeCreditException;
 }

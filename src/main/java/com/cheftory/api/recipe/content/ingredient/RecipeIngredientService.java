@@ -43,4 +43,8 @@ public class RecipeIngredientService {
     public List<RecipeIngredient> gets(UUID recipeId) {
         return recipeIngredientRepository.finds(recipeId);
     }
+
+    public boolean exists(UUID recipeId) {
+        return recipeIngredientRepository.existsByRecipeId(recipeId);
+    }
 }

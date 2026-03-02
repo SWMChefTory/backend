@@ -14,6 +14,7 @@ import com.cheftory.api._common.cursor.CursorErrorCode;
 import com.cheftory.api._common.cursor.CursorException;
 import com.cheftory.api._common.cursor.CursorPage;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.entity.RecipeSourceType;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.info.exception.RecipeInfoException;
@@ -59,8 +60,8 @@ class RecipeInfoRepositoryTest extends DbContextTest {
             RecipeInfo created;
 
             @BeforeEach
-            void setUp() {
-                created = RecipeInfo.create(clock);
+            void setUp() throws RecipeInfoException {
+                created = newRecipe();
                 recipeInfoRepository.create(created);
             }
 
@@ -111,6 +112,47 @@ class RecipeInfoRepositoryTest extends DbContextTest {
     }
 
     @Nested
+    @DisplayName("소스/작업 기준 조회 (get by source, get by jobId)")
+    class GetBySourceAndJobId {
+
+        @Nested
+        @DisplayName("Given - 저장된 레시피가 있을 때")
+        class GivenSavedRecipe {
+            RecipeInfo created;
+
+            @BeforeEach
+            void setUp() throws RecipeInfoException {
+                created = recipeInfoRepository.create(newRecipe());
+            }
+
+            @Test
+            @DisplayName("When - sourceKey/sourceType으로 조회하면 Then - 동일 레시피를 반환한다")
+            void getBySource() throws RecipeInfoException {
+                RecipeInfo found = recipeInfoRepository.get(sourceKeyOf(created), sourceTypeOf(created));
+
+                assertThat(idOf(found)).isEqualTo(idOf(created));
+            }
+
+            @Test
+            @DisplayName("When - recipeId/currentJobId로 조회하면 Then - 동일 레시피를 반환한다")
+            void getByJobId() throws RecipeInfoException {
+                RecipeInfo found = recipeInfoRepository.get(idOf(created), currentJobIdOf(created));
+
+                assertThat(idOf(found)).isEqualTo(idOf(created));
+            }
+
+            @Test
+            @DisplayName("When - 잘못된 jobId로 조회하면 Then - NOT_FOUND 예외를 던진다")
+            void getByWrongJobIdThrows() {
+                assertThatThrownBy(() -> recipeInfoRepository.get(idOf(created), UUID.randomUUID()))
+                        .isInstanceOf(RecipeInfoException.class)
+                        .extracting("error")
+                        .isEqualTo(RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("목록 조회 (gets, getProgressRecipes)")
     class ListQueries {
 
@@ -124,9 +166,9 @@ class RecipeInfoRepositoryTest extends DbContextTest {
 
             @BeforeEach
             void setUp() throws RecipeInfoException {
-                success = recipeInfoRepository.create(RecipeInfo.create(clock));
-                failed = recipeInfoRepository.create(RecipeInfo.create(clock));
-                progress = recipeInfoRepository.create(RecipeInfo.create(clock));
+                success = recipeInfoRepository.create(newRecipe());
+                failed = recipeInfoRepository.create(newRecipe());
+                progress = recipeInfoRepository.create(newRecipe());
 
                 success.success(clock);
                 recipeInfoRepository.create(success);
@@ -176,7 +218,7 @@ class RecipeInfoRepositoryTest extends DbContextTest {
     }
 
     @Nested
-    @DisplayName("상태 변경 (success, failed, block)")
+    @DisplayName("상태 변경 (success, failed, block, banned, retry)")
     class StateTransitions {
 
         @Nested
@@ -185,8 +227,8 @@ class RecipeInfoRepositoryTest extends DbContextTest {
             RecipeInfo created;
 
             @BeforeEach
-            void setUp() {
-                created = recipeInfoRepository.create(RecipeInfo.create(clock));
+            void setUp() throws RecipeInfoException {
+                created = recipeInfoRepository.create(newRecipe());
             }
 
             @Nested
@@ -239,6 +281,63 @@ class RecipeInfoRepositoryTest extends DbContextTest {
                     assertThat(blocked.isBlocked()).isTrue();
                 }
             }
+
+            @Nested
+            @DisplayName("When - banned를 호출하면")
+            class WhenBanned {
+
+                @BeforeEach
+                void setUp() throws RecipeInfoException {
+                    recipeInfoRepository.banned(idOf(created), clock);
+                }
+
+                @Test
+                @DisplayName("Then - 상태가 BANNED로 변경된다")
+                void thenStatusIsBanned() throws RecipeInfoException {
+                    RecipeInfo banned = recipeInfoRepository.get(idOf(created));
+                    assertThat(banned.isBanned()).isTrue();
+                }
+            }
+
+            @Nested
+            @DisplayName("When - FAILED 상태에서 retry를 호출하면")
+            class WhenRetry {
+                UUID newJobId;
+                boolean retried;
+
+                @BeforeEach
+                void setUp() throws RecipeInfoException {
+                    recipeInfoRepository.failed(idOf(created), clock);
+                    newJobId = UUID.randomUUID();
+                    retried = recipeInfoRepository.retry(idOf(created), clock, newJobId);
+                }
+
+                @Test
+                @DisplayName("Then - IN_PROGRESS로 전환되고 currentJobId가 갱신된다")
+                void thenUpdatesStatusAndJobId() throws RecipeInfoException {
+                    RecipeInfo retriedRecipe = recipeInfoRepository.get(idOf(created));
+                    assertThat(retried).isTrue();
+                    assertThat(statusOf(retriedRecipe)).isEqualTo(RecipeStatus.IN_PROGRESS);
+                    assertThat(currentJobIdOf(retriedRecipe)).isEqualTo(newJobId);
+                }
+            }
+
+            @Nested
+            @DisplayName("When - FAILED가 아닌 상태에서 retry를 호출하면")
+            class WhenRetryNonFailed {
+                boolean retried;
+
+                @BeforeEach
+                void setUp() {
+                    retried = recipeInfoRepository.retry(idOf(created), clock, UUID.randomUUID());
+                }
+
+                @Test
+                @DisplayName("Then - false를 반환한다")
+                void thenReturnsFalse() {
+                    assertThat(retried).isFalse();
+                }
+            }
         }
     }
 
@@ -253,7 +352,7 @@ class RecipeInfoRepositoryTest extends DbContextTest {
 
             @BeforeEach
             void setUp() {
-                created = RecipeInfo.create(clock);
+                created = newRecipe();
             }
 
             @Nested
@@ -262,7 +361,7 @@ class RecipeInfoRepositoryTest extends DbContextTest {
                 RecipeInfo saved;
 
                 @BeforeEach
-                void setUp() {
+                void setUp() throws RecipeInfoException {
                     saved = recipeInfoRepository.create(created);
                 }
 
@@ -282,8 +381,8 @@ class RecipeInfoRepositoryTest extends DbContextTest {
             RecipeInfo created;
 
             @BeforeEach
-            void setUp() {
-                created = recipeInfoRepository.create(RecipeInfo.create(clock));
+            void setUp() throws RecipeInfoException {
+                created = recipeInfoRepository.create(newRecipe());
             }
 
             @Nested
@@ -334,12 +433,12 @@ class RecipeInfoRepositoryTest extends DbContextTest {
 
             @BeforeEach
             void setUp() throws RecipeInfoException {
-                high = recipeInfoRepository.create(RecipeInfo.create(clock));
+                high = recipeInfoRepository.create(newRecipe());
                 recipeInfoRepository.success(idOf(high), clock);
                 recipeInfoRepository.increaseCount(idOf(high));
                 recipeInfoRepository.increaseCount(idOf(high));
 
-                low = recipeInfoRepository.create(RecipeInfo.create(clock));
+                low = recipeInfoRepository.create(newRecipe());
                 recipeInfoRepository.success(idOf(low), clock);
                 recipeInfoRepository.increaseCount(idOf(low));
             }
@@ -414,5 +513,21 @@ class RecipeInfoRepositoryTest extends DbContextTest {
 
     private RecipeStatus statusOf(RecipeInfo recipeInfo) {
         return (RecipeStatus) getField(recipeInfo, "recipeStatus");
+    }
+
+    private UUID currentJobIdOf(RecipeInfo recipeInfo) {
+        return (UUID) getField(recipeInfo, "currentJobId");
+    }
+
+    private String sourceKeyOf(RecipeInfo recipeInfo) {
+        return (String) getField(recipeInfo, "sourceKey");
+    }
+
+    private RecipeSourceType sourceTypeOf(RecipeInfo recipeInfo) {
+        return (RecipeSourceType) getField(recipeInfo, "sourceType");
+    }
+
+    private RecipeInfo newRecipe() {
+        return RecipeInfo.create(clock, RecipeSourceType.YOUTUBE, "video-" + UUID.randomUUID());
     }
 }

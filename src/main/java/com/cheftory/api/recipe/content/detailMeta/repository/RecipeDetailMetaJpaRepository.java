@@ -12,5 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface RecipeDetailMetaJpaRepository extends JpaRepository<RecipeDetailMeta, UUID> {
     Optional<RecipeDetailMeta> findByRecipeId(UUID recipeId);
 
+    boolean existsByRecipeId(UUID recipeId);
+
     List<RecipeDetailMeta> findAllByRecipeIdIn(List<UUID> recipeIds);
 }

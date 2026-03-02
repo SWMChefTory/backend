@@ -17,6 +17,14 @@ public interface RecipeBriefingRepository {
     List<RecipeBriefing> findAllByRecipeId(UUID recipeId);
 
     /**
+     * 레시피 ID로 브리핑 존재 여부 조회
+     *
+     * @param recipeId 레시피 ID
+     * @return 브리핑 존재 여부
+     */
+    boolean existsByRecipeId(UUID recipeId);
+
+    /**
      * 레시피 브리핑 목록 일괄 저장
      *
      * @param recipeBriefings 저장할 브리핑 목록

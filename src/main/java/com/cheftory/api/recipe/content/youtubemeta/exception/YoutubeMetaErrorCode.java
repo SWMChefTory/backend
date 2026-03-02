@@ -24,33 +24,13 @@ public enum YoutubeMetaErrorCode implements Error {
      */
     YOUTUBE_URL_PATH_NULL("YOUTUBE_META_005", "유튜브 URL의 경로가 비어있습니다.", ErrorType.VALIDATION),
     /**
-     * 유효하지 않은 유튜브 URL 형식
-     */
-    YOUTUBE_URL_INVALID("YOUTUBE_META_006", "유효하지 않은 유튜브 URL 형식입니다.", ErrorType.VALIDATION),
-    /**
      * 유튜브 URL의 쿼리 파라미터가 유효하지 않음
      */
     YOUTUBE_URL_QUERY_PARAM_INVALID("YOUTUBE_META_007", "유튜브 URL의 쿼리 파라미터가 유효하지 않습니다.", ErrorType.VALIDATION),
     /**
-     * 이미 존재하는 유튜브 메타 정보
-     */
-    YOUTUBE_META_DUPLICATED("YOUTUBE_META_008", "이미 존재하는 유튜브 메타 정보입니다.", ErrorType.CONFLICT),
-    /**
      * 유튜브 URL의 경로가 유효하지 않음
      */
     YOUTUBE_URL_PATH_INVALID("YOUTUBE_META_009", "유튜브 URL의 경로가 유효하지 않습니다.", ErrorType.VALIDATION),
-    /**
-     * 요리 비디오 URL이 아님 (차단됨)
-     */
-    YOUTUBE_META_BANNED("YOUTUBE_META_010", "요리 비디오 URL이 아닙니다.", ErrorType.VALIDATION),
-    /**
-     * 유튜브 메타 정보가 차단됨
-     */
-    YOUTUBE_META_BLOCKED("YOUTUBE_META_011", "유튜브 메타 정보가 차단되었습니다.", ErrorType.VALIDATION),
-    /**
-     * 차단되지 않은 유튜브 메타 정보
-     */
-    YOUTUBE_META_NOT_BLOCKED_VIDEO("YOUTUBE_META_012", "차단되지 않은 유튜브 메타 정보입니다.", ErrorType.VALIDATION),
     /**
      * 동영상을 찾을 수 없음
      */
@@ -59,10 +39,6 @@ public enum YoutubeMetaErrorCode implements Error {
      * 동영상 길이 정보를 찾을 수 없음
      */
     YOUTUBE_META_VIDEO_DURATION_NOT_FOUND("YOUTUBE_META_014", "동영상 길이 정보를 찾을 수 없습니다.", ErrorType.NOT_FOUND),
-    /**
-     * 동영상 길이 정보가 유효하지 않음
-     */
-    YOUTUBE_META_VIDEO_DURATION_INVALID("YOUTUBE_META_015", "동영상 길이 정보가 유효하지 않습니다.", ErrorType.VALIDATION),
     /**
      * 임베드할 수 없는 동영상
      */

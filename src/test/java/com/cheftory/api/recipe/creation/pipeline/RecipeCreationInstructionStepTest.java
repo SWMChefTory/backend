@@ -16,7 +16,6 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import java.lang.reflect.Constructor;
-import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,12 +58,13 @@ class RecipeCreationInstructionStepTest {
         class GivenNoFileInfo {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, "video-123", URI.create("https://youtu.be/video-123"), "test-title");
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(recipeId, "video-123", "test-title", jobId);
             }
 
             @Nested
@@ -79,7 +79,7 @@ class RecipeCreationInstructionStepTest {
                             .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
                     verify(recipeProgressService, never())
-                            .start(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+                            .start(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, jobId);
                 }
             }
         }
@@ -89,17 +89,18 @@ class RecipeCreationInstructionStepTest {
         class GivenFileInfoAndSuccess {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
             String fileUri;
             String mimeType;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, "video-456", URI.create("https://youtu.be/video-456"), "test-title"),
+                        RecipeCreationExecutionContext.of(recipeId, "video-456", "test-title", jobId),
                         fileUri,
                         mimeType);
             }
@@ -118,12 +119,44 @@ class RecipeCreationInstructionStepTest {
                 void thenCreatesStepsAndUpdatesProgress() throws RecipeStepException {
                     InOrder order = inOrder(recipeProgressService);
                     order.verify(recipeProgressService)
-                            .start(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+                            .start(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, jobId);
                     order.verify(recipeProgressService)
-                            .success(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+                            .success(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, jobId);
 
                     verify(recipeStepService).create(recipeId, fileUri, mimeType);
                 }
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - step 데이터가 이미 존재할 때")
+        class GivenStepAlreadyExists {
+            RecipeCreationExecutionContext context;
+            UUID recipeId;
+            UUID jobId;
+
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.withFileInfo(
+                        RecipeCreationExecutionContext.of(recipeId, "video-skip", "title", jobId),
+                        "s3://bucket/file.mp4",
+                        "video/mp4");
+                when(recipeStepService.exists(recipeId)).thenReturn(true);
+            }
+
+            @Test
+            @DisplayName("Then - create 호출 없이 success만 기록하고 그대로 반환한다")
+            void thenSkipCreate() throws Exception {
+                RecipeCreationExecutionContext result = sut.run(context);
+
+                org.assertj.core.api.Assertions.assertThat(result).isEqualTo(context);
+                verify(recipeStepService, never()).create(recipeId, "s3://bucket/file.mp4", "video/mp4");
+                verify(recipeProgressService)
+                        .success(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, jobId);
+                verify(recipeProgressService, never())
+                        .start(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, jobId);
             }
         }
 
@@ -132,17 +165,18 @@ class RecipeCreationInstructionStepTest {
         class GivenException {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
             String fileUri;
             String mimeType;
 
             @BeforeEach
             void setUp() throws RecipeStepException {
                 recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, "video-789", URI.create("https://youtu.be/video-789"), "test-title"),
+                        RecipeCreationExecutionContext.of(recipeId, "video-789", "test-title", jobId),
                         fileUri,
                         mimeType);
 
@@ -161,7 +195,8 @@ class RecipeCreationInstructionStepTest {
                             .isInstanceOf(RecipeStepException.class)
                             .hasFieldOrPropertyWithValue("error", RecipeStepErrorCode.RECIPE_STEP_CREATE_FAIL);
 
-                    verify(recipeProgressService).failed(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+                    verify(recipeProgressService)
+                            .failed(recipeId, RecipeProgressStep.STEP, RecipeProgressDetail.STEP, jobId);
                 }
             }
         }

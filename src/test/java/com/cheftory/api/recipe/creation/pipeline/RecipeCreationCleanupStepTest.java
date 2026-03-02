@@ -3,7 +3,6 @@ package com.cheftory.api.recipe.creation.pipeline;
 import static org.mockito.Mockito.*;
 
 import com.cheftory.api.recipe.content.verify.RecipeVerifyService;
-import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +36,7 @@ class RecipeCreationCleanupStepTest {
                 fileUri = "s3://bucket/file.mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
                         RecipeCreationExecutionContext.of(
-                                UUID.randomUUID(), "video-123", URI.create("https://youtu.be/123"), "test-title"),
+                                UUID.randomUUID(), "video-123", "test-title", UUID.randomUUID()),
                         fileUri,
                         "video/mp4");
             }
@@ -87,8 +86,7 @@ class RecipeCreationCleanupStepTest {
 
             @BeforeEach
             void setUp() {
-                context = RecipeCreationExecutionContext.of(
-                        UUID.randomUUID(), "video-123", URI.create("https://youtu.be/123"), null);
+                context = RecipeCreationExecutionContext.of(UUID.randomUUID(), "video-123", UUID.randomUUID());
             }
 
             @Nested

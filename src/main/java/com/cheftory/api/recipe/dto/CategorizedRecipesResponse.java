@@ -49,6 +49,7 @@ public record CategorizedRecipesResponse(
      * @param createdAt 생성 일시
      * @param tags 태그 목록
      * @param creditCost 크레딧 비용
+     * @param videoType 비디오 타입
      */
     private record CategorizedRecipe(
             @JsonProperty("viewed_at") LocalDateTime viewedAt,
@@ -65,7 +66,9 @@ public record CategorizedRecipesResponse(
             @JsonProperty("servings") Integer servings,
             @JsonProperty("created_at") LocalDateTime createdAt,
             @JsonProperty("tags") List<Tag> tags,
-            @JsonProperty("credit_cost") Long creditCost) {
+            @JsonProperty("credit_cost") Long creditCost,
+            @JsonProperty("recipe_status") String recipeStatus,
+            @JsonProperty("video_type") String videoType) {
 
         /**
          * RecipeBookmarkOverview로부터 변환
@@ -91,7 +94,9 @@ public record CategorizedRecipesResponse(
                     info.getTags() != null
                             ? info.getTags().stream().map(Tag::from).toList()
                             : null,
-                    info.getCreditCost());
+                    info.getCreditCost(),
+                    info.getRecipeStatus().name(),
+                    info.getVideoType() == null ? null : info.getVideoType().name());
         }
     }
 

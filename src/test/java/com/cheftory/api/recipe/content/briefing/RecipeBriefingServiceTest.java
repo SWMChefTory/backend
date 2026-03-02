@@ -211,6 +211,35 @@ public class RecipeBriefingServiceTest {
     }
 
     @Nested
+    @DisplayName("레시피 브리핑 존재 여부 확인 (exists)")
+    class Exists {
+
+        @Test
+        @DisplayName("브리핑이 존재하면 true를 반환하고 existsByRecipeId를 호출한다")
+        void returnsTrueWhenExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(true).when(repository).existsByRecipeId(recipeId);
+
+            boolean result = service.exists(recipeId);
+
+            assertThat(result).isTrue();
+            verify(repository).existsByRecipeId(recipeId);
+        }
+
+        @Test
+        @DisplayName("브리핑이 없으면 false를 반환하고 existsByRecipeId를 호출한다")
+        void returnsFalseWhenNotExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(false).when(repository).existsByRecipeId(recipeId);
+
+            boolean result = service.exists(recipeId);
+
+            assertThat(result).isFalse();
+            verify(repository).existsByRecipeId(recipeId);
+        }
+    }
+
+    @Nested
     @DisplayName("BriefingClientResponse 변환 (toRecipeBriefing)")
     class ToRecipeBriefing {
 

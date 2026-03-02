@@ -1,7 +1,6 @@
 package com.cheftory.api.recipe.content.youtubemeta.client;
 
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeMetaType;
-import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeUri;
 import com.cheftory.api.recipe.content.youtubemeta.entity.YoutubeVideoInfo;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
@@ -38,14 +37,12 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
      *
      * <p>YouTube Data API를 사용하여 비디오 정보를 조회하고, 쇼츠 여부 등을 판단합니다.</p>
      *
-     * @param youtubeUri 유튜브 URI
+     * @param videoId 유튜브 비디오 ID
      * @return 비디오 정보
      * @throws YoutubeMetaException API 호출 실패 또는 비디오 정보 조회 실패 시
      */
     @Override
-    public YoutubeVideoInfo fetch(YoutubeUri youtubeUri) throws YoutubeMetaException {
-        String videoId = youtubeUri.getVideoId();
-
+    public YoutubeVideoInfo fetch(String videoId) throws YoutubeMetaException {
         try {
             YoutubeVideoResponse youtubeVideoResponse =
                     youtubeMetaHttpApi.fetchVideo(videoId, youtubeDefaultKey, VIDEO_PARTS);
@@ -80,7 +77,7 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
             YoutubeMetaType metaType = isShorts ? YoutubeMetaType.SHORTS : YoutubeMetaType.NORMAL;
 
             return YoutubeVideoInfo.from(
-                    youtubeUri,
+                    videoId,
                     youtubeVideoResponse.getTitle(),
                     youtubeVideoResponse.getChannelTitle(),
                     URI.create(youtubeVideoResponse.getThumbnailUri()),
@@ -119,13 +116,11 @@ public class YoutubeMetaExternalClient implements YoutubeMetaClient {
      *
      * <p>YouTube Data API를 사용하여 비디오의 상태 및 임베드 가능 여부를 확인합니다.</p>
      *
-     * @param youtubeUri 유튜브 URI
+     * @param videoId 유튜브 비디오 ID
      * @return 차단 여부 (true: 차단됨, false: 차단되지 않음)
      */
     @Override
-    public Boolean isBlocked(YoutubeUri youtubeUri) {
-        String videoId = youtubeUri.getVideoId();
-
+    public Boolean isBlocked(String videoId) {
         try {
             YoutubeVideoResponse youtubeVideoResponse =
                     youtubeMetaHttpApi.fetchVideo(videoId, youtubeBlockCheckKey, "status");

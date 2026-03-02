@@ -15,18 +15,31 @@ public class RecipeCreationInstructionStep implements RecipeCreationPipelineStep
     private final RecipeStepService recipeStepService;
     private final RecipeProgressService recipeProgressService;
 
+    /**
+     * 조리 순서(step) 생성 단계.
+     *
+     * <p>동일 `recipeId`에 step 데이터가 이미 존재하면 생성 호출 없이 progress만 성공 처리합니다.</p>
+     */
     @Override
     public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) throws RecipeException {
         if (context.getFileUri() == null || context.getMimeType() == null) {
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
-        recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+        if (recipeStepService.exists(context.getRecipeId())) {
+            recipeProgressService.success(
+                    context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP, context.getJobId());
+            return context;
+        }
+        recipeProgressService.start(
+                context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP, context.getJobId());
         try {
             recipeStepService.create(context.getRecipeId(), context.getFileUri(), context.getMimeType());
-            recipeProgressService.success(context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+            recipeProgressService.success(
+                    context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP, context.getJobId());
             return context;
         } catch (RecipeException ex) {
-            recipeProgressService.failed(context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP);
+            recipeProgressService.failed(
+                    context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP, context.getJobId());
             throw ex;
         }
     }

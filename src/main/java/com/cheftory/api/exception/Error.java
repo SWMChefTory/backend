@@ -16,7 +16,6 @@ import com.cheftory.api.recipe.content.info.exception.RecipeInfoErrorCode;
 import com.cheftory.api.recipe.content.step.exception.RecipeStepErrorCode;
 import com.cheftory.api.recipe.content.verify.exception.RecipeVerifyErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
-import com.cheftory.api.recipe.creation.identify.exception.RecipeIdentifyErrorCode;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipe.report.exception.RecipeReportErrorCode;
@@ -62,7 +61,6 @@ public interface Error {
             RecipeStepErrorCode.class,
             RecipeInfoErrorCode.class,
             RecipeBookmarkErrorCode.class,
-            RecipeIdentifyErrorCode.class,
             RecipeSearchErrorCode.class);
 
     Map<String, Error> ERROR_BY_CODE = buildErrorByCode();

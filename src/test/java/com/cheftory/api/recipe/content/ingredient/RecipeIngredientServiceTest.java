@@ -109,4 +109,33 @@ class RecipeIngredientServiceTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("레시피 재료 존재 여부 확인 (exists)")
+    class Exists {
+
+        @Test
+        @DisplayName("재료가 존재하면 true를 반환하고 existsByRecipeId를 호출한다")
+        void returnsTrueWhenExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(true).when(recipeIngredientRepository).existsByRecipeId(recipeId);
+
+            boolean result = recipeIngredientService.exists(recipeId);
+
+            assertThat(result).isTrue();
+            verify(recipeIngredientRepository).existsByRecipeId(recipeId);
+        }
+
+        @Test
+        @DisplayName("재료가 없으면 false를 반환하고 existsByRecipeId를 호출한다")
+        void returnsFalseWhenNotExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(false).when(recipeIngredientRepository).existsByRecipeId(recipeId);
+
+            boolean result = recipeIngredientService.exists(recipeId);
+
+            assertThat(result).isFalse();
+            verify(recipeIngredientRepository).existsByRecipeId(recipeId);
+        }
+    }
 }
