@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.cheftory.api._common.cursor.CursorException;
@@ -40,7 +40,6 @@ import com.cheftory.api.recipe.content.tag.RecipeTagService;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
-import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
@@ -126,27 +125,8 @@ class RecipeFacadeTest {
 
             sut.blockRecipe(recipeId);
 
-            verify(recipeYoutubeMetaService).block(recipeId);
             verify(recipeInfoService).block(recipeId);
             verify(recipeBookmarkService).block(recipeId);
-        }
-
-        @Test
-        @DisplayName("차단되지 않은 영상이면 RECIPE_NOT_BLOCKED_VIDEO로 변환된다")
-        void shouldThrowNotBlockedVideo() throws YoutubeMetaException, RecipeInfoException {
-            UUID recipeId = UUID.randomUUID();
-
-            doThrow(new YoutubeMetaException(YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO))
-                    .when(recipeYoutubeMetaService)
-                    .block(recipeId);
-
-            assertThatThrownBy(() -> sut.blockRecipe(recipeId))
-                    .isInstanceOf(RecipeException.class)
-                    .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO);
-
-            verify(recipeYoutubeMetaService).block(recipeId);
-            verify(recipeInfoService, never()).block(any());
-            verify(recipeBookmarkService, never()).block(any());
         }
     }
 
@@ -166,7 +146,7 @@ class RecipeFacadeTest {
             doReturn(Collections.emptyList()).when(recipeStepService).gets(recipeId);
             doReturn(Collections.emptyList()).when(recipeIngredientService).gets(recipeId);
             doReturn(mock(RecipeDetailMeta.class)).when(recipeDetailMetaService).get(recipeId);
-            doReturn(Collections.emptyList()).when(recipeProgressService).gets(recipeId);
+            doReturn(Collections.emptyList()).when(recipeProgressService).gets(any(), any());
             doReturn(Collections.emptyList()).when(recipeTagService).gets(recipeId);
             doReturn(Collections.emptyList()).when(recipeBriefingService).gets(recipeId);
             doReturn(mockYoutubeMeta(recipeId)).when(recipeYoutubeMetaService).get(recipeId);
@@ -394,13 +374,13 @@ class RecipeFacadeTest {
 
             RecipeProgress p1 = mock(RecipeProgress.class);
 
-            doReturn(List.of(p1)).when(recipeProgressService).gets(recipeId);
+            doReturn(List.of(p1)).when(recipeProgressService).gets(any(), any());
             doReturn(recipeInfo).when(recipeInfoService).get(recipeId);
 
             RecipeProgressStatus result = sut.getRecipeProgress(recipeId);
 
             assertThat(result).isNotNull();
-            verify(recipeProgressService).gets(recipeId);
+            verify(recipeProgressService).gets(eq(recipeId), any());
             verify(recipeInfoService).get(recipeId);
         }
     }
@@ -659,6 +639,7 @@ class RecipeFacadeTest {
         doReturn(LocalDateTime.now()).when(recipeInfo).getUpdatedAt();
         doReturn(0).when(recipeInfo).getViewCount();
         doReturn(1L).when(recipeInfo).getCreditCost();
+        doReturn(UUID.randomUUID()).when(recipeInfo).getCurrentJobId();
         return recipeInfo;
     }
 

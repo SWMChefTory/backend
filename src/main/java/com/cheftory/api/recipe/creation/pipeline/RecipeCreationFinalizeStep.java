@@ -20,15 +20,22 @@ public class RecipeCreationFinalizeStep implements RecipeCreationPipelineStep {
         if (context.getMimeType() == null || context.getFileUri() == null) {
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
-        recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+        recipeProgressService.start(
+                context.getRecipeId(), RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, context.getJobId());
         try {
             recipeInfoService.success(context.getRecipeId());
             recipeProgressService.success(
-                    context.getRecipeId(), RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                    context.getRecipeId(),
+                    RecipeProgressStep.FINISHED,
+                    RecipeProgressDetail.FINISHED,
+                    context.getJobId());
             return context;
         } catch (RecipeException ex) {
             recipeProgressService.failed(
-                    context.getRecipeId(), RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                    context.getRecipeId(),
+                    RecipeProgressStep.FINISHED,
+                    RecipeProgressDetail.FINISHED,
+                    context.getJobId());
             throw ex;
         }
     }

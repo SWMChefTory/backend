@@ -39,7 +39,7 @@ public class RecipeBookmarkFacade {
         boolean created = recipeBookmarkService.create(userId, recipeInfo.getId());
         if (!created) return;
         try {
-            creditPort.spendRecipeCreate(userId, recipeId, recipeInfo.getCreditCost());
+            creditPort.spendRecipeCreate(userId, recipeId, recipeInfo.getCurrentJobId(), recipeInfo.getCreditCost());
         } catch (CreditException e) {
             recipeBookmarkService.delete(userId, recipeId);
             throw e;

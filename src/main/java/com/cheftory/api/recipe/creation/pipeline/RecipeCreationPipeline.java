@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RecipeCreationPipeline {
     private final RecipeProgressService recipeProgressService;
+    private final RecipeCreationLoadYoutubeMetaStep recipeCreationLoadYoutubeMetaStep;
     private final RecipeCreationVerifyStep recipeCreationVerifyStep;
     private final RecipeCreationDetailStep recipeCreationDetailStep;
     private final RecipeCreationInstructionStep recipeCreationInstructionStep;
@@ -21,10 +22,18 @@ public class RecipeCreationPipeline {
     private final RecipeCreationCleanupStep recipeCreationCleanupStep;
     private final AsyncTaskExecutor recipeCreateExecutor;
 
+    /**
+     * 레시피 생성 워크플로우를 실행합니다.
+     *
+     * <p>`READY` progress 기록 후 `LOAD_YOUTUBE_META -> VERIFY -> (DETAIL/INSTRUCTION/BRIEFING 병렬) -> FINALIZE`
+     * 순서로 실행하며, 마지막에는 성공/실패와 무관하게 cleanup step을 호출합니다.</p>
+     */
     public void run(RecipeCreationExecutionContext context) throws RecipeException {
-        recipeProgressService.start(context.getRecipeId(), RecipeProgressStep.READY, RecipeProgressDetail.READY);
+        recipeProgressService.start(
+                context.getRecipeId(), RecipeProgressStep.READY, RecipeProgressDetail.READY, context.getJobId());
 
-        RecipeCreationExecutionContext updated = recipeCreationVerifyStep.run(context);
+        RecipeCreationExecutionContext updated = recipeCreationLoadYoutubeMetaStep.run(context);
+        updated = recipeCreationVerifyStep.run(updated);
         try {
             new RecipeCreationParallelSteps(
                             recipeCreateExecutor,

@@ -21,6 +21,11 @@ public class RecipeBriefingRepositoryImpl implements RecipeBriefingRepository {
         return repository.findAllByRecipeId(recipeId);
     }
 
+    @Override
+    public boolean existsByRecipeId(UUID recipeId) {
+        return repository.existsByRecipeId(recipeId);
+    }
+
     @DbThrottled
     @Override
     public void saveAll(List<RecipeBriefing> recipeBriefings) {

@@ -314,6 +314,35 @@ public class RecipeDetailMetaServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("상세 메타 존재 여부 확인 (exists)")
+    class Exists {
+
+        @Test
+        @DisplayName("상세 메타가 존재하면 true를 반환하고 repository.exists를 호출한다")
+        void returnsTrueWhenExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(true).when(recipeDetailMetaRepository).exists(recipeId);
+
+            boolean result = recipeDetailMetaService.exists(recipeId);
+
+            assertThat(result).isTrue();
+            verify(recipeDetailMetaRepository).exists(recipeId);
+        }
+
+        @Test
+        @DisplayName("상세 메타가 없으면 false를 반환하고 repository.exists를 호출한다")
+        void returnsFalseWhenNotExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(false).when(recipeDetailMetaRepository).exists(recipeId);
+
+            boolean result = recipeDetailMetaService.exists(recipeId);
+
+            assertThat(result).isFalse();
+            verify(recipeDetailMetaRepository).exists(recipeId);
+        }
+    }
+
     private RecipeDetailMeta createMockRecipeDetailMeta(
             UUID recipeId, Integer cookTime, Integer servings, String description) {
         RecipeDetailMeta meta = mock(RecipeDetailMeta.class);

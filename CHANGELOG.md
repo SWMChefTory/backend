@@ -18,6 +18,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 향후 수정될 버그들
 
+## [1.1.33] - 2026-03-02
+
+### Added
+- **레시피 생성 소스 기반 식별 모델 도입**
+  - `RecipeInfo`에 `sourceType`, `sourceKey`, `currentJobId` 필드 추가
+  - `(market, source_type, source_key)` 유니크 제약으로 중복 생성 제어
+  - `RecipeSourceType` enum 추가 (`YOUTUBE`)
+- **jobId 기반 생성 실행 추적 추가**
+  - `RecipeProgress`에 `jobId` 필드 추가
+  - `RecipeProgressService.gets(recipeId, jobId)` 및 `RecipeInfo.get(recipeId, jobId)` 조회 경로 추가
+- **파이프라인 신규 단계 추가**
+  - `RecipeCreationLoadYoutubeMetaStep` 추가
+  - `LOAD_YOUTUBE_META` 진행 단계(`RecipeProgressStep`) 추가
+- **카테고리 레시피 응답 필드 확장**
+  - `CategorizedRecipesResponse`에 `recipe_status`, `video_type` 필드 추가
+
+### Changed
+- **레시피 생성 흐름 async-first로 리팩토링**
+  - `RecipeCreationFacade.create()`에서 `sourceKey(videoId)` 기준으로 상태 분기(join/retry/new create) 처리
+  - `FAILED` 상태는 조건부 `retry(FAILED -> IN_PROGRESS)` 후 재진입, `IN_PROGRESS/SUCCESS`는 기존 레시피로 합류
+- **중복 생성 제어 방식 전환**
+  - `RecipeCreationTxService`, `RecipeIdentify*` 기반 식별/락 흐름 제거
+  - `RecipeInfo` 유니크 제약 + `RECIPE_DUPLICATE_SOURCE` 예외 기반 처리로 통합
+- **생성 파이프라인 재시도 비용 최적화**
+  - `briefing/detailMeta/ingredient/step/tag/youtubeMeta` 존재 시 재생성 외부 호출 생략
+  - 존재 확인을 `exists` 쿼리 중심으로 변경
+- **YouTube 메타 모델 단순화**
+  - 저장 컬럼을 `videoUri`에서 `videoId` 중심으로 변경
+  - `getVideoUri()`는 `videoId`로 동적 생성
+  - `RecipeYoutubeMeta`의 상태(`BANNED/BLOCKED/FAILED`) 저장 방식 제거
+- **크레딧 멱등키 강화**
+  - 레시피 생성/환불 크레딧 처리에 `jobId` 포함 (`recipe-create`, `recipe-create-refund`)
+- **진행 상태 조회 기준 정교화**
+  - 레시피 진행 상태 조회 시 `currentJobId` 기준 이벤트만 반환
+- **레시피 차단 처리 단순화**
+  - `RecipeFacade.blockRecipe`에서 YouTube 외부 차단 검증 없이 `recipe`/`bookmark` 차단 처리로 변경
+
+### Fixed
+- **북마크/최근 응답 null 안정성 개선**
+  - YouTube 메타 또는 `videoType` 누락 시 NPE 없이 null-safe 응답 처리
+  - 북마크 목록 구성 시 YouTube 메타 누락 건을 제외하지 않고 안전하게 포함
+- **비요리/삭제/임베드 불가 영상 처리 일관화**
+  - 레시피 생성 실패 사유를 `BANNED` 상태로 명확히 분기하고 cleanup/환불 흐름 정합성 개선
+- **비동기 생성 제출 실패 보상 강화**
+  - 북마크 삭제 및 크레딧 환불 롤백 처리 보강
+
+### Removed
+- `RecipeCreationTxService` 제거
+- `recipe.creation.identify` 패키지(엔티티/서비스/리포지토리/예외/테스트) 제거
+- 미사용 YouTube 메타 에러코드 정리 (`YOUTUBE_META_BANNED`, `YOUTUBE_META_BLOCKED`, `YOUTUBE_META_NOT_BLOCKED_VIDEO` 등)
+
+### Added (Test)
+- async-first 생성 흐름, source 기반 중복/재시도, jobId 진행 이력, exists 쿼리 최적화 관련 단위 테스트 전반 갱신
+  - `RecipeCreationFacadeTest`, `AsyncRecipeCreationServiceTest`, `RecipeProgress*Test`, `RecipeInfo*Test`
+  - `RecipeYoutubeMeta*Test`, `RecipeControllerTest`, content service(`briefing/detailMeta/ingredient/step/tag`) 테스트
+
+### Database Migration
+- **배포 전 수동 마이그레이션 필요**
+  - `recipe` 테이블: `source_type`, `source_key`, `current_job_id` 컬럼 추가 및 `(market, source_type, source_key)` 유니크 인덱스 추가
+  - `recipe` 상태 컬럼: `BANNED` 값 허용(상태 타입 사용 시)
+  - `recipe_progress` 테이블: `job_id` 컬럼 추가 및 기존 데이터 백필 필요
+  - `recipe_youtube_meta` 테이블: `video_uri -> video_id` 전환, `recipe_id` 유니크 적용, `status/updated_at` 컬럼 정리 여부 확인 필요
+
+## [1.1.32] - 2026-03-02
+
+### Added
+- **검색 인덱싱 배치 파이프라인 추가**
+  - `autocomplete`, `search_query`(upsert/delete) 인덱싱 Job/Step/Reader/Writer 구성 추가
+  - OpenSearch bulk 인덱싱 클라이언트 및 인덱스 템플릿 초기화(`autocomplete`, `search_query`) 지원 추가
+  - 인덱싱 커서 저장소(`UpdatedAtIdCursor`, `IndexingCursorRepository`) 및 스케줄러(`SearchIndexingScheduler`) 추가
+- **분산 락 기반 스케줄 보호 추가**
+  - ShedLock 연동(`SearchIndexingLockConfig`) 및 관련 의존성 추가
+
+### Changed
+- **인덱싱 런타임 설정 추가**
+  - `application-dev.yml`, `application-prod.yml`에 `search.indexing.*` 설정 추가
+- **JSON 파싱 ObjectMapper 사용 방식 정리**
+  - `SearchIndexingBatchConfig`에서 `static ObjectMapper` 제거 후 Spring 빈 주입 사용으로 통일
+
+### Removed
+- **기존 YouTube 검증 배치 제거**
+  - `RecipeValidationBatchConfig`, `RecipeValidationScheduler` 및 관련 테스트 제거
+
+### Added (Test)
+- 검색 인덱싱 배치/스케줄러/템플릿/커서/락 설정 테스트 추가
+
+### Database Migration
+- **배포 전 확인 필요**: `shedlock` 테이블 및 `indexing_cursor_entity` 테이블이 운영 DB에 준비되어 있어야 함
+
 ## [1.1.31] - 2026-03-01
 
 ### Changed
@@ -530,8 +619,8 @@ CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
 
 ### 배포 정보
 
-- **Version**: 1.0.0
-- **Release Date**: 2025-12-29
+- **Version**: 1.1.33
+- **Release Date**: 2026-03-02
 - **Environment**: Production
 - **Docker Image**: `cheftory-proxy-server:latest`
 
@@ -539,24 +628,24 @@ CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
 
 ```bash
 # Release 브랜치 생성
-git checkout -b release/1.0.0
+git checkout -b release/1.1.33
 
 # build.gradle 버전 변경
-# version = '1.0.0' 으로 수정
+# version = '1.1.33' 으로 수정
 
 # CHANGELOG.md 업데이트
 # 변경사항 작성
 
 # 커밋 및 푸시
 git add build.gradle CHANGELOG.md
-git commit -m "chore: release v1.0.0"
-git push origin release/1.0.0
+git commit -m "chore: release v1.1.33"
+git push origin release/1.1.33
 
 # main 브랜치로 PR 생성 및 머지
 
 # 태그 생성 및 푸시 (main 브랜치에서)
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.33
+git push origin v1.1.33
 ```
 
 태그 푸시 시 자동으로:
@@ -568,4 +657,31 @@ git push origin v1.0.0
 
 ## Version History
 
+- **1.1.33** (2026-03-02): Async-first recipe creation flow and source/jobId tracking introduced
+- **1.1.32** (2026-03-02): Search indexing pipeline release
+- **1.1.31** (2026-03-01): Production deployment workflow updated for VM-based deployment
+- **1.1.30** (2026-02-26): Notification domain and Expo push delivery flow added
+- **1.1.29** (2026-02-23): SEO public recipe detail API added `videoType`
+- **1.1.28** (2026-02-18): Public SEO recipe APIs added with transactional rollback fixes
+- **1.1.27** (2026-02-15): Error type/status handling system and domain-specific exceptions standardized
+- **1.1.26** (2026-02-12): Recipe report feature and `tutorialAt` user response field added
+- **1.1.25** (2026-02-11): Apple login regression bug fixed
+- **1.1.24** (2026-02-11): Auth external clients migrated from HttpClient to WebClient
+- **1.1.23** (2026-02-10): AI recipe title field and fallback response logic added
+- **1.1.22** (2026-02-10): Repository layer fully refactored into interface/impl/JPA pattern
+- **1.1.21** (2026-02-09): Optimistic retry executor and cursor error handling strengthened
+- **1.1.20** (2026-02-08): User/Auth/Bookmark repositories split into interface + implementation
+- **1.1.19** (2026-02-07): Tutorial/share credit transaction and exception handling issues fixed
+- **1.1.18** (2026-02-07): Tutorial completion and share credit reward features added
+- **1.1.17** (2026-02-05): AI resource cleanup step and bookmark creation stability improved
+- **1.1.16** (2026-02-04): DB throttling and video-based verification step added to recipe pipeline
+- **1.1.15** (2026-01-22): Recipe history feature refactored into bookmark flow
+- **1.1.14** (2026-01-22): Ranking candidate scoring and decay parameters tuned
+- **1.1.13** (2026-01-22): Ranking/recommendation system and personalization profile aggregation introduced
+- **1.1.12** (2026-01-19): Search/autocomplete/history APIs unified under scope-based design
+- **1.1.11** (2026-01-19): Probe-based cursor pagination and challenge cursor response enhancements
+- **1.1.10** (2026-01-18): Common cursor module introduced across recipe/search/ranking APIs
+- **1.1.9** (2026-01-05): Apple web login support and audience validation improvements
+- **1.1.8** (2026-01-02): YouTube channel title exposure and API token split configuration
+- **1.1.7** (2025-12-29): Core backend features (auth/recipe/search/challenge/monitoring) released
 - **1.0.0** (2025-12-29): Initial production release

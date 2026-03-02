@@ -37,16 +37,38 @@ public record Credit(UUID userId, long amount, CreditReason reason, String idemp
     }
 
     /**
-     * 레시피 생성 환불 크레딧을 생성합니다.
+     * 레시피 생성 비용 크레딧을 생성합니다.
+     *
+     * <p>재시도 시 과금 멱등 키를 분리하기 위해 jobId를 포함합니다.</p>
      *
      * @param userId 사용자 ID
      * @param recipeId 레시피 ID
+     * @param jobId 레시피 생성 실행 ID
+     * @param cost 소비할 크레딧 양
+     * @return 레시피 생성 크레딧
+     */
+    public static Credit recipeCreate(UUID userId, UUID recipeId, UUID jobId, long cost) {
+        return new Credit(
+                userId, cost, CreditReason.RECIPE_CREATE, "recipe-create:" + userId + ":" + recipeId + ":" + jobId);
+    }
+
+    /**
+     * 레시피 생성 환불 크레딧을 생성합니다.
+     *
+     * <p>재시도 시 환불 멱등 키를 분리하기 위해 jobId를 포함합니다.</p>
+     *
+     * @param userId 사용자 ID
+     * @param recipeId 레시피 ID
+     * @param jobId 레시피 생성 실행 ID
      * @param amount 환불할 크레딧 양
      * @return 레시피 생성 환불 크레딧
      */
-    public static Credit recipeCreateRefund(UUID userId, UUID recipeId, long amount) {
+    public static Credit recipeCreateRefund(UUID userId, UUID recipeId, UUID jobId, long amount) {
         return new Credit(
-                userId, amount, CreditReason.RECIPE_CREATE_REFUND, "recipe-create-refund:" + userId + ":" + recipeId);
+                userId,
+                amount,
+                CreditReason.RECIPE_CREATE_REFUND,
+                "recipe-create-refund:" + userId + ":" + recipeId + ":" + jobId);
     }
 
     /**

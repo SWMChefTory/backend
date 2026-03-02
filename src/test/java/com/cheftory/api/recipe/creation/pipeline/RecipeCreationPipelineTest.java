@@ -11,7 +11,6 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.exception.RecipeException;
 import java.lang.reflect.Constructor;
-import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +24,7 @@ import org.springframework.core.task.AsyncTaskExecutor;
 class RecipeCreationPipelineTest {
 
     private RecipeProgressService recipeProgressService;
+    private RecipeCreationLoadYoutubeMetaStep recipeCreationLoadYoutubeMetaStep;
     private RecipeCreationVerifyStep recipeCreationVerifyStep;
     private RecipeCreationDetailStep recipeCreationDetailStep;
     private RecipeCreationInstructionStep recipeCreationInstructionStep;
@@ -38,6 +38,7 @@ class RecipeCreationPipelineTest {
     @BeforeEach
     void setUp() {
         recipeProgressService = mock(RecipeProgressService.class);
+        recipeCreationLoadYoutubeMetaStep = mock(RecipeCreationLoadYoutubeMetaStep.class);
         recipeCreationVerifyStep = mock(RecipeCreationVerifyStep.class);
         recipeCreationDetailStep = mock(RecipeCreationDetailStep.class);
         recipeCreationInstructionStep = mock(RecipeCreationInstructionStep.class);
@@ -61,6 +62,7 @@ class RecipeCreationPipelineTest {
         try {
             Constructor<RecipeCreationPipeline> ctor = RecipeCreationPipeline.class.getDeclaredConstructor(
                     RecipeProgressService.class,
+                    RecipeCreationLoadYoutubeMetaStep.class,
                     RecipeCreationVerifyStep.class,
                     RecipeCreationDetailStep.class,
                     RecipeCreationInstructionStep.class,
@@ -71,6 +73,7 @@ class RecipeCreationPipelineTest {
             ctor.setAccessible(true);
             return ctor.newInstance(
                     recipeProgressService,
+                    recipeCreationLoadYoutubeMetaStep,
                     recipeCreationVerifyStep,
                     recipeCreationDetailStep,
                     recipeCreationInstructionStep,
@@ -93,15 +96,17 @@ class RecipeCreationPipelineTest {
             UUID recipeId;
             RecipeCreationExecutionContext context;
             RecipeCreationExecutionContext updatedContext;
+            UUID jobId;
 
             @BeforeEach
             void setUp() throws RecipeException {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, "video-123", URI.create("https://youtu.be/video-123"), null);
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(recipeId, "video-123", jobId);
                 updatedContext =
                         RecipeCreationExecutionContext.withFileInfo(context, "s3://bucket/file.mp4", "video/mp4");
 
+                when(recipeCreationLoadYoutubeMetaStep.run(context)).thenReturn(context);
                 when(recipeCreationVerifyStep.run(context)).thenReturn(updatedContext);
             }
 
@@ -119,12 +124,14 @@ class RecipeCreationPipelineTest {
                 void thenRunsStepsAndCleansUp() throws RecipeException {
                     InOrder order = inOrder(
                             recipeProgressService,
+                            recipeCreationLoadYoutubeMetaStep,
                             recipeCreationVerifyStep,
                             recipeCreationFinalizeStep,
                             recipeCreationCleanupStep);
 
                     order.verify(recipeProgressService)
-                            .start(recipeId, RecipeProgressStep.READY, RecipeProgressDetail.READY);
+                            .start(recipeId, RecipeProgressStep.READY, RecipeProgressDetail.READY, jobId);
+                    order.verify(recipeCreationLoadYoutubeMetaStep).run(context);
                     order.verify(recipeCreationVerifyStep).run(context);
                     order.verify(recipeCreationFinalizeStep).run(updatedContext);
                     order.verify(recipeCreationCleanupStep).cleanup(updatedContext);
@@ -138,15 +145,17 @@ class RecipeCreationPipelineTest {
             UUID recipeId;
             RecipeCreationExecutionContext context;
             RecipeCreationExecutionContext updatedContext;
+            UUID jobId;
 
             @BeforeEach
             void setUp() throws RecipeException {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, "video-456", URI.create("https://youtu.be/video-456"), null);
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(recipeId, "video-456", jobId);
                 updatedContext =
                         RecipeCreationExecutionContext.withFileInfo(context, "s3://bucket/file.mp4", "video/mp4");
 
+                when(recipeCreationLoadYoutubeMetaStep.run(context)).thenReturn(context);
                 when(recipeCreationVerifyStep.run(context)).thenReturn(updatedContext);
                 when(recipeCreationFinalizeStep.run(updatedContext)).thenThrow(new RuntimeException("fail"));
             }

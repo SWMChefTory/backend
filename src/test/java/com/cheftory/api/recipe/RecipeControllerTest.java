@@ -84,7 +84,7 @@ public class RecipeControllerTest extends RestDocsTest {
 
         setUser(userId);
 
-        doReturn(recipeId).when(recipeCreationFacade).createBookmark(any(RecipeCreationTarget.User.class));
+        doReturn(recipeId).when(recipeCreationFacade).create(any(RecipeCreationTarget.User.class));
 
         given().contentType(ContentType.JSON)
                 .header("Authorization", "Bearer accessToken")
@@ -212,6 +212,8 @@ public class RecipeControllerTest extends RestDocsTest {
                 .then()
                 .status(HttpStatus.OK)
                 .body("categorized_recipes", hasSize(1))
+                .body("categorized_recipes[0].recipe_status", equalTo("SUCCESS"))
+                .body("categorized_recipes[0].video_type", equalTo("NORMAL"))
                 .body("has_next", equalTo(true))
                 .body("next_cursor", equalTo(nextCursor));
 

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 
 import com.cheftory.api._common.Clock;
 import com.cheftory.api.recipe.content.info.entity.RecipeInfo;
+import com.cheftory.api.recipe.content.info.entity.RecipeSourceType;
 import com.cheftory.api.recipe.content.info.entity.RecipeStatus;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +40,7 @@ public class RecipeInfoTest {
 
                 @BeforeEach
                 void setUp() {
-                    recipeInfo = RecipeInfo.create(clock);
+                    recipeInfo = RecipeInfo.create(clock, RecipeSourceType.YOUTUBE, "video-test-1");
                 }
 
                 @Test
@@ -47,17 +48,20 @@ public class RecipeInfoTest {
                 void thenCreated() {
                     assertThat(recipeInfo).isNotNull();
                     assertThat(recipeInfo.getId()).isNotNull();
+                    assertThat(recipeInfo.getCurrentJobId()).isNotNull();
                     assertThat(recipeInfo.getViewCount()).isEqualTo(0);
                     assertThat(recipeInfo.getCreatedAt()).isNotNull();
                     assertThat(recipeInfo.getUpdatedAt()).isNotNull();
                     assertThat(recipeInfo.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
+                    assertThat(recipeInfo.getSourceType()).isEqualTo(RecipeSourceType.YOUTUBE);
+                    assertThat(recipeInfo.getSourceKey()).isEqualTo("video-test-1");
                 }
             }
         }
     }
 
     @Nested
-    @DisplayName("상태 변경 (success, failed)")
+    @DisplayName("상태 변경 (success, failed, block, banned)")
     class StatusChange {
 
         @Nested
@@ -67,7 +71,7 @@ public class RecipeInfoTest {
 
             @BeforeEach
             void setUp() {
-                recipeInfo = RecipeInfo.create(clock);
+                recipeInfo = RecipeInfo.create(clock, RecipeSourceType.YOUTUBE, "video-test-2");
             }
 
             @Nested
@@ -106,11 +110,47 @@ public class RecipeInfoTest {
                     assertThat(recipeInfo.getRecipeStatus()).isEqualTo(RecipeStatus.FAILED);
                 }
             }
+
+            @Nested
+            @DisplayName("When - 차단으로 변경하면")
+            class WhenBlocked {
+
+                @BeforeEach
+                void setUp() {
+                    recipeInfo.block(clock);
+                }
+
+                @Test
+                @DisplayName("Then - BLOCKED 상태가 된다")
+                void thenBlocked() {
+                    assertThat(recipeInfo.isBlocked()).isTrue();
+                    assertThat(recipeInfo.isBanned()).isFalse();
+                    assertThat(recipeInfo.getRecipeStatus()).isEqualTo(RecipeStatus.BLOCKED);
+                }
+            }
+
+            @Nested
+            @DisplayName("When - banned로 변경하면")
+            class WhenBanned {
+
+                @BeforeEach
+                void setUp() {
+                    recipeInfo.banned(clock);
+                }
+
+                @Test
+                @DisplayName("Then - BANNED 상태가 된다")
+                void thenBanned() {
+                    assertThat(recipeInfo.isBanned()).isTrue();
+                    assertThat(recipeInfo.isBlocked()).isFalse();
+                    assertThat(recipeInfo.getRecipeStatus()).isEqualTo(RecipeStatus.BANNED);
+                }
+            }
         }
     }
 
     @Nested
-    @DisplayName("상태 확인 (isSuccess, isFailed, isBlocked)")
+    @DisplayName("상태 확인 (isSuccess, isFailed, isBlocked, isBanned)")
     class StatusCheck {
 
         @Nested
@@ -120,7 +160,7 @@ public class RecipeInfoTest {
 
             @BeforeEach
             void setUp() {
-                recipeInfo = RecipeInfo.create(clock);
+                recipeInfo = RecipeInfo.create(clock, RecipeSourceType.YOUTUBE, "video-test-3");
                 recipeInfo.success(clock);
             }
 
@@ -140,7 +180,7 @@ public class RecipeInfoTest {
 
             @BeforeEach
             void setUp() {
-                recipeInfo = RecipeInfo.create(clock);
+                recipeInfo = RecipeInfo.create(clock, RecipeSourceType.YOUTUBE, "video-test-4");
                 recipeInfo.failed(clock);
             }
 
@@ -160,7 +200,7 @@ public class RecipeInfoTest {
 
             @BeforeEach
             void setUp() {
-                recipeInfo = RecipeInfo.create(clock);
+                recipeInfo = RecipeInfo.create(clock, RecipeSourceType.YOUTUBE, "video-test-5");
             }
 
             @Test
@@ -169,7 +209,29 @@ public class RecipeInfoTest {
                 assertThat(recipeInfo.isSuccess()).isFalse();
                 assertThat(recipeInfo.isFailed()).isFalse();
                 assertThat(recipeInfo.isBlocked()).isFalse();
+                assertThat(recipeInfo.isBanned()).isFalse();
                 assertThat(recipeInfo.getRecipeStatus()).isEqualTo(RecipeStatus.IN_PROGRESS);
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - BANNED 상태일 때")
+        class GivenBanned {
+            RecipeInfo recipeInfo;
+
+            @BeforeEach
+            void setUp() {
+                recipeInfo = RecipeInfo.create(clock, RecipeSourceType.YOUTUBE, "video-test-6");
+                recipeInfo.banned(clock);
+            }
+
+            @Test
+            @DisplayName("Then - isBanned만 true를 반환한다")
+            void thenIsBannedTrue() {
+                assertThat(recipeInfo.isBanned()).isTrue();
+                assertThat(recipeInfo.isSuccess()).isFalse();
+                assertThat(recipeInfo.isFailed()).isFalse();
+                assertThat(recipeInfo.isBlocked()).isFalse();
             }
         }
     }

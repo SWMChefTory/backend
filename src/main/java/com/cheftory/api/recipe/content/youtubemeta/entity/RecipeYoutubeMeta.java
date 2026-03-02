@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,14 +16,15 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * 레시피 유튜브 메타 엔티티
  *
- * <p>레시피와 연결된 유튜브 비디오의 메타 정보(제목, 채널명, 썸네일 등)를 저장하는 엔티티입니다.</p>
+ * <p>레시피와 연결된 유튜브 비디오의 메타 정보(제목, 채널명, 썸네일 등)를 저장합니다.
+ * 저장 컬럼은 URL 전체가 아니라 `videoId`를 사용하며, 필요 시 `getVideoUri()`로 watch URL을 계산합니다.</p>
  */
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(name = "uk_recipe_youtube_meta_recipe_id", columnNames = "recipe_id")})
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
@@ -30,10 +33,10 @@ public class RecipeYoutubeMeta extends MarketScope {
     private UUID id;
 
     /**
-     * 비디오 URI
+     * 비디오 ID
      */
-    @Column(nullable = false)
-    private URI videoUri;
+    @Column(nullable = false, length = 32)
+    private String videoId;
 
     /**
      * 비디오 제목
@@ -66,22 +69,9 @@ public class RecipeYoutubeMeta extends MarketScope {
     private LocalDateTime createdAt;
 
     /**
-     * 메타 정보 상태
-     */
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private YoutubeMetaStatus status;
-
-    /**
-     * 수정 일시
-     */
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
-    /**
      * 연결된 레시피 ID
      */
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private UUID recipeId;
 
     /**
@@ -105,44 +95,22 @@ public class RecipeYoutubeMeta extends MarketScope {
 
         return new RecipeYoutubeMeta(
                 UUID.randomUUID(),
-                youtubeVideoInfo.getVideoUri(),
+                youtubeVideoInfo.getVideoId(),
                 youtubeVideoInfo.getTitle(),
                 youtubeVideoInfo.getChannelTitle(),
                 youtubeVideoInfo.getThumbnailUrl(),
                 youtubeVideoInfo.getVideoSeconds(),
-                now,
-                YoutubeMetaStatus.ACTIVE,
                 now,
                 recipeId,
                 youtubeVideoInfo.getVideoType());
     }
 
     /**
-     * 비디오 ID 추출
+     * 저장된 videoId로 정규화된 watch URL을 동적으로 구성합니다.
      *
-     * @return 비디오 ID
+     * <p>DB에는 URI 대신 videoId만 저장하므로, 외부 응답/호환 용도로 계산값을 제공합니다.</p>
      */
-    public String getVideoId() {
-        return UriComponentsBuilder.fromUri(videoUri).build().getQueryParams().getFirst("v");
-    }
-
-    public boolean isBanned() {
-        return this.status == YoutubeMetaStatus.BANNED;
-    }
-
-    public void ban() {
-        this.status = YoutubeMetaStatus.BANNED;
-    }
-
-    public void block() {
-        this.status = YoutubeMetaStatus.BLOCKED;
-    }
-
-    public boolean isBlocked() {
-        return this.status == YoutubeMetaStatus.BLOCKED;
-    }
-
-    public void failed() {
-        this.status = YoutubeMetaStatus.FAILED;
+    public URI getVideoUri() {
+        return URI.create("https://www.youtube.com/watch?v=" + videoId);
     }
 }

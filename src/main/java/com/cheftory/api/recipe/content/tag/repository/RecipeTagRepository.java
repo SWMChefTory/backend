@@ -17,6 +17,14 @@ public interface RecipeTagRepository {
     List<RecipeTag> finds(UUID recipeId);
 
     /**
+     * 레시피 ID로 태그 존재 여부 조회
+     *
+     * @param recipeId 레시피 ID
+     * @return 태그 존재 여부
+     */
+    boolean existsByRecipeId(UUID recipeId);
+
+    /**
      * 여러 레시피 ID로 태그 목록 조회
      *
      * @param recipeIds 레시피 ID 목록

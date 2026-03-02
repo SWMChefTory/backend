@@ -24,9 +24,12 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.infrastructure.item.ItemReader;
 import org.springframework.batch.infrastructure.item.ItemWriter;
+import org.springframework.batch.infrastructure.item.database.JdbcCursorItemReader;
 import org.springframework.batch.infrastructure.item.database.JdbcPagingItemReader;
 import org.springframework.batch.infrastructure.item.database.Order;
+import org.springframework.batch.infrastructure.item.database.builder.JdbcCursorItemReaderBuilder;
 import org.springframework.batch.infrastructure.item.database.builder.JdbcPagingItemReaderBuilder;
 import org.springframework.batch.infrastructure.item.database.support.MySqlPagingQueryProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,7 +86,7 @@ public class SearchIndexingBatchConfig {
     public Step autocompleteIndexStep(
             JobRepository jobRepository,
             PlatformTransactionManager transactionManager,
-            JdbcPagingItemReader<AutocompleteAggregateRow> autocompleteReader,
+            ItemReader<AutocompleteAggregateRow> autocompleteReader,
             ItemWriter<AutocompleteAggregateRow> autocompleteWriter) {
         return new StepBuilder("autocompleteIndexStep", jobRepository)
                 .<AutocompleteAggregateRow, AutocompleteAggregateRow>chunk(batchSize)
@@ -161,23 +164,21 @@ public class SearchIndexingBatchConfig {
                 .queryProvider(searchQueryDeleteQueryProvider())
                 .parameterValues(parameterValues)
                 .rowMapper((rs, rowNum) -> new SearchQueryDeleteRow(
-                        rs.getString("id"),
-                        requireTimestamp(rs.getTimestamp("updated_at"), "updated_at")
-                                .toLocalDateTime()))
+                        rs.getString("id"), rs.getTimestamp("updated_at").toLocalDateTime()))
                 .pageSize(batchSize)
                 .build();
     }
 
     @Bean
     @StepScope
-    public JdbcPagingItemReader<AutocompleteAggregateRow> autocompleteReader() throws Exception {
-        return new JdbcPagingItemReaderBuilder<AutocompleteAggregateRow>()
+    public JdbcCursorItemReader<AutocompleteAggregateRow> autocompleteReader() {
+        return new JdbcCursorItemReaderBuilder<AutocompleteAggregateRow>()
                 .name("autocompleteReader")
                 .dataSource(dataSource)
-                .queryProvider(autocompleteQueryProvider())
+                .sql(autocompleteQuery())
                 .rowMapper((rs, rowNum) -> new AutocompleteAggregateRow(
                         rs.getString("market"), rs.getString("text"), rs.getString("scope"), rs.getInt("count")))
-                .pageSize(batchSize)
+                .fetchSize(batchSize)
                 .build();
     }
 
@@ -195,8 +196,7 @@ public class SearchIndexingBatchConfig {
 
             SearchQueryUpsertRow last = rows.getLast();
             cursorRepository.save(
-                    PIPELINE_SEARCH_QUERY_UPSERT,
-                    new UpdatedAtIdCursor(last.updatedAt(), toUuid(last.id(), PIPELINE_SEARCH_QUERY_UPSERT)));
+                    PIPELINE_SEARCH_QUERY_UPSERT, new UpdatedAtIdCursor(last.updatedAt(), UUID.fromString(last.id())));
         };
     }
 
@@ -213,8 +213,7 @@ public class SearchIndexingBatchConfig {
 
             SearchQueryDeleteRow last = rows.getLast();
             cursorRepository.save(
-                    PIPELINE_SEARCH_QUERY_DELETE,
-                    new UpdatedAtIdCursor(last.updatedAt(), toUuid(last.id(), PIPELINE_SEARCH_QUERY_DELETE)));
+                    PIPELINE_SEARCH_QUERY_DELETE, new UpdatedAtIdCursor(last.updatedAt(), UUID.fromString(last.id())));
         };
     }
 
@@ -274,8 +273,8 @@ public class SearchIndexingBatchConfig {
                 """);
 
         LinkedHashMap<String, Order> sortKeys = new LinkedHashMap<>();
-        sortKeys.put("r.updated_at", Order.ASCENDING);
-        sortKeys.put("r.id", Order.ASCENDING);
+        sortKeys.put("updated_at", Order.ASCENDING);
+        sortKeys.put("id", Order.ASCENDING);
         queryProvider.setSortKeys(sortKeys);
         return queryProvider;
     }
@@ -302,22 +301,19 @@ public class SearchIndexingBatchConfig {
                 """);
 
         LinkedHashMap<String, Order> sortKeys = new LinkedHashMap<>();
-        sortKeys.put("r.updated_at", Order.ASCENDING);
-        sortKeys.put("r.id", Order.ASCENDING);
+        sortKeys.put("updated_at", Order.ASCENDING);
+        sortKeys.put("id", Order.ASCENDING);
         queryProvider.setSortKeys(sortKeys);
         return queryProvider;
     }
 
-    private MySqlPagingQueryProvider autocompleteQueryProvider() {
-        MySqlPagingQueryProvider queryProvider = new MySqlPagingQueryProvider();
-        queryProvider.setSelectClause("""
+    private String autocompleteQuery() {
+        return """
                 SELECT
                     all_text.market,
                     all_text.text,
                     'recipe' AS scope,
                     CAST(ROUND(SUM(all_text.weight)) AS UNSIGNED) AS count
-                """);
-        queryProvider.setFromClause("""
                 FROM (
                     SELECT
                         LOWER(r.market) AS market,
@@ -368,19 +364,14 @@ public class SearchIndexingBatchConfig {
                     WHERE r.recipe_status = 'SUCCESS'
                       AND rdm.servings IS NOT NULL
                 ) AS all_text
-                """);
-        queryProvider.setGroupClause("GROUP BY all_text.market, all_text.text");
-
-        LinkedHashMap<String, Order> sortKeys = new LinkedHashMap<>();
-        sortKeys.put("all_text.market", Order.ASCENDING);
-        sortKeys.put("all_text.text", Order.ASCENDING);
-        queryProvider.setSortKeys(sortKeys);
-        return queryProvider;
+                GROUP BY all_text.market, all_text.text
+                ORDER BY all_text.market ASC, all_text.text ASC
+                """;
     }
 
     private RowMapper<SearchQueryUpsertRow> searchQueryUpsertRowMapper() {
         return (rs, rowNum) -> new SearchQueryUpsertRow(
-                requiredNonBlank(rs.getString("id"), "id"),
+                rs.getString("id"),
                 rs.getString("market"),
                 rs.getString("title"),
                 rs.getString("channel_title"),
@@ -388,8 +379,8 @@ public class SearchIndexingBatchConfig {
                 rs.getString("servings_text"),
                 parseJsonArray(rs.getString("ingredients_json")),
                 parseJsonArray(rs.getString("tags_json")),
-                requireTimestamp(rs.getTimestamp("created_at"), "created_at").toLocalDateTime(),
-                requireTimestamp(rs.getTimestamp("updated_at"), "updated_at").toLocalDateTime());
+                rs.getTimestamp("created_at").toLocalDateTime(),
+                rs.getTimestamp("updated_at").toLocalDateTime());
     }
 
     private List<String> parseJsonArray(String jsonArrayString) {
@@ -427,9 +418,9 @@ public class SearchIndexingBatchConfig {
     }
 
     private BulkIndexPayload toAutocompletePayload(AutocompleteAggregateRow row) {
-        String market = requiredNonBlank(row.market(), "market").toLowerCase(Locale.ROOT);
-        String scope = requiredNonBlank(row.scope(), "scope").toLowerCase(Locale.ROOT);
-        String text = requiredNonBlank(row.text(), "text");
+        String market = row.market().toLowerCase(Locale.ROOT);
+        String scope = row.scope().toLowerCase(Locale.ROOT);
+        String text = row.text().trim();
 
         Map<String, Object> document = new LinkedHashMap<>();
         document.put("market", market);
@@ -443,27 +434,5 @@ public class SearchIndexingBatchConfig {
     private long toEpochMillis(LocalDateTime localDateTime) {
         ZoneId zoneId = ZoneId.of(timezone);
         return localDateTime.atZone(zoneId).toInstant().toEpochMilli();
-    }
-
-    private String requiredNonBlank(String value, String fieldName) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Required field is blank: " + fieldName);
-        }
-        return value.trim();
-    }
-
-    private Timestamp requireTimestamp(Timestamp timestamp, String fieldName) {
-        if (timestamp == null) {
-            throw new IllegalStateException("Required timestamp is null: " + fieldName);
-        }
-        return timestamp;
-    }
-
-    private UUID toUuid(String value, String pipelineName) {
-        try {
-            return UUID.fromString(value);
-        } catch (Exception e) {
-            throw new IllegalStateException("Invalid UUID from pipeline " + pipelineName + ": " + value, e);
-        }
     }
 }

@@ -18,4 +18,6 @@ public interface RecipeStepJpaRepository extends JpaRepository<RecipeStep, UUID>
      * @return 정렬된 레시피 단계 목록
      */
     List<RecipeStep> findAllByRecipeId(UUID recipeId, Sort sort);
+
+    boolean existsByRecipeId(UUID recipeId);
 }

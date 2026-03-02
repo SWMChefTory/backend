@@ -120,4 +120,33 @@ class RecipeStepServiceTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("레시피 단계 존재 여부 확인 (exists)")
+    class Exists {
+
+        @Test
+        @DisplayName("단계가 존재하면 true를 반환하고 existsByRecipeId를 호출한다")
+        void returnsTrueWhenExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(true).when(recipeStepRepository).existsByRecipeId(recipeId);
+
+            boolean result = recipeStepService.exists(recipeId);
+
+            assertThat(result).isTrue();
+            verify(recipeStepRepository).existsByRecipeId(recipeId);
+        }
+
+        @Test
+        @DisplayName("단계가 없으면 false를 반환하고 existsByRecipeId를 호출한다")
+        void returnsFalseWhenNotExists() {
+            UUID recipeId = UUID.randomUUID();
+            doReturn(false).when(recipeStepRepository).existsByRecipeId(recipeId);
+
+            boolean result = recipeStepService.exists(recipeId);
+
+            assertThat(result).isFalse();
+            verify(recipeStepRepository).existsByRecipeId(recipeId);
+        }
+    }
 }

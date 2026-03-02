@@ -20,6 +20,14 @@ public interface RecipeDetailMetaRepository {
     RecipeDetailMeta get(UUID recipeId) throws RecipeDetailMetaException;
 
     /**
+     * 레시피 ID로 상세 메타 존재 여부 조회
+     *
+     * @param recipeId 레시피 ID
+     * @return 상세 메타 존재 여부
+     */
+    boolean exists(UUID recipeId);
+
+    /**
      * 여러 레시피 ID로 상세 메타 정보 목록 조회
      *
      * @param recipeIds 레시피 ID 목록

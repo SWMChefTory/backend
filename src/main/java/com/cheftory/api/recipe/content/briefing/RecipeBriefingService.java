@@ -48,4 +48,16 @@ public class RecipeBriefingService {
     public List<RecipeBriefing> gets(UUID recipeId) {
         return repository.findAllByRecipeId(recipeId);
     }
+
+    /**
+     * 레시피 브리핑 존재 여부를 확인합니다.
+     *
+     * <p>생성 파이프라인 retry 시 이미 브리핑이 생성된 경우 외부 호출을 skip하는 용도로 사용됩니다.</p>
+     *
+     * @param recipeId 레시피 ID
+     * @return 브리핑이 하나 이상 존재하면 {@code true}
+     */
+    public boolean exists(UUID recipeId) {
+        return repository.existsByRecipeId(recipeId);
+    }
 }
