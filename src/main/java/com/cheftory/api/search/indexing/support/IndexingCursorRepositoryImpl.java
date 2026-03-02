@@ -24,9 +24,8 @@ public class IndexingCursorRepositoryImpl implements IndexingCursorRepository {
     @Override
     public void save(String pipelineName, UpdatedAtIdCursor cursor) {
         LocalDateTime now = clock.now();
-        IndexingCursor entity = jpaRepository
-                .findById(pipelineName)
-                .orElseGet(() -> IndexingCursor.create(pipelineName, cursor, now));
+        IndexingCursor entity =
+                jpaRepository.findById(pipelineName).orElseGet(() -> IndexingCursor.create(pipelineName, cursor, now));
 
         entity.updateCursor(cursor, now);
         jpaRepository.save(entity);
