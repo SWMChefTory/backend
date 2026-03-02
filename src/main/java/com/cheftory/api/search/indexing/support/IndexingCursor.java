@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class IndexingCursorEntity {
+public class IndexingCursor {
 
     @Id
     @Column(nullable = false, length = 128)
@@ -32,8 +32,8 @@ public class IndexingCursorEntity {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public static IndexingCursorEntity create(String pipelineName, UpdatedAtIdCursor cursor, LocalDateTime now) {
-        return new IndexingCursorEntity(
+    public static IndexingCursor create(String pipelineName, UpdatedAtIdCursor cursor, LocalDateTime now) {
+        return new IndexingCursor(
                 pipelineName, cursor.lastUpdatedAt(), cursor.lastId().toString(), now);
     }
 
