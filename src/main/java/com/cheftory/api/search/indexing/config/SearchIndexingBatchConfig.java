@@ -238,6 +238,7 @@ public class SearchIndexingBatchConfig {
                 SELECT
                     BIN_TO_UUID(r.id) AS id,
                     LOWER(r.market) AS market,
+                    r.id AS sort_id,
                     yi.title,
                     yi.channel_title,
                     'recipe' AS scope,
@@ -253,7 +254,7 @@ public class SearchIndexingBatchConfig {
                         WHERE rt.recipe_id = r.id
                     ) AS tags_json,
                     r.created_at,
-                    r.updated_at
+                    r.updated_at AS updated_at
                 """);
         queryProvider.setFromClause("""
                 FROM recipe r
@@ -274,8 +275,8 @@ public class SearchIndexingBatchConfig {
                 """);
 
         LinkedHashMap<String, Order> sortKeys = new LinkedHashMap<>();
-        sortKeys.put("r.updated_at", Order.ASCENDING);
-        sortKeys.put("r.id", Order.ASCENDING);
+        sortKeys.put("updated_at", Order.ASCENDING);
+        sortKeys.put("sort_id", Order.ASCENDING);
         queryProvider.setSortKeys(sortKeys);
         return queryProvider;
     }
@@ -285,7 +286,8 @@ public class SearchIndexingBatchConfig {
         queryProvider.setSelectClause("""
                 SELECT
                     BIN_TO_UUID(r.id) AS id,
-                    r.updated_at
+                    r.id AS sort_id,
+                    r.updated_at AS updated_at
                 """);
         queryProvider.setFromClause("FROM recipe r");
         queryProvider.setWhereClause("""
@@ -302,8 +304,8 @@ public class SearchIndexingBatchConfig {
                 """);
 
         LinkedHashMap<String, Order> sortKeys = new LinkedHashMap<>();
-        sortKeys.put("r.updated_at", Order.ASCENDING);
-        sortKeys.put("r.id", Order.ASCENDING);
+        sortKeys.put("updated_at", Order.ASCENDING);
+        sortKeys.put("sort_id", Order.ASCENDING);
         queryProvider.setSortKeys(sortKeys);
         return queryProvider;
     }
