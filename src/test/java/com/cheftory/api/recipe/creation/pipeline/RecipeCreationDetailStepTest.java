@@ -18,7 +18,6 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import java.lang.reflect.Constructor;
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,12 +76,13 @@ class RecipeCreationDetailStepTest {
         class GivenNoFileInfo {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, "video-123", URI.create("https://youtu.be/video-123"), "test-title");
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(recipeId, "video-123", "test-title", jobId);
             }
 
             @Nested
@@ -97,7 +97,7 @@ class RecipeCreationDetailStepTest {
                             .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
                     verify(recipeProgressService, never())
-                            .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
+                            .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT, jobId);
                 }
             }
         }
@@ -108,6 +108,7 @@ class RecipeCreationDetailStepTest {
             RecipeCreationExecutionContext context;
             UUID recipeId;
             String videoId;
+            UUID jobId;
             String fileUri;
             String mimeType;
             RecipeDetail detail;
@@ -116,11 +117,11 @@ class RecipeCreationDetailStepTest {
             void setUp() throws RecipeException {
                 recipeId = UUID.randomUUID();
                 videoId = "video-456";
+                jobId = UUID.randomUUID();
                 fileUri = "s3://bucket/file.mp4";
                 mimeType = "video/mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, videoId, URI.create("https://youtu.be/video-456"), "youtube-original-title"),
+                        RecipeCreationExecutionContext.of(recipeId, videoId, "youtube-original-title", jobId),
                         fileUri,
                         mimeType);
 
@@ -149,13 +150,13 @@ class RecipeCreationDetailStepTest {
                 void thenCreatesDetailAndUpdatesProgress() {
                     InOrder order = inOrder(recipeProgressService);
                     order.verify(recipeProgressService)
-                            .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
+                            .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT, jobId);
                     order.verify(recipeProgressService)
-                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT);
+                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT, jobId);
                     order.verify(recipeProgressService)
-                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG);
+                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.TAG, jobId);
                     order.verify(recipeProgressService)
-                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
+                            .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META, jobId);
 
                     verify(recipeIngredientService).create(recipeId, detail.ingredients());
                     verify(recipeTagService).create(recipeId, detail.tags());
@@ -171,22 +172,101 @@ class RecipeCreationDetailStepTest {
         }
 
         @Nested
-        @DisplayName("Given - 상세 정보 생성 중 예외가 발생할 때")
-        class GivenException {
+        @DisplayName("Given - ingredient/tag/detailMeta가 모두 이미 존재할 때")
+        class GivenAllArtifactsExist {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
+
+            @BeforeEach
+            void setUp() {
+                recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.withFileInfo(
+                        RecipeCreationExecutionContext.of(recipeId, "video-skip", "test-title", jobId),
+                        "s3://bucket/file.mp4",
+                        "video/mp4");
+                when(recipeIngredientService.exists(recipeId)).thenReturn(true);
+                when(recipeTagService.exists(recipeId)).thenReturn(true);
+                when(recipeDetailMetaService.exists(recipeId)).thenReturn(true);
+            }
+
+            @Test
+            @DisplayName("Then - detail 생성 호출을 생략하고 success만 기록한다")
+            void thenSkipDetailGeneration() throws Exception {
+                RecipeCreationExecutionContext result = sut.run(context);
+
+                org.assertj.core.api.Assertions.assertThat(result).isEqualTo(context);
+                verify(recipeDetailService, never())
+                        .getRecipeDetails(
+                                ArgumentMatchers.any(),
+                                ArgumentMatchers.any(),
+                                ArgumentMatchers.any(),
+                                ArgumentMatchers.any());
+                verify(recipeProgressService)
+                        .success(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META, jobId);
+                verify(recipeProgressService, never())
+                        .start(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.INGREDIENT, jobId);
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 일부 결과물만 존재할 때")
+        class GivenPartialArtifactsExist {
+            RecipeCreationExecutionContext context;
+            UUID recipeId;
+            UUID jobId;
+            RecipeDetail detail;
 
             @BeforeEach
             void setUp() throws RecipeException {
                 recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.withFileInfo(
+                        RecipeCreationExecutionContext.of(recipeId, "video-partial", "title", jobId),
+                        "s3://bucket/file.mp4",
+                        "video/mp4");
+                when(recipeIngredientService.exists(recipeId)).thenReturn(true);
+                when(recipeTagService.exists(recipeId)).thenReturn(false);
+                when(recipeDetailMetaService.exists(recipeId)).thenReturn(true);
+                detail = RecipeDetail.of(
+                        "generated-title",
+                        "desc",
+                        List.of(RecipeDetail.Ingredient.of("salt", 1, "tsp")),
+                        List.of("tag1"),
+                        1,
+                        5);
+                when(recipeDetailService.getRecipeDetails(
+                                "video-partial", "s3://bucket/file.mp4", "video/mp4", "title"))
+                        .thenReturn(detail);
+            }
+
+            @Test
+            @DisplayName("Then - skip하지 않고 상세 생성을 수행한다")
+            void thenGenerate() throws Exception {
+                sut.run(context);
+
+                verify(recipeDetailService)
+                        .getRecipeDetails("video-partial", "s3://bucket/file.mp4", "video/mp4", "title");
+            }
+        }
+
+        @Nested
+        @DisplayName("Given - 상세 정보 생성 중 예외가 발생할 때")
+        class GivenException {
+            RecipeCreationExecutionContext context;
+            UUID recipeId;
+            UUID jobId;
+
+            @BeforeEach
+            void setUp() throws RecipeException {
+                recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
                 String videoId = "video-789";
                 String fileUri = "s3://bucket/file.mp4";
                 String mimeType = "video/mp4";
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, videoId, URI.create("https://youtu.be/video-789"), "test-title"),
-                        fileUri,
-                        mimeType);
+                        RecipeCreationExecutionContext.of(recipeId, videoId, "test-title", jobId), fileUri, mimeType);
 
                 when(recipeDetailService.getRecipeDetails(videoId, fileUri, mimeType, "test-title"))
                         .thenThrow(new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL));
@@ -204,7 +284,7 @@ class RecipeCreationDetailStepTest {
                             .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
                     verify(recipeProgressService)
-                            .failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META);
+                            .failed(recipeId, RecipeProgressStep.DETAIL, RecipeProgressDetail.DETAIL_META, jobId);
                     verify(recipeIngredientService, never()).create(ArgumentMatchers.any(), ArgumentMatchers.anyList());
                 }
             }

@@ -19,6 +19,14 @@ public interface RecipeStepRepository {
     List<RecipeStep> finds(UUID recipeId, Sort sort);
 
     /**
+     * 레시피 ID로 단계 존재 여부 조회
+     *
+     * @param recipeId 레시피 ID
+     * @return 단계 존재 여부
+     */
+    boolean existsByRecipeId(UUID recipeId);
+
+    /**
      * 레시피 단계 목록 일괄 저장
      *
      * @param recipeSteps 저장할 단계 목록

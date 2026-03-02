@@ -33,7 +33,6 @@ import com.cheftory.api.recipe.content.tag.RecipeTagService;
 import com.cheftory.api.recipe.content.tag.entity.RecipeTag;
 import com.cheftory.api.recipe.content.youtubemeta.RecipeYoutubeMetaService;
 import com.cheftory.api.recipe.content.youtubemeta.entity.RecipeYoutubeMeta;
-import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaErrorCode;
 import com.cheftory.api.recipe.content.youtubemeta.exception.YoutubeMetaException;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgress;
@@ -107,7 +106,7 @@ public class RecipeFacade {
             List<RecipeStep> steps = recipeStepService.gets(recipeId);
             List<RecipeIngredient> ingredients = recipeIngredientService.gets(recipeId);
             RecipeDetailMeta detailMeta = recipeDetailMetaService.get(recipeId);
-            List<RecipeProgress> progresses = recipeProgressService.gets(recipeId);
+            List<RecipeProgress> progresses = recipeProgressService.gets(recipeId, recipe.getCurrentJobId());
             List<RecipeTag> tags = recipeTagService.gets(recipeId);
             List<RecipeBriefing> briefings = recipeBriefingService.gets(recipeId);
             RecipeYoutubeMeta youtubeMeta = recipeYoutubeMetaService.get(recipeId);
@@ -227,7 +226,6 @@ public class RecipeFacade {
                     RecipeYoutubeMeta youtubeMeta = youtubeMetaMap.get(recipeId);
                     if (youtubeMeta == null) {
                         log.warn("북마크: 유튜브 메타 엔티티 누락 recipeId={}", recipeId);
-                        return null;
                     }
 
                     RecipeDetailMeta detailMeta = detailMetaMap.get(recipeId);
@@ -329,8 +327,8 @@ public class RecipeFacade {
      * @throws RecipeInfoException 레시피 정보 조회 실패 시
      */
     public RecipeProgressStatus getRecipeProgress(UUID recipeId) throws RecipeInfoException {
-        List<RecipeProgress> progresses = recipeProgressService.gets(recipeId);
         RecipeInfo recipe = recipeInfoService.get(recipeId);
+        List<RecipeProgress> progresses = recipeProgressService.gets(recipeId, recipe.getCurrentJobId());
         return RecipeProgressStatus.of(recipe, progresses);
     }
 
@@ -344,17 +342,8 @@ public class RecipeFacade {
      */
     @Transactional(rollbackFor = RecipeException.class)
     public void blockRecipe(UUID recipeId) throws RecipeException {
-        try {
-            recipeYoutubeMetaService.block(recipeId);
-            recipeInfoService.block(recipeId);
-            recipeBookmarkService.block(recipeId);
-        } catch (RecipeException e) {
-            if (e.getError() == YoutubeMetaErrorCode.YOUTUBE_META_NOT_BLOCKED_VIDEO) {
-                log.warn("차단되지 않은 영상에 대해 레시피 차단 시도 recipeId={}", recipeId);
-                throw new RecipeException(RecipeErrorCode.RECIPE_NOT_BLOCKED_VIDEO, e);
-            }
-            throw e;
-        }
+        recipeInfoService.block(recipeId);
+        recipeBookmarkService.block(recipeId);
     }
 
     /**

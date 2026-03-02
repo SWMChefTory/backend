@@ -11,6 +11,10 @@ public enum RecipeProgressStep {
      */
     READY,
     /**
+     * 유튜브 메타 로드 단계 - 비디오 메타 조회 및 저장
+     */
+    LOAD_YOUTUBE_META,
+    /**
      * 캡션 단계 - YouTube 메타데이터 추출
      */
     CAPTION,

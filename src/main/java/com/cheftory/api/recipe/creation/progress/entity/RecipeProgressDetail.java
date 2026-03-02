@@ -11,6 +11,10 @@ public enum RecipeProgressDetail {
      */
     READY,
     /**
+     * 유튜브 메타 조회 및 저장 중
+     */
+    LOAD_YOUTUBE_META,
+    /**
      * 자막 추출 중
      */
     CAPTION,

@@ -27,6 +27,11 @@ public class RecipeIngredientRepositoryImpl implements RecipeIngredientRepositor
         return repository.findAllByRecipeId(recipeId);
     }
 
+    @Override
+    public boolean existsByRecipeId(UUID recipeId) {
+        return repository.existsByRecipeId(recipeId);
+    }
+
     /**
      * 레시피 재료 목록 일괄 저장
      *

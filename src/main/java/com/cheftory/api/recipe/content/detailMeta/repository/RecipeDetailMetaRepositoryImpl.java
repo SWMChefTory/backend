@@ -28,6 +28,11 @@ public class RecipeDetailMetaRepositoryImpl implements RecipeDetailMetaRepositor
     }
 
     @Override
+    public boolean exists(UUID recipeId) {
+        return repository.existsByRecipeId(recipeId);
+    }
+
+    @Override
     public List<RecipeDetailMeta> gets(List<UUID> recipeIds) {
         return repository.findAllByRecipeIdIn(recipeIds);
     }

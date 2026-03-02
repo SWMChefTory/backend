@@ -18,4 +18,9 @@ public interface RecipeProgressRepository extends JpaRepository<RecipeProgress, 
      * @return 진행 상태 목록
      */
     List<RecipeProgress> findAllByRecipeId(UUID recipeId, Sort sort);
+
+    /**
+     * 레시피 ID + 비동기 실행 식별자(jobId)로 진행 상태 이벤트 목록을 조회합니다.
+     */
+    List<RecipeProgress> findAllByRecipeIdAndJobId(UUID recipeId, UUID jobId, Sort sort);
 }

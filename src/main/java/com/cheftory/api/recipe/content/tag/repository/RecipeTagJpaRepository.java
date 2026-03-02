@@ -17,6 +17,8 @@ public interface RecipeTagJpaRepository extends JpaRepository<RecipeTag, UUID> {
      */
     List<RecipeTag> findAllByRecipeId(UUID recipeId);
 
+    boolean existsByRecipeId(UUID recipeId);
+
     /**
      * 여러 레시피 ID로 태그 목록 조회
      *

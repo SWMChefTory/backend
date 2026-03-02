@@ -16,7 +16,8 @@ import org.springframework.stereotype.Service;
 /**
  * 레시피 생성 진행 상태 서비스.
  *
- * <p>레시피 생성 파이프라인의 각 단계 진행 상태를 관리합니다.</p>
+ * <p>진행 상태는 update가 아니라 이벤트(row) append 방식으로 저장되며, 같은 `recipeId`라도
+ * 비동기 실행 단위(`jobId`)별로 별도 이력을 남깁니다.</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -29,10 +30,11 @@ public class RecipeProgressService {
      * 레시피 ID로 진행 상태 목록을 조회합니다.
      *
      * @param recipeId 레시피 ID
-     * @return 진행 상태 목록
+     * @param jobId 조회할 비동기 실행 식별자
+     * @return 지정된 jobId 실행에 대한 진행 상태 목록 (생성 시각 오름차순)
      */
-    public List<RecipeProgress> gets(UUID recipeId) {
-        return recipeProgressRepository.findAllByRecipeId(recipeId, RecipeProgressSort.CREATE_AT_ASC);
+    public List<RecipeProgress> gets(UUID recipeId, UUID jobId) {
+        return recipeProgressRepository.findAllByRecipeIdAndJobId(recipeId, jobId, RecipeProgressSort.CREATE_AT_ASC);
     }
 
     /**
@@ -41,10 +43,11 @@ public class RecipeProgressService {
      * @param recipeId 레시피 ID
      * @param step 진행 단계
      * @param detail 상세 단계
+     * @param jobId 비동기 실행 식별자
      */
     @DbThrottled
-    public void start(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail) {
-        create(recipeId, step, detail, RecipeProgressState.RUNNING);
+    public void start(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail, UUID jobId) {
+        create(recipeId, step, detail, RecipeProgressState.RUNNING, jobId);
     }
 
     /**
@@ -53,10 +56,11 @@ public class RecipeProgressService {
      * @param recipeId 레시피 ID
      * @param step 진행 단계
      * @param detail 상세 단계
+     * @param jobId 비동기 실행 식별자
      */
     @DbThrottled
-    public void success(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail) {
-        create(recipeId, step, detail, RecipeProgressState.SUCCESS);
+    public void success(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail, UUID jobId) {
+        create(recipeId, step, detail, RecipeProgressState.SUCCESS, jobId);
     }
 
     /**
@@ -65,15 +69,20 @@ public class RecipeProgressService {
      * @param recipeId 레시피 ID
      * @param step 진행 단계
      * @param detail 상세 단계
+     * @param jobId 비동기 실행 식별자
      */
     @DbThrottled
-    public void failed(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail) {
-        create(recipeId, step, detail, RecipeProgressState.FAILED);
+    public void failed(UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail, UUID jobId) {
+        create(recipeId, step, detail, RecipeProgressState.FAILED, jobId);
     }
 
     private void create(
-            UUID recipeId, RecipeProgressStep step, RecipeProgressDetail detail, RecipeProgressState state) {
-        RecipeProgress recipeProgress = RecipeProgress.create(recipeId, clock, step, detail, state);
+            UUID recipeId,
+            RecipeProgressStep step,
+            RecipeProgressDetail detail,
+            RecipeProgressState state,
+            UUID jobId) {
+        RecipeProgress recipeProgress = RecipeProgress.create(recipeId, jobId, clock, step, detail, state);
         recipeProgressRepository.save(recipeProgress);
     }
 }

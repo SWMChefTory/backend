@@ -28,7 +28,11 @@ public enum RecipeInfoErrorCode implements Error {
     /**
      * 유효하지 않은 쿼리
      */
-    RECIPE_NOT_VALID_QUERY("RECIPE_INFO_005", "유효하지 않은 레시피 조회 쿼리입니다.", ErrorType.VALIDATION);
+    RECIPE_NOT_VALID_QUERY("RECIPE_INFO_005", "유효하지 않은 레시피 조회 쿼리입니다.", ErrorType.VALIDATION),
+    /**
+     * 동일 소스 레시피가 이미 존재하거나 생성 중임
+     */
+    RECIPE_DUPLICATE_SOURCE("RECIPE_INFO_006", "동일한 레시피가 이미 존재하거나 생성 중입니다.", ErrorType.VALIDATION);
 
     private final String errorCode;
     private final String message;

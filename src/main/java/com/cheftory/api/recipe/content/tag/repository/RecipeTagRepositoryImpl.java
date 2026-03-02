@@ -27,6 +27,11 @@ public class RecipeTagRepositoryImpl implements RecipeTagRepository {
         return repository.findAllByRecipeId(recipeId);
     }
 
+    @Override
+    public boolean existsByRecipeId(UUID recipeId) {
+        return repository.existsByRecipeId(recipeId);
+    }
+
     /**
      * 여러 레시피 ID로 태그 목록 조회
      *

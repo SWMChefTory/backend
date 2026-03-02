@@ -17,6 +17,14 @@ public interface RecipeIngredientRepository {
     List<RecipeIngredient> finds(UUID recipeId);
 
     /**
+     * 레시피 ID로 재료 존재 여부 조회
+     *
+     * @param recipeId 레시피 ID
+     * @return 재료 존재 여부
+     */
+    boolean existsByRecipeId(UUID recipeId);
+
+    /**
      * 레시피 재료 목록 일괄 저장
      *
      * @param recipeIngredients 저장할 재료 목록

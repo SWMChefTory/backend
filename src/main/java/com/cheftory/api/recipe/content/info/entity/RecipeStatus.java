@@ -19,5 +19,9 @@ public enum RecipeStatus {
     /**
      * 차단됨
      */
-    BLOCKED
+    BLOCKED,
+    /**
+     * 레시피가 아님
+     */
+    BANNED,
 }

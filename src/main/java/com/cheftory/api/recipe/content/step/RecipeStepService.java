@@ -50,4 +50,8 @@ public class RecipeStepService {
     public List<RecipeStep> gets(UUID recipeId) {
         return recipeStepRepository.finds(recipeId, RecipeStepSort.STEP_ORDER_ASC);
     }
+
+    public boolean exists(UUID recipeId) {
+        return recipeStepRepository.existsByRecipeId(recipeId);
+    }
 }

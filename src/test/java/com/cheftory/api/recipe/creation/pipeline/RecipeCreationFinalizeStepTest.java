@@ -16,7 +16,6 @@ import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressStep;
 import com.cheftory.api.recipe.exception.RecipeErrorCode;
 import com.cheftory.api.recipe.exception.RecipeException;
 import java.lang.reflect.Constructor;
-import java.net.URI;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,12 +57,13 @@ class RecipeCreationFinalizeStepTest {
         class GivenNoFileInfo {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
-                context = RecipeCreationExecutionContext.of(
-                        recipeId, "video-123", URI.create("https://youtu.be/video-123"), "test-title");
+                jobId = UUID.randomUUID();
+                context = RecipeCreationExecutionContext.of(recipeId, "video-123", "test-title", jobId);
             }
 
             @Nested
@@ -78,7 +78,7 @@ class RecipeCreationFinalizeStepTest {
                             .hasFieldOrPropertyWithValue("error", RecipeErrorCode.RECIPE_CREATE_FAIL);
 
                     verify(recipeProgressService, never())
-                            .start(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                            .start(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, jobId);
                 }
             }
         }
@@ -88,13 +88,14 @@ class RecipeCreationFinalizeStepTest {
         class GivenFileInfoAndSuccess {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
 
             @BeforeEach
             void setUp() {
                 recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, "video-456", URI.create("https://youtu.be/video-456"), "test-title"),
+                        RecipeCreationExecutionContext.of(recipeId, "video-456", "test-title", jobId),
                         "s3://bucket/file.mp4",
                         "video/mp4");
             }
@@ -113,9 +114,9 @@ class RecipeCreationFinalizeStepTest {
                 void thenFinalizesRecipeAndUpdatesProgress() throws RecipeInfoException {
                     InOrder order = inOrder(recipeProgressService);
                     order.verify(recipeProgressService)
-                            .start(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                            .start(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, jobId);
                     order.verify(recipeProgressService)
-                            .success(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                            .success(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, jobId);
 
                     verify(recipeInfoService).success(recipeId);
                 }
@@ -127,13 +128,14 @@ class RecipeCreationFinalizeStepTest {
         class GivenException {
             RecipeCreationExecutionContext context;
             UUID recipeId;
+            UUID jobId;
 
             @BeforeEach
             void setUp() throws RecipeInfoException {
                 recipeId = UUID.randomUUID();
+                jobId = UUID.randomUUID();
                 context = RecipeCreationExecutionContext.withFileInfo(
-                        RecipeCreationExecutionContext.of(
-                                recipeId, "video-789", URI.create("https://youtu.be/video-789"), "test-title"),
+                        RecipeCreationExecutionContext.of(recipeId, "video-789", "test-title", jobId),
                         "s3://bucket/file.mp4",
                         "video/mp4");
 
@@ -154,7 +156,7 @@ class RecipeCreationFinalizeStepTest {
                             .hasFieldOrPropertyWithValue("error", RecipeInfoErrorCode.RECIPE_INFO_NOT_FOUND);
 
                     verify(recipeProgressService)
-                            .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED);
+                            .failed(recipeId, RecipeProgressStep.FINISHED, RecipeProgressDetail.FINISHED, jobId);
                 }
             }
         }

@@ -29,17 +29,19 @@ class RecipeCreditAdapterTest {
         // given
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
+        UUID jobId = UUID.randomUUID();
         long cost = 100L;
 
         // when
-        recipeCreditAdapter.spendRecipeCreate(userId, recipeId, cost);
+        recipeCreditAdapter.spendRecipeCreate(userId, recipeId, jobId, cost);
 
         // then
         verify(creditService)
                 .spend(argThat(credit -> credit.userId().equals(userId)
                         && credit.reason() == CreditReason.RECIPE_CREATE
                         && credit.amount() == cost
-                        && credit.idempotencyKey().contains("recipe-create:" + userId + ":" + recipeId)));
+                        && credit.idempotencyKey()
+                                .contains("recipe-create:" + userId + ":" + recipeId + ":" + jobId)));
     }
 
     @Test
@@ -48,16 +50,18 @@ class RecipeCreditAdapterTest {
         // given
         UUID userId = UUID.randomUUID();
         UUID recipeId = UUID.randomUUID();
+        UUID jobId = UUID.randomUUID();
         long cost = 100L;
 
         // when
-        recipeCreditAdapter.refundRecipeCreate(userId, recipeId, cost);
+        recipeCreditAdapter.refundRecipeCreate(userId, recipeId, jobId, cost);
 
         // then
         verify(creditService)
                 .grant(argThat(credit -> credit.userId().equals(userId)
                         && credit.reason() == CreditReason.RECIPE_CREATE_REFUND
                         && credit.amount() == cost
-                        && credit.idempotencyKey().contains("recipe-create-refund:" + userId + ":" + recipeId)));
+                        && credit.idempotencyKey()
+                                .contains("recipe-create-refund:" + userId + ":" + recipeId + ":" + jobId)));
     }
 }

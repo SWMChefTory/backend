@@ -10,4 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface RecipeBriefingJpaRepository extends JpaRepository<RecipeBriefing, UUID> {
     List<RecipeBriefing> findAllByRecipeId(UUID recipeId);
+
+    boolean existsByRecipeId(UUID recipeId);
 }
