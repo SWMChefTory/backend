@@ -1,125 +1,127 @@
 {
   "index_patterns": ["search_query*", "search_query"],
-  "settings": {
-    "refresh_interval": "1s",
-    "analysis": {
-      "char_filter": {
-        "rm_ws": {
-          "type": "pattern_replace",
-          "pattern": "\\s+",
-          "replacement": ""
+  "template": {
+    "settings": {
+      "refresh_interval": "1s",
+      "analysis": {
+        "char_filter": {
+          "rm_ws": {
+            "type": "pattern_replace",
+            "pattern": "\\s+",
+            "replacement": ""
+          },
+          "rm_special": {
+            "type": "pattern_replace",
+            "pattern": "[^a-zA-Z0-9가-힣]",
+            "replacement": ""
+          }
         },
-        "rm_special": {
-          "type": "pattern_replace",
-          "pattern": "[^a-zA-Z0-9가-힣]",
-          "replacement": ""
-        }
-      },
-      "normalizer": {
-        "lower_lc": {
-          "type": "custom",
-          "filter": ["lowercase"]
-        }
-      },
-      "tokenizer": {
-        "edge_ngram_tokenizer": {
-          "type": "edge_ngram",
-          "min_gram": 1,
-          "max_gram": 5,
-          "token_chars": ["letter", "digit"]
+        "normalizer": {
+          "lower_lc": {
+            "type": "custom",
+            "filter": ["lowercase"]
+          }
         },
-        "nori_tokenizer": {
-          "type": "nori_tokenizer",
-          "decompound_mode": "mixed"
-        }
-      },
-      "analyzer": {
-        "nori_analyzer": {
-          "type": "custom",
-          "tokenizer": "nori_tokenizer",
-          "filter": ["nori_readingform", "nori_part_of_speech"]
+        "tokenizer": {
+          "edge_ngram_tokenizer": {
+            "type": "edge_ngram",
+            "min_gram": 1,
+            "max_gram": 5,
+            "token_chars": ["letter", "digit"]
+          },
+          "nori_tokenizer": {
+            "type": "nori_tokenizer",
+            "decompound_mode": "mixed"
+          }
         },
-        "title_ngram_analyzer": {
-          "type": "custom",
-          "char_filter": ["rm_ws", "rm_special"],
-          "tokenizer": "edge_ngram_tokenizer"
+        "analyzer": {
+          "nori_analyzer": {
+            "type": "custom",
+            "tokenizer": "nori_tokenizer",
+            "filter": ["nori_readingform", "nori_part_of_speech"]
+          },
+          "title_ngram_analyzer": {
+            "type": "custom",
+            "char_filter": ["rm_ws", "rm_special"],
+            "tokenizer": "edge_ngram_tokenizer"
+          }
         }
       }
-    }
-  },
-  "mappings": {
-    "dynamic": "strict",
-    "properties": {
-      "market": {
-        "type": "keyword",
-        "normalizer": "lower_lc"
-      },
-      "scope": {
-        "type": "keyword",
-        "normalizer": "lower_lc"
-      },
-      "id": {
-        "type": "keyword"
-      },
-      "searchText": {
-        "type": "text",
-        "analyzer": "nori_analyzer",
-        "fields": {
-          "ngram": {
-            "type": "text",
-            "analyzer": "title_ngram_analyzer"
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "market": {
+          "type": "keyword",
+          "normalizer": "lower_lc"
+        },
+        "scope": {
+          "type": "keyword",
+          "normalizer": "lower_lc"
+        },
+        "id": {
+          "type": "keyword"
+        },
+        "searchText": {
+          "type": "text",
+          "analyzer": "nori_analyzer",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "title_ngram_analyzer"
+            }
           }
-        }
-      },
-      "title": {
-        "type": "text",
-        "analyzer": "nori_analyzer",
-        "copy_to": ["searchText"],
-        "fields": {
-          "ngram": {
-            "type": "text",
-            "analyzer": "title_ngram_analyzer"
+        },
+        "title": {
+          "type": "text",
+          "analyzer": "nori_analyzer",
+          "copy_to": ["searchText"],
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "title_ngram_analyzer"
+            }
           }
-        }
-      },
-      "servings_text": {
-        "type": "keyword",
-        "normalizer": "lower_lc",
-        "copy_to": ["searchText"]
-      },
-      "ingredients": {
-        "type": "text",
-        "analyzer": "nori_analyzer",
-        "copy_to": ["searchText"],
-        "fields": {
-          "ngram": {
-            "type": "text",
-            "analyzer": "title_ngram_analyzer"
-          },
-          "keyword": {
-            "type": "keyword",
-            "normalizer": "lower_lc"
+        },
+        "servings_text": {
+          "type": "keyword",
+          "normalizer": "lower_lc",
+          "copy_to": ["searchText"]
+        },
+        "ingredients": {
+          "type": "text",
+          "analyzer": "nori_analyzer",
+          "copy_to": ["searchText"],
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "title_ngram_analyzer"
+            },
+            "keyword": {
+              "type": "keyword",
+              "normalizer": "lower_lc"
+            }
           }
+        },
+        "channel_title": {
+          "type": "text",
+          "analyzer": "nori_analyzer",
+          "copy_to": ["searchText"],
+          "fields": {
+            "ngram": { "type": "text", "analyzer": "title_ngram_analyzer" }
+          }
+        },
+        "keywords": {
+          "type": "keyword",
+          "normalizer": "lower_lc",
+          "copy_to": ["searchText"]
+        },
+        "created_at": {
+          "type": "date"
+        },
+        "updated_at": {
+          "type": "date"
         }
-      },
-      "channel_title": {
-        "type": "text",
-        "analyzer": "nori_analyzer",
-        "copy_to": ["searchText"],
-        "fields": {
-          "ngram": { "type": "text", "analyzer": "title_ngram_analyzer" }
-        }
-      },
-      "keywords": {
-        "type": "keyword",
-        "normalizer": "lower_lc",
-        "copy_to": ["searchText"]
-      },
-      "created_at": {
-        "type": "date"
-      },
-      "updated_at": {
-        "type": "date"
       }
     }
   }
