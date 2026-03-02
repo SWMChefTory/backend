@@ -22,6 +22,7 @@ import com.cheftory.api.recipe.rank.exception.RecipeRankErrorCode;
 import com.cheftory.api.recipe.report.exception.RecipeReportErrorCode;
 import com.cheftory.api.recipe.search.exception.RecipeSearchErrorCode;
 import com.cheftory.api.search.exception.SearchErrorCode;
+import com.cheftory.api.tracking.exception.TrackingErrorCode;
 import com.cheftory.api.user.exception.UserErrorCode;
 import com.cheftory.api.user.share.exception.UserShareErrorCode;
 import com.cheftory.api.voicecommand.exception.VoiceCommandErrorCode;
@@ -63,7 +64,8 @@ public interface Error {
             RecipeInfoErrorCode.class,
             RecipeBookmarkErrorCode.class,
             RecipeIdentifyErrorCode.class,
-            RecipeSearchErrorCode.class);
+            RecipeSearchErrorCode.class,
+            TrackingErrorCode.class);
 
     Map<String, Error> ERROR_BY_CODE = buildErrorByCode();
 
