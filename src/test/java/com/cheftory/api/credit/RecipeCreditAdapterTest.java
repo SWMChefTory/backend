@@ -40,8 +40,7 @@ class RecipeCreditAdapterTest {
                 .spend(argThat(credit -> credit.userId().equals(userId)
                         && credit.reason() == CreditReason.RECIPE_CREATE
                         && credit.amount() == cost
-                        && credit.idempotencyKey()
-                                .contains("recipe-create:" + userId + ":" + recipeId + ":" + jobId)));
+                        && credit.idempotencyKey().contains("recipe-create:" + userId + ":" + recipeId + ":" + jobId)));
     }
 
     @Test

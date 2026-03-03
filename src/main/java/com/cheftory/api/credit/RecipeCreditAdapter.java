@@ -27,7 +27,8 @@ public class RecipeCreditAdapter implements RecipeCreditPort {
      * @throws RecipeCreditException 크레딧 관련 예외 발생 시
      */
     @Override
-    public void spendRecipeCreate(UUID userId, UUID recipeId, UUID jobId, long creditCost) throws RecipeCreditException {
+    public void spendRecipeCreate(UUID userId, UUID recipeId, UUID jobId, long creditCost)
+            throws RecipeCreditException {
         try {
             if (jobId == null) {
                 creditService.spend(Credit.recipeCreate(userId, recipeId, creditCost));
@@ -49,7 +50,8 @@ public class RecipeCreditAdapter implements RecipeCreditPort {
      * @throws RecipeCreditException 크레딧 관련 예외 발생 시
      */
     @Override
-    public void refundRecipeCreate(UUID userId, UUID recipeId, UUID jobId, long creditCost) throws RecipeCreditException {
+    public void refundRecipeCreate(UUID userId, UUID recipeId, UUID jobId, long creditCost)
+            throws RecipeCreditException {
         try {
             creditService.grant(Credit.recipeCreateRefund(userId, recipeId, jobId, creditCost));
         } catch (CreditException exception) {
