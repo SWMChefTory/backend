@@ -10,13 +10,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 향후 추가될 기능들
+- 없음
 
 ### Changed
-- 향후 변경될 사항들
+- 없음
 
 ### Fixed
-- 향후 수정될 버그들
+- 없음
+
+## [1.1.34] - 2026-03-03
+
+### Added
+- **로그인/회원가입 응답 필드 확장**
+  - `LoginResponse.user_info`에 `provider_sub` 필드 추가
+
+### Changed
+- **응답 문서화 및 검증 정합성 반영**
+  - OAuth 로그인/회원가입 API 테스트 및 RestDocs에 `user_info.provider_sub` 반영
+- **코드 정리**
+  - 포맷팅 및 미사용 import 정리(동작 변경 없음)
+
+### Database Migration
+- 추가 마이그레이션 없음
 
 ## [1.1.33] - 2026-03-02
 
@@ -619,8 +634,8 @@ CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
 
 ### 배포 정보
 
-- **Version**: 1.1.33
-- **Release Date**: 2026-03-02
+- **Version**: 1.1.34
+- **Release Date**: 2026-03-03
 - **Environment**: Production
 - **Docker Image**: `cheftory-proxy-server:latest`
 
@@ -628,24 +643,24 @@ CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
 
 ```bash
 # Release 브랜치 생성
-git checkout -b release/1.1.33
+git checkout -b release/1.1.34
 
 # build.gradle 버전 변경
-# version = '1.1.33' 으로 수정
+# version = '1.1.34' 으로 수정
 
 # CHANGELOG.md 업데이트
 # 변경사항 작성
 
 # 커밋 및 푸시
 git add build.gradle CHANGELOG.md
-git commit -m "chore: release v1.1.33"
-git push origin release/1.1.33
+git commit -m "chore: release v1.1.34"
+git push origin release/1.1.34
 
 # main 브랜치로 PR 생성 및 머지
 
 # 태그 생성 및 푸시 (main 브랜치에서)
-git tag v1.1.33
-git push origin v1.1.33
+git tag v1.1.34
+git push origin v1.1.34
 ```
 
 태그 푸시 시 자동으로:
@@ -657,6 +672,7 @@ git push origin v1.1.33
 
 ## Version History
 
+- **1.1.34** (2026-03-03): `LoginResponse.user_info.provider_sub` field added and OAuth account response docs/tests aligned
 - **1.1.33** (2026-03-02): Async-first recipe creation flow and source/jobId tracking introduced
 - **1.1.32** (2026-03-02): Search indexing pipeline release
 - **1.1.31** (2026-03-01): Production deployment workflow updated for VM-based deployment
