@@ -77,7 +77,7 @@ public class RecipeInfo extends MarketScope {
                 sourceKey,
                 DEFAULT_CREDIT_COST,
                 UUID.randomUUID(),
-						false);
+                false);
     }
 
     /**

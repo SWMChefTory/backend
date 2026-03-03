@@ -39,7 +39,8 @@ public record LoginResponse(
             @JsonProperty("date_of_birth") LocalDate dateOfBirth,
             @JsonProperty("terms_of_use_agreed_at") LocalDateTime termsOfUseAgreedAt,
             @JsonProperty("privacy_agreed_at") LocalDateTime privacyAgreedAt,
-            @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt) {
+            @JsonProperty("marketing_agreed_at") LocalDateTime marketingAgreedAt,
+            @JsonProperty("provider_sub") String providerSub) {
 
         /**
          * User 엔티티로부터 UserResponse를 생성합니다.
@@ -54,7 +55,8 @@ public record LoginResponse(
                     user.getDateOfBirth(),
                     user.getTermsOfUseAgreedAt(),
                     user.getPrivacyAgreedAt(),
-                    user.getMarketingAgreedAt());
+                    user.getMarketingAgreedAt(),
+                    user.getProviderSub());
         }
     }
 

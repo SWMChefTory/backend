@@ -82,6 +82,7 @@ public class AccountControllerTest extends RestDocsTest {
                 doReturn(validTermsOfUseAgreedAt).when(user).getTermsOfUseAgreedAt();
                 doReturn(validPrivacyAgreedAt).when(user).getPrivacyAgreedAt();
                 doReturn(validMarketingAgreedAt).when(user).getMarketingAgreedAt();
+                doReturn("apple-provider-sub").when(user).getProviderSub();
 
                 Account account = Account.of("access-token", "refresh-token", user);
                 doReturn(account).when(accountFacade).login(validIdToken, provider);
@@ -114,12 +115,14 @@ public class AccountControllerTest extends RestDocsTest {
                                         fieldWithPath("user_info.privacy_agreed_at")
                                                 .description("개인정보 처리방침 동의 일시"),
                                         fieldWithPath("user_info.marketing_agreed_at")
-                                                .description("마케팅 정보 수신 동의 일시"))));
+                                                .description("마케팅 정보 수신 동의 일시"),
+                                        fieldWithPath("user_info.provider_sub").description("OAuth 제공자 사용자 식별자"))));
                 response.body("access_token", equalTo("Bearer access-token"))
                         .body("refresh_token", equalTo("Bearer refresh-token"))
                         .body("user_info.nickname", equalTo("nickname"))
                         .body("user_info.gender", equalTo(Gender.MALE.name()))
-                        .body("user_info.date_of_birth", equalTo(validDateOfBirth.toString()));
+                        .body("user_info.date_of_birth", equalTo(validDateOfBirth.toString()))
+                        .body("user_info.provider_sub", equalTo("apple-provider-sub"));
 
                 verify(accountFacade).login(validIdToken, provider);
             }
@@ -223,6 +226,7 @@ public class AccountControllerTest extends RestDocsTest {
                 doReturn(validTermsOfUseAgreedAt).when(user).getTermsOfUseAgreedAt();
                 doReturn(validPrivacyAgreedAt).when(user).getPrivacyAgreedAt();
                 doReturn(validMarketingAgreedAt).when(user).getMarketingAgreedAt();
+                doReturn("google-provider-sub").when(user).getProviderSub();
 
                 Account account = Account.of("access-token", "refresh-token", user);
 
@@ -274,13 +278,15 @@ public class AccountControllerTest extends RestDocsTest {
                                         fieldWithPath("user_info.privacy_agreed_at")
                                                 .description("개인정보 처리방침 동의 일시"),
                                         fieldWithPath("user_info.marketing_agreed_at")
-                                                .description("마케팅 정보 수신 동의 일시"))));
+                                                .description("마케팅 정보 수신 동의 일시"),
+                                        fieldWithPath("user_info.provider_sub").description("OAuth 제공자 사용자 식별자"))));
 
                 response.body("access_token", equalTo("Bearer access-token"))
                         .body("refresh_token", equalTo("Bearer refresh-token"))
                         .body("user_info.nickname", equalTo(nickname))
                         .body("user_info.gender", equalTo(gender.name()))
-                        .body("user_info.date_of_birth", equalTo(validDateOfBirth.toString()));
+                        .body("user_info.date_of_birth", equalTo(validDateOfBirth.toString()))
+                        .body("user_info.provider_sub", equalTo("google-provider-sub"));
             }
         }
 
