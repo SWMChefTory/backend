@@ -18,6 +18,7 @@ spring:
         format_sql: false
         jdbc:
           batch_size: 50
+        order_inserts: true
         order_updates: true
 
   messages:
