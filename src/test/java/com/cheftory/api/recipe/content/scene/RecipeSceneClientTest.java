@@ -96,7 +96,7 @@ class RecipeSceneClientTest {
                                       "label": "양파썰기",
                                       "start": 12.0,
                                       "end": 18.0,
-                                      "importantScore": 8
+                                      "important_score": 8
                                     }
                                   ]
                                 }

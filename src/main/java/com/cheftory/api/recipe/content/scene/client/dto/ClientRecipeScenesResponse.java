@@ -29,7 +29,7 @@ public record ClientRecipeScenesResponse(
             @JsonProperty("label") String label,
             @JsonProperty("start") Double start,
             @JsonProperty("end") Double end,
-            @JsonProperty("importantScore") Integer importantScore) {
+            @JsonProperty("important_score") Integer importantScore) {
 
         private RecipeScene toRecipeScene(UUID recipeId, Clock clock) throws RecipeSceneException {
             if (stepId == null || label == null || start == null || end == null || importantScore == null) {
