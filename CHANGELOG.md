@@ -18,6 +18,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 없음
 
+## [1.1.36] - 2026-04-02
+
+### Added
+- **레시피 scene 생성 기능 추가**
+  - `RecipeSceneService` 도입으로 step 기반 scene 추출/저장 처리 추가
+  - 외부 scene 생성 API 클라이언트 추가 (`POST /scenes/video`)
+  - scene 요청/응답 DTO 추가 (`ClientRecipeScenesRequest`, `ClientRecipeScenesResponse`)
+  - `RecipeScene` 엔티티 및 저장소 계층 추가 (`RecipeSceneRepository`, `RecipeSceneRepositoryImpl`, `RecipeSceneJpaRepository`)
+  - `RecipeSceneErrorCode`, `RecipeSceneException` 추가
+
+### Changed
+- **레시피 생성 STEP 단계 확장**
+  - `RecipeCreationInstructionStep`에서 step 생성과 함께 scene 생성까지 처리하도록 변경
+  - step/scene 중 일부만 존재하는 경우 누락된 데이터만 생성하도록 보강
+- **외부 AI 레시피 서버 클라이언트 등록 확장**
+  - `WebclientConfig`에 `RecipeSceneHttpApi` 등록
+
+### Added (Test)
+- recipe scene 서비스/클라이언트/파이프라인 테스트 추가
+  - `RecipeSceneServiceTest`, `RecipeSceneClientTest`, `RecipeCreationInstructionStepTest`
+
+### Database Migration
+- **배포 전 수동 마이그레이션 필요**
+  - `recipe_scene` 테이블 생성
+  - `market`, `country_code`, `id`, `step_id`, `recipe_id`, `label`, `start_time`, `end_time`, `important_score`, `created_at` 컬럼 반영 필요
+
 ## [1.1.35] - 2026-03-03
 
 ### Added
@@ -670,8 +696,8 @@ CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
 
 ### 배포 정보
 
-- **Version**: 1.1.35
-- **Release Date**: 2026-03-03
+- **Version**: 1.1.36
+- **Release Date**: 2026-04-02
 - **Environment**: Production
 - **Docker Image**: `cheftory-proxy-server:latest`
 
@@ -679,24 +705,24 @@ CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
 
 ```bash
 # Release 브랜치 생성
-git checkout -b release/1.1.35
+git checkout -b release/1.1.36
 
 # build.gradle 버전 변경
-# version = '1.1.35' 으로 수정
+# version = '1.1.36' 으로 수정
 
 # CHANGELOG.md 업데이트
 # 변경사항 작성
 
 # 커밋 및 푸시
 git add build.gradle CHANGELOG.md
-git commit -m "chore: release v1.1.35"
-git push origin release/1.1.35
+git commit -m "chore: release v1.1.36"
+git push origin release/1.1.36
 
 # main 브랜치로 PR 생성 및 머지
 
 # 태그 생성 및 푸시 (main 브랜치에서)
-git tag v1.1.35
-git push origin v1.1.35
+git tag v1.1.36
+git push origin v1.1.36
 ```
 
 태그 푸시 시 자동으로:
