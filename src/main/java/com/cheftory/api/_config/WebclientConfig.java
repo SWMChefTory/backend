@@ -9,6 +9,7 @@ import com.cheftory.api.notification.client.ExpoNotificationHttpApi;
 import com.cheftory.api.notification.client.ExpoNotificationProperties;
 import com.cheftory.api.recipe.content.briefing.client.BriefingHttpApi;
 import com.cheftory.api.recipe.content.detail.client.RecipeDetailHttpApi;
+import com.cheftory.api.recipe.content.scene.client.RecipeSceneHttpApi;
 import com.cheftory.api.recipe.content.step.client.RecipeStepHttpApi;
 import com.cheftory.api.recipe.content.verify.client.RecipeVerifyHttpApi;
 import com.cheftory.api.recipe.content.youtubemeta.client.YoutubeMetaHttpApi;
@@ -76,6 +77,13 @@ public class WebclientConfig {
         return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(recipeCreateClient))
                 .build()
                 .createClient(RecipeStepHttpApi.class);
+    }
+
+    @Bean
+    public RecipeSceneHttpApi recipeSceneHttpApi(@Qualifier("recipeCreateClient") WebClient recipeCreateClient) {
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(recipeCreateClient))
+                .build()
+                .createClient(RecipeSceneHttpApi.class);
     }
 
     @Bean

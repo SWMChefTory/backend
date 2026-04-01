@@ -1,5 +1,6 @@
 package com.cheftory.api.recipe.creation.pipeline;
 
+import com.cheftory.api.recipe.content.scene.RecipeSceneService;
 import com.cheftory.api.recipe.content.step.RecipeStepService;
 import com.cheftory.api.recipe.creation.progress.RecipeProgressService;
 import com.cheftory.api.recipe.creation.progress.entity.RecipeProgressDetail;
@@ -13,27 +14,37 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RecipeCreationInstructionStep implements RecipeCreationPipelineStep {
     private final RecipeStepService recipeStepService;
+    private final RecipeSceneService recipeSceneService;
     private final RecipeProgressService recipeProgressService;
 
     /**
-     * 조리 순서(step) 생성 단계.
+     * 조리 순서(step) 및 scene 생성 단계.
      *
-     * <p>동일 `recipeId`에 step 데이터가 이미 존재하면 생성 호출 없이 progress만 성공 처리합니다.</p>
+     * <p>동일 `recipeId`에 step 또는 scene 데이터가 일부만 존재해도 누락된 데이터만 생성합니다.</p>
      */
     @Override
     public RecipeCreationExecutionContext run(RecipeCreationExecutionContext context) throws RecipeException {
         if (context.getFileUri() == null || context.getMimeType() == null) {
             throw new RecipeException(RecipeErrorCode.RECIPE_CREATE_FAIL);
         }
-        if (recipeStepService.exists(context.getRecipeId())) {
+        boolean hasSteps = recipeStepService.exists(context.getRecipeId());
+        boolean hasScenes = recipeSceneService.exists(context.getRecipeId());
+
+        if (hasSteps && hasScenes) {
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP, context.getJobId());
             return context;
         }
+
         recipeProgressService.start(
                 context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP, context.getJobId());
         try {
-            recipeStepService.create(context.getRecipeId(), context.getFileUri(), context.getMimeType());
+            if (!hasSteps) {
+                recipeStepService.create(context.getRecipeId(), context.getFileUri(), context.getMimeType());
+            }
+            if (!hasScenes) {
+                recipeSceneService.create(context.getRecipeId(), context.getFileUri(), context.getMimeType());
+            }
             recipeProgressService.success(
                     context.getRecipeId(), RecipeProgressStep.STEP, RecipeProgressDetail.STEP, context.getJobId());
             return context;
