@@ -18,6 +18,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 없음
 
+## [1.1.35] - 2026-03-03
+
+### Added
+- **레시피 트래킹(노출/클릭) API 추가**
+  - `POST /api/v1/tracking/impressions`: 레시피 노출 배치 기록
+  - `POST /api/v1/tracking/clicks`: 레시피 클릭 단건 기록
+- **트래킹 도메인 모델/예외 추가**
+  - `SurfaceType` enum(프론트엔드 surface 매핑)
+  - `RecipeImpression`, `RecipeClick` 엔티티
+  - `TrackingClickRequest`, `TrackingImpressionRequest` DTO
+  - `TrackingErrorCode`, `TrackingException`
+- **트래킹 저장소 계층 추가(Impl 패턴)**
+  - `RecipeImpressionRepository`/`RecipeImpressionRepositoryImpl`
+  - `RecipeClickRepository`/`RecipeClickRepositoryImpl`
+  - JPA 리포지토리(`RecipeImpressionJpaRepository`, `RecipeClickJpaRepository`) 분리 유지
+- **트래킹 테스트 추가**
+  - `TrackingControllerTest`, `TrackingServiceTest`, `TrackingRepositoryTest`
+
+### Changed
+- **트래킹 서비스 의존성 정리**
+  - `TrackingService`가 JPA 리포지토리 직접 의존 대신 Repository 인터페이스를 통해 저장하도록 변경
+- **에러 코드 레지스트리 확장**
+  - `Error` 매핑 목록에 `TrackingErrorCode` 등록
+- **Hibernate INSERT 배치 최적화 설정 반영**
+  - `application-dev.yml`, `application-prod.yml`에 `hibernate.order_inserts: true` 적용
+
+### Fixed
+- **트래킹 엔티티 DDL/네이밍 정합성 수정**
+  - `RecipeImpression`, `RecipeClick`의 `@Table(name=...)` 지정 제거 후 기본 네이밍 전략 사용
+
+### Database Migration
+- **배포 전 수동 마이그레이션 필요**
+  - `recipe_impression` 테이블 생성
+  - `recipe_click` 테이블 생성
+  - 각 테이블에 `market`, `country_code`, `id`, `user_id`, `request_id`, `surface_type`, `recipe_id`, `position`, `*_at`, `created_at` 컬럼 반영 필요
+
 ## [1.1.34] - 2026-03-03
 
 ### Added
@@ -634,7 +670,7 @@ CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
 
 ### 배포 정보
 
-- **Version**: 1.1.34
+- **Version**: 1.1.35
 - **Release Date**: 2026-03-03
 - **Environment**: Production
 - **Docker Image**: `cheftory-proxy-server:latest`
@@ -643,24 +679,24 @@ CREATE INDEX idx_recipe_is_public_status ON recipe(is_public, recipe_status);
 
 ```bash
 # Release 브랜치 생성
-git checkout -b release/1.1.34
+git checkout -b release/1.1.35
 
 # build.gradle 버전 변경
-# version = '1.1.34' 으로 수정
+# version = '1.1.35' 으로 수정
 
 # CHANGELOG.md 업데이트
 # 변경사항 작성
 
 # 커밋 및 푸시
 git add build.gradle CHANGELOG.md
-git commit -m "chore: release v1.1.34"
-git push origin release/1.1.34
+git commit -m "chore: release v1.1.35"
+git push origin release/1.1.35
 
 # main 브랜치로 PR 생성 및 머지
 
 # 태그 생성 및 푸시 (main 브랜치에서)
-git tag v1.1.34
-git push origin v1.1.34
+git tag v1.1.35
+git push origin v1.1.35
 ```
 
 태그 푸시 시 자동으로:
@@ -672,6 +708,7 @@ git push origin v1.1.34
 
 ## Version History
 
+- **1.1.35** (2026-03-03): Tracking impression/click API added with repository impl pattern, tests, and DB DDL alignment
 - **1.1.34** (2026-03-03): `LoginResponse.user_info.provider_sub` field added and OAuth account response docs/tests aligned
 - **1.1.33** (2026-03-02): Async-first recipe creation flow and source/jobId tracking introduced
 - **1.1.32** (2026-03-02): Search indexing pipeline release
